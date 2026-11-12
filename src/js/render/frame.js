@@ -1,3 +1,5 @@
+// 자유 모드: 머리 위 표시는 '나를 보고 있는' 사람(경찰·조직원·경호원)에게만. 조직끼리 싸움·소리 조사·주민 의심은 그리지 않는다
+function cityShowAware(g) { return g.warSide == null && !g.civ && guardAwareness(g).direct; }
 const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리기 단계를 하나씩 끄고 비교
 function draw() {
   refreshPurchasedArt();refreshPurchasedProps();refreshPropArt();refreshOfficeArt();refreshFreeCity();
@@ -61,7 +63,7 @@ function draw() {
   drawHideFixtures();
   const lastStep=S.noises.filter(n=>n.src==='step'&&flOf(n)===flOf(P)).at(-1);
   for (const n of S.noises) {
-    if(flOf(n)!==flOf(P)||(n.src==='step'&&n!==lastStep))continue;
+    if(STAGE.cityLife||flOf(n)!==flOf(P)||(n.src==='step'&&n!==lastStep))continue;  // 자유 모드: 소리 고리는 그리지 않는다 (총성이 잦아 화면이 어지럽다)
     const k = n.t / 0.7; ctx.strokeStyle = n.heard ? `rgba(242,196,107,${(1 - k) * 0.75})` : n.src === 'stone' || n.src === 'glass' ? `rgba(242,196,107,${(1 - k) * 0.6})` : `rgba(220,226,240,${(1 - k) * 0.38})`;
     ctx.save();ctx.setLineDash([3,6]);ctx.lineWidth=n.heard?2:1;ctx.beginPath();ctx.arc(n.x,n.y,Math.max(1,n.r*(.25+.75*k)),0,TAU);ctx.stroke();ctx.restore();
   }
@@ -202,10 +204,10 @@ function draw() {
     if (DBG.cone) return; const showField=showVisionField(g); setLayer(0);
     // 쫓기는 중: 멀리 있는 시야는 옅게, 겁먹은 주민 시야·표시는 가까운 것만 — 나와 가까운 위협이 먼저 보이게
     const chs = chaseNow(), gd = chs ? dist(g.x, g.y, P.x, P.y) : 0;
-    if (chs && g.civ) { if (gd < 220 && g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
+    if (chs && g.civ) { if (gd < 220 && g.icon && !(STAGE.cityLife && g.icon === '?')) drawEmote(g.icon, g.x, g.y - 30); return; }
     const awareness=guardAwareness(g);
     if (g.civ && !g.wary && g.state !== 'PANIC' && !showField) {  // 선택하지 않은 주민은 큰 시야 표시를 생략한다
-      if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return;
+      if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30); if (g.icon && !(STAGE.cityLife && g.icon === '?')) drawEmote(g.icon, g.x, g.y - 30); return;
     }
     // Interpolate the boundary itself: one enemy, one filled field and one outline.
     if(showField&&!heightSightEligible(g,P)){
@@ -220,14 +222,16 @@ function draw() {
     // 멀리 있는 경비의 점선은 그리지 않고(쫓기는 중엔 더 가까운 것만), 같은 자리의 '들었다/봤다'는 하나로 합친다
     if (S._poiT !== S.t) { S._poiT = S.t; S._poiL = []; }
     const pdist = dist(g.x, g.y, S.player.x, S.player.y);
-    if (g.poi && !g.civ && ['NOTICE', 'SUSPICIOUS', 'SEARCH'].includes(g.state) && !g.reached && g.why !== 'exit' && pdist < (chaseNow() ? 260 : 450)) {
+    const calm = STAGE.cityLife && !cityShowAware(g);
+    if (!STAGE.cityLife && g.poi && !g.civ && ['NOTICE', 'SUSPICIOUS', 'SEARCH'].includes(g.state) && !g.reached && g.why !== 'exit' && pdist < (chaseNow() ? 260 : 450)) {
       ctx.strokeStyle = g.why === 'saw' ? 'rgba(255,120,90,.7)' : 'rgba(242,196,107,.7)'; ctx.setLineDash([3, 6]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(g.poi.x, g.poi.y); ctx.stroke(); ctx.setLineDash([]);
       const dup = S._poiL.find(q => dist(q.x, q.y, g.poi.x, g.poi.y) < 80); if (dup) { dup.n++; } else { S._poiL.push({ x: g.poi.x, y: g.poi.y, n: 1 }); }
       if (!dup) {
       if (guideFull()) tag(g.poi.x, g.poi.y, investigationReadout(g).tag, g.why === 'saw' ? '#ff8a6a' : '#f2c46b', 0.9, null, 1.5); else drawBadge(g.poi.x, g.poi.y, 'ask', g.why === 'saw' ? '#ff8a6a' : '#f2c46b', 0.9);
     } }
-    if (g.state === 'CHECK' && g.checks[0]) { const c = g.checks[0]; ctx.strokeStyle = 'rgba(242,196,107,.6)'; ctx.setLineDash([3, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(c.x, c.y); ctx.stroke(); ctx.setLineDash([]); }
-    if(drawGuardTaskCue(g))return;
+    if (!STAGE.cityLife && g.state === 'CHECK' && g.checks[0]) { const c = g.checks[0]; ctx.strokeStyle = 'rgba(242,196,107,.6)'; ctx.setLineDash([3, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(c.x, c.y); ctx.stroke(); ctx.setLineDash([]); }
+    if(calm)return;
+    if(!STAGE.cityLife&&drawGuardTaskCue(g))return;
     const mk = !g.civ && !g.dog && (g.state === 'ALERT' || g.meter > 0.02 || g.icon === '?' || g.icon === '!');
     if (mk) {if(!g.eyeWatching)drawAwareMark(g);} else if (g.icon) drawEmote(g.icon, g.x, g.y - 30);
     if (mk && g.icon && g.icon !== '?' && g.icon !== '!') drawEmote(g.icon, g.x + 26, g.y - 30);

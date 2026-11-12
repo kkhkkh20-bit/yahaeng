@@ -68,7 +68,7 @@ function drawMarked() {
 function drawGhosts() { drawMarked(); }
 // 마지막 목격 지점 (어쌔신 크리드 유니티식 유령 + 수색 범위): 어둠 위에 그려 늘 또렷하게
 function drawLastSeen() {
-  const P = S.player, pts = []; if (chaseNow()) return;  // 쫓기는 중엔 지금 내 자리가 곧 '마지막 목격 지점'이다
+  const P = S.player, pts = []; if (chaseNow() || STAGE.cityLife) return;  // 자유 모드는 수색 범위·십자·물음표를 그리지 않는다 (수배 별과 미니맵으로 충분)  // 쫓기는 중엔 지금 내 자리가 곧 '마지막 목격 지점'이다
   for (const g of S.guards) {
     if (g.civ || g.dog || g.state === 'DEAD' || flOf(g) !== flOf(P)) continue;
     const q = g.state === 'ALERT' ? g.lastSeen : ['SUSPICIOUS', 'SEARCH', 'NOTICE'].includes(g.state) && g.why ? (g.state==='SEARCH'&&g.searchJob ? g.searchOrigin : g.poi) : null;
