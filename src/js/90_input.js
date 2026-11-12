@@ -76,7 +76,7 @@ window.addEventListener('keydown', e => {
   if (e.code === 'Digit3') selectTool('coin');
   if (e.code === 'ControlLeft' || e.code === 'ControlRight') toggleSneak();
   if (e.code === 'KeyN') toggleMute();
-  if (e.code === 'KeyM') toggleTactical();
+  if (e.code === 'KeyM') { if (STAGE?.cityLife && running) cityMapOpen(); else toggleTactical(); }  // 자유 모드: 큰 지도
   if (e.code === 'KeyG') whistle();
   if (e.code === 'Tab') { if(e.shiftKey)toggleEnvPicker();else cycleEnv(); }  // 겹친 대상 중 다른 것 고르기
   if (e.code === 'KeyI') { e.preventDefault(); toggleLoadout(); }
@@ -367,10 +367,11 @@ $('btnPause').addEventListener('click', togglePause);
 for(const id of ['btnPause','btnCrouch','btnSneak','btnToolNext','btnCycle'])$(id).addEventListener('keydown',e=>{if(['Enter','Space'].includes(e.code))e.stopPropagation();});
 $('btnMap').addEventListener('click', toggleTactical);
 { const mi = $('mini'); if (mi) {
-  $('btnMap').style.display = 'none'; mi.addEventListener('click', toggleTactical);
+  $('btnMap').style.display = 'none'; mi.addEventListener('click', () => { if (STAGE?.cityLife && running) cityMapOpen(); else toggleTactical(); });
   mi.addEventListener('keydown', e => {
     if (e.code !== 'Enter' && e.code !== 'Space') return;
     e.preventDefault(); e.stopPropagation();
+    if (!e.repeat && STAGE?.cityLife && running) { cityMapOpen(); return; }
     if (!e.repeat) { toggleTactical(); if (!$('tacBanner').hidden) $('tacBanner').focus({ preventScroll: true }); }
   });
 } }  // 도시: 지도 버튼 대신 미니맵을 누른다
@@ -405,7 +406,7 @@ function start(i, noBrief) {
   tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');
   input.sneakToggle=false;try{localStorage.setItem('yh_sneak','0');}catch(e){}syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'kunai'; input.padWhistle = false;  // 새 의뢰는 서서 시작한다. 항상 걷기 설정은 유지한다.
   running = true; paused = false;
-  newGame(i); document.body.classList.toggle('no-prompts', !!STAGE.noPrompts); document.body.classList.toggle('free-city', !!STAGE.cityLife); if(STAGE.firstSteps||introductoryContract(STAGE)){input.sneakToggle=false;input.walkLock=false;input.padWhistle=!!(STAGE.firstSteps||STAGE.openingContract)&&!availableTools().some(t=>toolCount(t)>0);syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','목표·무전 펼치기'); miniBase = null; renderToasts();
+  newGame(i); document.body.classList.toggle('no-prompts', !!STAGE.noPrompts); document.body.classList.toggle('free-city', !!STAGE.cityLife); { const m = $('btnMenu2'); if (m) m.textContent = STAGE.freeMode ? '처음 화면' : '의뢰 선택'; } if(STAGE.firstSteps||introductoryContract(STAGE)){input.sneakToggle=false;input.walkLock=false;input.padWhistle=!!(STAGE.firstSteps||STAGE.openingContract)&&!availableTools().some(t=>toolCount(t)>0);syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','목표·무전 펼치기'); miniBase = null; renderToasts();
   if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)
   statsBegin('new');  // 플레이 기록: 판 시작
   if (PR&&!STAGE.artSlice) { const ks = [playerKey(S.player), ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep(ks); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다
@@ -450,6 +451,7 @@ function toMenu() {
   $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = true; syncQuick();showMenu('intro');
   renderStageList();
   newGame(STAGE_I);
+  cityTeardown();  // 자유 모드가 남긴 창·알림·소리·화면 표시 정리 (newGame 뒤에)
 }
 
 atlas.onload = async () => {

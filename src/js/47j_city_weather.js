@@ -42,3 +42,12 @@ function drawRain() {
     ctx.fillRect(x0 | 0, y0 | 0, 1, len / 2 | 0); ctx.fillRect((x0 + len * lean / 2) | 0, (y0 + len / 2) | 0, 1, len / 2 | 0); }  // 두 토막: 살짝 기운 선
   ctx.restore();
 }
+// 처음 화면으로 나갈 때: 자유 모드가 띄운 창·알림·소리를 모두 정리한다 (다음 판·메뉴에 남지 않게)
+function cityTeardown() {
+  for (const id of ['evBanner', 'districtName', 'shopPanel']) { const el = document.getElementById(id); if (el) el.remove(); }
+  if (CMAP) { CMAP.el.remove(); CMAP = null; }
+  if (S) { S.shopOpen = false; S.side = null; S.wp = null; S.wpPath = null; if (S.rain) { S.rain.on = false; S.rain.k = 0; } }
+  document.body.classList.remove('free-city', 'no-prompts');
+  if (AC) { const now = AC.currentTime; if (RAIN_SND) RAIN_SND.g.gain.setTargetAtTime(0, now, 0.1); if (typeof SCREECH !== 'undefined' && SCREECH) SCREECH.g.gain.setTargetAtTime(0, now, 0.05); }
+  if (typeof musicRadio === 'function') musicRadio(false);
+}

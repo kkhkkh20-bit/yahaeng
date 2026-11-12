@@ -342,6 +342,10 @@
       "group": "city"
     },
     {
+      "path": "47k_city_map.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },
