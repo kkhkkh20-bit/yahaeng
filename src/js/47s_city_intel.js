@@ -41,7 +41,7 @@ function intelUpdate() {
 // 담배 연기 (빈틈 동안 표적 머리 위)
 function drawIntel() {
   const h = S.hit, B = h && h.brk; if (!B || !B.on || B.done || !npcAlive(h.g)) return; const g = h.g; if (!inView(g.x, g.y, 60)) return;
-  fxFrame('cig', S.t + g.id * 0.3, g.x + 7, g.y - 29, 0.8, 0.9);  // 도트 담배 연기 (PixelFX 연기 퍼프)
+  fxFrame('cig', S.t + g.id * 0.3, g.x + 6, g.y - 25, 1, 1);  // 도트 담배 연기 (PixelFX 연기 퍼프)
 }
 // 미니맵: 표적 길(붉은 점선) · 경호원 점 · 빈틈 자리
 function drawMiniIntel(x, T) {

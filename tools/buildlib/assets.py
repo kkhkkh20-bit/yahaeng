@@ -59,6 +59,10 @@ def campaign_assets(root):
     if (wp/'items.json').exists():
         assets['cityItems']=json.loads((wp/'items.json').read_text())
         assets['cityItems']['src']='data:image/webp;base64,'+base64.b64encode((wp/'items.webp').read_bytes()).decode()
+    sg=Path(root)/'src/art/signals'
+    if (sg/'signals.json').exists():
+        assets['citySignals']={'frames':json.loads((sg/'signals.json').read_text())}
+        assets['citySignals']['src']='data:image/webp;base64,'+base64.b64encode((sg/'signals.webp').read_bytes()).decode()
     if (river/'garage.json').exists():
         assets['cityGarage']=json.loads((river/'garage.json').read_text())
         assets['cityGarage']['src']='data:image/webp;base64,'+base64.b64encode((river/'garage.webp').read_bytes()).decode()

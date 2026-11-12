@@ -205,6 +205,33 @@ function signalLets(light, v, x0, y0, x1, y1) {
 // 동쪽으로 가는 차 = 남동 기둥, 서쪽 = 북서, 남쪽 = 남서, 북쪽 = 북동. 등은 빨강 · 노랑 · 좌회전 화살표 · 초록 (좌회전 때는 빨강+화살표)
 // 보행 신호는 차량 신호기와 따로, 횡단보도 양 끝 보도에 선다
 const SIG_COL = { G: '#2ee87a', Y: '#ffc21f', R: '#ff3434' };
+// 구운 신호등 그림 (tools/prerender/bake_signals.py: 기둥·팔·신호기를 건물과 같은 3/4 시점으로 렌더). 켜진 등만 위에 그린다
+const sigArt = A.citySignals, sigAtlas = sigArt ? Object.assign(new Image(), { src: sigArt.src }) : null, sigReady = () => !!(sigAtlas && sigAtlas.complete && sigAtlas.naturalWidth);
+// 켜진 렌즈: 3px 반지름 도트 원판 + 가운데 밝은 점 + 번짐
+function sigLens(x, y, col, arrowA) {
+  x = Math.round(x); y = Math.round(y);
+  ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = col + '40'; ctx.fillRect(x - 7, y - 5, 15, 11); ctx.fillStyle = col + '30'; ctx.fillRect(x - 10, y - 3, 21, 7); ctx.globalCompositeOperation = 'source-over';
+  if (arrowA != null) { ctx.save(); ctx.translate(x + .5, y + .5); ctx.rotate(Math.round(arrowA / (Math.PI / 2)) * Math.PI / 2); ctx.fillStyle = col; ctx.fillRect(-3, -1, 6, 2); ctx.fillRect(1, -3, 1, 6); ctx.fillRect(2, -2, 1, 4); ctx.restore(); return; }
+  ctx.fillStyle = col; ctx.fillRect(x - 2, y - 3, 5, 7); ctx.fillRect(x - 3, y - 2, 7, 5); ctx.fillStyle = '#ffffffb0'; ctx.fillRect(x - 1, y - 2, 2, 2);
+}
+// 보행 신호 그림: 7×10 도트 (서 있는 사람 / 걷는 사람 두 동작)
+const WALK_PX = { stand: ['..###..', '..###..', '...#...', '.#####.', '#.###.#', '#.###.#', '..#.#..', '..#.#..', '..#.#..', '..#.#..'],
+  walk0: ['...##..', '...##..', '...#...', '..####.', '.#.##.#', '#..##..', '...#.#.', '..#...#', '.#....#', '.#.....'],
+  walk1: ['...##..', '...##..', '...#...', '..###..', '..###..', '.#.##..', '...##..', '...#.#.', '..#..#.', '..#..#.'] };
+function walkPx(name, x, y, col) { ctx.fillStyle = col; const m = WALK_PX[name]; for (let r = 0; r < m.length; r++) for (let c = 0; c < 7; c++) if (m[r][c] === '#') ctx.fillRect(x + c, y + r, 1, 1); }
+function drawSignalSprite(key, px, py, state, turnA) {
+  const f = sigArt.frames[key]; ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(sigAtlas, f.x, f.y, f.w, f.h, Math.round(px + f.ox), Math.round(py + f.oy), f.w, f.h);
+  const on = { R: state === 'R' || state === 'L', Y: state === 'Y', L: state === 'L', G: state === 'G' };
+  ['R', 'Y', 'L', 'G'].forEach((c, k) => { if (!on[c]) return; const [lx, ly] = f.lamps[k]; sigLens(px + lx, py + ly, c === 'L' ? SIG_COL.G : SIG_COL[c], c === 'L' ? turnA : null); });
+}
+function drawWalkSprite(cx, cy, state, t) {
+  const f = sigArt.frames.walk, px = cx, py = cy + 16, go = state === 'G' || state === 'W', blink = state === 'W' && Math.floor(t * 4) % 2 === 0;
+  ctx.imageSmoothingEnabled = false; ctx.drawImage(sigAtlas, f.x, f.y, f.w, f.h, Math.round(px + f.ox), Math.round(py + f.oy), f.w, f.h);
+  const [ux, uy] = f.lamps[0], [lx, ly] = f.lamps[1];
+  if (!go) { walkPx('stand', Math.round(px + ux - 3), Math.round(py + uy - 5), SIG_COL.R); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(255,52,52,.18)'; ctx.fillRect(Math.round(px + ux - 8), Math.round(py + uy - 8), 17, 16); ctx.globalCompositeOperation = 'source-over'; }
+  else if (!blink) { walkPx(Math.floor(t * 3) % 2 ? 'walk0' : 'walk1', Math.round(px + lx - 3), Math.round(py + ly - 5), SIG_COL.G); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(46,232,122,.18)'; ctx.fillRect(Math.round(px + lx - 8), Math.round(py + ly - 8), 17, 16); ctx.globalCompositeOperation = 'source-over'; }
+}
 function drawSignalHead(cx, cy, state, vertical, turnA) {  // turnA: 이 신호를 보는 차가 좌회전하는 쪽(화면 각도)
   const L = 46, D = 16, w = vertical ? D : L, h = vertical ? L : D, x = cx - w / 2, y = cy - h / 2;
   ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(x + 3, y + 4, w, h);
@@ -251,6 +278,10 @@ function drawTrafficSignals() {
     const s = signalState(rx, ry);
     // [기둥 x, y, 축, 신호기 x, y, 세로로 다나] — 신호기는 다가오는 차로(오른쪽 통행) 한가운데 위
     // 마지막 값 = 좌회전 화살표 방향: 동쪽으로 가던 차는 북쪽으로, 서쪽은 남쪽, 남쪽은 동쪽, 북쪽은 서쪽으로 돈다
+    if (sigReady()) {  // 구운 그림: 기둥 발 자리에 놓고 켜진 등만 그린다
+      for (const [px, py, axis, key, ta] of [[x1 + 16, y1 + 16, 'ew', 'sigE', -Math.PI / 2], [x0 - 16, y0 - 16, 'ew', 'sigW', Math.PI / 2], [x0 - 16, y1 + 16, 'ns', 'sigS', 0], [x1 + 16, y0 - 16, 'ns', 'sigN', Math.PI]])
+        drawSignalSprite(key, px, py, s[axis], ta);
+    } else
     for (const [px, py, axis, hx, hy, vert, ta] of [
       [x1 + 16, y1 + 16, 'ew', x1 + 16, y0 + 3 * T, true, -Math.PI / 2],  // 동쪽으로 가는 차 (남쪽 차로)
       [x0 - 16, y0 - 16, 'ew', x0 - 16, y0 + T, true, Math.PI / 2],       // 서쪽으로 가는 차 (북쪽 차로)
@@ -266,7 +297,7 @@ function drawTrafficSignals() {
     for (const [cx, cy, st] of [
       [x0 - 20, y0 - 50, wh], [x1 + 20, y0 - 50, wh], [x0 - 20, y1 + 50, wh], [x1 + 20, y1 + 50, wh],
       [x0 - 50, y0 - 22, wv], [x0 - 50, y1 + 22, wv], [x1 + 50, y0 - 22, wv], [x1 + 50, y1 + 22, wv],
-    ]) drawWalkHead(cx, cy, st, S.t);
+    ]) (sigReady() ? drawWalkSprite : drawWalkHead)(cx, cy, st, S.t);
   }
   ctx.restore();
 }
