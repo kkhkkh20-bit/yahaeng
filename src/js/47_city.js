@@ -237,6 +237,9 @@ function cityScream(g, x, y) {
   endChat(g); g.state = 'PANIC'; g.panicT = rnd(6, 9); g.fear = { x, y }; g.path = null; g.cowered = false; g.meter = 1; S.stats.screams = (S.stats.screams || 0) + 1;
   say([[g, ['경찰! 경찰 불러요!', '사람 살려!', '저 사람이에요!'][(Math.random() * 3) | 0]]]);
   play('call', 0.7 * proxVol(g), 1.6); noise(g.x, g.y, 380, 'scream', flOf(g));
+  // 자유 모드: 나를 보고 있거나 바로 근처(380px)에서 벌어진 일일 때만 내 수배로. 멀리서 시체만 발견한 신고는 경찰이 그 자리를 살피러 갈 뿐이다
+  const P = S.player;
+  if (STAGE.cityLife && !(dist(x, y, P.x, P.y) < 380 || dist(g.x, g.y, P.x, P.y) < 420 && los(g.x, g.y, P.x, P.y))) { const c = typeof spawnCop === 'function' && spawnCop(true); if (c) evGo(c, x, y); return; }
   addWanted(1, '주민이 경찰에 신고했다');
 }
 // 경찰차 (수배 ★★부터): 도로를 따라 나에게 온다. 가까워지면 서서 경찰 둘이 내린다 (빈 경찰차는 빼앗을 수 있다)
