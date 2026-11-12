@@ -47,6 +47,7 @@ function drawMini() {
   x.strokeStyle = 'rgba(232,227,214,.45)'; x.lineWidth = 1;if(STAGE.artSlice&&!tactical&&window.__clubView?.ready){const pts=[[0,0],[W,0],[W,H],[0,H]].map(p=>window.__clubView.screenToWorld(...p));if(pts.every(Boolean)){x.beginPath();pts.forEach((p,i)=>i?x.lineTo(T(p.x),T(p.y)):x.moveTo(T(p.x),T(p.y)));x.closePath();x.stroke();}}else x.strokeRect(T(cam.x - W / SCALE / 2), T(cam.y - H / SCALE / 2), T(W / SCALE), T(H / SCALE));
   if (S.exitOpen) { x.strokeStyle = '#f2c46b'; x.lineWidth = 2; for (const e of S.exits || [S.exit]) { x.beginPath(); x.arc(T(e.x), T(e.y), 5, 0, TAU); x.stroke(); } }
   for (const it of S.items) if (!it.got) { x.fillStyle = '#f2c46b'; x.fillRect(T(it.x) - 2.5, T(it.y) - 2.5, 5, 5); if (it.fl) { x.fillStyle = '#0b0d12'; x.font = uiFont(7); x.textAlign = 'center'; x.fillText(String(it.fl + 1), T(it.x), T(it.y) + 2.5); } }
+  drawMiniCity(x, T);
   // 보이는 사람만: 같은 층·시선이 닿는 자경대원(경계 단계 색), 주민은 초록
   for (const g of S.guards) {
     if (g.state === 'DEAD' && !(g.target && !targetEliminated(g))) continue;

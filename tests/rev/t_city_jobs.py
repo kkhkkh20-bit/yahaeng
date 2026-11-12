@@ -58,6 +58,11 @@ async def main():
         # 4) the cycle still begins with a hit
         t = await q.evaluate(TAKE, 0); print('take hit', t)
         ok(t['kind'] is None and '처치' in t['goal'], 'first job is no longer a hit: %s' % t)
+        # 5) progress survives a restart of free mode (own key, not the campaign save)
+        sv = await q.evaluate('''()=>{const G=__game,S=G.S;S.job=null;S.hit=null;tick(2.5);const saved=JSON.parse(localStorage.getItem('yahaeng.free1')||'null');const cash=S.cash,jobN=S.jobN;
+          G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));while(G.DLG.modal)G.advanceDialog();tick(.2);return {saved,cash,jobN,after:G.S.cash,afterN:G.S.jobN,camp:localStorage.getItem('yahaeng.ch')}}''')
+        print('save', sv)
+        ok(sv['saved'] and sv['saved']['cash'] == sv['cash'] and sv['after'] == sv['cash'] and sv['afterN'] == sv['jobN'] and sv['camp'] is None, 'free-mode progress not saved/restored: %s' % sv)
         ok(not errs, 'page errors: %s' % errs)
         await b.close()
     print('통과' if not bad else '문제', bad); sys.exit(1 if bad else 0)

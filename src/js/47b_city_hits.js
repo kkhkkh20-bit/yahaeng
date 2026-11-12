@@ -126,6 +126,7 @@ function hitsUpdate(dt) {
   boothBlock(); updatePhoneRing(dt || 1 / 60);
   const P = S.player; if (P.booth) { P.x = P.booth.x; P.y = P.booth.y + 2; P.moving = false; }
   jobsUpdate(dt || 1 / 60);
+  saveFreeProgress();
   const h = S.hit; if (!h) return;
   const g = h.g;
   if (!S.guards.includes(g)) { S.hit = null; return; }
