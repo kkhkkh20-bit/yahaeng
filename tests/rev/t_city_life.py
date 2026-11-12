@@ -22,14 +22,14 @@ CHECK = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));w
   out.hit={state:c.state,ko:!!c.unconscious,blood:S.decals.length-d0,thrown:corpse?Math.hypot(corpse.x-70-RX(0),corpse.y-RY-24):0};
   P.car=null;v.parked=true;
   // arrest at one star
-  S.cash=100;S.wanted=1;Object.assign(P,{x:RX(1),y:RY});const cop=need(g=>g.police);cop.state='ALERT';cop.lastSeen=ls();cop.path=null;
+  S.cash=100;S.wanted=1;Object.assign(P,{x:RX(1),y:RY});const cop=need(g=>g.police&&!g.contact);  // 지구대 연락책은 쫓지 않는다cop.state='ALERT';cop.lastSeen=ls();cop.path=null;
   let cuffed=false;for(let t=0;t<3.4;t+=1/60){if(!S.cuffs&&!cuffed){cop.x=P.x+18;cop.y=P.y;}if(S.cuffs)cuffed=true;G.update(1/60);}
   out.arrest={cuffed,wanted:S.wanted,cash:S.cash,station:Math.hypot(P.x-(ST.police[0]+.5)*48,P.y-(ST.police[1]+1.5)*48)};
   // gang knife
   Object.assign(P,{x:RX(2),y:RY});P.hp=P.hpMax;P.hurtT=0;const hp0=P.hp,gg=need(g=>g.fac==='C'&&!g.civ&&!g.police);gg.x=P.x+60;gg.y=P.y;gg.state='ALERT';gg.lastSeen=ls();gg.path=null;gg.seen=true;
   let lost=0;for(let t=0;t<6&&!lost;t+=1/60){G.update(1/60);lost=hp0-P.hp;}out.knife=lost;gg.x=-9000;gg.state='PATROL';
   // police pistol from two stars
-  S.wanted=2;P.hp=P.hpMax;P.hurtT=0;Object.assign(P,{x:RX(4),y:RY});const c2=S.guards.find(g=>g.police);c2.off=false;c2.hp=null;  // the arrest sent every officer away
+  S.wanted=2;P.hp=P.hpMax;P.hurtT=0;Object.assign(P,{x:RX(4),y:RY});const c2=S.guards.find(g=>g.police&&!g.contact);c2.off=false;c2.hp=null;  // the arrest sent every officer away
   c2.x=P.x-220;c2.y=P.y;c2.state='ALERT';c2.lastSeen=ls();c2.seen=true;c2.path=null;let shot=-1;for(let t=0;t<8&&shot<0;t+=1/60){G.update(1/60);if(P.hp<P.hpMax)shot=t;}out.shot=shot;
   // gang chase car
   S.wanted=0;for(const g of S.guards)if(g.police&&!g.off)g.x=-9000;P.hp=P.hpMax;const gb=need(g=>g.fac==='B'&&!g.civ&&!g.police);gb.lastSeen=ls();gb.x=P.x+900;gb.y=P.y;

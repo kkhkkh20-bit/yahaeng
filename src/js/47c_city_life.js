@@ -45,6 +45,8 @@ function cityArrest(why) {
   const at = STAGE.police || STAGE.start; P.x = tc(at[0]); P.y = tc(at[1] + 1); P.z = 0; P.fl = 0; setLayer(0); cam.x = P.x; cam.y = P.y;
   S.cash = Math.max(0, (S.cash || 0) - fine); S.wanted = 0; S.wantLost = 0; S.alevel = 0; S.alevelT = 0;
   for (const g of S.guards) { if (g.police && !g.off && !g.contact && !g.beat) despawnCop(g); else if (['ALERT', 'SEARCH', 'SUSPICIOUS', 'CHECK'].includes(g.state)) { g.state = 'RETURN'; g.path = null; g.icon = null; g.meter = 0; } }
+  // 벌을 받았으니 경찰과의 악연은 '알아보면 수배' 아래로 덜어 주고, 풀려난 뒤 90초는 얼굴만 보고 수배를 걸지 않는다 (지구대 안에서 바로 다시 잡히는 고리 방지)
+  if (S.stand && (S.stand.P || 0) <= -30) S.stand.P = -20; S.releasedT = S.t + 90; S.gunHeat = 0;
   S.stats.arrests = (S.stats.arrests || 0) + 1; fstat('arrests'); play('lose', 0.35);
   toast(why + ' — 지구대에서 풀려났다' + (fine ? ` (벌금 ${fine}만)` : ''), 3.2, 'warn');
 }
