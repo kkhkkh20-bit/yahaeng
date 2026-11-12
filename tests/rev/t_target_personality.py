@@ -33,7 +33,7 @@ async def main():
    g.say=null;g.sayT=0;await new Promise(resolve=>setTimeout(resolve,140));G.syncEpisodeRadio();ok(!document.getElementById('episodeRadio').hidden&&G.episodeRadioMessage().action===goal,'guide does not return to its original goal');
    g.state='ALERT';G.updateTargetPersonalities();ok(!G.targetGesturePose(g)&&!g.persona.pose&&g.say.includes('들여보냈어'),'combat does not cancel routine or trigger personal reaction');
    g.state='DEAD';g.unconscious=true;G.updateTargetPersonalities();ok(!G.targetGesturePose(g)&&!g.persona.reaction,'KO keeps talking or holding props');
-   S=fresh('m4');g=S.guards.find(g=>g.tag==='vip');Object.assign(S.player,{x:g.x+48,y:g.y,fl:g.fl,z:0});Object.assign(g,{moving:false,path:null,wait:999});G.updateTargetPersonalities();ok(g.say?.includes('계약')&&g.persona.pose.kind==='ledger','district boss has no personal routine');
+   S=fresh('m4');g=S.guards.find(g=>g.tag==='vip');Object.assign(S.player,{x:g.x+48,y:g.y,fl:g.fl,z:0});Object.assign(g,{moving:false,path:null,wait:999});G.updateTargetPersonalities();ok(g.say?.includes('인계')&&g.persona.pose.kind==='ledger','district boss has no personal routine');
    S.alevel=2;G.updateTargetPersonalities();ok(!g.persona.pose,'calm routine continues through alarm');
    S.alevel=0;S.t+=30;g.stripped=true;G.updateTargetPersonalities();ok(!g.persona.pose,'stripped officer keeps dressed performance');
    fresh('n1');await G.spriteSources.load('femaleSuitPersonaMotion');ok(!Object.keys(G.spriteSources.loaded).includes('suitPersonaMotion'),'old mission retains officer animation atlas');

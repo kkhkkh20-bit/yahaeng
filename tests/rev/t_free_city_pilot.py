@@ -19,9 +19,10 @@ async def main():
     const before=logical();S.fade=0;G.moveCamera(1);G.updateHUD(true);G.benchDraw(3);ok(before===logical(),'drawing changes collision, actors, light switches or progress');
     const used=new Set(window.__gkDraws.map(a=>a.join(','))),wasUsed=(f,list=window.__gkDraws)=>{const [x,y,w,h]=f.rect;return list.some(([sx,sy,sw,sh])=>sx>=x&&sy>=y&&sx+sw<=x+w&&sy+sh<=y+h)};
     for(const name of ['roofTile','metalStorey','pavers','lampOn','vending','asphalt'])ok(wasUsed(art.frames[name]),'required exterior sprite never reaches canvas '+name);ok(wasUsed(art.frames.bush0)||wasUsed(art.frames.bush1),'new cover is never painted');
-    ok(Object.values(art.frames).length===42&&art.source.includes('dotonbori-city-game-assets')&&art.sourceSha256==='a82beeeff1f3d77e24cf26e80a8dd221061aae4179c9cb3ec92c569bfd0d8235','unexpected purchased source/unused subset');ok(!/undefined/.test(document.getElementById('episodeRadioText').textContent),'art boot broke guidance');
+    ok(Object.values(art.frames).length===43&&art.frames.roofVent&&art.source.includes('dotonbori-city-game-assets')&&art.sourceSha256==='a82beeeff1f3d77e24cf26e80a8dd221061aae4179c9cb3ec92c569bfd0d8235','unexpected purchased source/unused subset');ok(!/undefined/.test(document.getElementById('episodeRadioText').textContent),'art boot broke guidance');
     // Scenery beyond the playable boundary has decorative windows. Within
     // the map, every storey window still corresponds to a physical opening.
+    for(const b of G.BLD){G.cam.x=(b.x0+b.x1+1)*24;G.cam.y=(b.y0+b.y1+1)*24;G.benchDraw(1);}/* off-screen facades are culled (v267) */
     const upper=new Set(window.__upperFrames.filter(([x,y])=>x>=0&&y>=0&&x<G.MW*48&&y<G.MH*48).map(a=>a.join(','))),expected=[...S.windows,...S.fwindows].filter(w=>G.BLD.some(b=>(w.fl||0)<b.fh&&w.ty===b.y1&&w.tx>=b.x0&&w.tx<=b.x1));
     ok(upper.size===expected.length,'missing or invented upper-floor window');for(const w of expected)ok(upper.has([w.x,(w.ty-(w.fl||0))*48+24].join(',')),'upper window on wrong facade row');
     // The new canopy is ordinary lit world art, not a permanently bright overlay.
@@ -30,6 +31,8 @@ async def main():
     const lit=sample();for(const l of S.lamps)if(l.outdoor)G.setLampCircuit(l,true);for(const b of G.BLD)b.fl=null;S.t+=.4;G.benchDraw(2);const dark=sample();ok(wasUsed(art.frames.lampOff),'wall fixture never shows actual off state');ok(dark<lit*.85,'pilot art ignores actual switched lights '+JSON.stringify({lit,dark}));
     const roof=G.BLD[0].roofC,alpha=roof.getContext('2d').getImageData(0,0,roof.width,roof.rh).data;ok(alpha.every((v,i)=>i%4!==3||v===255),'roof exposes rooms below');
     window.__gkDraws=[];G.start(G.STAGES.findIndex(s=>s.id==='p0'));while(G.DLG.modal)G.advanceDialog();G.moveCamera(1);G.benchDraw(3);
+    // Off-screen buildings are culled (v267): look at each freight building in turn.
+    for(const b of G.BLD){G.cam.x=(b.x0+b.x1+1)*24;G.cam.y=(b.y0+b.y1+1)*24;G.benchDraw(1);}
     const nextUsed=new Set(window.__gkDraws.map(a=>a.join(',')));ok(wasUsed(art.frames.metalStorey)&&wasUsed(art.frames.roofTile),'continued freight mission keeps the old wall/roof');
     ok(wasUsed(art.frames.pavers),'shared paving is absent from the next map');
     return{used:used.size,gameplayUnchanged:true,sharedPaving:true,freightExteriors:true,opaqueRoof:true,lighting:{lit,dark},source:art.source};}''')
