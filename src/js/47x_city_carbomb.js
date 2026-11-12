@@ -32,7 +32,7 @@ function carbombUpdate() {
   if (!npcAlive(g) || h.cbIn) return;
   if (!h.cbWalk && S.t >= h.leaveAt && ['PATROL', 'RETURN'].includes(g.state)) {
     h.cbWalk = true; g.route = [{ x: v.x, y: v.y, pause: 999 }]; g.ri = 0; g.wait = 0; g.path = null; gsay(g, '차 빼. 간다.', 2); evBanner(`${h.name}이(가) 차로 간다`, '#ffb070'); }
-  if (h.cbWalk && dist(g.x, g.y, v.x, v.y) < 46) {
+  if (h.cbWalk && dist(g.x, g.y, v.x, v.y) < 66) {  /* 차체에 막혀 46 안쪽까지는 못 온다 */
     h.cbIn = true; play('click', 0.5 * proxVol(g)); g.hiddenInCar = true; g.x = v.x; g.y = v.y; g.off = true; g.route = [{ x: v.x, y: v.y, pause: 999 }];
     if (v.bombed) { after(0.9, () => { if (!v.dead) carExplode(v); }); }
     else { v.parked = false; v.driver = true; v.ai = true; v.locked = false; evBanner(`${h.name}이(가) 차를 몰고 떠난다 — 쫓아가 차를 터뜨려라`, '#ffb070'); h.cbDrive = S.t; }

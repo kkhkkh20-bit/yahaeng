@@ -69,6 +69,7 @@ function storyMainDone(h, ok) {
   S.story.failed = false; S.story.ch = Math.max(S.story.ch, h.story + 1); fstat('storyCh');
   const C = STORY_MAIN[h.story];
   evBanner(`메인 이야기 ${h.story + 1}/${STORY_MAIN.length} 완료 — ${C.title}`, '#c9a2ff');
+  storyCard(h.story, true);
   if (S.story.ch >= STORY_MAIN.length) after(2.5, () => say(C.debrief, true));  // 마지막 장: 바로 결말 무전
   S.story.nextT = S.t + 150; S.ringNext = S.t + 18; saveFreeProgress(true);
 }
@@ -95,4 +96,18 @@ function storySideDone(chain, ok) {
   evBanner(`${ch.title} ${chain.n + 1}/${ch.steps.length} 완료${last ? ' — 이야기 끝' : ' — 연락책에게 가면 다음 이야기'}`, STAND_COL[chain.f]);
   after(1.6, () => say(st.outro.map(t => [{ note: `${STAND_NAME[chain.f]} 연락책` }, t]), true));
   saveFreeProgress(true);
+}
+// 장 제목 카드: 장이 시작될 때와 끝날 때 화면 위아래를 검은 띠로 덮고 제목을 띄운다 (조작은 막지 않는다)
+function storyCard(n, done) {
+  const C = STORY_MAIN[n]; if (!C) return; let el = document.getElementById('storyCard');
+  if (!el) { el = document.createElement('div'); el.id = 'storyCard'; el.setAttribute('aria-live', 'polite');
+    el.style.cssText = 'position:fixed;inset:0;z-index:40;pointer-events:none;opacity:0;transition:opacity .6s;display:flex;flex-direction:column;justify-content:center;align-items:center;font-family:"Yahaeng UI",sans-serif;text-align:center;color:#f2e7c8;text-shadow:0 2px 0 #000,0 0 14px rgba(0,0,0,.9);'
+      + 'background:linear-gradient(#000 0 13%,rgba(0,0,0,.35) 13% 87%,#000 87%)';
+    el.innerHTML = '<div data-k style="font-size:15px;font-weight:600;letter-spacing:.3em;color:#c9a2ff"></div><div data-t style="font-size:40px;font-weight:700;line-height:1.3;margin:.2em 0"></div><div data-s style="font-size:16px;color:#cfc6b2;max-width:86vw"></div>';
+    document.body.appendChild(el); }
+  const last = done && n === STORY_MAIN.length - 1, K = CONTRACTS[C.ctr];
+  el.querySelector('[data-k]').textContent = last ? '야행 · 끝' : `제 ${n + 1} 장${done ? ' · 완료' : ''}`;
+  el.querySelector('[data-t]').textContent = C.title;
+  el.querySelector('[data-s]').textContent = done ? (last ? '흑장미는 졌다. 을지로의 밤은 계속된다.' : '다음 지령은 공중전화로 온다.') : `표적 ${C.target}${K && C.ctr !== 'plain' ? ' · ' + K.name : ''}`;
+  el.style.opacity = '1'; clearTimeout(el._t); el._t = setTimeout(() => { el.style.opacity = '0'; }, last ? 5200 : 2800);
 }
