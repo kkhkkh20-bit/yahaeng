@@ -52,7 +52,7 @@ function despawnCop(g) { g.off = true; g.state = 'DEAD'; g.x = -9999; g.y = -999
 // 먼 곳 갱신 줄이기 (도시 판만): 플레이어와 화면 양쪽에서 멀고, 평상시 상태인 행인·조직원·AI 차는
 // CITY_LOD_EVERY 번에 한 번만 갱신한다. 건너뛴 시간은 모아 두었다가 한꺼번에 넘기므로 걸음·순찰 시간은 그대로다.
 // 한 번에 넘기는 시간은 CITY_LOD_MAX_DT 로 막아 벽 통과나 큰 순간이동을 막는다. 의뢰 판은 경비 동선 타이밍을 그대로 둔다.
-const CITY_LOD_EVERY = 3, CITY_LOD_FAR = 1100, CITY_LOD_MAX_DT = 0.15, CITY_LOD_VFAR = 2200, CITY_LOD_VEVERY = 8, CITY_LOD_VMAX_DT = 0.4;  // 아주 먼 사람·차는 더 드물게
+const CITY_LOD_EVERY = 4, CITY_LOD_FAR = 950, CITY_LOD_MAX_DT = 0.15, CITY_LOD_VFAR = 2200, CITY_LOD_VEVERY = 8, CITY_LOD_VMAX_DT = 0.4;  // 아주 먼 사람·차는 더 드물게
 function cityLodFar(o) {
   const P = S.player;
   return dist(o.x, o.y, P.x, P.y) > CITY_LOD_FAR && dist(o.x, o.y, cam.x, cam.y) > CITY_LOD_FAR;

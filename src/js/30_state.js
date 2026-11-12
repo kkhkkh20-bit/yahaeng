@@ -40,6 +40,15 @@ function prefetchBig(B) {
   for (let j = Math.max(0, Math.floor(vy / T)); j <= Math.min(B.ny - 1, Math.floor((vy + vh) / T)); j++)
     for (let i = Math.max(0, Math.floor(vx / T)); i <= Math.min(B.nx - 1, Math.floor((vx + vw) / T)); i++) if (!B.tiles[j * B.nx + i]) { B.get(j * B.nx + i); return; }
 }
+// 큰 도시 지붕 그림: 건물 수백 채를 시작할 때 다 굽지 않고(약 80MB), 처음 쓸 때 굽고 최근 ROOF_CAP채만 남긴다
+const ROOF_CAP = (window.matchMedia && matchMedia('(pointer:coarse)').matches) ? 70 : 160, roofLive = [];
+function lazyRoof(b, i) {
+  let c = null;
+  Object.defineProperty(b, 'roofC', { configurable: true, enumerable: true,
+    get() { if (!c) { c = buildRoofCanvas(b, i); roofLive.push(b); while (roofLive.length > ROOF_CAP) { const o = roofLive.shift(); if (o !== b) o.dropRoof(); } } return c; },
+    set(v) { c = v; } });
+  b.dropRoof = () => { if (c && c.width) { c.width = c.height = 0; } c = null; };
+}
 // 하수도 · 환풍구 그림: 칸이 하나도 없으면 그리지 않고, 큰 지도면 조각마다 필요할 때 굽는다
 function bigLayer(render, has) {
   let any = false; for (let ty = 0; ty < MH && !any; ty++) for (let tx = 0; tx < MW; tx++) if (has(tx, ty)) { any = true; break; }
@@ -314,7 +323,7 @@ function newGame(si) {
       if (b === church) { b.church = true; b.plate = '새빛교회'; }
     });
   }
-  BLD.forEach((b, i) => { b.alt = (STAGE.bricks ? STAGE.bricks[i % STAGE.bricks.length] : i % 2); b.roofC = b.vacant ? null : buildRoofCanvas(b, i); });
+  BLD.forEach((b, i) => { b.alt = (STAGE.bricks ? STAGE.bricks[i % STAGE.bricks.length] : i % 2); if (STAGE.cityLife && !b.vacant) lazyRoof(b, i); else b.roofC = b.vacant ? null : buildRoofCanvas(b, i); });
   kitAttach();
   initAssassinSkills(); applyWorldPolicy(); syncWorkLights(); syncOccupiedLights(); syncRoomSwitches(); initRoomFinish(); syncOutdoorLamps(); capturePhysicalLayout();
   S.bfuses=S.bfuses||[];

@@ -88,9 +88,17 @@ function syncOutdoorLamps() {
     LG=null;for(const k in lightCache)delete lightCache[k];
   }setLayer(L0);return n;
 }
+// 거리 가로등 기둥을 256px 칸으로 나눠 둔다: 사람 수백 명이 매 프레임 가로등 전부(수백 개)를 훑지 않게
+function streetPostsNear(x,y){
+ const L=S.lamps||[];let G=S._postGrid;
+ if(!G||G.n!==L.length||G.src!==L){G=S._postGrid={n:L.length,src:L,cells:new Map()};for(const l of L){const m=l.mount;if(m?.kind!=='street')continue;const k=(Math.floor(m.ax/256))+','+(Math.floor(m.ay/256));let c=G.cells.get(k);if(!c)G.cells.set(k,c=[]);c.push(l);}}
+ const cx=Math.floor(x/256),cy=Math.floor(y/256),out=[];
+ for(let j=cy-1;j<=cy+1;j++)for(let i=cx-1;i<=cx+1;i++){const c=G.cells.get(i+','+j);if(c)for(const l of c)out.push(l);}
+ return out;
+}
 function collideLightPosts(o,r,solid) {
   if(!S || flOf(o) || o.z || solid!==solidAt&&solid!==groundSolidP)return;
-  for(const l of S.lamps) {
+  for(const l of streetPostsNear(o.x,o.y)) {
     const m=l.mount;if(m?.kind!=='street')continue;
     const dx=o.x-m.ax,dy=o.y-m.ay,R=r+4;if(Math.abs(dx)>=R||Math.abs(dy)>=R)continue;
     const d=Math.hypot(dx,dy);if(d>=R)continue;

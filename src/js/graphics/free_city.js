@@ -128,7 +128,7 @@ function cityBoundaryWall(c,tx,ty){
 }
 function refreshFreeCity(){
  if(!freeCityDirty||!S||!mapC)return;freeCityDirty=false;if(!STAGE.freeCityPilot&&!STAGE.freeCityExteriors)return;
- const layer=CUR_F;try{setLayer(0);requestMapRebuild();S.floorC={};miniBase=null;BLD.forEach((b,i)=>{if(freeCityBuilding(b)){b.roofC=buildRoofCanvas(b,i);b.cityPropsC=null;}});}finally{setLayer(layer);}
+ const layer=CUR_F;try{setLayer(0);requestMapRebuild();S.floorC={};miniBase=null;BLD.forEach((b,i)=>{if(freeCityBuilding(b)){if(b.dropRoof)b.dropRoof();else b.roofC=buildRoofCanvas(b,i);b.cityPropsC=null;}}); /* 큰 도시는 지붕을 버려 두면 다음에 보일 때 새 그림으로 굽는다 */}finally{setLayer(layer);}
 }
 function drawCityRoofProps(b){
  if(!freeCityBuilding(b)||!freeCityReady()||!b.kitProps?.length)return;

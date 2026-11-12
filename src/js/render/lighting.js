@@ -1,5 +1,5 @@
 const LIGHTQ = 4, lightCache = {};
-const lampFieldCache=new WeakMap();
+let lampFieldCache=new WeakMap();
 function lightArtSignature(){return[officeReady(),purchasedPropsReady(),purchasedReady(),freeCityReady(),!!propAtlas.naturalWidth].map(Number).join('');}
 function cachedLampField(l){
  const art=lightArtSignature(),old=lampFieldCache.get(l);
@@ -17,6 +17,7 @@ function lightMap(key, lamps) {
   if (!lc) { lc = lightCache[key] = { c: document.createElement('canvas') }; lc.c.width = Math.ceil(MW * TILE / LIGHTQ); lc.c.height = Math.ceil(MH * TILE / LIGHTQ); }
   lc.sig = sig;lc.floor=CUR_F; const x = lc.c.getContext('2d'); x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, lc.c.width, lc.c.height); x.setTransform(1 / LIGHTQ, 0, 0, 1 / LIGHTQ, 0, 0);
   for (const l of lamps) { if (l.flk || !lampOn(l)) continue; const f=cachedLampField(l),b=f.bounds;x.drawImage(f.c,b.x,b.y,b.w,b.h); }
+  if (STAGE.cityLife) lampFieldCache = new WeakMap();  // 큰 도시: 가로등 수백 개의 낱장 빛(약 70MB)은 합친 뒤 버린다. 켜고 꺼질 때만 다시 굽는다
   return lc.c;
 }
 function lampLight(x, l, flick) {  // 벽에 가린 빛(다각형) 안을 둥근 그라데이션으로

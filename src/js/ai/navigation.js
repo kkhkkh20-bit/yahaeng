@@ -18,7 +18,7 @@ function npcPostLegClear(a,b,sol=solidAt){
 function avoidStreetPost(g){
   if(flOf(g)||g.z||!g.path?.length)return;
   const next=g.path[0],dx=next.x-g.x,dy=next.y-g.y,d=Math.hypot(dx,dy);if(d<1)return;
-  for(const l of S.lamps){
+  for(const l of d<240?streetPostsNear(g.x+dx/2,g.y+dy/2):S.lamps){
     const m=l.mount;if(m?.kind!=='street')continue;
     const u=clamp(((m.ax-g.x)*dx+(m.ay-g.y)*dy)/(d*d),0,1);
     if(u<=0||dist(g.x+dx*u,g.y+dy*u,m.ax,m.ay)>=19)continue;

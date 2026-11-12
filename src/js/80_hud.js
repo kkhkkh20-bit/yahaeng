@@ -25,9 +25,10 @@ function miniGuardVisible(g) {
 }
 function drawMini() {
   const cv = document.getElementById('mini'); if (!cv || !S) return;
+  if (miniBase?.stage===S && S.t - miniT < 0.12 && S.t >= miniT) return;  // 레이아웃 읽기(getBoundingClientRect)도 1/8초에 한 번만
+  miniT = S.t;
   { const tp = document.querySelector('#hud .top'), hc = document.getElementById('hintCard'); if (tp) { const tb = Math.round(tp.getBoundingClientRect().bottom); if (tb !== drawMini.tb) { drawMini.tb = tb; document.documentElement.style.setProperty('--topb', tb + 'px'); } }
     const v = S.entrySel ? 'hidden' : ''; if (cv.style.visibility !== v) { cv.style.visibility = v; if (hc) hc.style.visibility = v; } }
-  if (miniBase?.stage===S && S.t - miniT < 0.12 && S.t >= miniT) return; miniT = S.t;
   // 주인공(과 행동 표시)이 미니맵·목표·도움말 밑에 들어가면 그 판을 옅게 한다
   { const cr = canvas.getBoundingClientRect(), ip=STAGE.artSlice&&!tactical&&window.__clubView?.ready?window.__clubView.actorScreen(S.player):null,px = ip?ip.x:cr.left + (S.player.x - cam.x) * SCALE + W / 2, py = ip?ip.y:cr.top + (S.player.y - cam.y) * SCALE + H / 2;
     for (const el of [cv, document.querySelector('#hud .obj'), document.getElementById('hintCard')]) { if (!el) continue; const r = el.getBoundingClientRect(); const over = r.width > 0 && px > r.left - 40 && px < r.right + 40 && py > r.top - 70 && py < r.bottom + 40; el.classList.toggle('hudfade', over); } }
