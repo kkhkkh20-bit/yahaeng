@@ -6,7 +6,7 @@ function initAudio() {
   try {
     AC = new (window.AudioContext || window.webkitAudioContext)();
     master = AC.createGain(); master.gain.value = muted ? 0 : (typeof VOL === 'number' ? VOL : 0.9); master.connect(AC.destination);
-    setTimeout(() => setMusic('n_calm'), 50);
+    setTimeout(() => setMusic(onTitle() ? 'n_title' : 'n_calm'), 50);
     setInterval(updateMusicMix, 120);
     for (const k in A.sounds) AC.decodeAudioData(b64ToBuf(A.sounds[k]), buf => { SB[k] = buf; }, () => {});
     const len = AC.sampleRate * 4, nb = AC.createBuffer(1, len, AC.sampleRate), d = nb.getChannelData(0);
@@ -15,6 +15,20 @@ function initAudio() {
     const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420;
     const g = AC.createGain(); g.gain.value = 0.05; src.connect(lp); lp.connect(g); g.connect(master); src.start();
   } catch (e) { AC = null; }
+}
+// 메인 화면 음악: 첫 화면이 떠 있고 판이 돌지 않을 때. 브라우저는 첫 클릭·키 입력 전에는 소리를 막으므로 그때 시작한다
+function onTitle() { const el = document.getElementById('intro'); return !!el && !el.hidden && !running; }
+for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { if (onTitle()) { initAudio(); setMusic('n_title'); } }, true);
+// 차 안 라디오: 음악을 작은 스피커처럼 걸러서(저음·고음을 깎고 살짝 찌그러뜨림) 내보낸다. 켜고 끌 때 짧은 잡음
+let radioNodes = null, radioOn = false;
+function musicRadio(on) {
+  if (!AC || !musicGain || on === radioOn) return; radioOn = on;
+  if (!radioNodes) { const hp = AC.createBiquadFilter(), lp = AC.createBiquadFilter(), sh = AC.createWaveShaper(), g = AC.createGain(); hp.type = 'highpass'; hp.frequency.value = 60; lp.type = 'lowpass'; lp.frequency.value = 9000;  /* 차 오디오: 베이스·킥이 살게 */
+    const c = new Float32Array(256); for (let i = 0; i < 256; i++) { const x = i / 128 - 1; c[i] = Math.tanh(x * 1.2); } sh.curve = c; g.gain.value = 0.9; hp.connect(lp); lp.connect(sh); sh.connect(g); g.connect(master); radioNodes = { hp }; }
+  try { musicGain.disconnect(); } catch (e) {}
+  musicGain.connect(on ? radioNodes.hp : master);
+  const n = AC.sampleRate * 0.18 | 0, b = AC.createBuffer(1, n, AC.sampleRate), d = b.getChannelData(0); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+  const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g2 = AC.createGain(); s.buffer = b; f.type = 'bandpass'; f.frequency.value = 2200; g2.gain.value = 0.06; s.connect(f); f.connect(g2); g2.connect(master); s.start();
 }
 // Recorded score is lazy-decoded. Procedural loops remain an offline fallback.
 const MB = {}, SCORE = {}, scorePending = {}, scoreBytes = {}, scoreFailed = new Set();
@@ -49,7 +63,7 @@ function updateMusicMix() {
   }
 }
 function setMusic(k, force=false) {
-  if (!AC || !['n_calm','n_tense','n_fight'].includes(k)) return;
+  if (!AC || !['n_calm','n_tense','n_fight','n_title','n_drive'].includes(k)) return;
   wantedMusic = k;
   if (!SCORE[k] && !scoreFailed.has(k)) loadScore(k);
   if (!force && musicKey === k) return;
@@ -63,14 +77,14 @@ function setMusic(k, force=false) {
   if (musicSrc) { const old = musicSrc;old._g.gain.cancelScheduledValues(now);old._g.gain.setTargetAtTime(0,now,.28);setTimeout(()=>{try{old.stop();old.disconnect();old._g.disconnect();}catch(e){}},2200); }
   const src = AC.createBufferSource();src.buffer=buffer;src.loop=true;
   const g=AC.createGain();g.gain.value=0;
-  const level=recorded ? (k==='n_fight'?.6:.65) : (k==='n_calm'?.08:k==='n_tense'?.17:.2);
+  const level=recorded ? (k==='n_fight'?.6:.65) : (k==='n_calm'?.08:k==='n_tense'?.17:k==='n_drive'?.24:.2);
   g.gain.setTargetAtTime(level,now,k==='n_fight'?.22:.65);
   src.connect(g);g.connect(musicGain);src._g=g;src._recorded=recorded;src.start();musicSrc=src;musicKey=k;updateMusicMix();
 }
 // 도시 음악: 네온 신스 3단계 (평상시 · 의심 · 발각) — 직접 합성, 루프
 // 합성 본체: 순수 함수라 작업자(Web Worker)에서도 돈다 — 판 시작 때 0.6초 넘게 화면이 멈추던 원인
 function neonSynth(kind, sr) {
-  const TAU = Math.PI * 2, BPM = kind === 'n_calm' ? 72 : kind === 'n_tense' ? 96 : 132, beat = 60 / BPM, bars = 8, len = Math.floor(sr * beat * 4 * bars);
+  const TAU = Math.PI * 2, BPM = kind === 'n_calm' ? 72 : kind === 'n_tense' ? 96 : kind === 'n_drive' ? 118 : 132, beat = 60 / BPM, bars = 8, len = Math.floor(sr * beat * 4 * bars);
   const L = new Float32Array(len), R = new Float32Array(len);
   const hz = m => 440 * Math.pow(2, (m - 69) / 12), at = b => Math.floor(b * beat * sr);
   const add = (i, l, r) => { i %= len; L[i] += l; R[i] += r == null ? l : r; };
@@ -109,6 +123,19 @@ function neonSynth(kind, sr) {
     for (let b = 0; b < B; b += 4) { kick(b, 0.55); kick(b + 0.75, 0.35); }
     for (let c = 0; c < 4; c++) for (const m of [57, 60, 63]) note(c * 8 + 6, 2, m, { att: 0.6, rel: 0.6, cut: 1200, vol: 0.05, det: 0.008 });
     delay(beat * 0.5, 0.35, 0.4);
+  } else if (kind === 'n_drive') {
+    // 차 안 라디오: 신나는 신스웨이브 (118BPM) — 쿵쿵 네 박 · 엇박 하이햇 · 2·4 박수 · 8분 옥타브 베이스 · 톱니 화음 · 귀에 남는 리드
+    const prog = [[45, 57, 60, 64], [41, 53, 57, 60], [36, 55, 60, 64], [43, 55, 59, 62]];
+    for (let b = 0; b < B; b++) { kick(b, 0.8); noiseHit(b + 0.5, 0.07, 0.11, true, 0.25); if (b % 2) { noiseHit(b, 0.12, 0.22, false); noiseHit(b + 0.02, 0.1, 0.12, true, -0.2); } }
+    for (let k = 0; k < B * 4; k++) noiseHit(k / 4 + 0.25, 0.02, 0.03, true, 0.4);
+    for (let c = 0; c < 8; c++) { const ch = prog[c % 4], b0 = c * 4;
+      for (let k = 0; k < 8; k++) note(b0 + k / 2, 0.42, ch[0] - 12 + (k % 2 ? 12 : 0), { cut: 900, sweep: 1.5, vol: 0.2, det: 0.004 });  // 옥타브 베이스
+      for (const s of [0, 1.5, 3]) for (const m of ch.slice(1)) note(b0 + s, 0.9, m, { cut: 2200, dec: 2.5, vol: 0.05, det: 0.006, pan: (m % 3 - 1) * 0.45 });  // 톱니 화음 끊어 치기
+    }
+    const lead = [76, 74, 72, 74, 76, 79, 76, 74, 72, 71, 72, 74, 72, 69, 67, 69];
+    for (let k = 0; k < 16; k++) { const b0 = 16 + k; note(b0, 0.45, lead[k], { wave: 'sq', dec: 3, cut: 3000, vol: 0.075, pan: 0.2 }); note(b0 + 0.5, 0.3, lead[k] - 12, { wave: 'tri', dec: 6, cut: 2400, vol: 0.06, pan: -0.25 }); }
+    for (let k = 0; k < 32; k++) note(k / 2 + 0.25, 0.2, [69, 72, 76, 72][k % 4] + 12, { wave: 'tri', dec: 9, cut: 3600, vol: 0.05, pan: k % 2 ? 0.5 : -0.5 });  // 앞 4마디 아르페지오
+    delay(beat * 0.75, 0.35, 0.35);
   } else {
     for (let b = 0; b < B; b++) kick(b, 0.85);
     for (let b = 1; b < B; b += 2) { noiseHit(b, 0.16, 0.32, false); note(b, 0.1, 50, { wave: 'sin', dec: 30, vol: 0.25 }); }
@@ -128,7 +155,7 @@ function makeNeonLoop(kind) { return toBuf(neonSynth(kind, AC.sampleRate)); }
 let neonW = null; const neonPending = {};
 function prepNeonMusic() {
   if (!AC) return;
-  const ks = ['n_calm', 'n_tense', 'n_fight'].filter(k => !MB[k] && !neonPending[k]); if (!ks.length) return;
+  const ks = ['n_calm', 'n_tense', 'n_fight', ...(typeof STAGE !== 'undefined' && STAGE?.cityLife ? ['n_drive'] : [])].filter(k => !MB[k] && !neonPending[k]); if (!ks.length) return;
   try {
     if (!neonW) { neonW = new Worker(URL.createObjectURL(new Blob([neonSynth.toString() + '\nonmessage = e => { const r = neonSynth(e.data.k, e.data.sr); postMessage({ k: e.data.k, L: r.L, R: r.R }, [r.L.buffer, r.R.buffer]); };'], { type: 'text/javascript' })));
       neonW.onmessage = e => { const { k, L, R } = e.data; delete neonPending[k]; if (!MB[k]) MB[k] = toBuf({ L, R }); if (wantedMusic === k && !SCORE[k]) setMusic(k, true); }; }
@@ -179,6 +206,29 @@ function play(name, vol = 0.6, rate = 1) {
 }
 
 
+// 차 충돌음 (합성, 한 번 만들어 둔다): 쿵 하는 낮은 울림 + 찌그러지는 철판의 바스락·우지끈 + 짧은 쇳소리 울림
+function buildCrunch() {
+  const sr = AC.sampleRate, n = Math.floor(sr * 0.7), b = AC.createBuffer(1, n, sr), d = b.getChannelData(0); let lp = 0, lp2 = 0;
+  const parts = [[523, .35], [811, .25], [1277, .18], [1906, .1]];
+  for (let i = 0; i < n; i++) {
+    const t = i / sr, thump = Math.sin(2 * Math.PI * (38 * t + 40 * (1 - Math.exp(-t * 25)) / 25)) * Math.exp(-t * 14) * 0.9;
+    const crack = Math.random() < 0.004 * Math.exp(-t * 5) ? (Math.random() * 2 - 1) * 3 : 0;  // 우지끈: 드문드문 튀는 큰 알갱이
+    const nz = Math.random() * 2 - 1 + crack; lp += 0.32 * (nz - lp); lp2 += 0.12 * (lp - lp2);
+    const crumple = (lp - lp2 * 0.6) * Math.exp(-t * 6.5) * (0.75 + 0.25 * Math.sin(t * 90));
+    let ring = 0; for (const [f, a] of parts) ring += Math.sin(2 * Math.PI * f * t + f) * a; ring *= Math.exp(-t * 11) * 0.22;
+    d[i] = Math.max(-1, Math.min(1, thump + crumple * 0.9 + ring));
+  }
+  return b;
+}
+// 부딪힌 세기만큼: 살짝 = 낮게 찌그럭 / 세게 = 쾅 + 유리 / 아주 세게 = 쾅 + 유리 + 철판 끌림
+function crashSound(hit, near = 1) {
+  if (!AC || muted) return; if (!SB.crunch) SB.crunch = buildCrunch();
+  const k = Math.min(1, hit / 420) * near;
+  play('crunch', 0.35 + 0.6 * k, hit > 300 ? 0.82 : hit > 160 ? 0.95 : 1.15);
+  if (hit > 120) play('thud', 0.5 * k + 0.15 * near);
+  if (hit > 230) play('glass', 0.55 * k);
+  if (hit > 360) play('metal', 0.3 * k, 0.55);
+}
 // ---------------------------------------------------------------- 합성 효과음 (파일 없이 WebAudio로)
 // 히트맨식 '암살 스팅어'(조용한 처치에 붙는 짧고 추상적인 소리 — 플레이어만 듣는다), 은신 상태 신호음, 의심 상승음, 메뉴 딸깍
 function sfx(kind) {

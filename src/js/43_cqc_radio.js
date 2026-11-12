@@ -36,7 +36,7 @@ function drawTagged() {
 // ---- 까마귀(의뢰인) 무전 (메탈기어의 무전 동료식): 일이 생기면 짧게 한마디. 연습판에서는 하지 않는다
 const FIELD_RADIO={body:['까마귀','경비가 쓰러진 사람을 봤어. 그쪽으로 가지 마.'],blood:['까마귀','핏자국을 보고 따라오네. 다른 길로 가야겠어.'],civ:['까마귀','잠깐, 저 사람은 민간인이야. 주변 좀 보고 움직여.']};
 function bossRadio(ev, force) {
-  if(!S||S.over||!STAGE||STAGE.tutorial||STAGE.noSupport||!FIELD_RADIO[ev])return;
+  if(!S||S.over||!STAGE||STAGE.tutorial||STAGE.noSupport||!modeRule('fieldRadio')||!FIELD_RADIO[ev])return;  // 03_mode_rules
   if(!force&&S.t<(S.radioNext||0))return;
   S.radioNext=S.t+14;const [who,line]=FIELD_RADIO[ev];toast(who+': '+line,2.6,'radio');
 }
@@ -45,7 +45,7 @@ function bossRadio(ev, force) {
 // 쓰러진(죽었거나 기절한) 조직원은 대답하지 못한다 → 가까운 조직원이 그 자리를 확인하러 가고, 경계가 오른다. 한 번 빠진 자리는 다시 세지 않는다
 // 의뢰 자료 STAGE.radioCheck: 간격(초). 없으면 구역 판(연습 제외)은 70초
 const RADIO_WARN = 8;
-function radioEvery() { return STAGE.radioCheck != null ? STAGE.radioCheck : (STAGE.zones && !STAGE.tutorial ? 55 : 0); }
+function radioEvery() { if (!modeRule('radioCheck')) return 0; return STAGE.radioCheck != null ? STAGE.radioCheck : (STAGE.zones && !STAGE.tutorial ? 55 : 0); }  // 자유 모드: 조직원 무전 점검 없음
 function updateRadioCheck(dt) {
   const every = radioEvery(); if (!every || S.over) return;
   if (S.rcT == null) S.rcT = every;

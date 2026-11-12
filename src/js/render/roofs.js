@@ -42,7 +42,7 @@ function drawPlanks(part='all',accept=null) {
     const h = (y1 - y0 + 1) * TILE + (!ew ? (p.a ? 8 : 0) + (p.b ? 8 : 0) : 0);
     if(drawPurchasedBridge(p,px,py,w,h,part))continue;
     if(part==='front')continue;
-    if(STAGE.agentStudy&&drawStudyBridge(p,px,py,w,h))continue;
+    if(studyStage()&&drawStudyBridge(p,px,py,w,h))continue;
     ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(px + 6, py + 14, w, h - 6);
     for (let k = 0; k < (ew ? w : h); k += 8) {
       ctx.fillStyle = k % 16 ? '#7a5a3a' : '#8a6744';
@@ -73,9 +73,12 @@ function drawRoofs(openB) {
       if (!flOf(S.player)&&!quarterClub(b)) drawFacadeExtras(b, true);
       return;
     }
+    if (STAGE.perspective) { (S._roofQ || (S._roofQ = [])).push(i); return; }  // 원근: 카메라에서 먼 건물부터 그린다
     if (b.ra < 1) ctx.globalAlpha = b.ra;
     drawRoof1(b, i, roof); ctx.globalAlpha = 1;
   });
+  if (S._roofQ?.length) { const q = S._roofQ; S._roofQ = []; const d = i => Math.abs((BLD[i].x0 + BLD[i].x1 + 1) * TILE / 2 - cam.x);
+    q.sort((a, b) => d(b) - d(a)); for (const i of q) { const b = BLD[i]; if (b.ra < 1) ctx.globalAlpha = b.ra; drawRoof1(b, i, roof); ctx.globalAlpha = 1; } }
   const onFacade = (tx, ty) => { const b = bldAt(tx, ty); return b >= 0 && BLD[b].facade && ty >= BLD[b].y1 - BLD[b].fh + 1; };
   for (const w of S.windows) { if (!near(w.tx, w.ty, 2 * TILE)) continue; const b = bldAt(w.tx, w.ty); if (b >= 0 && b !== openB && !onFacade(w.tx, w.ty)) { if (BLD[b].kit||freeCityBuilding(BLD[b])) drawWindowEdge(w, BLD[b]); else drawWindow(w, 0.5); } }
   for (const d of S.doors) { if (!near(d.tx, d.ty, 2 * TILE)) continue; const b = bldAt(d.tx, d.ty),v=BLD[b]; if (v && b !== openB && !onFacade(d.tx, d.ty) && !v.plan && !freeCityBuilding(v) && (d.tx===v.x0||d.tx===v.x1||d.ty===v.y0||d.ty===v.y1)) drawDoor(d, true); }
@@ -105,19 +108,41 @@ function drawRoof1(b, i, roof) {
     }
     const sh = b.h * 6;
     ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(x + sh, y + sh, w, h);
-    if (b.facade) { drawFacade(b); drawFacadeExtras(b); }
+    // 원근 (STAGE.perspective): 옥상은 높이만큼 카메라 반대쪽으로 밀리고, 정면 벽은 아래(땅)는 그대로 · 위는 옥상을 따라 기운다. 그 사이에 옆벽이 드러난다
+    const shift = b.facade ? buildingShift(b) : 0, fyb = (b.y1 + 1) * TILE, fH = (b.fh || 1) * TILE;
+    if (shift) {
+      const ex = shift > 0 ? x : x + w, g = ctx.createLinearGradient(ex, 0, ex + shift, 0); g.addColorStop(0, '#1a1e26'); g.addColorStop(1, '#2e3440');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(ex + shift, y); ctx.lineTo(ex + shift, fyb - fH); ctx.lineTo(ex, fyb); ctx.lineTo(ex, y + fH); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = 2; ctx.stroke();
+      for (let k = 1; k < (b.fh || 1); k++) { const t = k / b.fh; ctx.strokeStyle = 'rgba(255,255,255,.05)'; ctx.beginPath(); ctx.moveTo(ex + shift * (1 - t), fyb - fH * (1 - t)); ctx.lineTo(ex + shift * (1 - t), y + fH * t); ctx.stroke(); }  // 층 줄
+    }
+    if (b.facade) { ctx.save(); if (shift) ctx.transform(1, 0, -shift / fH, 1, shift * fyb / fH, 0); drawFacade(b); drawFacadeExtras(b); ctx.restore(); }
+    ctx.save(); if (shift) ctx.translate(shift, 0);
     ctx.drawImage(b.roofC, x, y);
     drawCityRoofProps(b);
-    if(STAGE.agentStudy)drawStudyRoof(b);
+    if(studyStage())drawStudyRoof(b);
     if (b.h >= 2 && !b.roofC.flat) { ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(x, y, w, h); ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 4; ctx.strokeRect(x + 2, y + 2, w - 4, h - 4); }
-    ctx.fillStyle = STAGE.agentStudy?'rgba(3,6,11,.32)':NEONY() ? 'rgba(14,6,29,.6)' : 'rgba(3,6,11,.68)'; ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = studyStage()?'rgba(3,6,11,.32)':NEONY() ? 'rgba(14,6,29,.6)' : 'rgba(3,6,11,.68)'; ctx.fillRect(x, y, w, h);
     if (NEONY()) { ctx.strokeStyle = 'rgba(255,46,136,.85)'; ctx.lineWidth = 2.5; ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h + (b.facade ? b.fh * TILE : 0) - 3); if (b.facade) { ctx.strokeStyle = 'rgba(46,242,255,.8)'; ctx.beginPath(); ctx.moveTo(x, (b.y1 + 1) * TILE - 1); ctx.lineTo(x + w, (b.y1 + 1) * TILE - 1); ctx.stroke(); } }
     if (hasHeightCues(i)) drawRoofCoping(b);
     ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = uiFont(12); ctx.textAlign = 'left';
     if(!STAGE.agentStudy&&guideFull())ctx.fillText(b.h + '층 옥상', x + 6, y + 14);
     if (b.h >= 3 && !b.roofC.flat) { ctx.strokeStyle = 'rgba(232,227,214,.18)'; ctx.lineWidth = 2; ctx.strokeRect(x + 8, y + 8, w - 16, h - 16); }
-    drawCityEntrances(b);
+    ctx.restore();
+    ctx.save(); if (shift) ctx.transform(1, 0, -shift / fH, 1, shift * fyb / fH, 0); drawCityEntrances(b); ctx.restore();
   }
+}
+// 원근 밀림: 건물 가운데가 카메라에서 떨어진 만큼 × 층수. 옥상 위 사람도 같은 만큼 옮겨 그린다
+const PERSP_K = 0.035;
+function buildingShift(b) {
+  if (!STAGE.perspective || !b || b.vacant) return 0;
+  const cx = (b.x0 + b.x1 + 1) * TILE / 2, m = TILE * 0.9 * (b.h || 1);
+  return clamp((cx - cam.x) * PERSP_K * (b.h || 1), -m, m);
+}
+function roofShiftAt(o) {
+  if (!STAGE.perspective || !(o.z > 0)) return 0;
+  const bi = bldAt(Math.floor(o.x / TILE), Math.floor(o.y / TILE)); if (bi < 0) return 0;
+  const b = BLD[bi]; return buildingShift(b) * Math.min(1, o.z / (b.h || 1));
 }
 // 가스관과 2층 베란다 (정면 벽 위에 그린다)
 function drawFacadeExtras(b, flat, kit) {

@@ -43,7 +43,7 @@ function completeStreetLighting(lamps,sites) {
   const ids=new Set(lamps.map(l=>l.streetSite).filter(Boolean));
   let added=0;const limit=Math.min(36,Math.ceil(MW*MH/50));
   for(const p of sites) {
-    if((p.nx?p.ty:p.tx)%3!==1)continue;
+    if((p.nx?p.ty:p.tx)%3!==1||inRiver(p.x,p.y))continue;
     const id=[p.b,p.tx,p.ty,p.nx,p.ny].join(':');if(ids.has(id))continue;
     if(lamps.some(l=>l.outdoor&&!flOf(l)&&dist(l.x,l.y,p.x,p.y)<190&&los(l.x,l.y,p.x,p.y)))continue;
     lamps.push({x:p.x,y:p.y,r:240,outdoor:true,fl:0,poly:null,broken:false,
@@ -58,6 +58,7 @@ function mountOutdoorLamps(lamps,fill=false) {
   for(const l of lamps) {
     if(!l.outdoor || l.hearth || flOf(l))continue;
     if(l.mountVersion===1&&l.mount){used.push({x:l.mount.ax,y:l.mount.ay});continue;}
+    if(l.painted){l.mount={kind:'painted',ax:l.x,ay:l.y,x:l.x,y:l.y,height:0};l.control=l.control||{x:l.x,y:l.y,fl:0,z:0};l.mountVersion=1;l.poly=null;changed++;used.push({x:l.x,y:l.y});continue;}  // 그림으로 깐 강: 기둥은 그림에 이미 있다
     l.origin=l.origin||{x:l.x,y:l.y,fl:l.fl||0};
     const authored=l.streetSite&&sites.find(p=>[p.b,p.tx,p.ty,p.nx,p.ny].join(':')===l.streetSite);
     if(authored){l.mount={...authored};l.x=authored.x;l.y=authored.y;l.control={x:l.x,y:l.y,fl:0,z:0};l.mountVersion=1;l.poly=null;changed++;used.push({x:authored.ax,y:authored.ay});continue;}
@@ -87,9 +88,17 @@ function syncOutdoorLamps() {
     LG=null;for(const k in lightCache)delete lightCache[k];
   }setLayer(L0);return n;
 }
+// 거리 가로등 기둥을 256px 칸으로 나눠 둔다: 사람 수백 명이 매 프레임 가로등 전부(수백 개)를 훑지 않게
+function streetPostsNear(x,y){
+ const L=S.lamps||[];let G=S._postGrid;
+ if(!G||G.n!==L.length||G.src!==L){G=S._postGrid={n:L.length,src:L,cells:new Map()};for(const l of L){const m=l.mount;if(m?.kind!=='street')continue;const k=(Math.floor(m.ax/256))+','+(Math.floor(m.ay/256));let c=G.cells.get(k);if(!c)G.cells.set(k,c=[]);c.push(l);}}
+ const cx=Math.floor(x/256),cy=Math.floor(y/256),out=[];
+ for(let j=cy-1;j<=cy+1;j++)for(let i=cx-1;i<=cx+1;i++){const c=G.cells.get(i+','+j);if(c)for(const l of c)out.push(l);}
+ return out;
+}
 function collideLightPosts(o,r,solid) {
   if(!S || flOf(o) || o.z || solid!==solidAt&&solid!==groundSolidP)return;
-  for(const l of S.lamps) {
+  for(const l of streetPostsNear(o.x,o.y)) {
     const m=l.mount;if(m?.kind!=='street')continue;
     const dx=o.x-m.ax,dy=o.y-m.ay,R=r+4;if(Math.abs(dx)>=R||Math.abs(dy)>=R)continue;
     const d=Math.hypot(dx,dy);if(d>=R)continue;
@@ -104,7 +113,7 @@ function collideLightPosts(o,r,solid) {
 }
 function drawOutdoorLampFixtures() {
   for(const l of S.lamps) {
-    const m=l.mount;if(!l.outdoor||flOf(l)||!m||!inView(m.ax,m.ay,150))continue;
+    const m=l.mount;if(!l.outdoor||flOf(l)||!m||m.kind==='painted'||!inView(m.ax,m.ay,150))continue;
     const on=lampOn(l),pixelPost=studyReady()&&m.kind==='street',x=pixelPost?m.ax+12:l.x,y=pixelPost?m.ay-79:l.y-(m.kind==='street'?82:m.height);
     ctx.save();
     const art=m.kind==='street'?'street-'+lightArtRotation(m.nx,m.ny):m.kind==='wall'?'wall-'+((lightArtRotation(m.nx,m.ny)+2)%4):null;

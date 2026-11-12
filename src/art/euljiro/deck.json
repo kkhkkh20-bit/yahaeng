@@ -1,0 +1,26 @@
+{
+ "pack": "Dotonbori City v3",
+ "artist": "GuttyKreum",
+ "source": "https://guttykreum.itch.io/dotonbori-city-game-assets",
+ "sourceSha256": "a82beeeff1f3d77e24cf26e80a8dd221061aae4179c9cb3ec92c569bfd0d8235",
+ "tile": 32,
+ "note": "Elevated-road rails for Yahaeng. Not a standalone asset.",
+ "frames": {
+  "beam": {
+   "rect": [
+    0,
+    0,
+    12,
+    32
+   ]
+  },
+  "lanternW": {
+   "rect": [
+    14,
+    0,
+    28,
+    32
+   ]
+  }
+ }
+}

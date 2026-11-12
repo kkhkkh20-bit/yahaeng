@@ -54,7 +54,7 @@ function refreshPropArt(){
  if(!propArtDirty||!S||!mapC)return;
  // An atlas arriving after departure replaces both floor caches in one repaint.
  // No world update, randomness, collision or lighting computation is involved.
- const layer=CUR_F;try{setLayer(0);mapC=bigify(renderMap());S.floorC={};miniBase=null;propArtDirty=false;}finally{setLayer(layer);}
+ const layer=CUR_F;try{setLayer(0);requestMapRebuild();S.floorC={};miniBase=null;propArtDirty=false;}finally{setLayer(layer);}
 }
 // Quiet, authored environmental art baked with each floor. These marks never
 // act as UI, colliders or additional interaction targets.

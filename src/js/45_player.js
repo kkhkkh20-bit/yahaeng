@@ -45,7 +45,7 @@ function padToolWhistle(){return !!(S&&!S.player.captive&&(input.padWhistle||isT
 function selectTool(t) { if(typeof activeToolPress!=='undefined'&&activeToolPress?.quick)finishToolPress(true); if(!availableTools().includes(t)){if(EXTRA_TOOLS[t])toast(abilityLockText(EXTRA_TOOLS[t].skill),2);return;} input.tool = t; input.padWhistle = false; if (input.aiming) input.aiming.t0 = performance.now(); syncTools(); play('click', 0.2); }
 function canAim() { const P = S.player; return S && running && !S.over && !paused && !DLG.modal && !S.keypad && !actionBusy(P) && !P.hide && !P.jump && !P.trav && !P.under && !P.vent && !P.captive; }
 // 도구: 누르고 있으면 조준(이동 입력으로 방향, 오래 누를수록 멀리), 떼면 사용
-function startAim(src) { if(!S||!running||S.over||paused||DLG.modal||S.keypad||tactical)return; if (S.player.captive) { interrogate(); return; } if (!canAim() || tactical) return;if(input.tool==='kunai'&&!abilityOn('dart')){toast(abilityLockText('dart'),2);return;} if(!deviceReady(input.tool)){toast(toolDetail(input.tool),2);return;} if(toolCount(input.tool)<=0){toast(TOOL_NAME[input.tool]+' 없음 · 다른 도구로 바꾸세요',1.6,'warn');return;} input.aiming = { t0: performance.now(), src }; }
+function startAim(src) { if(!S||!running||S.over||paused||DLG.modal||S.keypad||tactical||S.player.cuffed)return; if (S.player.captive) { interrogate(); return; } if (!canAim() || tactical) return;if(input.tool==='kunai'&&!abilityOn('dart')){toast(abilityLockText('dart'),2);return;} if(!deviceReady(input.tool)){toast(toolDetail(input.tool),2);return;} if(toolCount(input.tool)<=0){toast(TOOL_NAME[input.tool]+' 없음 · 다른 도구로 바꾸세요',1.6,'warn');return;} input.aiming = { t0: performance.now(), src }; }
 function cancelAim() { input.aiming = null; input.queue = []; }
 // 동시 행동 예약 (Desperados III 방식): 시간이 멈춘 조준 중 [보조]로 지금 조준을 예약 → 손을 떼면 예약한 것까지 한꺼번에 던진다
 function queueAim() {
@@ -146,7 +146,7 @@ function sfxWhistle() {
   o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.4);
 }
 function whistle() {
-  if (!S || S.over || paused || !running || DLG.modal || tactical) return;
+  if (!S || S.over || paused || !running || DLG.modal || tactical || S.player.cuffed) return;
   const P = S.player; if (P.under || P.vent || P.trav || P.jump || P.wire || P.captive) return;
   if (S.whistleT > 0) return;
   S.whistleT = 2.5; sfxWhistle();
@@ -435,6 +435,7 @@ function updateTrav(P, dt) {
 }
 function updatePlayer(dt) {
   const P = S.player, k = S.keys;
+  if (S.downing && typeof updateDowning === 'function' && updateDowning()) return;  // 쓰러지는 중에는 움직이지 않는다
   updateApproachAttack(P);
   updateRecoveryInput(P);
   updateFollowupAttack(P);
@@ -474,6 +475,9 @@ function updatePlayer(dt) {
   if (input.sneakToggle && !shiftRun) mode = 'sneak';
   if (input.walkLock && mode === 'run') mode = 'walk';  // 걷기 고정: 뛰지 않는다
   if ((P.carrying || P.captive) && mode === 'run') mode = 'walk';
+  if (P.cuffed) { P.moving = false; P.vx = 0; P.vy = 0; return; }
+  if (S.shopOpen) { P.moving = false; P.vx = 0; P.vy = 0; return; }  // 가게 창이 열려 있다
+  if (P.booth) { P.moving = false; P.vx = 0; P.vy = 0; return; }  // 공중전화 부스 안: 통화 중  // 수갑을 차는 중: 움직일 수 없다
   if (P.car) { updateDriving(P, mx, my, mag, dt); return; }  // 도시: 운전 중
   if (P.captive) {
     const g = P.captive; g.captT += dt;

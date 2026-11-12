@@ -23,7 +23,7 @@ function renderSprite(cameraDrop = 0, frameScale = 1) {
   // Flat corpses and lowered climbing poses extend below a standing frame.
   // Move the bake camera, then export its ground anchor for runtime placement.
   cam.position.y -= cameraDrop; cam.lookAt(0, CY - cameraDrop, 0); cam.updateMatrixWorld(true);
-  updateWardrobe(model);updateWardrobe(model2);updateConceptHead(model,cam);updateConceptHead(model2,cam);
+  updateWardrobe(model);updateWardrobe(model2);updateConceptHead(model,cam);updateConceptHead(model2,cam);updateGun();
   renderer.render(scene, cam);
   const ground = new THREE.Vector3().project(cam);
   window.frameGroundY = (1 - (ground.y + 1) / 2) * RS / 2;
@@ -124,6 +124,57 @@ window.setBody = (spec, only) => {
 };
 window.CR = { th: 1.1, kn: 1.9, ft: 0.6, sp: 0.55, sp1: 0.2, hd: 0.45 };
 const hp = new THREE.Vector3(), hd = new THREE.Vector3();
+// ---- 손에 든 총 (자유 모드 총 동작 굽기용): 오른손에서 아래팔이 뻗은 쪽으로 총열. window.gunKind = 'pistol' | 'rifle' | null
+const gunMat = new THREE.MeshPhongMaterial({ color: 0x2a2c31, shininess: 30 }), gunHi = new THREE.MeshPhongMaterial({ color: 0x5a5f68, shininess: 40 });
+let gunGrp = null, gunBuilt = null;
+function buildGun(kind) {
+  const g = new THREE.Group(), long = kind === 'rifle';
+  const L = long ? 2.6 : 1, add = (w, h, d, x, y, z, m = gunMat) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); b.frustumCulled = false; g.add(b); };
+  // 길이 방향 = +z (아래팔→손 방향으로 돌린다). 단위: 아래팔 길이 1
+  add(0.16, 0.2, 0.75 * L, 0, 0.08, 0.3 * L);            // 총열·몸통
+  add(0.12, 0.05, 0.6 * L, 0, 0.2, 0.3 * L, gunHi);       // 윗면 빛
+  add(0.13, 0.32, 0.16, 0, -0.12, 0.02);                  // 손잡이
+  if (long) { add(0.14, 0.18, 0.5, 0, 0.02, -0.25); add(0.12, 0.22, 0.12, 0, -0.1, 0.55); }  // 개머리판 · 앞 손잡이
+  return g;
+}
+function updateGun() {
+  const kind = window.gunKind || null;
+  if (!kind) { if (gunGrp) gunGrp.visible = false; return; }
+  if (!gunGrp || gunBuilt !== kind) { if (gunGrp) gunGrp.removeFromParent(); gunGrp = buildGun(kind); gunBuilt = kind; scene.add(gunGrp); }
+  gunGrp.visible = true; model.updateMatrixWorld(true);
+  const fa = new THREE.Vector3(), hd = new THREE.Vector3(); bones.RightForeArm.getWorldPosition(fa); bones.RightHand.getWorldPosition(hd);
+  const dir = hd.clone().sub(fa), len = dir.length(); dir.normalize();
+  gunGrp.position.copy(hd).addScaledVector(dir, len * 0.18); gunGrp.scale.setScalar(len * (window.gunScale || 0.9));
+  gunGrp.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir);
+  // 손잡이가 아래로 오게: 총의 위(+y)를 세상 위쪽에 가깝게 비튼다
+  const up = new THREE.Vector3(0, 1, 0).applyQuaternion(gunGrp.quaternion), want = new THREE.Vector3(0, 1, 0).sub(dir.clone().multiplyScalar(dir.y)).normalize();
+  if (want.lengthSq() > 0.01) { const ang = Math.atan2(new THREE.Vector3().crossVectors(up, want).dot(dir), up.dot(want)); gunGrp.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(dir, ang)); }
+  gunGrp.updateMatrixWorld(true); window.__gunDbg = { p: gunGrp.position.toArray().map(v => +v.toFixed(1)), len: +len.toFixed(2), vis: gunGrp.visible, n: gunGrp.children.length };
+}
+// ---- 총 동작 (자유 모드): 바탕 클립(서기·걷기·뛰기) 위에서 오른팔만 몸 앞쪽(+Z)으로 곧게 뻗는다. 쏘기는 손목이 위로 튄다(반동)
+const gA = new THREE.Vector3(), gB = new THREE.Vector3(), gQ = new THREE.Quaternion();
+const gunAimBone = (b, c, dir) => { if (!b || !c) return; b.getWorldPosition(gA); c.getWorldPosition(gB); const cur = gB.sub(gA).normalize(); const q = new THREE.Quaternion().setFromUnitVectors(cur, dir.clone().normalize()); b.parent.getWorldQuaternion(gQ); b.quaternion.premultiply(gQ.clone().invert().multiply(q).multiply(gQ)); b.updateMatrixWorld(true); };
+window.renderGunPose = (kind, f, dirA) => {
+  mixer.stopAllAction();
+  const C = clips, base = kind === 'walk' ? C.Walk : kind === 'run' ? C.Run : (C.Idle_Neutral || C.Idle), bt = kind === 'walk' ? f * C.Walk.duration : kind === 'run' ? f * C.Run.duration * 0.63 : 0;
+  const act = mixer.clipAction(base); act.reset(); act.play(); mixer.setTime(bt);
+  bones.Hips.position.x = 0; bones.Hips.position.z = 0;
+  model.rotation.set(0, 0, 0); model.position.set(0, 0, 0); model.updateMatrixWorld(true);
+  // 겨누는 방향: 몸 앞(+Z), 어깨 높이. 꺼내기는 허리 아래(내린 손) → 앞으로 들어 올린다. 쏘기는 처음 몇 장에 손목이 위로
+  const e = kind === 'draw' ? f * f * (3 - 2 * f) : 1, kick = kind === 'shoot' ? Math.max(0, 1 - f * 2.2) : 0;
+  const fwd = new THREE.Vector3(-0.08, 0.02 + kick * 0.35, 1).normalize(), down = new THREE.Vector3(-0.12, -1, 0.2).normalize();
+  const dir = down.clone().lerp(fwd, e).normalize();
+  gunAimBone(bones.RightArm, bones.RightForeArm, dir); gunAimBone(bones.RightForeArm, bones.RightHand, dir.clone().add(new THREE.Vector3(0, kick * 0.5, 0)));
+  if (kind !== 'walk' && kind !== 'run') {  // 서서 겨눌 땐 왼손으로 받친다
+    const sup = new THREE.Vector3(0.35, -0.2, 1).normalize().lerp(new THREE.Vector3(0.12, -1, 0.1), 1 - e).normalize();
+    gunAimBone(bones.LeftArm, bones.LeftForeArm, sup); gunAimBone(bones.LeftForeArm, bones.LeftHand, new THREE.Vector3(-0.6, 0.05 * e, 0.8).lerp(new THREE.Vector3(0, -1, 0.1), 1 - e).normalize());
+  }
+  window.gunKind = kind === 'draw' && f < 0.3 ? null : (window.gunModel || 'pistol');
+  model.rotation.y = Math.atan2(Math.cos(dirA), Math.sin(dirA)); model.updateMatrixWorld(true);
+  shadow.visible = true;
+  renderSprite(0, (window.spritePadding || 1) * 1.15);
+  window.gunKind = null;
+};
 window.renderFrame = (clip, t, dirA, crouch, hang, hold, relax) => {
   let relaxY = 0;
   // 편한 서기는 걷기의 한 프레임을 멈추지 않는다. 골반·허리의 전진 기울기부터 제거한다.

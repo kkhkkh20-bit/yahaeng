@@ -7,6 +7,8 @@ function updateGuard(g, dt) {
   if (g.yank) return;  // 숨은 곳으로 끌려가는 중 (updateAmbush가 움직인다)
   if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.doomed) { if (g.doomed) g.moving = false; return; }
   // 세력: 조직끼리 싸움·목격자 입막음·구역 단속이 평소 행동보다 먼저
+  if (g.hunter && STAGE.cityLife && g.state !== 'DEAD') { hunterStep(g, dt); return; }  // 자유 모드 킬러 (47v)
+  if (g.warSide != null && S.war && !S.war.over && !g.burnT) { g.moving = false; return; }  // 자유 모드 총격전 (47p): 서서 쏘기만
   if (S.facOn && updateFaction(g, dt)) return;
   if (g.civ) { updateCiv(g, dt); return; }
   if (g.climb) { g.seen = false; if (g.iconT > 0) g.iconT -= dt; updateClimbG(g, dt); if (g.state === 'ALERT' && S.player) g.lostT = 0; return; }
@@ -75,7 +77,7 @@ function updateGuard(g, dt) {
     else { g.hearT -= dt; if (g.hearT > 0) return; const at={...g.hearP};clearFootstepReaction(g);goSuspicious(g,at.x+rnd(-20,20),at.y+rnd(-20,20),3.5,'heard');g.poi.clue='step'; }
   }
 
-  if ((g.state === 'PATROL' || g.state === 'RETURN') && !g.dog && S.decals.length && (g.bloodT = (g.bloodT || 0) - dt) <= 0) {  // 핏자국을 보면 다가가 살핀다
+  if ((g.state === 'PATROL' || g.state === 'RETURN') && !g.dog && S.decals.length && modeRule('bloodSearch') && (g.bloodT = (g.bloodT || 0) - dt) <= 0) {  // 핏자국을 보면 다가가 살핀다
     g.bloodT = 0.35;
     for (const d of S.decals) { if (d.seen || flOf(d) !== flOf(g) || (g.z || 0) || dist(g.x, g.y, d.x, d.y) > 170) continue;
       if (canSee(g, d.x, d.y, Math.max(0.45, lightAt(d.x, d.y)), false, false, 0) > 0) {
@@ -257,7 +259,7 @@ function updateGuard(g, dt) {
         g.bodyWork = null;
         securityBodyFound(c,g);
         if (c.accident) { c.discovered = true; g.state = 'RETURN'; g.path = null; g.icon = null; gsay(g, ['사고 났어. 사람들 접근 막아.', '감전됐나 봐. 손대지 마.', '사람 쓰러졌다. 지원 요청해.'][(g.id + S.corpses.indexOf(c)) % 3]); break; }
-        c.discovered = true; S.stats.bodies++; bossRadio('body'); logEv('found', c.x, c.y); setAlert(2, 35, c.ko ? '자경대원이 쓰러진 사람을 깨웠다 — 수색 시작' : '자경대원이 시체를 발견했다 — 수색 시작'); // Exits receive this incident only after a completed radio report.
+        c.discovered = true; S.stats.bodies++; bossRadio('body'); logEv('found', c.x, c.y); if (modeRule('stealthAlert')) setAlert(2, 35, c.ko ? '자경대원이 쓰러진 사람을 깨웠다 — 수색 시작' : '자경대원이 시체를 발견했다 — 수색 시작');  // 자유 모드: 잠입판 전체 경계는 없다 (발견한 사람만 둘러본다) // Exits receive this incident only after a completed radio report.
         if (c.ko && c.g) wakeKO(c, g);  // 기절한 사람은 깨워 일으킨다 — 깬 사람도 함께 수색한다
         g.state = 'SEARCH';g.why='body';g.poi = { x: c.x, y: c.y, fl: flOf(c), z: c.z || 0,clue:'body' }; g.reached = true; g.wait = 5; g.waitBase2 = g.a; g.waitT = 0; g.path = null;
         const reportAt = {...g.poi}, reportedLook = c.ko ? c.assailantLook || null : null;

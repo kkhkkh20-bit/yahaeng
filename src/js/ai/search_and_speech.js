@@ -116,8 +116,9 @@ function updateChats(dt) {
   if(STAGE.noAmbientChats)return;
   const gs = S.guards.filter(g => g.state === 'PATROL' && !g.doomed && !g.target && !g.dog && g.follow == null && !g.relight && !(g.civ && (g.sleep || g.seen)) && !(g.elite && !g.civ) && !(securityLevel()>=2&&securityCrew(g)));
   for (const g of gs) g.chatCd = (g.chatCd == null ? rnd(4, 14) : g.chatCd) - dt;
+  gs.sort((a, b) => a.x - b.x);  // x 순: 대화 거리(최대 200) 밖은 더 보지 않는다
   for (let i = 0; i < gs.length; i++) for (let j = i + 1; j < gs.length; j++) {
-    const a = gs[i], b = gs[j];
+    const a = gs[i], b = gs[j]; if (b.x - a.x > 200) break;
     if (a.civ !== b.civ || (S.alevel && !a.civ)) continue;
     if (a.chat || b.chat || a.chatCd > 0 || b.chatCd > 0 || flOf(a) !== flOf(b)) continue;
     if (dist(a.x, a.y, b.x, b.y) > (a.civ ? 170 : 200)) continue;

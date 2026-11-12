@@ -26,7 +26,7 @@ async def main():
    let opening=fresh('tB');Object.assign(opening.player,{x:936,y:600});tick(.3);ok(!opening.openingPass,'unpermitted visitor receives a successful-disguise response');
    opening=fresh('tB');Object.assign(opening.player,{x:936,y:600,outfit:'crew',mode:'walk'});tick(.3);ok(opening.openingPass&&opening.stats.detected===0&&opening.guards[1].state==='PATROL','a real clerk does not accept permitted ordinary passage');
    out.push('first episode demonstrates actual uniform permission without adding another victory gate; four officers walk between usable work stations');
-   let S=fresh('p1'),P=S.player,l=S.lamps.find(l=>!l.outdoor&&!l.fl),at=l.control;Object.assign(P,{x:at.x+24,y:at.y,outfit:'crew',mode:'sneak'});G.setLayer(0);
+   let S=fresh('p1'),P=S.player,l=S.lamps.find(l=>!l.outdoor&&!l.fl),at=G.lampControl(l);Object.assign(P,{x:at.x,y:at.y,outfit:'crew',mode:'sneak'});G.setLayer(0);
    const before=G.lightAt(1272,552);G.doAct(G.envChoices().find(a=>a.k==='lamp'));tick(.8);ok(l.off&&S.compoundDarkUsed,'basic light switch requires a purchased ability');
    ok(S.guards.some(g=>g.relight&&g.relight.l===l),'nobody reacts to a room going dark');const after=G.lightAt(1272,552);ok(after<before,'switch does not lower real illumination');tick(12);ok(!l.off,'repair guard never restores light');
    out.push('free wall switch changes physical light, draws a real repair guard and is restored');

@@ -58,13 +58,13 @@ async def main():
         await ev("() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyC', key: 'c' }))"); await pg.wait_for_timeout(1800)
         r = await ev("() => window.__game.S.guards.filter(g => g.tagT > window.__game.S.t).map(g => g.id)"); print('위치 실토', ok, r)
         if not r: bad.append('정보를 다 알 때 심문하면 근처 조직원 위치가 표시되지 않는다')
-        # 4 조직원 무전 점검
+        # 4 조직원 무전 점검 (v259부터 이유 표시는 'rollCall' = 무전 응답 확인)
         await fresh([3, 4]); await ev(PIN, [3, 30, 16, 0]); await ev(PIN, [4, 27, 2, 0]); await ev(BEHIND, 4); await pg.wait_for_timeout(60)
         await ev('() => window.__game.actPrimary()'); await pg.wait_for_timeout(1400)
         await ev("() => { const S = window.__game.S; S.player.x = 2 * 48; S.player.y = 33 * 48; S.rcT = 0.2; }"); await pg.wait_for_timeout(800)
         r = await ev("() => { const S = window.__game.S, g = S.guards[3]; return [S.guards[4].state, S.alevel, g.state, g.why, Math.round(g.poi ? g.poi.x / 48 : -1), Math.round(g.poi ? g.poi.y / 48 : -1)]; }")
         print('무전 점검', r)
-        if r[1] < 1 or r[2] not in ('SUSPICIOUS', 'SEARCH') or r[3] != 'radio': bad.append(f'쓰러진 조직원 자리로 확인하러 가지 않는다 {r}')
+        if r[1] < 1 or r[2] not in ('SUSPICIOUS', 'SEARCH') or r[3] != 'rollCall': bad.append(f'쓰러진 조직원 자리로 확인하러 가지 않는다 {r}')
         # 5 칭호
         t = await ev("() => { const G = window.__game; G.S.items.forEach(i => i.got = true); G.showEnd(true); return document.getElementById('endStats').textContent; }")
         print('끝 화면', t[:80])

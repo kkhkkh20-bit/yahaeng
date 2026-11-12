@@ -3,6 +3,7 @@ const SCAN = { door: '#d39a5c', window: '#8fc3e6', pipe: '#c4ccd6', ladder: '#e0
 // 인물·발견 표시·조작 영역을 먼저 비운다. 행동을 배치한 뒤 말풍선은 남은 자리에 둔다.
 let TAGQ = null, SPEECH_R = [], MARK_R = [], ACTION_R = [];
 function tag(x, y, text, col, alpha = 1, key, pri) { if (window.__skip && window.__skip.ui) return;
+  if (STAGE.noPrompts && (key || /^\[/.test(text))) return;  // 큰 도시: 행동 안내 글을 띄우지 않는다 (GTA처럼 버튼만)
   if (TAGQ) { TAGQ.push({ x, y, text, col, alpha, key, pri: pri != null ? pri : (key || /^\[/.test(text) ? 3 : 1) }); return; }
   drawTag(x, y, text, col, alpha, key);
 }

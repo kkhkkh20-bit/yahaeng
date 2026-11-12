@@ -1,0 +1,50 @@
+{
+ "artist": "GuttyKreum",
+ "pack": "Dotonbori City v3",
+ "source": "https://guttykreum.itch.io/dotonbori-city-game-assets",
+ "sourceSha256": "a82beeeff1f3d77e24cf26e80a8dd221061aae4179c9cb3ec92c569bfd0d8235",
+ "note": "River strip for Yahaeng, cut from the example scene. Not a standalone asset; see LICENSE.txt.",
+ "tile": 32,
+ "rows": 11,
+ "period": 4,
+ "ladderColumn": 2,
+ "frames": {
+  "quay": [
+   0,
+   0,
+   128,
+   352
+  ],
+  "ladder": [
+   128,
+   0,
+   128,
+   352
+  ],
+  "railL": [
+   256,
+   0,
+   32,
+   352
+  ],
+  "railR": [
+   288,
+   0,
+   32,
+   352
+  ]
+ },
+ "grid": [
+  "=",
+  "¦",
+  "=",
+  "¦",
+  "~",
+  "~",
+  "~",
+  "¦",
+  "=",
+  "=",
+  "="
+ ]
+}

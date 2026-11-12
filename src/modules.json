@@ -18,6 +18,10 @@
       "group": "copy"
     },
     {
+      "path": "03_mode_rules.js",
+      "group": "core"
+    },
+    {
       "path": "05_map.js",
       "group": "map"
     },
@@ -47,6 +51,10 @@
     },
     {
       "path": "graphics/city_study.js",
+      "group": "graphics"
+    },
+    {
+      "path": "graphics/euljiro.js",
       "group": "graphics"
     },
     {
@@ -302,7 +310,127 @@
       "group": "city"
     },
     {
+      "path": "47b_city_hits.js",
+      "group": "city"
+    },
+    {
+      "path": "47c_city_life.js",
+      "group": "city"
+    },
+    {
+      "path": "47d_city_shops.js",
+      "group": "city"
+    },
+    {
+      "path": "47e_city_jobs.js",
+      "group": "city"
+    },
+    {
+      "path": "47f_city_events.js",
+      "group": "city"
+    },
+    {
+      "path": "47g_city_factions.js",
+      "group": "city"
+    },
+    {
+      "path": "47h_city_motions.js",
+      "group": "city"
+    },
+    {
+      "path": "47i_city_side.js",
+      "group": "city"
+    },
+    {
+      "path": "47j_city_weather.js",
+      "group": "city"
+    },
+    {
+      "path": "47k_city_map.js",
+      "group": "city"
+    },
+    {
+      "path": "47l_city_heat.js",
+      "group": "city"
+    },
+    {
+      "path": "47m_city_havoc.js",
+      "group": "city"
+    },
+    {
+      "path": "47n_city_guns.js",
+      "group": "city"
+    },
+    {
+      "path": "47o_city_rampage.js",
+      "group": "city"
+    },
+    {
+      "path": "47p_city_war.js",
+      "group": "city"
+    },
+    {
+      "path": "47q_city_grade.js",
+      "group": "city"
+    },
+    {
+      "path": "47r_city_contracts.js",
+      "group": "city"
+    },
+    {
+      "path": "47s_city_intel.js",
+      "group": "city"
+    },
+    {
+      "path": "47t_city_disguise.js",
+      "group": "city"
+    },
+    {
+      "path": "47u_city_safehouse.js",
+      "group": "city"
+    },
+    {
+      "path": "47v_city_hunter.js",
+      "group": "city"
+    },
+    {
+      "path": "47w_city_sniper.js",
+      "group": "city"
+    },
+    {
+      "path": "47x_city_carbomb.js",
+      "group": "city"
+    },
+    {
+      "path": "47y_city_poison.js",
+      "group": "city"
+    },
+    {
+      "path": "47z_city_sign.js",
+      "group": "city"
+    },
+    {
+      "path": "47zz_city_story.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
+      "group": "traffic"
+    },
+    {
+      "path": "48b_car_fire.js",
+      "group": "traffic"
+    },
+    {
+      "path": "48c_car_drift.js",
+      "group": "traffic"
+    },
+    {
+      "path": "48d_car_theft.js",
+      "group": "traffic"
+    },
+    {
+      "path": "48d_decks.js",
       "group": "traffic"
     },
     {

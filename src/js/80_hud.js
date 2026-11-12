@@ -10,7 +10,7 @@ function buildMiniBase(mw = 200, mh = 140) {
   const x = c.getContext('2d');
   for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) {
     const ch = G0[ty][tx], b = bldAt(tx, ty);
-    x.fillStyle = b >= 0 && !BLD[b].vacant ? (ch === '#' || ch === 'N' ? '#6a7486' : '#3e4758') : ch === '#' ? '#4a5262' : ch === '=' ? '#2c3343' : ch === ',' ? '#2a2e28' : ch === 'g' ? '#1f3020' : ch === 'd' ? '#3a3024' : ch === 'x' ? '#6a8aa0' : ch === 'p' ? '#28405a' : ch === 'm' ? '#5d636e' : ch === 'r' ? '#4a463e' : ch === 'J' ? '#3a3e48' : ch === '~' ? '#1e3a5a' : ch === 'B' || ch === 'T' ? '#2f4a34' : ch === 'P' ? '#8a8f98' : ch === 'M' ? '#6a3a3a' : ch === 'A' ? '#5a6070' : '#181d28';
+    x.fillStyle = b >= 0 && !BLD[b].vacant ? (ch === '#' || ch === 'N' ? '#6a7486' : '#3e4758') : ch === '#' ? '#4a5262' : ch === '=' ? '#2c3343' : ch === ',' ? '#2a2e28' : ch === 'g' ? '#1f3020' : ch === 'd' ? '#3a3024' : ch === 'x' ? '#6a8aa0' : ch === 'p' ? '#28405a' : ch === 'm' ? '#5d636e' : ch === 'r' ? '#4a463e' : ch === 'J' ? '#3a3e48' : ch === '~' ? '#1e3a5a' : ch === '§' ? '#4a5262' : ch === '¦' ? '#3a3e48' : ch === 'B' || ch === 'T' ? '#2f4a34' : ch === 'P' ? '#8a8f98' : ch === 'M' ? '#6a3a3a' : ch === 'A' ? '#5a6070' : '#181d28';
     if(INK_STUDY)x.fillStyle=b>=0&&!BLD[b].vacant?(ch==='#'||ch==='N'?'#777365':'#40463a'):ch==='B'||ch==='T'?'#46523d':ch==='='?'#37392f':ch==='~'?'#354a46':'#252b23';
     x.fillRect(tx * s, ty * s, Math.ceil(s), Math.ceil(s));
   }
@@ -25,9 +25,10 @@ function miniGuardVisible(g) {
 }
 function drawMini() {
   const cv = document.getElementById('mini'); if (!cv || !S) return;
+  if (miniBase?.stage===S && S.t - miniT < 0.12 && S.t >= miniT) return;  // 레이아웃 읽기(getBoundingClientRect)도 1/8초에 한 번만
+  miniT = S.t;
   { const tp = document.querySelector('#hud .top'), hc = document.getElementById('hintCard'); if (tp) { const tb = Math.round(tp.getBoundingClientRect().bottom); if (tb !== drawMini.tb) { drawMini.tb = tb; document.documentElement.style.setProperty('--topb', tb + 'px'); } }
     const v = S.entrySel ? 'hidden' : ''; if (cv.style.visibility !== v) { cv.style.visibility = v; if (hc) hc.style.visibility = v; } }
-  if (miniBase?.stage===S && S.t - miniT < 0.12 && S.t >= miniT) return; miniT = S.t;
   // 주인공(과 행동 표시)이 미니맵·목표·도움말 밑에 들어가면 그 판을 옅게 한다
   { const cr = canvas.getBoundingClientRect(), ip=STAGE.artSlice&&!tactical&&window.__clubView?.ready?window.__clubView.actorScreen(S.player):null,px = ip?ip.x:cr.left + (S.player.x - cam.x) * SCALE + W / 2, py = ip?ip.y:cr.top + (S.player.y - cam.y) * SCALE + H / 2;
     for (const el of [cv, document.querySelector('#hud .obj'), document.getElementById('hintCard')]) { if (!el) continue; const r = el.getBoundingClientRect(); const over = r.width > 0 && px > r.left - 40 && px < r.right + 40 && py > r.top - 70 && py < r.bottom + 40; el.classList.toggle('hudfade', over); } }
@@ -46,6 +47,7 @@ function drawMini() {
   x.strokeStyle = 'rgba(232,227,214,.45)'; x.lineWidth = 1;if(STAGE.artSlice&&!tactical&&window.__clubView?.ready){const pts=[[0,0],[W,0],[W,H],[0,H]].map(p=>window.__clubView.screenToWorld(...p));if(pts.every(Boolean)){x.beginPath();pts.forEach((p,i)=>i?x.lineTo(T(p.x),T(p.y)):x.moveTo(T(p.x),T(p.y)));x.closePath();x.stroke();}}else x.strokeRect(T(cam.x - W / SCALE / 2), T(cam.y - H / SCALE / 2), T(W / SCALE), T(H / SCALE));
   if (S.exitOpen) { x.strokeStyle = '#f2c46b'; x.lineWidth = 2; for (const e of S.exits || [S.exit]) { x.beginPath(); x.arc(T(e.x), T(e.y), 5, 0, TAU); x.stroke(); } }
   for (const it of S.items) if (!it.got) { x.fillStyle = '#f2c46b'; x.fillRect(T(it.x) - 2.5, T(it.y) - 2.5, 5, 5); if (it.fl) { x.fillStyle = '#0b0d12'; x.font = uiFont(7); x.textAlign = 'center'; x.fillText(String(it.fl + 1), T(it.x), T(it.y) + 2.5); } }
+  drawMiniCity(x, T);
   // 보이는 사람만: 같은 층·시선이 닿는 자경대원(경계 단계 색), 주민은 초록
   for (const g of S.guards) {
     if (g.state === 'DEAD' && !(g.target && !targetEliminated(g))) continue;
@@ -64,7 +66,7 @@ function drawMini() {
 // 판 지도 그림: 구운 지도를 줄여 그리고 출발(하늘)·탈출(노랑)·훔칠 것(금색 ◆)·표적(빨강 ●)을 찍는다
 function stageMap(w, labels) {
   const mw = MW * TILE, mh = MH * TILE, s = w / mw, h = Math.round(mh * s), c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
-  x.imageSmoothingEnabled = true; drawBig(x, mapC, 0, 0, mw, mh, 0, 0, w, h); x.fillStyle = 'rgba(7,10,18,.35)'; x.fillRect(0, 0, w, h);
+  x.imageSmoothingEnabled = true; if (mapC && mapC.lazy) x.drawImage(buildMiniBase(w, h), 0, 0, w, h); else drawBig(x, mapC, 0, 0, mw, mh, 0, 0, w, h); x.fillStyle = 'rgba(7,10,18,.35)'; x.fillRect(0, 0, w, h);
   const R = Math.max(3, w / 90), pt = (px, py, col, sh, lab) => { const X = px * s, Y = py * s; x.fillStyle = col; x.strokeStyle = 'rgba(7,10,18,.9)'; x.lineWidth = Math.max(1.5, R / 3); x.beginPath();
     if (sh === 'd') { x.moveTo(X, Y - R * 1.4); x.lineTo(X + R * 1.1, Y); x.lineTo(X, Y + R * 1.4); x.lineTo(X - R * 1.1, Y); x.closePath(); } else x.arc(X, Y, sh === 'r' ? R * 1.6 : R, 0, TAU);
     if (sh === 'r') { x.lineWidth = R * 0.7; x.strokeStyle = col; x.stroke(); } else { x.stroke(); x.fill(); }
@@ -328,7 +330,7 @@ const STH_ICO = {
 function updateStealth(lv) {
   const box = $('stealth'); if (!box || !S) return; const P = S.player, identity=disguiseKnowledge();
   syncSecurityReadout();
-  { const r = box.getBoundingClientRect(), sx = (P.x - cam.x) * SCALE + W / 2, sy = (P.y - cam.y) * SCALE + H / 2, u = sx > r.left - 24 && sx < r.right + 24 && sy > r.top - 30 && sy < r.bottom + 60;  // 주인공과 겹치면 흐리게
+  { if (!hudCache.sthR || S.t - hudCache.sthRt > 0.25 || S.t < hudCache.sthRt) { hudCache.sthR = box.getBoundingClientRect(); hudCache.sthRt = S.t; } const r = hudCache.sthR, sx = (P.x - cam.x) * SCALE + W / 2, sy = (P.y - cam.y) * SCALE + H / 2, u = sx > r.left - 24 && sx < r.right + 24 && sy > r.top - 30 && sy < r.bottom + 60;  // 주인공과 겹치면 흐리게
     if (hudCache.sthU !== u) { hudCache.sthU = u; box.classList.toggle('under', u); } }
   const e = P.hide || P.under || P.vent ? 0 : S.expo || 0;
   const observer=activeObserver(), eyeG=observer?.phase==='check'&&(observer.g.eyeT||0)>.05?observer.g:null,  // 눈썰미 있는 사람이 변장을 살피는 중
@@ -362,6 +364,7 @@ function updateStealth(lv) {
   const passCamera=(S.cams||[]).some(c=>!c.search&&cameraAssessment(c).visible>0&&!cameraAssessment(c).detectable);
   box.dataset.camera=passCamera?'pass':'';if(passCamera&&s==='blend')why='CCTV 통행 허용 · 훔치면 녹화 대상';
   const cause=searchCauseReadout();if(cause)why=cause.text+(observer?.camera?' · CCTV 시야에서 벗어나기':s==='hide'&&(P.hide||P.hidden)?' · 은신 유지':'');
+  if (!modeRule('stealthHudTips')) why = '';  // 자유 모드: 잠입판 요령(갈아입기·구역 권한·CCTV)은 쓰지 않는다 — 상태 낱말과 눈 표시만
   const k = s + '|' + word + '|' + why; if (hudCache.sth === k) return; hudCache.sth = k;
   if (hudCache.sthS && hudCache.sthS !== s && S.t - (hudCache.sthSfxT || -9) > 0.35) { hudCache.sthSfxT = S.t; sfx({ hide: 'toHide', blend: 'toBlend', risk: 'toRisk', seen: 'toSeen' }[s]); } hudCache.sthS = s;  // 상태가 바뀌면 작은 신호음
   box.dataset.s = s; const el = $('expoLbl'); el.textContent = word; el.dataset.e = s==='seen'?2:e; $('lightLbl').textContent = why;
@@ -504,7 +507,7 @@ document.querySelectorAll('.nocity').forEach(e => e.remove());
 // 데모(itch) 빌드: 'all' 이면 도시 시제품만 빼고 전부, 목록이면 그 판만 (나머지는 잠긴 카드 하나로 알린다)
 const demoOk = s => !s.retiredCampaign&&(!window.__DEMO || (window.__DEMO === 'all' ? !s.city : window.__DEMO.includes(s.id)));
 // 첫 화면·의뢰 장부·도움말: 셋 중 하나만 보인다
-function showMenu(which) { { const h = $('help'); if (h) h.classList.remove('over'); } ['intro', 'ledger', 'help'].forEach(id => { const el = $(id); if (el) el.hidden = id !== which; }); const el = $(which); if (el) el.scrollTop = 0; }
+function showMenu(which) { if (which === 'intro' && AC) setTimeout(() => { if (onTitle()) setMusic('n_title'); }, 0); { const h = $('help'); if (h) h.classList.remove('over'); } ['intro', 'ledger', 'help'].forEach(id => { const el = $(id); if (el) el.hidden = id !== which; }); const el = $(which); if (el) el.scrollTop = 0; }
 const RANK_TXT = r => r ? '최고 ' + r : '';
 function renderStageList() {
   syncQuick();

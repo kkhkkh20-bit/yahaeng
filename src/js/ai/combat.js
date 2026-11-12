@@ -1,5 +1,5 @@
 const GUN_AIM = 1.0, GUN_CD = 2.6, GUN_R = 430;
-const armed = g => !g.dog && !g.civ && !g.target && (g.elite || g.gun) && S.alevel >= 3;
+const armed = g => !g.dog && !g.civ && !g.target && ((g.elite || g.gun) && S.alevel >= 3 || STAGE.cityLife && g.police && S.wanted >= 2);  // 도시 경찰: 수배 ★2부터 권총
 function updateGun(g, dt, sameF) {
   const P = S.player; g.gunCd = Math.max(0, (g.gunCd || 0) - dt);
   const can = armed(g) && sameF && g.seen && !g.atkT && !g.gunCd && !P.hide && !P.under && !P.vent && !P.trav && (P.z || 0) === (g.z || 0), d = dist(g.x, g.y, P.x, P.y);
@@ -7,19 +7,25 @@ function updateGun(g, dt, sameF) {
   if (!g.aim) { sfx('aim'); hint('gun', '전체 경보가 울리면 정예와 증원은 권총을 꺼낸다. 붉은 조준선이 굵어지면 쏜다 — 벽·차 뒤로 시야를 끊어라'); }
   g.aim = (g.aim || 0) + dt; g.want = Math.atan2(P.y - g.y, P.x - g.x); g.moving = false;
   if (g.aim >= GUN_AIM) {
-    g.aim = 0; g.gunCd = GUN_CD; sfx('gun'); noise(g.x, g.y, 520, 'shot', flOf(g)); S.shakeT = Math.max(S.shakeT || 0, 0.12);
+    g.aim = 0; g.gunCd = GUN_CD; g.shotT = S.t; if (STAGE.cityLife && typeof gunSound === 'function') gunSound(GUN_FX.npc, Math.max(0.4, proxVol(g))); else sfx('gun'); noise(g.x, g.y, 520, 'shot', flOf(g)); S.shakeT = Math.max(S.shakeT || 0, 0.12);
     if(pixelFxEnabled())spawnEffect('muzzle',{x:g.x+Math.cos(g.a)*18,y:g.y-23+Math.sin(g.a)*12,fl:flOf(g),z:g.z||0},{angle:g.a});
     else S.fx.push({ k: 'muzzle', x: g.x + Math.cos(g.a) * 18, y: g.y + Math.sin(g.a) * 18, t: 0 });
-    if (canSee(g, P.x, P.y, Math.max(0.4, P.light), P.hidden, P.mode === 'sneak', P.z, flOf(P)) > 0) hurtPlayer(null, '총에 맞았다.',g);
+    // 자유 모드 경찰: 움직이는 표적은 잘 못 맞힌다 (★2 45% · ★3 55% · ★4+ 65%, 달리면·차 뒤면 더 낮게). 빗나가면 총알이 옆으로 날아간다
+    const seeP = canSee(g, P.x, P.y, Math.max(0.4, P.light), P.hidden, P.mode === 'sneak', P.z, flOf(P)) > 0;
+    const hitP = !STAGE.cityLife ? seeP : seeP && Math.random() < (S.wanted >= 4 ? 0.65 : S.wanted >= 3 ? 0.55 : 0.45) * (P.moving && P.mode === 'run' ? 0.7 : 1);
+    if (STAGE.cityLife && typeof bulletFly === 'function') { const mx = g.x + Math.cos(g.a) * 18, my = g.y - 23 + Math.sin(g.a) * 12; bulletFly(mx, my, P.x + (hitP ? 0 : rnd(-34, 34)), P.y - 12 + (hitP ? 0 : rnd(-30, 30)), GUN_FX.npc, hitP ? 'body' : null); }
+    if (hitP) hurtPlayer(null, '총에 맞았다.',g);
     else toast('총알이 빗나갔다', 1.2);
   }
   return true;
 }
 function hurtPlayer(g, why, origin=g) {
   const P = S.player; if (P.hurtT > 0 || S.over) return;
+  if (STAGE.cityLife && typeof armorAbsorb === 'function' && armorAbsorb()) return;  // 자유 모드 방탄조끼
   if (P.car) { const v = P.car; if (g) { v.hp -= 1; v.smoke = 1.5; P.hurtT = 0.9; play('metal', 0.5, 0.8); if (v.hp <= 0) carWreck(v); } return; }  // 차 안: 차가 대신 맞는다
   if (!S.saidHurt && P.hp > 1) { S.saidHurt = true; after(0.6, () => bark('hero', 'hurt')); }
   rememberDamage(P,origin);spawnEffect('impact',{x:P.x,y:P.y-20,fl:flOf(P),z:P.z||0},{scale:.65});
+  if (STAGE.cityLife && !flOf(P)) { const src = g || origin; bloodBurst(P.x, P.y - 12, src ? Math.atan2(P.y - src.y, P.x - src.x) : rnd(0, TAU), g && !g.police ? 2 : 1); S.shakeT = Math.max(S.shakeT || 0, 0.25); }
   P.hp--; P.hurtT = 2.0; P.adrenT = 1.6; S.flash = 0.28;  // 맞으면 2초 무적 + 1.6초 동안 더 빨리 뛴다 (도망칠 여유)
   play(Math.random() < 0.5 ? 'kill' : 'kill2', 0.6); play('thud', 0.5);
   if (g) g.atkCd = Math.max(g.atkCd || 0, 2.2);  // 때린 자경대원은 잠깐 숨을 고른다
@@ -30,7 +36,8 @@ function hurtPlayer(g, why, origin=g) {
     collide(P, P.z ? 10 : 13, sol); if (sol(Math.floor(P.x / TILE), Math.floor(P.y / TILE))) { P.x = px0; P.y = py0; } }
   if (P.carrying) { const c = P.carrying; c.carried = false; c.hidden = false; P.carrying = null; }
   if (P.captive) { const c = P.captive; P.captive = null; c.state = 'PATROL'; c.seen = true; goAlert(c); }
-  if (P.hp <= 0) { if (STAGE.city) { cityDown(why); return; } endGame(false, why); return; }
+  if (STAGE.cityLife && g && !g.police && g.fac && g.fac !== 'P' && !g.civ) P.hp--;  // 조직은 칼로 죽이러 든다: 한 번에 두 칸
+  if (P.hp <= 0) { if (STAGE.city) { if (STAGE.cityLife && (g || origin)?.police) { P.hp = 1; startCuffs(why, g || origin); } else cityDown(why); return; } endGame(false, why); return; }
   toast(P.hp === 1 ? `${why.replace(/\.$/, '')} — 마지막 체력! 지금 시야를 끊고 숨어라` : `${why.replace(/\.$/, '')} — 체력 ${P.hp}/${P.hpMax}. 시야를 끊고 숨어라`, 2.6, P.hp === 1 ? 'warn big' : 'warn');
 }
 // 숨은 곳에서 끌려 나옴

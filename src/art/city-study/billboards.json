@@ -1,0 +1,67 @@
+{
+ "artist": "GuttyKreum (can, crab, octopus, face); Yahaeng (chimaek, soju, karaoke)",
+ "pack": "Dotonbori City v3",
+ "source": "https://guttykreum.itch.io/dotonbori-city-game-assets",
+ "sourceSha256": "a82beeeff1f3d77e24cf26e80a8dd221061aae4179c9cb3ec92c569bfd0d8235",
+ "font": "Galmuri11 Bold (SIL OFL 1.1, Lee Minseo)",
+ "tile": 32,
+ "note": "Billboards for Yahaeng with Korean lettering. Not a standalone asset.",
+ "frames": {
+  "can": {
+   "rect": [
+    0,
+    0,
+    160,
+    96
+   ]
+  },
+  "crab": {
+   "rect": [
+    162,
+    0,
+    136,
+    28
+   ]
+  },
+  "octopus": {
+   "rect": [
+    300,
+    0,
+    64,
+    96
+   ]
+  },
+  "face": {
+   "rect": [
+    366,
+    0,
+    64,
+    64
+   ]
+  },
+  "chimaek": {
+   "rect": [
+    0,
+    98,
+    160,
+    88
+   ]
+  },
+  "soju": {
+   "rect": [
+    162,
+    98,
+    160,
+    88
+   ]
+  },
+  "karaoke": {
+   "rect": [
+    324,
+    98,
+    64,
+    160
+   ]
+  }
+ }
+}

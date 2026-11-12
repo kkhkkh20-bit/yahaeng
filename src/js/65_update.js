@@ -21,6 +21,7 @@ function update(dt, present=true) {
   S.lodTick = (S.lodTick || 0) + 1;
   for (const g of S.guards) {
     let gdt = dt;
+    if (STAGE.cityLife && g.off) continue;  // 사라진(퇴장·연행) 사람은 갱신하지 않는다
     if (STAGE.city) { gdt = cityLodStep(g, dt, cityLodGuardCalm(g)); if (!gdt) continue; }  // 도시: 멀고 평온한 사람은 덜 자주
     setLayer(flOf(g)); updateGuard(g, gdt); setLayer(flOf(S.player)); if (S.over) return;
   }
@@ -32,7 +33,7 @@ function update(dt, present=true) {
   updateDispatchFault(dt);
   if ((S.targetIntelT = (S.targetIntelT || 0) - dt) <= 0) { S.targetIntelT = .15; updateTargetIntel(); }
   if (STAGE.city) cityUpdate(dt); else if (S.vehicles) updateVehicles(dt);
-  engineSound();  // 운전 중 엔진 (판이 바뀌면 꺼진다)
+  engineSound(); screechSound();  // 운전 중 엔진 (판이 바뀌면 꺼진다)
   separateBodies(dt); updateClubMusic(); updateCams(dt);
   if(STAGE.securityLesson&&cpReady()&&(disguiseKnowledge().witnesses.length||(S.stats.camRec||0)>0)){endGame(false,disguiseKnowledge().witnesses.length?'신원 확인 게이지가 찼다 — 거리나 시야를 끊자':'CCTV 게이지가 찼다 — 통행과 작업은 별도 판정이다');return;}
   updateStarterContract();if(S.over)return;
@@ -45,7 +46,7 @@ function update(dt, present=true) {
   { let mood = S.alevel >= 3 || S.radioCall ? 2 : S.alevel === 2 ? 1 : 0;
     for (const g of S.guards) { if (g.civ || g.state === 'DEAD' || g.state === 'CAPTIVE') continue; if (g.state === 'ALERT') { mood = 2; break; } if (['NOTICE', 'SUSPICIOUS', 'SEARCH', 'BODY'].includes(g.state) || g.meter > 0.15) mood = Math.max(mood, 1); }
       if (mood >= (S.moodHi || 0)) { S.moodHi = mood; S.moodT = 4; } else if ((S.moodT -= dt) <= 0) S.moodHi = mood;
-      setMusic(['n_calm', 'n_tense', 'n_fight'][S.moodHi]); }
+      const radio = radioWanted(); setMusic(radio ? carStation(S.player.car) : ['n_calm', 'n_tense', 'n_fight'][S.moodHi]); musicRadio(radio); }  // 차 안: 라디오
   if (STAGE.fuse) {
     if (S.fuseGuard && S.fuseGuard.state !== 'FUSE') { S.fuseGuard.atFuse = false; S.fuseGuard = null; }
     if (!S.lightsOn && !S.fuseGuard && S.fuseT <= 0) S.fuseT = 3;
@@ -126,7 +127,7 @@ function touchPlayFrame(){
 function moveCamera(dt) {
   { const P = S.player, low = !!(P.cover || (P.mode === 'sneak' && !P.trav) || (input.sneakToggle && !P.moving)); S.coneK = (S.coneK || 0) + ((low ? 1 : 0) - (S.coneK || 0)) * Math.min(1, dt * 12); }  // 시야 원뿔: 내 자세(서 있음 ↔ 웅크림)
   const k = 1 - Math.pow(0.0015, dt);
-  SCALE += (targetScale() - SCALE) * Math.min(1, dt * 6);
+  SCALE += (targetScale() - SCALE) * Math.min(1, dt * (STAGE.cityLife ? 2.5 : 6));  // 큰 도시: 차에 오르내릴 때 화면이 서서히 넓어지고 좁아진다
   const vw = W / SCALE, vh = H / SCALE;
   if (tactical) {
     if (H > W * 1.3) {  // 세로 전술 지도: 나를 가운데로 시작, 손가락으로 끌어 옮긴다
@@ -136,27 +137,28 @@ function moveCamera(dt) {
     cam.x += (MW * TILE / 2 - cam.x) * k; cam.y += (MH * TILE / 2 + 40 / SCALE - cam.y) * k; return; }
   if (S.tacCam) S.tacCam = null;
   if (isTouch) {
-    const cv = S.player.car, lx = cv ? Math.cos(cv.a) * cv.v * 0.5 : 0, ly = cv ? Math.sin(cv.a) * cv.v * 0.5 : 0;  // 운전: 달리는 앞쪽을 더 보여 준다
-    const tx = clamp(S.player.x + lx, Math.min(vw / 2 - 40 / SCALE, MW * TILE / 2), Math.max(MW * TILE - vw / 2 + 140 / SCALE, MW * TILE / 2));
+    const cv = S.player.car, sc = S.scope && STAGE.cityLife ? scopeLead() : null, lx = cv ? Math.cos(cv.a) * cv.v * 0.5 : sc ? sc.x : 0, ly = cv ? Math.sin(cv.a) * cv.v * 0.5 : sc ? sc.y : 0;  // 운전: 달리는 앞쪽 · 저격 조준경: 겨누는 쪽
+    const ex = STAGE.cityLife ? 0 : 1;  // 큰 도시: 지도 밖(채움 그림)이 화면에 안 들어오게 끝에서 멈춘다
+    const tx = clamp(S.player.x + lx, Math.min(vw / 2 - 40 * ex / SCALE, MW * TILE / 2), Math.max(MW * TILE - vw / 2 + 140 * ex / SCALE, MW * TILE / 2));
     // 기본 앞보기를 유지하되 실제 조작부 위에 캐릭터와 근접 안내가 들어오게 한다.
     const anchor=touchPlayFrame().y/H,bounds=cameraYBounds(vh),ty=clamp(S.player.y+ly+vh*(.5-anchor),bounds[0],bounds[1]);
     cam.x += (tx - cam.x) * k; cam.y += (ty - cam.y) * k;
   } else {
     // 앞보기: 보는 방향(조준 중이면 겨누는 곳)으로 화면을 조금 앞세운다
     const P = S.player, ap = input.aiming && aimPoint();
-    const cv = P.car, lx = cv ? Math.cos(cv.a) * cv.v * 0.5 : ap ? (ap.x - P.x) * 0.35 : Math.cos(P.a) * (S.over?0:P.moving ? 70 : 30), ly = cv ? Math.sin(cv.a) * cv.v * 0.5 : ap ? (ap.y - P.y) * 0.35 : Math.sin(P.a) * (S.over?0:P.moving ? 55 : 24);
+    const sc = S.scope && STAGE.cityLife ? scopeLead() : null, cv = P.car, lx = cv ? Math.cos(cv.a) * cv.v * 0.5 : sc ? sc.x : ap ? (ap.x - P.x) * 0.35 : Math.cos(P.a) * (S.over?0:P.moving ? 70 : 30), ly = cv ? Math.sin(cv.a) * cv.v * 0.5 : sc ? sc.y : ap ? (ap.y - P.y) * 0.35 : Math.sin(P.a) * (S.over?0:P.moving ? 55 : 24);
     S.lead = S.lead || { x: 0, y: 0 }; const lk = 1 - Math.exp(-dt * 2.5); S.lead.x += (lx - S.lead.x) * lk; S.lead.y += (ly - S.lead.y) * lk;
     // 가장자리: 캐릭터가 화면 구석의 HUD(도움말·조작 안내) 밑에 깔리지 않도록 맵 밖으로 조금 더 따라간다
-    const ox = vw * .16, bounds = cameraYBounds(vh);
+    const ox = STAGE.cityLife ? 0 : vw * .16, bounds = cameraYBounds(vh);  // 큰 도시: 지도 끝에서 카메라를 멈춘다 (밖은 보이지 않게)
     const tx = vw >= MW * TILE ? MW * TILE / 2 : clamp(P.x + S.lead.x, vw / 2 - ox, MW * TILE - vw / 2 + ox);
     const ty = clamp(P.y + S.lead.y, bounds[0], bounds[1]);
     cam.x += (tx - cam.x) * k; cam.y += (ty - cam.y) * k;
   }
 }
 function cameraYBounds(vh = H / SCALE) {
-  const middle=MH*TILE/2,frame=isTouch?touchPlayFrame():null,top=(frame?frame.y:24)/SCALE;
+  const middle=MH*TILE/2,frame=isTouch?touchPlayFrame():null,top=STAGE.cityLife?0:(frame?frame.y:24)/SCALE;
   // 맵 끝에서도 같은 플레이 영역을 확보한다. 하단 조작부가 캐릭터를 밀어내지 않는다.
-  const bottom=(frame?H-frame.y:24)/SCALE;
+  const bottom=STAGE.cityLife?0:(frame?H-frame.y:24)/SCALE;
   return [Math.min(vh / 2 - top, middle), Math.max(MH * TILE - vh / 2 + bottom, middle)];
 }
 

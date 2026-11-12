@@ -7,7 +7,7 @@ def campaign_assets(root):
     assets = json.loads((Path(root) / 'build/assets_city.json').read_text())
     # Retire the unused legacy catalogue; load the three licensed score loops.
     assets.pop('music', None)
-    assets['score'] = {key: 'data:audio/mpeg;base64,' + base64.b64encode((Path(root)/'src/audio'/name).read_bytes()).decode() for key,name in [('n_calm','night.mp3'),('n_tense','search.mp3'),('n_fight','chase.mp3')]}
+    assets['score'] = {key: 'data:audio/mpeg;base64,' + base64.b64encode((Path(root)/'src/audio'/name).read_bytes()).decode() for key,name in [('n_calm','night.mp3'),('n_tense','search.mp3'),('n_fight','chase.mp3'),('n_title','title.mp3')]}
     # UI and canvas now share the complete self-hosted face in interface.css.
     assets.pop('font', None)
     fx = Path(root) / 'src/art/fx'
@@ -39,10 +39,36 @@ def campaign_assets(root):
     if (study/'details.json').exists():
         assets['cityStudy']=json.loads((study/'details.json').read_text())
         assets['cityStudy']['src']='data:image/webp;base64,'+base64.b64encode((study/'details.webp').read_bytes()).decode()
+    boards=study/'billboards.json'
+    if boards.exists():
+        assets['cityBoards']=json.loads(boards.read_text())
+        assets['cityBoards']['src']='data:image/webp;base64,'+base64.b64encode((study/'billboards.webp').read_bytes()).decode()
+    signs2=study/'korean-signs-extra.json'
+    if signs2.exists():
+        assets['citySigns2']=json.loads(signs2.read_text())
+        assets['citySigns2']['src']='data:image/webp;base64,'+base64.b64encode((study/'korean-signs-extra.webp').read_bytes()).decode()
     signs=study/'korean-signs.json'
     if signs.exists():
         assets['citySigns']=json.loads(signs.read_text())
         assets['citySigns']['src']='data:image/webp;base64,'+base64.b64encode((study/'korean-signs.webp').read_bytes()).decode()
+    river=Path(root)/'src/art/euljiro'
+    if (river/'river.json').exists():
+        assets['cityRiver']=json.loads((river/'river.json').read_text())
+        assets['cityRiver']['src']='data:image/webp;base64,'+base64.b64encode((river/'river.webp').read_bytes()).decode()
+    wp=Path(root)/'src/art/weapons'
+    if (wp/'items.json').exists():
+        assets['cityItems']=json.loads((wp/'items.json').read_text())
+        assets['cityItems']['src']='data:image/webp;base64,'+base64.b64encode((wp/'items.webp').read_bytes()).decode()
+    sg=Path(root)/'src/art/signals'
+    if (sg/'signals.json').exists():
+        assets['citySignals']={'frames':json.loads((sg/'signals.json').read_text())}
+        assets['citySignals']['src']='data:image/webp;base64,'+base64.b64encode((sg/'signals.webp').read_bytes()).decode()
+    if (river/'garage.json').exists():
+        assets['cityGarage']=json.loads((river/'garage.json').read_text())
+        assets['cityGarage']['src']='data:image/webp;base64,'+base64.b64encode((river/'garage.webp').read_bytes()).decode()
+    if (river/'deck.json').exists():
+        assets['cityDeck']=json.loads((river/'deck.json').read_text())
+        assets['cityDeck']['src']='data:image/webp;base64,'+base64.b64encode((river/'deck.webp').read_bytes()).decode()
     vehicles=Path(root)/'src/art/vehicles'
     if (vehicles/'traffic.json').exists():
         assets['cityVehicles']=json.loads((vehicles/'traffic.json').read_text())

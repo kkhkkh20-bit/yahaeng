@@ -504,3 +504,12 @@ body.episode-coached #hud .obj:not(.open) .tut-detail{display:none}
 #hud .objective-read-hint{display:none;font-size:10px;line-height:1.5;color:#aebac3;padding-top:8px}
 #hud .obj.open .objective-read-hint{display:block}
 @media(max-width:480px){body.first-episode #mini{visibility:hidden}}
+body.no-prompts #hud .keys{display:none}
+/* 자유 모드(큰 도시): 잠입 도구 버튼(웅크림·던질 것·붙잡기·옷·도구 바꾸기)은 숨기고 [행동]·[공격]만 남긴다 */
+body.free-city #btnCrouch,body.free-city #quickItems,body.free-city #btnTool,body.free-city #btnToolNext,body.free-city #btnGrab,body.free-city #btnDress,body.free-city #btnSkill{display:none!important}
+
+/* 자유 모드 일시정지: 스토리 전용 조직도는 숨긴다 */
+body.free-city #pause [data-case-open]{display:none}
+body:not(.free-city) #btnFreeStats{display:none}
+/* 자유 모드: 지상·체력·수배 줄 뒤에 어두운 판을 깔아 지붕·간판 위에서도 읽히게 */
+body.free-city #hud .status{background:rgba(10,13,20,.74);border-radius:6px;padding:3px 9px;width:max-content;max-width:calc(100vw - 32px);box-shadow:0 1px 0 rgba(255,255,255,.04) inset}

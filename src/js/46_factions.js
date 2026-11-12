@@ -5,7 +5,11 @@
 // 조직이 해친 주민은 내 감점이 아니다 — 대신 소란이 커져 사람들 눈이 그쪽으로 쏠린다.
 OUTFITS.rival = '건달파 점퍼';
 OUTFIT_PAL.rival = ['#dba57e', '#141414', '#b3262a', '#1a1a1e', '#e8e8e2']; PR_PAL.rival = OUTFIT_PAL.rival;  // 빨간 점퍼 · 흰 운동화 — 의뢰 조직과 한눈에 갈린다
-const FAC_NAME = { A: '조직', B: '건달파' };
+// 큰 도시의 다른 두 조직: 청계파(C, 청록 운동복) · 종로파(D, 자주색 정장). 서로 다른 조직은 모두 적이다
+OUTFITS.gangC = '청계파 운동복'; OUTFIT_PAL.gangC = ['#dba57e', '#141414', '#1f8a86', '#16262a', '#e8e8e2']; PR_PAL.gangC = OUTFIT_PAL.gangC;
+OUTFITS.gangD = '종로파 정장'; OUTFIT_PAL.gangD = ['#dba57e', '#141414', '#5a2a74', '#141418', '#2a2a2a']; PR_PAL.gangD = OUTFIT_PAL.gangD;
+const FAC_NAME = { A: '조직', B: '건달파', C: '청계파', D: '종로파' };
+const FAC_OUTFIT = { B: 'rival', C: 'gangC', D: 'gangD' };
 const TAUNT = ['여긴 우리 쪽이야. 돌아가.', '무슨 일로 왔어?', '입구 막지 마.', '여기서 시비 걸지 마.'];
 const TAUNT_B = ['이쪽은 우리가 맡아.', '길 막지 말고 비켜.', '무슨 일이야?', '가게 앞에서 이러지 마.'];
 const npcAlive = o => o && o.state !== 'DEAD' && o.state !== 'CAPTIVE' && !o.yank && !o.doomed;
@@ -60,7 +64,7 @@ function factionsInit() {
   S.war = false; S.facOn = !!STAGE.zones && !STAGE.tutorial;
   // 판에 적힌 소속: police: true = 경찰(제복) · fac: 'B' = 건달파(빨간 점퍼) · 나머지 조직원은 의뢰 조직(A)
   for (const g of S.guards) { if (g.civ || g.dog) continue; const d = (STAGE._g || [])[g.id];
-    if (d && d.police) { g.police = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; } else { g.fac = (d && d.fac) || 'A'; if (g.fac === 'B') { g.outfit = 'rival'; g.rival = true; } } }
+    if (d && d.police) { g.police = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; } else { g.fac = (d && d.fac) || 'A'; if (FAC_OUTFIT[g.fac]) { g.outfit = FAC_OUTFIT[g.fac]; g.rival = true; } } }
   turfInit();
   if (!S.facOn) return;
   const n = STAGE.rivals != null ? STAGE.rivals : 3; if (!n) return;
@@ -89,14 +93,14 @@ function factionsInit() {
 }
 // 세력 구역: 조직(A) = 판에 적힌 출입 금지·적진 구역(건달파·경찰 전용은 빼고) · 건달파(B) = 'rival' 허가 구역 (없으면 위에서 정한 건물 둘레)
 function turfInit() {
-  S.turf = { A: [], B: [] }; BLD.forEach(b => { b.gang = null; });
+  S.turf = { A: [], B: [], C: [], D: [] }; BLD.forEach(b => { b.gang = null; });
   for (const r of STAGE.zones || []) { if (r[4] === 'pub' || r[5] === 'roof') continue; const al = r[7] || [];
-    if (al.includes('rival')) S.turf.B.push([r[0], r[1], r[2], r[3]]); else if (!al.includes('police')) S.turf.A.push([r[0], r[1], r[2], r[3]]); }
-  BLD.forEach(b => { if (b.vacant) return; for (const f of ['B', 'A']) if (!b.gang && S.turf[f].some(r => !(b.x1 < r[0] || b.x0 > r[2] || b.y1 < r[1] || b.y0 > r[3]))) b.gang = f; });
+    const f = al.includes('rival') ? 'B' : al.includes('gangC') ? 'C' : al.includes('gangD') ? 'D' : al.includes('police') ? null : 'A'; if (f) S.turf[f].push([r[0], r[1], r[2], r[3]]); }
+  BLD.forEach(b => { if (b.vacant) return; for (const f of ['B', 'C', 'D', 'A']) if (!b.gang && S.turf[f].some(r => !(b.x1 < r[0] || b.x0 > r[2] || b.y1 < r[1] || b.y0 > r[3]))) b.gang = f; });
 }
 const inTurf = (f, x, y) => { if (!S.turf || !S.turf[f]) return false; const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); return S.turf[f].some(r => tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3]); };
 // 건물 소속 깃발: 옥상 왼쪽 위 모서리에 조직(검정·금색) / 건달파(빨강) 깃발, 가까우면 이름
-const GANG_COL = { A: ['#1b1d24', '#e0b450'], B: ['#c3302c', '#ffe9e4'] };
+const GANG_COL = { A: ['#1b1d24', '#e0b450'], B: ['#c3302c', '#ffe9e4'], C: ['#1f8a86', '#e4fffb'], D: ['#5a2a74', '#f4e4ff'] };
 function drawGangFlags(P) {
   if (!S.turf) return;
   // Building affiliation is carried by people and access rules, without rooftop flags.
@@ -107,7 +111,7 @@ function drawGangFlags(P) {
 }
 const aFits = o => !!o && o !== 'rival' && S.guards.some(g => g.fac === 'A' && outfitOf(g) === o);  // 이 옷이 의뢰 조직 옷인가
 function startBrawl(a, b, why) {
-  if (!npcAlive(a) || !npcAlive(b) || !sameNpcLevel(a, b) || a.brawl || a.target || b.target) return;
+  if (!npcAlive(a) || !npcAlive(b) || !sameNpcLevel(a, b) || a.brawl || a.target || b.target || a.hit || b.hit || a.hitEscort || b.hitEscort) return;  // 의뢰 표적·경호원은 길거리 싸움에 끼지 않는다 (남이 먼저 죽이면 의뢰가 흐트러진다)
   a.facBlocked = 0; a.brawl = { o: b, cd: rnd(0.2, 0.6) }; if (!b.brawl && !b.civ) { b.facBlocked = 0; b.brawl = { o: a, cd: rnd(0.5, 0.9) }; }
   a.state = a.state === 'ALERT' ? a.state : 'PATROL'; a.path = null; a.chat = null; a.say = null;
   S.stats.fights = (S.stats.fights || 0) + 1; noise(a.x, a.y, 220, 'fight', flOf(a));
@@ -160,7 +164,7 @@ function npcDown(o, by, lethal) {
   o.state = 'DEAD'; o.icon = null; o.path = null; o.say = null; o.brawl = null; o.hunt = null; o.moving = false;
   play(lethal ? 'kill' : 'thud', 0.5 * proxVol(o)); noise(o.x, o.y, 90, 'fight', flOf(o));
   const c = { fl: flOf(o), z: o.z || 0, ch: charOf(o), stripped:!!o.stripped, g: o, ko: !lethal, byNpc: true, by: by && by.fac, fac: o.fac, civ: !!o.civ, outfit: outfitOf(o), tag: o.tag, x: o.x, y: o.y, a: o.a, kind: o.kind, hidden: false, discovered: false, carried: false, stashed: false, light: lightAt(o.x, o.y), t0: S.t };
-  S.corpses.push(c); S.stats.npcDown = (S.stats.npcDown || 0) + 1; if (o.civ) S.stats.npcCiv = (S.stats.npcCiv || 0) + 1;
+  S.corpses.push(c); if (STAGE.cityLife && lethal && !c.fl) cityDeathGore(o, by); S.stats.npcDown = (S.stats.npcDown || 0) + 1; if (o.civ) S.stats.npcCiv = (S.stats.npcCiv || 0) + 1;
   if (blamed) c.blamed = blamed;  // 실제 목격된 조직만 현장 증거로 남긴다
   if (by && by.fac && by.fac !== 'P' && o.civ) policeCall(o.x, o.y, by);
   if (S.fuseGuard === o) S.fuseGuard = null;
@@ -225,7 +229,8 @@ function facScan(g) {
     const d = dist(g.x, g.y, o.x, o.y); if (d > (S.war ? 280 : 150) || !los(g.x, g.y, o.x, o.y)) continue;
     // 싸움은 구역이 정한다: 우리 구역(또는 적진)에 들어온 상대 · 동료가 이미 붙은 상대 · 전쟁 중이면 보는 즉시. 구역 밖에서 마주치면 말로만 시비
     const inHos = g.fac === 'A' && STAGE.zones && zoneAt(o.x, o.y, o.z) === Z_HOS;
-    if (S.war || inHos || inTurf(g.fac, o.x, o.y) || (o.brawl && o.brawl.o && o.brawl.o.fac === g.fac)) { startBrawl(g, o, inTurf(g.fac, o.x, o.y) ? (g.fac === 'B' ? '여기 우리 구역이다, 꺼져!' : '어딜 들어와!') : null); return true; }
+    // 큰 도시(gangWar): 조직끼리는 경찰이 안 보이는 곳에서 마주치면 바로 싸운다
+    if (S.war || inHos || inTurf(g.fac, o.x, o.y) || (o.brawl && o.brawl.o && o.brawl.o.fac === g.fac) || (STAGE.gangWar && d < 190 && !copNear(g, 300))) { startBrawl(g, o, inTurf(g.fac, o.x, o.y) ? (g.fac === 'B' ? '여기 우리 구역이다, 꺼져!' : '어딜 들어와!') : null); return true; }
     if (copNear(g, 380)) continue;  // 경찰이 보고 있으면 먼저 시비 걸지 않는다
     if (!g.tauntT || S.t - g.tauntT > 18) { g.tauntT = S.t; o.tauntT = S.t; g.want = Math.atan2(o.y - g.y, o.x - g.x); gsay(g, (g.fac === 'B' ? TAUNT_B : TAUNT)[g.id % 4], 2.2); }
   }
@@ -323,6 +328,8 @@ function policeCall(x, y, by) {
   if (!(STAGE.city || STAGE.copBeats) || !by) return; if ((S.incT || 0) > S.t) return; S.incT = S.t + 4;
   const idle = S.guards.filter(o => o.police && !o.off && npcAlive(o) && o.state !== 'ALERT' && !o.brawl && !o.incident).sort((p, q) => dist(p.x, p.y, x, y) - dist(q.x, q.y, x, y));
   let n = 0; for (const o of idle.slice(0, 2)) { o.incident = { x, y, by, t0: S.t }; o.state = 'PATROL'; o.path = null; n++; }
-  if (!n) { const c = spawnCop(true); if (c) { c.incident = { x, y, by, t0: S.t }; n = 1; } }
-  if (n && dist(S.player.x, S.player.y, x, y) < 800) toast('누군가 경찰에 신고했다 — 경찰이 조직원을 잡으러 온다', 2.4);
+  // 큰 도시: 가장 가까운 경찰도 멀고 사건이 내 근처면, 화면 밖에서 하나 더 뛰어온다
+  const far = !idle.length || dist(idle[0].x, idle[0].y, x, y) > 1000;
+  if (!n || (STAGE.cityLife && far && dist(S.player.x, S.player.y, x, y) < 1000)) { const c = spawnCop(true); if (c) { c.incident = { x, y, by, t0: S.t }; n++; } }
+  if (n && !STAGE.noPrompts && dist(S.player.x, S.player.y, x, y) < 800) toast('누군가 경찰에 신고했다 — 경찰이 조직원을 잡으러 온다', 2.4);
 }

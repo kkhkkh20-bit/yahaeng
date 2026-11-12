@@ -70,6 +70,7 @@ function refreshBodyLighting() {
 // ---------------------------------------------------------------- 메시지
 const toastEl = document.getElementById('toasts');
 function toast(text, sec = 2.6, kind = '') { if (kind === 'hint') return showHint(text, sec);
+  if (STAGE && !modeRule('wardenWord')) text = String(text).replace(/자경대원/g, '조직원');  // 자유 모드의 칼 든 사람은 조직원이다 (잠입 의뢰판의 '자경대원' 말투를 쓰지 않는다)
   // 화면 글 최소: 이미 화면에서 보이는 일을 확인해 주는 알림은 띄우지 않고, 위험 알림('warn')은 요령을 뺀 사실만 남긴다.
   if (!guideFull()) { if (kind !== 'warn') return; text = String(text).split(' — ')[0].split(' · ')[0]; }
   S.toasts.push({ text, t: sec, kind }); if (S.toasts.length > 4) S.toasts.shift(); renderToasts(); }

@@ -8,7 +8,7 @@ const isAtk = a => !!a && (ATK_K.has(a.k) || !!a.kill);
 // 겹친 대상까지 훑은 행동 후보 (사람 근처 '공격 우선' 바꾸기 없이 날것 그대로)
 // 한 프레임 안에서 화면·버튼·라벨이 같은 계산을 되풀이하지 않게 (시각·위치가 같으면 그대로). 버튼을 누를 땐 새로 구한다
 let RC = null;
-const rcKey = () => { const P = S.player; return S.t + '|' + P.x + '|' + P.y + '|' + (P.fl || 0) + '|' + (P.z || 0) + '|' + !!P.interact + !!P.pick + !!P.trav + !!P.lunge + !!P.grabIn + '|' + (P.strikeT > 0) + '|' + !!P.hidden + '|' + !!S.skills?.ambush + '|' + !!S.practiceSkills?.ambush + '|' + !!S.skills?.electric + '|' + !!S.practiceSkills?.electric + '|' + !!P.captive + !!P.carrying + !!P.hide + !!P.ledge + !!P.wire; };
+const rcKey = () => { const P = S.player; return (STAGE.cityLife && !P.car ? Math.floor(S.t * 12) + '|' + Math.round(P.x / 5) + '|' + Math.round(P.y / 5) : S.t + '|' + P.x + '|' + P.y) + '|' + (P.fl || 0) + '|' + (P.z || 0) + '|' + !!P.interact + !!P.pick + !!P.trav + !!P.lunge + !!P.grabIn + '|' + (P.strikeT > 0) + '|' + !!P.hidden + '|' + !!S.skills?.ambush + '|' + !!S.practiceSkills?.ambush + '|' + !!S.skills?.electric + '|' + !!S.practiceSkills?.electric + '|' + !!P.captive + !!P.carrying + !!P.hide + !!P.ledge + !!P.wire; };
 function rawChoices(n = 7) {
   const key = rcKey(); if (RC && RC.key === key) return RC.out.slice();
   const out = rawChoices0(n); RC = { key, out }; return out.slice();
@@ -30,7 +30,7 @@ function attackAction() {
   const P = S.player; if (actionBusy(P)) {const next=followupCandidate(P);if(next)return{k:'kill',list:[next],label:P.followupAttack?'다음 기절 대기':'다음 기절',hold:'처치',busy:true};return canQueueGrabAttack(P) ? {k:'cap',g:P.grabIn.g,label:'기절',hold:'처치',queued:!!P.attackQueue} : { k: 'none', busy: true, label: P.skillHold ? ASSASSIN_SKILLS[P.skillHold.key].name+' 준비' : P.lethalHold ? '길게 누르는 중' : '공격' };}
   const down=nearFinish();if(down)return combatLabel({k:'finish',c:down,g:down.g});
   if(!concealedMeleeAllowed(P)){const near=concealedAttackCandidate(P);return near?{k:'none',label:'은신 기습 필요',skillLocked:'ambush'}:{k:'none',label:P.cover?'엄폐 중':'공격'};}
-  if (P.car) return { k: 'none', label: '경적', honk: true };
+  if (P.car) return STAGE.cityLife && wpnOn() ? { k: 'none', label: WEAPONS[S.wpn].throw ? '창밖으로 던지기' : '창밖으로 쏘기', driveBy: true } : { k: 'none', label: '경적', honk: true };
   if (P.captive) return combatLabel({ k: 'cap', g:P.captive, label: '기절', hold: '처치' });
   const a = rawChoices().find(isAtk); if (a) {
     const action=koLabel(Object.assign({},a)),choice=assassinPreview();
@@ -98,6 +98,8 @@ function envChoices() {
   if(!P.carrying&&P.outfit!=='crew'&&(STAGE.id==='tB'&&S.tutI===4||STAGE.starterContract==='disguise'||STAGE.apprenticeContract&&STAGE.id!=='e1'||STAGE.lessonIdentity)){const dress=list.find(a=>a.k==='dress'&&a.c.outfit==='crew');if(dress){list.splice(list.indexOf(dress),1);list.unshift(dress);}}
   // A wall switch beside a coded door must not replace opening that door.
   if(list[0]?.k==='lamp'){const keypad=list.find(a=>a.k==='keypad'&&!a.skillLocked);if(keypad){list.splice(list.indexOf(keypad),1);list.unshift(keypad);}}
+  // 자유 모드: 미션 행동(수갑 채우기·연락책·돌려주기 등)이 옷 갈아입기·시체 일보다 먼저
+  if(STAGE.cityLife){const m=list.find(a=>a.k==='evAct');if(m&&list[0]!==m){list.splice(list.indexOf(m),1);list.unshift(m);}}
   // Locked skill previews stay discoverable without hiding a usable door or object.
   return list.filter(a=>!a.skillLocked).concat(list.filter(a=>a.skillLocked));
 }
@@ -132,14 +134,15 @@ function grabAction() {
   const behind=Math.abs(angDiff(near.a,Math.atan2(P.y-near.y,P.x-near.x)))>1.75;
   return { k: 'none', near, label: '붙잡기', reason: near.elite?'정예 불가':near.state==='ALERT'?(near.seen?'교전 중':'경계 중'):!behind?'등 뒤로':'더 가까이' };
 }
-function actAttack() {
+function actAttack() {if(S?.player?.cuffed)return;
   RC = null;
   if (!S || S.over || paused || !running || tactical || S.amb) { if (S && DLG.modal) advanceDialog(); return; }
   if (DLG.modal) { advanceDialog(); return; }
   const P = S.player;
   if (actionBusy(P)) { if(!queueFollowupAttack())queueGrabAttack(); return; }
-  if (P.car) { honk(); return; }
+  if (P.car) { if (STAGE.cityLife && driveBy()) return; honk(); return; }  // 자유 모드: 무기를 들었으면 창밖으로 쏜다
   if (P.captive) { actPrimary({ k: 'execute', viaZ: true, inputGroup: 'atk' }); return; }  // 기절 → 계속 누르면 처치 (updateKoHold)
+  if (STAGE.cityLife && gunAttack()) return;  // 자유 모드: 손 닿는 처치가 없으면 든 무기로 쏜다
   const a = attackAction();
   if (a.k === 'none') {
     if(a.skillLocked)toast(abilityLockText(a.skillLocked),2);
@@ -153,7 +156,7 @@ function actAttack() {
   if(a.k!=='pull'&&choice&&choice.ids[0]===(a.g||a.list?.[0])?.id&&combatSource('atk')){beginAssassinSkill('atk',a);return;}
   actPrimary(Object.assign({}, a, { viaZ: true, inputGroup: 'atk' }));
 }
-function actEnv() {
+function actEnv() {if(S?.player?.cuffed)return;
   RC = null;
   if (!S || S.over || paused || !running || tactical || S.amb) return;
   if (DLG.modal) { advanceDialog(); return; }
@@ -171,12 +174,12 @@ function clothingAction(){
   return envChoices().find(a=>a.k==='dress'||a.k==='pickup'&&a.p?.outfit)||null;
 }
 function actDress(){
-  if(!S||S.over||paused||!running||tactical||S.amb||DLG.modal||STAGE.tutorial&&!STAGE.storyEpisode)return;
+  if(!S||S.over||paused||!running||tactical||S.amb||DLG.modal||S.player.cuffed||STAGE.tutorial&&!STAGE.storyEpisode)return;
   if(actionBusy()){queueRecoveryInput('dress');return;}
   RC=null;const a=clothingAction();
   if(a&&selectEnvTarget(envToken(a)))actEnv();
 }
-function actGrab() {
+function actGrab() {if(S?.player?.cuffed)return;
   RC = null;
   if (!S || S.over || paused || !running || tactical || S.amb) return;
   if (DLG.modal) { advanceDialog(); return; }

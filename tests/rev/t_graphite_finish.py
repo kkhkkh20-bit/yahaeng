@@ -32,7 +32,10 @@ async def main():
     await carry.dispatch_event('pointercancel',{'button':0,'pointerId':31})
     await q.evaluate(SETUP)
     attack=q.locator('#btnAct');normal=await attack.evaluate('(e)=>getComputedStyle(e).backgroundImage')
-    await q.evaluate('''()=>{const S=__game.S,P=S.player;S.corpses=[{x:P.x,y:P.y,fl:0,z:0,ch:'sam',outfit:'crew',ko:true,carried:false,hidden:false,stashed:false,g:{id:901,x:P.x,y:P.y,fl:0,z:0,state:'DEAD',child:false}}];S.t+=.1;__game.updateHUD(true)}''')
+    # v229: a subdued bystander keeps a neutral attack frame ('기절 상태 / 길게 살해'); a required target keeps the lethal frame.
+    body='''t=>{const S=__game.S,P=S.player;S.corpses=[{x:P.x,y:P.y,fl:0,z:0,ch:'sam',outfit:'crew',ko:true,carried:false,hidden:false,stashed:false,g:{id:901,x:P.x,y:P.y,fl:0,z:0,state:'DEAD',child:false,target:t}}];S.t+=.1;__game.updateHUD(true)}'''
+    await q.evaluate(body,False);assert not await attack.evaluate('e=>e.classList.contains("kill")'),'Subdued bystander is presented as a lethal threat'
+    await q.evaluate(SETUP);await q.evaluate(body,True)
     danger=await attack.evaluate('(e)=>getComputedStyle(e).backgroundImage');assert normal!=danger and await attack.evaluate('e=>e.classList.contains("kill")'),'Lethal finishing action has no distinct frame'
    await q.evaluate(SETUP);await q.screenshot(path=str(O/f'play-{name}.png'))
    if touch:await q.click('#btnToolNext')

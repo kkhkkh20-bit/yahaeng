@@ -4,6 +4,10 @@ function hideSpace(h, bodies=0, self=false) {
   return (h.bodies||0)+bodies+occupied<=(h.cap??Infinity);
 }
 function hideFootprint(h) {
+  const fk=h.tx+','+h.ty+','+flOf(h)+','+(h.w||0)+','+(h.h||0)+','+FURN.length;if(h._fp&&h._fpK===fk)return h._fp;  // 숨는 곳 발자리: 가구 목록을 매번 찾지 않게 자리가 같으면 그대로
+  h._fpK=fk;return h._fp=hideFootprint0(h);
+}
+function hideFootprint0(h) {
   const it=h.furn?FURN.find(it=>it.x===h.tx&&it.y===h.ty&&(it.fl||0)===flOf(h)&&(it.t===h.type||h.type==='bed'&&it.t==='cbed')):null;
   const w=h.w||it?.w||1,v=h.h||it?.h||1;
   return {x0:h.tx*TILE,y0:h.ty*TILE,x1:(h.tx+w)*TILE,y1:(h.ty+v)*TILE,w,h:v,it};

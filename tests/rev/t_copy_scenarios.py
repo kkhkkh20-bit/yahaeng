@@ -10,7 +10,7 @@ async def main():
   for mobile in [False, True]:
    pg = await b.new_page(viewport={'width':390 if mobile else 1280,'height':844},has_touch=mobile)
    errors=[];pg.on('pageerror',lambda e:errors.append(str(e)))
-   await pg.add_init_script('window.requestAnimationFrame=()=>0')
+   await pg.add_init_script('localStorage.setItem(`yahaeng.guide`,`full`);window.requestAnimationFrame=()=>0')
    await pg.goto((ROOT/'build/preview_city.html').as_uri());await pg.wait_for_function('!!__game')
    result=await pg.evaluate('''()=>{
     const G=__game,check=(v,m)=>{if(!v)throw Error(m)},start=id=>{G.start(G.STAGES.findIndex(s=>s.id===id));for(let i=0;i<60&&G.DLG.modal;i++)G.advanceDialog();G.setLayer(0);return G.S};
@@ -26,7 +26,7 @@ async def main():
     check(S.corpses[0]?.ko,'tap must create a real unconscious target');G.updateHUD(true);
     const a=G.attackAction();check(a.k==='finish'&&a.holdOnly,'wrong unconscious-target action');
     const caption=G.actionCaption(a);check((caption.match(/살해/g)||[]).length===1&&caption.includes('길게 누르기'),'finishing caption repeats lethal verb');
-    check(document.querySelector('#btnAct').textContent==='처치길게 누르기','button disagrees with required hold');
+    check(document.querySelector('#btnAct').textContent.trim()==='처치길게 누르기','button disagrees with required hold');
     check(document.querySelector('#btnAct').getAttribute('aria-label')===caption,'accessible label disagrees with target caption');
     check(S.toasts.some(t=>t.text.includes('빨간 카드키를')),'real key pickup has wrong name or particle');
     G.input.tool='coin';G.syncTools();check(!document.querySelector('#btnTool small'),'orphan unit below tool count');

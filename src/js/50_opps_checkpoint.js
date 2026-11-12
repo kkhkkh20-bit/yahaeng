@@ -90,7 +90,7 @@ function resumeStoredCP(si) {
   CP = { si, diff: r.diff, S: st, grids: r.grids, used: r.used || 0 };
   return loadCheckpoint();
 }
-const cpOn = () => DKEY !== 'hard' || !!(STAGE && STAGE.tutorial);
+const cpOn = () => !(STAGE && STAGE.cityLife) && (DKEY !== 'hard' || !!(STAGE && STAGE.tutorial));  // 자유 모드는 자체 저장(yahaeng.free1)을 쓴다: 큰 도시 전체를 체크포인트로 복제하지 않는다
 // 처음 달성한 준비만 센다. 같은 복장과 문을 반복 조작해도 증가하지 않는다.
 function preparationTokens() {
   const P = S.player, a = [];

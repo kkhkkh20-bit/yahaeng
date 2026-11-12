@@ -41,7 +41,7 @@ async def main(args):
     assert await q.locator('#pause').is_visible();await q.wait_for_timeout(150);assert await q.evaluate('__game.S.t')==t,'closing board resumed paused game'
     await q.click('#btnResume');await cc.hide('runner');await cc.finish()
     await q.locator('#skillScreen').wait_for(state='visible',timeout=6000)
-    assert '박인호의 통화 기록' in await q.locator('#caseTraining').inner_text()
+    assert '박인호의 인원 거래' in await q.locator('#caseTraining').inner_text()  # #111 이야기 개편 뒤 runner-down 단서 제목
     await q.locator('#caseTraining [data-case-open]').click();await q.click('#btnCaseClose');assert await q.locator('#skillScreen').is_visible()
     await continue_episode(q);assert await q.evaluate('__game.STAGE.id')=='e2';assert await q.locator('#brief').is_visible()
     assert await q.evaluate('__game.loadCaseFile().sources.includes("runner-down")'),'lead forgotten on next episode'

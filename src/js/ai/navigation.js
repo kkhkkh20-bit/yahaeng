@@ -7,7 +7,7 @@ function lookAround(g, dt, base, amp, hold) {
   g.want = base + g.lookOff;
 }
 const npcCanForceDoor = g => !g.civ && !g.dog && ['ALERT','SEARCH','CHECK','BODY','SUSPICIOUS'].includes(g.state);
-const npcCanOpenDoor=(g,d)=>!d.keyLock||g.hasKey===d.keyLock||!g.civ&&g.fac==='A'&&d.keyLock==='code';
+const npcCanOpenDoor=(g,d)=>!d.keyLock||g.hasKey===d.keyLock||STAGE.cityLife&&g.resident&&d.keyLock==='gold'||!g.civ&&g.fac==='A'&&d.keyLock==='code';
 function npcPostLegClear(a,b,sol=solidAt){
   const steps=Math.max(1,Math.ceil(dist(a.x,a.y,b.x,b.y)/6));
   for(let i=0;i<=steps;i++)for(const [dx,dy]of [[0,0],[9,0],[-9,0],[0,9],[0,-9]]){
@@ -18,7 +18,7 @@ function npcPostLegClear(a,b,sol=solidAt){
 function avoidStreetPost(g){
   if(flOf(g)||g.z||!g.path?.length)return;
   const next=g.path[0],dx=next.x-g.x,dy=next.y-g.y,d=Math.hypot(dx,dy);if(d<1)return;
-  for(const l of S.lamps){
+  for(const l of d<240?streetPostsNear(g.x+dx/2,g.y+dy/2):S.lamps){
     const m=l.mount;if(m?.kind!=='street')continue;
     const u=clamp(((m.ax-g.x)*dx+(m.ay-g.y)*dy)/(d*d),0,1);
     if(u<=0||dist(g.x+dx*u,g.y+dy*u,m.ax,m.ay)>=19)continue;
@@ -74,10 +74,31 @@ function updateStairYield(g,dt){
   }
   return true;
 }
+// 잠긴 문 찾기: 프레임마다 한 번 '층:x,y' 표를 만든다 (문이 수백 개인 큰 도시에서 걸음마다 전부 훑지 않게)
+let lockedDoorIdx=null;
+function lockedDoorAt(fl,tx,ty){
+  if(!lockedDoorIdx||lockedDoorIdx.t!==S.t||lockedDoorIdx.S!==S){const m=new Map();for(const d of S.doors)if(d.locked)m.set(flOf(d)+':'+d.tx+','+d.ty,d);lockedDoorIdx={t:S.t,S,m};}
+  return lockedDoorIdx.m.get(fl+':'+tx+','+ty)||null;
+}
+// 사람 위치 격자 (96px 칸): 갱신 한 번(S.t)마다 한 번 만들고, 비켜 걷기는 둘레 3×3 칸만 본다.
+// 큰 도시는 사람이 470명이라 한 사람마다 모두를 훑으면 한 프레임에 22만 번이 된다. 칸 소속은 프레임 처음 자리 기준이라
+// 프레임 안에서 조금 움직여도 둘레 칸(±96px)이 비켜 걷기 거리(58px)를 덮는다
+const AG_CELL = 96; let AG = null;
+function actorsNear(x, y) {
+  if (!AG || AG.t !== S.t || AG.s !== S) {
+    const cells = new Map(), add = o => { if (!(o.x > -1000)) return; const k = Math.floor(o.x / AG_CELL) * 65536 + Math.floor(o.y / AG_CELL); let c = cells.get(k); if (!c) cells.set(k, c = []); c.push(o); };
+    add(S.player); for (const o of S.guards) if (o.state !== 'DEAD' && !o.off) add(o);
+    AG = { t: S.t, s: S, cells, out: [] };
+  }
+  const cx = Math.floor(x / AG_CELL), cy = Math.floor(y / AG_CELL), out = AG.out; out.length = 0;
+  for (let i = cx - 1; i <= cx + 1; i++) for (let j = cy - 1; j <= cy + 1; j++) { const c = AG.cells.get(i * 65536 + j); if (c) for (const o of c) out.push(o); }
+  return out;
+}
 function moveAlong(g, speed, dt) {
   if(g.doorWork){g.moving=false;return false;}
+  if(STAGE.signals&&g.civ&&pedWaits(g)){g.moving=false;return false;}  // 빨간불: 횡단보도 앞에서 기다린다
   requestStairSpace(g);
-  if(g.path?.length&&!g.z){const next=g.path[0],d=S.doors.find(d=>d.locked&&flOf(d)===flOf(g)&&d.tx===Math.floor(next.x/TILE)&&d.ty===Math.floor(next.y/TILE));if(d&&(npcCanOpenDoor(g,d)||npcCanForceDoor(g))&&dist(g.x,g.y,d.x,d.y)<44){g.doorWork={d,t:0,dur:npcCanOpenDoor(g,d)?.36:1.1,forced:!npcCanOpenDoor(g,d)};d.npcWork=g.doorWork;g.a=g.want=Math.atan2(d.y-g.y,d.x-g.x);g.moving=false;play('cloth',.15*proxVol(g));return false;}}
+  if(g.path?.length&&!g.z){const next=g.path[0],d=lockedDoorAt(flOf(g),Math.floor(next.x/TILE),Math.floor(next.y/TILE));if(d&&(npcCanOpenDoor(g,d)||npcCanForceDoor(g))&&dist(g.x,g.y,d.x,d.y)<44){g.doorWork={d,t:0,dur:npcCanOpenDoor(g,d)?.36:1.1,forced:!npcCanOpenDoor(g,d)};d.npcWork=g.doorWork;g.a=g.want=Math.atan2(d.y-g.y,d.x-g.x);g.moving=false;play('cloth',.15*proxVol(g));return false;}}
   // A necessary bend can lead away from the destination. Measure the next leg,
   // so an actor making progress is not repeatedly sent back around the building.
   // A stationary person can invalidate a local sidestep. Replan around occupied
@@ -89,7 +110,7 @@ function moveAlong(g, speed, dt) {
     if(p.t>3){
       p.t=0;const occupied=new Set(),sol=g.z?solidFor(g.z):solidAt,tx=Math.floor(goal.x/TILE),ty=Math.floor(goal.y/TILE);
       for(const o of S.guards){if(o===g||o.moving||o.state==='DEAD'||o.state==='CAPTIVE'||o.climb||flOf(o)!==flOf(g)||(o.z||0)!==(g.z||0)||dist(g.x,g.y,o.x,o.y)>TILE*6)continue;const x=Math.floor(o.x/TILE),y=Math.floor(o.y/TILE);if(x!==tx||y!==ty)occupied.add(y*MW+x);}
-      if(occupied.size){const path=astar(Math.floor(g.x/TILE),Math.floor(g.y/TILE),tx,ty,(x,y)=>sol(x,y)||occupied.has(y*MW+x));if(path.length){path[path.length-1]={x:goal.x,y:goal.y};g.path=path;g.detourT=1.2;}}
+      if(occupied.size){const path=astar(Math.floor(g.x/TILE),Math.floor(g.y/TILE),tx,ty,(x,y)=>sol(x,y)||occupied.has(y*MW+x),pathExtra(g));if(path.length){path[path.length-1]={x:goal.x,y:goal.y};g.path=path;g.detourT=1.2;}}
     }
   }else g.walkProgress=null;
   const startX = g.x, startY = g.y; g.moving = false;
@@ -103,7 +124,7 @@ function moveAlong(g, speed, dt) {
     if(!r || r.x!==end.x || r.y!==end.y || r.nx!==next.x || r.ny!==next.y) r=g.motionRecovery={x:end.x,y:end.y,nx:next.x,ny:next.y,best:d,t:S.t,until:r?.until||0};
     if(d<r.best-8){r.best=d;r.t=S.t;}
     if(S.t-r.t>3 && d>20){
-      const path=astar(Math.floor(g.x/TILE),Math.floor(g.y/TILE),Math.floor(end.x/TILE),Math.floor(end.y/TILE),g.z?solidFor(g.z):solidAt);
+      const path=astar(Math.floor(g.x/TILE),Math.floor(g.y/TILE),Math.floor(end.x/TILE),Math.floor(end.y/TILE),g.z?solidFor(g.z):solidAt,pathExtra(g));
       if(path.length){path[path.length-1]={...end};g.path=path;r.until=S.t+1.2;}
       r.best=d;r.t=S.t;
     }
@@ -114,7 +135,7 @@ function moveAlong(g, speed, dt) {
     const p0 = g.path[0], dd = dist(g.x, g.y, p0.x, p0.y);
     if (dd > 1) {
       const ux = (p0.x - g.x) / dd, uy = (p0.y - g.y) / dd, rxv = -uy, ryv = ux; let sx = 0, sy = 0, slow = 1;
-      const P = S.player, others = [P].concat(S.guards);
+      const P = S.player, others = actorsNear(g.x, g.y);
       for (const o of others) {
         if (o === g || o.state === 'DEAD' || o.state === 'CAPTIVE' || o.climb || o.trav || o.hide || o.vent || o.under || flOf(o) !== flOf(g) || (o.z || 0) !== (g.z || 0)) continue;
         // 호위는 선두의 뒤를 따른다. 선두가 자기 호위를 피해 거꾸로 우회하지 않는다.
@@ -171,6 +192,20 @@ function npcRouteSolid(g) {
   const doors = new Set(S.doors.filter(d => d.locked && flOf(d) === flOf(g) && (npcCanOpenDoor(g, d) || npcCanForceDoor(g))).map(d => d.ty * MW + d.tx));
   return (x, y) => !inMap(x, y) || !grid || SOLID.has(grid[y][x]) && !doors.has(y * MW + x);
 }
+// 자유 모드 보행 비용: 횡단보도가 아닌 차도(교차로 한가운데 포함)는 칸마다 +8. 평소 걷는 사람(행인·조직원·순찰 경찰)은
+// 블록 둘레 보도로 돌아 교차로 앞 횡단보도로 건넌다. 도망치거나 쫓는 사람은 그냥 가로지른다
+let ROAD_COST = null;
+function cityRoadCost() {
+  if (ROAD_COST && ROAD_COST.mw === MW && ROAD_COST.mh === MH && ROAD_COST.g === G0) return ROAD_COST.a;
+  const a = new Uint8Array(MW * MH), RX = STAGE.roadsX || [], RY = STAGE.roadsY || [];
+  const band = (v, rs) => rs.some(r => v >= r && v < r + 4);  // 차도 = 도로 띠(폭 4칸) 안의 '.' 칸 (보도·광장의 '.'은 아니다)
+  for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G0[ty]?.[tx] === '.' && (band(tx, RX) || band(ty, RY))) a[ty * MW + tx] = 8;
+  for (const rx of RX) for (const ry of RY) {  // 교차로 네 변 바깥 두 칸 = 횡단보도
+    for (let k = 0; k < 4; k++) for (const d of [-2, -1, 4, 5]) { const put = (x, y) => { if (x >= 0 && y >= 0 && x < MW && y < MH) a[y * MW + x] = 0; }; put(rx + d, ry + k); put(rx + k, ry + d); } }
+  for (let i = 0; i < a.length; i++) if (G0[(i / MW) | 0]?.[i % MW] !== '.') a[i] = 0;
+  ROAD_COST = { a, mw: MW, mh: MH, g: G0 }; return a;
+}
+const pathExtra = g => STAGE.cityLife && STAGE.roadsX && !flOf(g) && !g.z && ['PATROL', 'RETURN'].includes(g.state) && !g.hunter && !g.evt && !g.hit && !g.hitEscort && (g.civ || g.police) ? cityRoadCost() : null;  // 의뢰 표적·경호원의 짜인 움직임은 곧장  // 조직원은 아무 데서나 건넌다
 function pathTo(g, x, y) {
   const sol = npcRouteSolid(g), sx = Math.floor(g.x / TILE), sy = Math.floor(g.y / TILE), tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
   // A remembered sound/contact can fall inside a bin or wall. Keep that
@@ -192,7 +227,8 @@ function pathTo(g, x, y) {
       return;
     }
   }
-  g.path = astar(sx, sy, tx, ty, sol); g.pathGoal = { x, y }; g.pathFailedAt = S.t;
+  const ex = pathExtra(g);  // 목적지가 차도 위(길가에 세운 차 등)면 그리로 곧장 간다
+  g.path = astar(sx, sy, tx, ty, sol, ex && !ex[ty * MW + tx] ? ex : null); g.pathGoal = { x, y }; g.pathFailedAt = S.t;
   if (!g.path.length && sx === tx && sy === ty && dist(g.x, g.y, x, y) > 6 && !sol(tx, ty)) g.path = [{ x, y }];
   if (g.path.length && !sol(tx, ty)) Object.assign(g.path[g.path.length - 1], { x, y });
 }

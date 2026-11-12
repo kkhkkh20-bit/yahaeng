@@ -1,5 +1,5 @@
 """Context controls stay separate; mouse PCs retain every action through keys."""
-import asyncio,json
+import asyncio,json,math
 from pathlib import Path
 from playwright.async_api import async_playwright
 R=Path(__file__).resolve().parents[2];O=R/'build/review-v166';O.mkdir(exist_ok=True)
@@ -15,10 +15,13 @@ async def main():
    await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!window.__game',polling=100);await q.evaluate(SETUP)
    for scene in ['empty','grab','clothes']:
     await q.evaluate('scene',scene)
-    controls=await q.locator('#hud button,#mini').evaluate_all('''es=>es.filter(e=>!e.hidden&&e.getBoundingClientRect().width&&getComputedStyle(e).visibility==='visible').map(e=>{const r=e.getBoundingClientRect();return{id:e.id,x:r.x,y:r.y,w:r.width,h:r.height}})''')
+    controls=await q.locator('#hud button,#mini').evaluate_all('''es=>es.filter(e=>!e.hidden&&e.getBoundingClientRect().width&&getComputedStyle(e).visibility==='visible').map(e=>{const r=e.getBoundingClientRect(),br=getComputedStyle(e).borderRadius;return{id:e.id,x:r.x,y:r.y,w:r.width,h:r.height,round:Math.abs(r.width-r.height)<.5&&(br.includes('%')?parseFloat(br)>=50:parseFloat(br)>=r.width/2)}})''')
     assert all(a['w']>=44 and a['h']>=44 and a['x']>=0 and a['y']>=0 and a['x']+a['w']<=w+.5 and a['y']+a['h']<=h+.5 for a in controls),(w,h,scene,controls)
     for i,a in enumerate(controls):
-     for c in controls[i+1:]:assert not(a['x']<c['x']+c['w']+6 and a['x']+a['w']+6>c['x'] and a['y']<c['y']+c['h']+6 and a['y']+a['h']+6>c['y']),(w,h,scene,a,c)
+     for c in controls[i+1:]:
+      # v239 radial arc: circular satellites sit diagonally around the main button, so measure circles by their real outline.
+      if a['round'] and c['round']:assert math.dist((a['x']+a['w']/2,a['y']+a['h']/2),(c['x']+c['w']/2,c['y']+c['h']/2))>=a['w']/2+c['w']/2+6,(w,h,scene,a,c)
+      else:assert not(a['x']<c['x']+c['w']+6 and a['x']+a['w']+6>c['x'] and a['y']<c['y']+c['h']+6 and a['y']+a['h']+6>c['y']),(w,h,scene,a,c)
     if touch:
      if scene=='clothes':
       assert 'btnCycle' in [a['id']for a in controls],controls

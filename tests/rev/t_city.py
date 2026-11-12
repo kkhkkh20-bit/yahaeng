@@ -31,7 +31,7 @@ async def main():
         # 3) 차로 사람을 치면 쓰러지고 수배가 붙는다
         r = await m.evaluate("""() => { const S = window.__game.S, P = S.player, v = P.car; v.v = 0; v.a = 0; v.x = 10 * 48; v.y = 21 * 48 + 24; P.x = v.x; P.y = v.y;
           const c = S.guards.find(q => q.civ && !q.child && q.state !== 'DEAD'); c.x = v.x + 160; c.y = v.y; c.route = [{ x: c.x, y: c.y, pause: 999 }]; c.routeLine = null; c.path = null; c.wait = 99; return c.id; }""")
-        await m.keyboard.down('ArrowRight'); await m.wait_for_timeout(1400); await m.keyboard.up('ArrowRight'); await m.wait_for_timeout(300)
+        await m.keyboard.down('ArrowUp'); await m.wait_for_timeout(1400); await m.keyboard.up('ArrowUp'); await m.wait_for_timeout(300)  # 차 기준 운전: 위 = 전진
         s = await m.evaluate("(id) => { const S = window.__game.S, c = S.guards.find(q => q.id === id); return [c.state, S.wanted, S.stats.runOver || 0]; }", r)
         print('치기', s)
         if s[0] != 'DEAD' or s[1] < 1: bad.append('차로 친 사람이 안 쓰러지거나 수배가 안 붙는다 %s' % s)
@@ -45,7 +45,7 @@ async def main():
         if not c: bad.append('수배가 붙어도 경찰이 쫓아오지 않는다')
         # 5) 쓰러지면 병원에서 깨어나고 수배가 풀린다
         await m.evaluate("() => { const S = window.__game.S; S.player.hp = 1; S.player.hurtT = 0; window.__game.hurt('경찰 곤봉에 맞았다.'); }")  # 경찰이 언제 닿을지는 그때그때라 직접 맞힌다
-        await m.wait_for_timeout(500)
+        await m.wait_for_timeout(3600)  # 쓰러지는 모습 2.6초 뒤 병원
         s = await m.evaluate("() => { const S = window.__game.S; return [S.stats.downs || 0, S.wanted, S.player.hp, S.over]; }")
         print('병원', s)
         if not s[0] or s[1] or s[3]: bad.append('쓰러져도 병원에서 깨어나지 않는다 %s' % s)

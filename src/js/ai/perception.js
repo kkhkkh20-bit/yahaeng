@@ -2,6 +2,7 @@
 const A_RANGE = [1, 1.12, 1.22, 1.3], A_SPEED = [1, 1.06, 1.12, 1.18], A_FOV = [1, 1.05, 1.12, 1.15];
 const A_NAME = ['평온', '경계', '수색', '발각'];
 function setAlert(lv, dur, msg, look = suspectLook()) {
+  if (!modeRule('stealthAlert')) return;  // 03_mode_rules
   if (lv === 3) {recordSearchCause('player');rememberSuspect(null, look);}
   if (lv >= 2 && S.alevel < 2) { S.stats.alarms++; after(0.4, roofCheck); }
   if (lv > S.alevel) {

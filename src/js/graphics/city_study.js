@@ -3,6 +3,8 @@ const studyArt=A.cityStudy,studyAtlas=new Image();
 studyAtlas.onload=()=>{freeCityDirty=true;studyWindowTiles.clear();};
 if(studyArt)studyAtlas.src=studyArt.src;
 function studyReady(){return !!studyArt&&studyAtlas.complete&&studyAtlas.naturalWidth>0;}
+// 구매 팩 건물 정면(층마다 3칸 창 묶음)·옥상·출입구로 그리는 판: 요원 도시 연구판과 큰 도시 시험판
+function studyStage(){return !!(STAGE.agentStudy||STAGE.studyFacades);}
 function studyDraw(c,name,x,y,w,h){
  const f=studyArt?.frames[name]?.rect;if(!f||!studyReady())return false;
  c.drawImage(studyAtlas,...f,Math.round(x),Math.round(y),w??f[2]*2,h??f[3]*2);return true;
@@ -25,6 +27,7 @@ function drawStudyBridge(p,x,y,w,h){
 }
 function drawStudyRoof(b){
  if(!studyReady())return;
+ drawStudyBoards(b,'roof');
  for(const p of b.kitProps||[])if(p.t==='tank'){
   studyDraw(ctx,'serviceFan',p.x*TILE,p.y*TILE-48,48,96);
   studyDraw(ctx,'antenna',p.x*TILE+8,p.y*TILE-76,24,48);
@@ -42,15 +45,43 @@ const cityVehicleArt=A.cityVehicles,cityVehicleAtlas=new Image();
 if(cityVehicleArt)cityVehicleAtlas.src=cityVehicleArt.src;
 function drawAssetCar(v){
  if(!cityVehicleArt||!cityVehicleAtlas.complete||!cityVehicleAtlas.naturalWidth)return false;
- const model=v.police?'police':['sedan','civic','hatch','wagon','luxury'][((v.c%5)+5)%5],f=cityVehicleArt.frames[model];
- const i=Math.round(((v.a%TAU+TAU)%TAU)/TAU*48)%48,scale=f.scale;
+ const T=vType(v),f=cityVehicleArt.frames[T.model||v.type]||cityVehicleArt.frames[v.police?'police':'sedan'];
+ const i=Math.round(((v.a%TAU+TAU)%TAU)/TAU*48)%48,scale=f.scale,r=f.rects[i];
  ctx.save();ctx.rotate(-v.a-Math.PI/2);ctx.imageSmoothingEnabled=false;
- if(v.dead)ctx.filter='brightness(.28) saturate(.2)';
- ctx.drawImage(cityVehicleAtlas,...f.rects[i],-f.anchor[0]*scale,-f.anchor[1]*scale,100*scale,100*scale);
+ if(v.dead)ctx.filter='brightness(.28) saturate(.2)';else if(v.hue)ctx.filter=`hue-rotate(${v.hue|0}deg)`;  // 도색소에서 칠한 차
+ ctx.drawImage(cityVehicleAtlas,...r,-f.anchor[0]*scale,-f.anchor[1]*scale,r[2]*scale,r[3]*scale);
  ctx.restore();return true;
 }
 const citySignArt=A.citySigns,citySignAtlas=new Image();
 if(citySignArt)citySignAtlas.src=citySignArt.src;
+const citySignArt2=A.citySigns2,citySignAtlas2=new Image();  // 큰 도시 가게 간판 (Galmuri 글씨)
+if(citySignArt2)citySignAtlas2.src=citySignArt2.src;
+// 대형 광고판 (tools/import_city_billboards.py): 건물 정면에 거는 판(face)과 옥상에 세우는 판(roof).
+// spec.boards = [{image, mode:'face'|'roof', x, fl}] · x = 건물 왼쪽에서 칸 · fl = 정면 판의 아래 끝이 걸리는 층
+const cityBoardArt=A.cityBoards,cityBoardAtlas=new Image();
+if(cityBoardArt)cityBoardAtlas.src=cityBoardArt.src;
+function boardRect(b,d){
+ const f=cityBoardArt?.frames[d.image]?.rect;if(!f)return null;
+ const k=TILE/cityBoardArt.tile,x0=(b.x0+d.x)*TILE;
+ if(d.mode==='roof'){const room=Math.max(TILE,(b.y1-b.fh+1-b.y0)*TILE+TILE*.5),s=Math.min(k,room/f[3],((b.x1+1-b.x0-d.x)*TILE)/f[2]),w=f[2]*s,h=f[3]*s,bottom=(b.y1-b.fh+1)*TILE+6;return{f,x:x0,y:bottom-h,w,h,legs:bottom};}
+ const top=(b.y1-b.fh+1)*TILE+4,bottom=(b.y1-(d.fl||0)+1)*TILE-4;if(bottom-top<TILE*1.4&&cityBoardArt.frames[d.image].rect[3]>40)return null;  // 너무 좁으면 걸지 않는다
+ const s=Math.min(k,(bottom-top)/f[3],((b.x1+1-b.x0-d.x)*TILE-6)/f[2]),w=f[2]*s,h=f[3]*s;
+ return{f,x:x0+3,y:bottom-h,w,h};
+}
+function drawStudyBoards(b,mode,lit,c=ctx,all=false){
+ const spec=STAGE.referenceBuildings?.[BLD.indexOf(b)];if(!spec?.boards||!cityBoardAtlas.complete||!cityBoardAtlas.naturalWidth)return;
+ for(const d of spec.boards){if(d.mode!==mode)continue;const r=boardRect(b,d);if(!r||!all&&!inView(r.x+r.w/2,r.y+r.h/2,r.w+r.h))continue;
+  c.save();c.imageSmoothingEnabled=false;
+  if(lit){c.globalCompositeOperation='lighter';for(const [pad,a] of [[18,.05],[8,.09]]){c.fillStyle=`rgba(255,214,150,${a})`;c.fillRect(r.x-pad,r.y-pad,r.w+pad*2,r.h+pad*2);}c.globalCompositeOperation='source-over';c.globalAlpha=.82;}
+  else if(r.legs){c.fillStyle='#2a3038';for(const lx of [r.x+r.w*.2,r.x+r.w*.8-6])c.fillRect(lx,r.y+r.h-4,6,r.legs-(r.y+r.h)+4);c.fillStyle='rgba(0,0,0,.35)';c.fillRect(r.x+8,r.legs-2,r.w-16,6);}
+  c.drawImage(cityBoardAtlas,...r.f,Math.round(r.x),Math.round(r.y),Math.round(r.w),Math.round(r.h));
+  c.restore();}
+}
+// 어둠 위에 한 번 더: 광고판은 밤에 스스로 빛난다 (들어간 건물은 정면·옥상이 걷히므로 뺀다)
+function drawBillboardsLit(){
+ if(!STAGE.referenceBuildings)return;
+ BLD.forEach((b,i)=>{if(b.vacant||i===S.openB||!STAGE.referenceBuildings[i]?.boards)return;drawStudyBoards(b,'face',true);drawStudyBoards(b,'roof',true);});
+}
 
 const studyWindowTiles=new Map();
 function studySourceRow(b,fl){const i=BLD.indexOf(b),s=STAGE.referenceBuildings[i];return{s,row:STAGE.referenceRow(i,fl)};}
@@ -72,33 +103,56 @@ function studyCellImage(b,tx,fl,w){
  }
  studyWindowTiles.set(key,c);return c;
 }
-function drawStudySign(b,a){
- const f=citySignArt?.frames[a.image]?.rect;
- if(!f||!citySignAtlas.complete||!citySignAtlas.naturalWidth)return;
+function drawStudySign(b,a,c=ctx){
+ const two=!citySignArt?.frames[a.image]&&!!citySignArt2?.frames[a.image],art=two?citySignArt2:citySignArt,img=two?citySignAtlas2:citySignAtlas;
+ const f=art?.frames[a.image]?.rect;
+ if(!f||!img.complete||!img.naturalWidth)return;
  const x=(b.x0+a.x)*TILE,y=(b.y1-a.fl)*TILE,w=a.w*TILE,h=a.h*TILE;
  const scale=Math.min(w/f[2],h/f[3]),dw=Math.round(f[2]*scale),dh=Math.round(f[3]*scale);
- ctx.save();ctx.imageSmoothingEnabled=false;
- ctx.drawImage(citySignAtlas,...f,Math.round(x+(w-dw)/2),Math.round(y+(h-dh)/2),dw,dh);
- ctx.restore();
+ c.save();c.imageSmoothingEnabled=false;
+ c.drawImage(img,...f,Math.round(x+(w-dw)/2),Math.round(y+(h-dh)/2),dw,dh);
+ c.restore();
 }
 
+// 건물 정면: 벽·창문 칸·기둥·그림자·실외기·담쟁이·그림 간판·광고판은 바뀔 때만 한 장으로 다시 굽는다.
+// 창문 칸 그림(열림·깨짐·불 켜짐), 칸별 밝기, 그림 자산 준비가 같으면 이전 장을 그대로 쓴다. 상가 간판(빛 번짐·깜빡임)만 매번 그린다.
+// 최근 FACADE_CAP장만 남긴다 (휴대폰 메모리)
+const FACADE_CAP=(window.matchMedia&&matchMedia('(pointer:coarse)').matches)?48:120,facadeLive=[];let facadeCellId=0;
+function studyFacadeWindows(b){
+ if(b._winIdx&&b._winIdx.n===S.windows.length+S.fwindows.length)return b._winIdx;
+ const m=new Map();for(const a of S.windows.concat(S.fwindows))if(a.ty===b.y1&&a.tx>b.x0&&a.tx<b.x1)m.set(flOf(a)*4096+a.tx,a);
+ return b._winIdx={n:S.windows.length+S.fwindows.length,m};
+}
 function drawStudyFacade(b){
  const x=b.x0*TILE,y=(b.y1-b.fh+1)*TILE,w=(b.x1-b.x0+1)*TILE,h=b.fh*TILE,bi=BLD.indexOf(b),spec=STAGE.referenceBuildings[bi];
  if(!spec)return;
- ctx.save();ctx.imageSmoothingEnabled=false;studyWall(ctx,b,x,y,w,h);
+ const W=studyFacadeWindows(b).m,cells=[];
+ for(let fl=0;fl<b.fh;fl++)for(let tx=b.x0+1;tx<b.x1;tx++){const im=studyCellImage(b,tx,fl,W.get(fl*4096+tx));if(im._fid==null)im._fid=++facadeCellId;cells.push(im._fid);}
+ const ready=(cityBoardAtlas.complete?1:0)+(citySignAtlas.complete?2:0)+(citySignAtlas2.complete?4:0)+(freeCityAtlas.complete?8:0);
+ const key=cells.join(',')+'|'+(b.fl||[]).map(v=>Math.round(clamp(v,0,1)*40)).join(',')+'|'+ready+'|'+STAGE.cityLife;
+ let F=b._facade;
+ if(!F||F.key!==key){
+  if(!F){F=b._facade={c:document.createElement('canvas')};facadeLive.push(b);while(facadeLive.length>FACADE_CAP){const o=facadeLive.shift();if(o._facade){o._facade.c.width=0;o._facade=null;}}}
+  const c=F.c;c.width=w;c.height=h+TILE;F.key=key;const q=c.getContext('2d');q.imageSmoothingEnabled=false;q.translate(-x,-y);  // 위로 한 칸 여유 (간판·광고판이 지붕선 위로 조금 나온다)
+  q.translate(0,TILE);studyFacadeParts(q,b,x,y,w,h,bi,spec,W);
+ }
+ ctx.save();ctx.imageSmoothingEnabled=false;
+ ctx.drawImage(F.c,x,y-TILE);
+ if(STAGE.cityLife)drawStoreSigns(b,!DBG.neon);  // 간판은 여기서 한 번만: 정면은 어둠·네온 단계 뒤(지붕 단계)에 그려지므로 빛 번짐도 여기서 같이 그린다
+ b.signRects=[];ctx.restore();
+}
+function studyFacadeParts(q,b,x,y,w,h,bi,spec,W){
+ studyWall(q,b,x,y,w,h);
  // The original 96px storeys repeat as complete three-bay units, at one
  // shared pixel scale. They are never stretched to a whole warehouse width.
- for(let fl=0;fl<b.fh;fl++)for(let tx=b.x0+1;tx<b.x1;tx++){
-  const a=(fl?S.fwindows:S.windows).find(a=>flOf(a)===fl&&a.tx===tx&&a.ty===b.y1);
-  ctx.drawImage(studyCellImage(b,tx,fl,a),tx*TILE,(b.y1-fl)*TILE,TILE,TILE);
- }
+ for(let fl=0;fl<b.fh;fl++)for(let tx=b.x0+1;tx<b.x1;tx++)q.drawImage(studyCellImage(b,tx,fl,W.get(fl*4096+tx)),tx*TILE,(b.y1-fl)*TILE,TILE,TILE);
  const pier=freeCityArt.frames.masonryPier.rect;
- for(let tx=b.x0;tx<=b.x1;tx+=3)ctx.drawImage(freeCityAtlas,...pier,tx*TILE,y,8,h);
- for(let tx=b.x0;tx<=b.x1;tx++){const l=b.fl?.[tx-b.x0]??.2;ctx.fillStyle=`rgba(4,8,22,${.22*(1-clamp(l,0,1))})`;ctx.fillRect(tx*TILE,y,TILE,h);}
- for(let fl=1;fl<b.fh;fl+=3)studyDraw(ctx,'aircon',x+8,(b.y1-fl)*TILE+10,32,32);
- if(bi%3===0)studyDraw(ctx,'ivy',x+w-30,y,24,48);
- if(spec.ad)drawStudySign(b,spec.ad);
- b.signRects=[];ctx.restore();
+ for(let tx=b.x0;tx<=b.x1;tx+=3)q.drawImage(freeCityAtlas,...pier,tx*TILE,y,8,h);
+ for(let tx=b.x0;tx<=b.x1;tx++){const l=b.fl?.[tx-b.x0]??.2;q.fillStyle=`rgba(4,8,22,${.22*(1-clamp(l,0,1))})`;q.fillRect(tx*TILE,y,TILE,h);}
+ for(let fl=1;fl<b.fh;fl+=3)studyDraw(q,'aircon',x+8,(b.y1-fl)*TILE+10,32,32);
+ if(bi%3===0)studyDraw(q,'ivy',x+w-30,y,24,48);
+ if(spec.ad&&!(STAGE.cityLife&&b.kind==='shop'&&(b.signs?.[0]||'').trim()&&spec.ad.fl<=1))drawStudySign(b,spec.ad,q);  // 가로 상호 간판 자리(2층 아랫단)와 겹치는 그림 간판은 뺀다
+ drawStudyBoards(b,'face',false,q,true);
 }
 function studyGround(c,ch,tx,ty){
  if(!studyReady())return false;

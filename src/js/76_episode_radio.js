@@ -71,6 +71,7 @@ function episodeRadioMessage(){
 // The mission stays stable. Immediate instructions belong to the radio.
 function compactObjectiveText(){
  if(!S)return '';
+ if(STAGE.hits){const g=cityGoal();if(g?.text)return g.text;}  // 큰 도시: 지금 의뢰·수입·수배
  if(S.exitOpen)return evidencePending()?'CCTV 기록 삭제 후 탈출':sewerEscapeGoal()?'남쪽 도로 맨홀로 올라가 탈출':sewerEscapeEntry(S.exit)?'공터 맨홀로 내려가 탈출':(S.exit?.name||STAGE.exitName||'출구')+'로 탈출';
  if(STAGE.firstSteps&&STAGE.storyEpisode)return '연락 서류 회수 · 동쪽 골목 탈출';
  const targets=S.spare?[]:S.guards.filter(g=>g.target),parts=[];

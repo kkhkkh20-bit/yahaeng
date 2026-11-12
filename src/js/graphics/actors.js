@@ -68,7 +68,7 @@ function drawMarked() {
 function drawGhosts() { drawMarked(); }
 // 마지막 목격 지점 (어쌔신 크리드 유니티식 유령 + 수색 범위): 어둠 위에 그려 늘 또렷하게
 function drawLastSeen() {
-  const P = S.player, pts = []; if (chaseNow()) return;  // 쫓기는 중엔 지금 내 자리가 곧 '마지막 목격 지점'이다
+  const P = S.player, pts = []; if (chaseNow() || STAGE.cityLife) return;  // 자유 모드는 수색 범위·십자·물음표를 그리지 않는다 (수배 별과 미니맵으로 충분)  // 쫓기는 중엔 지금 내 자리가 곧 '마지막 목격 지점'이다
   for (const g of S.guards) {
     if (g.civ || g.dog || g.state === 'DEAD' || flOf(g) !== flOf(P)) continue;
     const q = g.state === 'ALERT' ? g.lastSeen : ['SUSPICIOUS', 'SEARCH', 'NOTICE'].includes(g.state) && g.why ? (g.state==='SEARCH'&&g.searchJob ? g.searchOrigin : g.poi) : null;
@@ -88,7 +88,7 @@ function drawLastSeen() {
     ctx.fillStyle = q.hot ? 'rgba(232,90,70,.9)' : 'rgba(242,196,107,.9)'; ctx.font = uiFont(14); ctx.textAlign = 'center'; ctx.fillText(q.hot ? '!' : '?', q.x, q.y - 40);
   }
 }
-function drawGuard(g) {return withFurnitureOcclusion(g,()=>drawGuardSprite(g));}
+function drawGuard(g) {const r=withFurnitureOcclusion(g,()=>drawGuardSprite(g));if(STAGE.cityLife&&!(typeof npcGunPose==='function'&&npcGunPose(g))){drawGangKnife(g);drawCopGear(g);}return r;}
 function drawGuardSprite(g) {
   if(assassinOwnsActor(g))return;
   if(S.player.killAnim?.g===g)return; // the paired pose draws this victim once
@@ -109,7 +109,7 @@ function drawGuardSprite(g) {
     drawPR(k, g.x, g.y, -Math.PI / 2, 'climb', 0, 1, 1, 14, ((Math.floor(c.t * 7) * (c.up ? 1 : -1)) % 4 + 4) % 4); return;
   }
   if (g.z) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(g.x + 4 + g.z * 2, g.y + 6 + g.z * 3, 15, 11, 0, 0, TAU); ctx.fill(); }
-  if (usePR(k)) { const hb = holdingNow(g); if (hb) drawHeldBox(g.x, g.y, g.a, 1, false); const pose=targetGesturePose(g);drawPR(pose?.key||k, g.x, g.y, g.a, pose?.anim||guardAnim(g), S.t + g.id * 0.37, 1, 1 + (g.z || 0) * 0.05, 0, pose?.frame??-1); if (hb) drawHeldBox(g.x, g.y, g.a, 1, true); drawActorGear(g); return; }
+  if (usePR(k)) { const hb = holdingNow(g); if (hb) drawHeldBox(g.x, g.y, g.a, 1, false); const pose=targetGesturePose(g)||(STAGE.cityLife&&typeof npcGunPose==='function'?npcGunPose(g):null);drawPR(pose?.key||k, g.x, g.y, g.a, pose?.anim||guardAnim(g), S.t + g.id * 0.37, 1, 1 + (g.z || 0) * 0.05, 0, pose?.frame??-1); if (hb) drawHeldBox(g.x, g.y, g.a, 1, true); drawActorGear(g); return; }
   drawChar(k, g.x, g.y, g.a, g.moving || g.state === 'CAPTIVE', 1, 3, g.swingT > 0); drawActorGear(g);
 }
 const strayDogImage=new Image();if(A.strayDog?.src)strayDogImage.src=A.strayDog.src;

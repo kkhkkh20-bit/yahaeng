@@ -77,7 +77,7 @@ function selectVisionFocus() {
   for(const c of S.cams||[])if(same(c)&&camOn(c)&&exposed(c))considerNear(c,true);
   return nearest;
 }
-function showVisionField(actor) { return !!(tactical||input.scan||visionFrame?.actor===actor); }
+function showVisionField(actor) { return !!(tactical||input.scan||(!STAGE.cityLife&&visionFrame?.actor===actor)); }  // 큰 도시: 행인 시야 테두리를 늘 그리지 않는다 (지도·살피기에서만)
 function drawFacingCue(g) {
   if(g.civ||g.dog)return;
   const r=19,k=1/clamp(SCALE,.65,1.4),a=g.a;

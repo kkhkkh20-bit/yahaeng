@@ -1,4 +1,5 @@
 function drawWinWatch() {
+  if (STAGE.cityLife) return;  // 큰 도시: 창가 감시 부채꼴은 잠입 의뢰용 표시라 그리지 않는다 (사람 수백 명을 매 프레임 훑던 비용)
   const P = S.player;
   for (const g of S.guards) {
     if (!flOf(g) || g.state === 'DEAD' || g.state === 'CAPTIVE' || g.state === 'SLEEP' || g.dog) continue;

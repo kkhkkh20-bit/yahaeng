@@ -33,6 +33,7 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
   if (sa.k === 'dropItem') { dropItem(); toast('내려놓았다', 1.2); return; }
   if (sa.k === 'dress') {  // 변장: 조직원 옷을 입으면 멀리서는 같은 편으로 보인다. 정예·표적은 얼굴을 알아보고, 뛰거나 가까이 붙으면 들킨다
     const c = sa.c, of = c.outfit || 'crew', previousLook = suspectLook(); stripBodyClothing(c); after(0.9, () => bossRadio('disguise', true)); P.disguise = (c.ch || '').split('@')[0]; /* 주인공은 기본 체형 (모든 동작이 있다) */ P.outfit = of; syncDisguiseKnowledge(); onDisguiseChanged(previousLook); play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
+    if (STAGE.cityLife && typeof cityDisguiseOn === 'function') cityDisguiseOn(c, of);
     feedbackEvent('dress',P,{text:P.disguiseBlown?withJosa(outfitName(of),'으로/로')+' 갈아입었다 · 이미 보고된 복장':withJosa(outfitName(of),'으로/로')+' 갈아입었다 · 허용 구역만 통행',warning:!!P.disguiseBlown,seconds:1.8});feedbackPulse($('accessLbl'),'dress');
     return;
   }
@@ -89,7 +90,7 @@ function secondaryAction(envOnly) {  // envOnly: [행동] 버튼용 — 붙잡�
 // One eligibility rule for the action button, clothing shortcut and late input.
 function corpseClothingAction(c){
   const P=S.player;
-  if(!c||!(STAGE.disguise||STAGE.zones)||!S.corpses.includes(c)||c.carried||c.stashed||c.dog||c.stripped||c.target||!(c.outfit||!STAGE.zones&&!(c.ch||'').startsWith('civ'))||P.disguise&&!P.disguiseBlown&&(c.outfit||'crew')===P.outfit||!objectReachable(c,46))return null;
+  if(!c||!(STAGE.disguise||STAGE.zones||STAGE.cityLife)||!S.corpses.includes(c)||c.carried||c.stashed||c.dog||c.stripped||c.target||!(c.outfit||!STAGE.zones&&!(c.ch||'').startsWith('civ'))||P.disguise&&!P.disguiseBlown&&(c.outfit||'crew')===P.outfit||!objectReachable(c,46))return null;
   return{k:'dress',c,fromZ:true,label:(P.blown||{})[c.outfit||'crew']?'옷 갈아입기 (이미 들통난 옷)':'옷 갈아입기 — '+outfitName(c.outfit||'crew')};
 }
 

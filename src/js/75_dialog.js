@@ -4,10 +4,10 @@ const DLG = { q: [], cur: null, modal: false, onEnd: null };
 const DLG_COL = { aide: '#8fe3c9', hero: '#7fd6ff', guard: '#ff7a66', elite: '#ff9a3c', target: '#f2c46b', civ: '#9fd8a8', master: '#c9a2ff', note: '#e8e3d6', dog: '#c8a27a' };
 function speakerOf(w) {
   if(w?.recorded){const sp=speakerOf(w.recorded);return{...sp,name:sp.name+' · 녹음',role:'무전기에 남은 음성'};}
-  if (w === 'hero') return { name: '올빼미', col: DLG_COL.hero, key: STAGE?.agentStudy?'agent@heroAgent':'ninja', portrait:'hero', role: '당신 · 잠입 암살자', face: 'fc_ninja' };
+  if (w === 'hero') return { name: '올빼미', col: DLG_COL.hero, key: STAGE?.agentStudy?'agent@heroAgent':'ninja', portrait:'hero', role: STAGE?.cityLife ? '당신 · 야행 극비 요원' : '당신 · 잠입 암살자', face: 'fc_ninja' };
   if (w && w.note) return { name: w.note, col: DLG_COL.note, key: null, role: '', face: null };
   if (w === 'aide') return { name: '제비', col: DLG_COL.aide, key: 'civ3@fBob', portrait:'aide', role: '현장 지원', face: 'fc_aide' };
-  if (w === 'master') return { name: '까마귀', col: DLG_COL.master, key: 'old', portrait:'crow', role: '의뢰인', face: 'fc_master' };
+  if (w === 'master') return { name: '까마귀', col: DLG_COL.master, key: 'old', portrait:'crow', role: STAGE?.cityLife ? '야행 담당관' : '의뢰인', face: 'fc_master' };
   if (w && w.doc) return { name: '한 선생', col: DLG_COL.civ, key: charOf(w), portrait:'doc', role: '의사', face: 'fc_doc' };
   if (w && w.civ) return { name: w.child ? '아이' : '주민', col: DLG_COL.civ, key: charOf(w), portrait:w.child?'legacyChild':null, role: w.outfit && w.outfit !== 'crew' ? outfitName(w.outfit) : '', face: 'fc_civ' + (w.look || 0) };
   if (w && w.kind) { const k = w.dog ? 'dog' : w.target ? 'target' : w.elite ? 'elite' : 'guard';
@@ -89,7 +89,7 @@ function say(lines, modal, onEnd) {
     if (onEnd) onEnd(); return;
   }
   const speakers=[...new Set(lines.map(l=>l[0]))];
-  $('dlgContext').textContent=speakers.some(w=>w==='master'||w==='aide')?'무전 · '+speakers.map(w=>speakerOf(w).name+(w==='hero'?'(나)':'')).filter(Boolean).join(' / '):speakers.every(w=>w==='hero')?'올빼미의 생각':speakers.every(w=>w&&w.note)?'현장 기록':'현장 대화';
+  $('dlgContext').textContent=S?.phoneCall?'공중전화 · '+speakers.map(w=>speakerOf(w).name+(w==='hero'?'(나)':'')).join(' / '):speakers.some(w=>w==='master'||w==='aide')?'무전 · '+speakers.map(w=>speakerOf(w).name+(w==='hero'?'(나)':'')).filter(Boolean).join(' / '):speakers.every(w=>w==='hero')?'올빼미의 생각':speakers.every(w=>w&&w.note)?'현장 기록':'현장 대화';
   $('dlg').dataset.channel=speakers.some(w=>w==='master'||w==='aide')?'radio':speakers.every(w=>w&&w.note)?'note':'conversation';
   $('dlgChannelIcon').innerHTML=($('dlg').dataset.channel==='radio'?skillSigil('radio'):uiSigil($('dlg').dataset.channel==='note'?'document':'conversation'));
   DLG.total=lines.length;DLG.index=0;DLG.q = lines.slice(); DLG.modal = !!modal; DLG.onEnd = onEnd || null; nextLine();

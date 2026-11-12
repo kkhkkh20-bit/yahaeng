@@ -1,0 +1,164 @@
+// ---------------------------------------------------------------- 큰 도시: 망가진 차의 연기 · 불 · 폭발 (GTA식)
+// 내구성이 절반 아래면 엔진에서 연기, 4분의 1 아래면 불이 붙고 CAR_FIRE_T초 뒤 터진다. 부딪혀 내구성이 다 떨어져도 터진다.
+// 폭발: 섬광 · 충격파 · 불덩이 · 파편, 둘레 사람과 차가 다치고 불이 옮겨 붙는다. 불탄 차는 한동안 타오르고 바닥에 그을음이 남는다.
+// 큰 도시(STAGE.cityLife)에서만 쓴다. 의뢰 맵의 차는 예전처럼 부서진다.
+const CAR_FIRE_T = 5, CAR_BLAST_R = 120;
+function carFireUpdate(dt) {
+  if (!STAGE.cityLife || !S.vehicles) return;
+  const P = S.player, parts = S.fireParts || (S.fireParts = []);
+  for (const v of S.vehicles) {
+    const near = Math.abs(v.x - cam.x) < 1600 && Math.abs(v.y - cam.y) < 1200;
+    if (v.dead) {
+      if (v.burn > 0 && near) { v.burn -= dt * 0.25; if (Math.random() < dt * 8) fireEmit(v, 'smoke', 1); if (Math.random() < dt * 4) fireEmit(v, 'spark', 1); }
+      continue;
+    }
+    const k = v.hp / (v.hpMax || 6);
+    if (k <= 0.25) {
+      if (!v.fireT) { v.fireT = 0.001; if (near) play('kill2', 0.25); if (P.car === v) { toast('차에 불이 붙었다! 터지기 전에 [행동]으로 뛰어내려라', 3, 'warn big'); S.flash = Math.max(S.flash || 0, 0.25); } }
+      v.fireT += dt; if (v.fireHold && v.fireT > 1) v.fireT = 1;  /* 이벤트: 내가 다가갈 때까지 불이 커지지 않는다 */
+      if (near && Math.random() < dt * (3 + v.fireT * 2)) fireEmit(v, 'spark', 1);  // 불길은 픽셀 스프라이트, 튀는 불똥만 입자
+      if (v.fireT >= CAR_FIRE_T) carExplode(v);
+    } else v.fireT = 0;
+    if (k <= 0.5 && near && Math.random() < dt * (k <= 0.25 ? 14 : 6)) fireEmit(v, 'smoke', 1);
+  }
+  for (let i = parts.length - 1; i >= 0; i--) {
+    const p = parts[i]; p.t += dt; if (p.t >= p.life) { if (p.kind === 'gib') (S.gibs || (S.gibs = [])).push({ x: p.x, y: p.y, s: Math.round(p.size), t: S.t }); parts.splice(i, 1); continue; }
+    p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= Math.pow(0.2, dt); p.vy = p.vy * Math.pow(0.2, dt) + (p.kind === 'debris' || p.kind === 'gib' ? 0 : -18 * dt);
+  }
+  if (parts.length > 700) parts.splice(0, parts.length - 700);
+  if (S.booms) S.booms = S.booms.filter(b => S.t - b.t < CAR_BOOM_T);
+  burnUpdate(dt);
+}
+// 엔진(차 앞쪽)에서 입자 하나
+function fireEmit(v, kind, n, at) {
+  const parts = S.fireParts || (S.fireParts = []), hx = at ? at.x : v.x + Math.cos(v.a) * (v.len || 92) * 0.28, hy = at ? at.y : v.y + Math.sin(v.a) * (v.len || 92) * 0.28;
+  for (let k = 0; k < n; k++) {
+    const a = rnd(0, TAU), s = kind === 'spark' ? rnd(120, 360) : kind === 'debris' ? rnd(80, 260) : kind === 'blast' ? rnd(30, 150) : rnd(4, 26);
+    parts.push({ kind, x: hx + rnd(-8, 8), y: hy + rnd(-8, 8), vx: Math.cos(a) * s, vy: Math.sin(a) * s - (kind === 'smoke' ? 14 : 0), t: 0,
+      life: kind === 'smoke' ? rnd(1.6, 3) : kind === 'spark' ? rnd(.3, .7) : kind === 'debris' ? rnd(.5, .9) : kind === 'blast' ? rnd(.45, .9) : rnd(.35, .8),
+      size: kind === 'smoke' ? rnd(12, 22) : kind === 'blast' ? rnd(30, 58) : kind === 'fire' ? rnd(13, 24) : rnd(2, 4), rot: rnd(0, TAU) });
+  }
+}
+function carExplode(v) {
+  if (v.dead) return;
+  const P = S.player, mine = P.car === v;
+  v.fireT = 0; v.hp = 0;
+  if (mine) P.car = null;  // 못 빠져나왔다: 차와 함께 터진다
+  carWreck(v); v.burn = 12; if (STAGE.cityLife && dist(v.x, v.y, P.x, P.y) < 900) fstat('explosions');
+  if (STAGE.cityLife && S.bombs) { buildingBlast(v.x, v.y, 1); comboHit('car'); }
+  (S.booms || (S.booms = [])).push({ x: v.x, y: v.y, t: S.t });
+  (S.scorch || (S.scorch = [])).push({ x: v.x, y: v.y, r: rnd(46, 58), rot: rnd(0, TAU) }); if (S.scorch.length > 60) S.scorch.shift();
+  fireEmit(v, 'spark', 30, v); fireEmit(v, 'debris', 18, v); fireEmit(v, 'smoke', 10, v);
+  const d = dist(v.x, v.y, P.x, P.y), near = clamp(1 - d / 900, 0, 1);
+  S.shakeT = Math.max(S.shakeT || 0, 0.25 + 0.45 * near); S.flash = Math.max(S.flash || 0, 0.35 * near);
+  play('thud', 0.6 + 0.4 * near); play('glass', 0.7 * near); play('metal', 0.5 * near, .6);
+  noise(v.x, v.y, 700, 'car', 0);
+  // 둘레 사람: 가까우면 죽고 조금 떨어지면 쓰러진다
+  for (const g of S.guards) {
+    if (g.state === 'DEAD' || g.off || flOf(g) || g.z) continue;
+    const r = dist(g.x, g.y, v.x, v.y); if (r > CAR_BLAST_R) continue;
+    if (r < CAR_BLAST_R * 0.7) { npcDown(g, null, true); g.charred = true; g.burnUntil = S.t + rnd(5, 8); bloodBurst(g.x, g.y - 10, Math.atan2(g.y - v.y, g.x - v.x), 5);
+      const pa = S.fireParts || (S.fireParts = []); for (let k = 0; k < 9; k++) { const a = Math.atan2(g.y - v.y, g.x - v.x) + rnd(-1, 1), sp = rnd(90, 240); pa.push({ kind: 'gib', x: g.x, y: g.y - 14, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, t: 0, life: rnd(.5, .8), size: rnd(2, 4), rot: 0 }); } }
+    else { npcDown(g, null, false); igniteNpc(g); bloodBurst(g.x, g.y - 10, Math.atan2(g.y - v.y, g.x - v.x), 3); }
+  }
+  // 바로 밖에 있던 사람들: 몸에 불이 붙어 비명을 지르며 뛰어다니다 쓰러진다
+  for (const g of S.guards) { if (!npcAlive(g) || g.off || flOf(g) || g.z || g.burnT) continue; const r = dist(g.x, g.y, v.x, v.y); if (r < CAR_BLAST_R * 1.7 && Math.random() < 0.75) igniteNpc(g); }
+  if (mine) { P.x = v.x; P.y = v.y; P.hurtT = 0; P.hp = 1; hurtPlayer(null, '차 안에서 폭발에 휘말렸다.'); }
+  if (!P.car && !flOf(P) && !P.z && d < CAR_BLAST_R * 1.6) ignitePlayer();
+  if (!mine && !P.car && !flOf(P) && !P.z && d < CAR_BLAST_R) { P.hurtT = 0; hurtPlayer(null, '폭발에 휘말렸다.'); if (d < CAR_BLAST_R * 0.6) { P.hurtT = 0; hurtPlayer(null, '폭발에 휘말렸다.'); } }
+  // 둘레 차: 크게 망가지고, 가까우면 불이 옮겨 붙는다 (연쇄 폭발)
+  for (const o of S.vehicles) {
+    if (o === v || o.dead) continue; const r = dist(o.x, o.y, v.x, v.y); if (r > CAR_BLAST_R + 30) continue;
+    o.hp = Math.min(o.hp, Math.max(0.5, (o.hpMax || 6) * (r < CAR_BLAST_R * 0.6 ? 0.2 : 0.45))); o.smoke = 2;
+    const push = (CAR_BLAST_R + 30 - r) * 1.6, a = Math.atan2(o.y - v.y, o.x - v.x); o.x += Math.cos(a) * push * 0.12; o.y += Math.sin(a) * push * 0.12; o.a += rnd(-0.3, 0.3);
+  }
+  if (mine) addWanted(1, '차가 터졌다');
+}
+// 바닥 그을음 (차 밑에): 차보다 먼저 그린다
+function drawCarScorch() {
+  drawCharred(); if (!S.scorch) return;
+  for (const s of S.scorch) { if (!inView(s.x, s.y, s.r * 2)) continue;
+    const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r); g.addColorStop(0, 'rgba(8,6,6,.75)'); g.addColorStop(.6, 'rgba(14,10,8,.45)'); g.addColorStop(1, 'rgba(14,10,8,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(s.x, s.y, s.r, s.r * .78, s.rot, 0, TAU); ctx.fill(); }
+}
+// ---- 사람에 붙은 불: 비명을 지르며 2.5~4초 뛰어다니다 쓰러져 검게 타 죽는다. 근처 사람에게 옮겨 붙기도 한다
+const CAR_BOOM_T = 3.4, BURN_SCREAM = ['으아아아악!', '뜨거워! 뜨거워!', '살려줘!', '끄아아악!', '불 좀 꺼줘!'];
+function igniteNpc(g) {
+  if (!g || g.burnT || g.state === 'DEAD' && g.charred) return;
+  g.burnT = S.t; g.burnDie = S.t + rnd(2.5, 4); g.burnUntil = g.burnDie + rnd(5, 8); g.screamT = 0;
+  if (npcAlive(g)) { civPanic(g, g.x + rnd(-40, 40), g.y + rnd(-40, 40), 6); g.icon = null; }
+}
+function ignitePlayer() { const P = S.player; if (P.burnUntil > S.t) return; P.burnUntil = S.t + 2.4; play('kill2', 0.4); after(1.2, () => { if (S.player.burnUntil > S.t && !S.downing) { S.player.hurtT = 0; hurtPlayer(null, '몸에 불이 붙었다.'); } }); }
+function burnUpdate(dt) {
+  if ((S.burnT0 = (S.burnT0 || 0) - dt) > 0) return; S.burnT0 = 0.25;
+  const P = S.player;
+  // 불타는 차 바로 옆을 지나가면 옷에 불이 옮겨 붙는다 (타는 차 둘레 사람만 본다)
+  for (const v of S.vehicles || []) { if (!(v.dead && v.burn > 2 || v.fireT > 2.5)) continue;
+    for (const g of actorsNear(v.x, v.y)) if (g !== P && !g.burnT && !g.off && !flOf(g) && Math.abs(v.x - g.x) < 46 && Math.abs(v.y - g.y) < 46 && Math.random() < 0.3) igniteNpc(g); }
+  if (!(S.burnAny > S.t)) { if (!S.guards.some(g => g.burnT && g.burnUntil > S.t)) return; }
+  S.burnAny = S.t + 0.25;
+  for (const g of S.guards) {
+    if (!g.burnT || !(g.burnUntil > S.t)) continue;
+    if (npcAlive(g)) {
+      if (S.t >= g.burnDie) { npcDown(g, null, true); g.charred = true; play('thud', 0.3 * proxVol(g)); bloodBurst(g.x, g.y - 8, rnd(0, TAU), 2); continue; }
+      if ((g.screamT -= 0.25) <= 0) { g.screamT = rnd(0.7, 1.2); gsay(g, BURN_SCREAM[(Math.random() * BURN_SCREAM.length) | 0], 0.9); play('kill2', 0.18 * proxVol(g), 1.3 + Math.random() * 0.4); }
+      if (g.state !== 'PANIC' || Math.random() < 0.3) civPanic(g, g.x + rnd(-60, 60), g.y + rnd(-60, 60), 2);  // 이리저리 갈팡질팡
+      for (const o of actorsNear(g.x, g.y)) if (o !== g && o !== P && !o.burnT && npcAlive(o) && dist(o.x, o.y, g.x, g.y) < 26 && Math.random() < 0.15) igniteNpc(o);
+      if (!(P.burnUntil > S.t) && !P.car && dist(P.x, P.y, g.x, g.y) < 22 && Math.random() < 0.2) ignitePlayer();
+      if (Math.random() < 0.5) (S.fireParts || (S.fireParts = [])).push({ kind: 'smoke', x: g.x + rnd(-4, 4), y: g.y - 30, vx: rnd(-8, 8), vy: -20, t: 0, life: rnd(1, 1.8), size: rnd(5, 9), rot: 0 });
+    } else if (g.charred && g.burnUntil > S.t && Math.random() < 0.6) (S.fireParts || (S.fireParts = [])).push({ kind: 'smoke', x: g.x + rnd(-8, 8), y: g.y - 6, vx: rnd(-6, 6), vy: -16, t: 0, life: rnd(1.2, 2.2), size: rnd(5, 10), rot: 0 });
+  }
+}
+// PixelFX 아틀라스 한 프레임 (잘라 낸 자리 dx,dy를 되살린다). 고리 효과는 t를 길이로 돌린다
+function fxFrame(kind, t, x, y, sc, alpha, flip) {
+  if (!FX_META || !fxAtlas?.complete || !fxAtlas.naturalWidth) return false;
+  const m = FX_META.effects[kind]; if (!m) return false;
+  const n = m.frames.length, i = m.loop ? Math.floor(((t % m.duration) + m.duration) % m.duration * m.fps) % n : Math.min(n - 1, Math.floor(t * m.fps)), r = m.frames[i];
+  if (!r[2]) return true;
+  ctx.save(); ctx.translate(x | 0, y | 0); ctx.scale(flip ? -sc : sc, sc); ctx.imageSmoothingEnabled = false; ctx.globalAlpha = alpha;
+  ctx.drawImage(fxAtlas, r[0], r[1], r[2], r[3], -m.origin[0] + (r[4] || 0), -m.origin[1] + (r[5] || 0), r[2], r[3]); ctx.restore(); return true;
+}
+// 검게 탄 시체: 바닥의 재 얼룩 (몸 밑에)
+function drawCharred() {
+  if (S.gibs) { if (S.gibs.length > 240) S.gibs.splice(0, S.gibs.length - 240); for (const b of S.gibs) { if (S.t - b.t > 120 || !inView(b.x, b.y, 10)) continue; ctx.fillStyle = '#4a0a0a'; ctx.fillRect(b.x - 1 | 0, b.y | 0, b.s + 3, b.s + 1); ctx.fillStyle = '#7a1212'; ctx.fillRect(b.x | 0, b.y | 0, b.s, b.s); } }
+  for (const g of S.guards) { if (!g.charred || g.state !== 'DEAD' || !inView(g.x, g.y, 40)) continue;
+    ctx.fillStyle = 'rgba(10,8,8,.55)'; ctx.beginPath(); ctx.ellipse(g.x, g.y - 2, 22, 11, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = 'rgba(30,26,24,.8)'; for (let k = 0; k < 7; k++) { const a = (g.id || 0) * 1.7 + k * 0.9; ctx.fillRect(g.x + Math.cos(a) * 16 | 0, g.y - 2 + Math.sin(a) * 8 | 0, 3, 2); } }
+}
+// 불 · 연기 · 폭발: 어둠 위에 그린다 (불은 스스로 빛난다). 불길·폭발은 PixelFX 픽셀 스프라이트, 연기는 4px 칸에 맞춘 덩어리
+function drawCarFire() {
+  const parts = S.fireParts || [];
+  ctx.save();
+  for (const p of parts) { if (p.kind !== 'smoke' || !inView(p.x, p.y, 60)) continue;
+    const f = p.t / p.life, r = Math.round(p.size * (1 + f * 1.6) / 4) * 4, x = Math.round(p.x / 4) * 4, y = Math.round(p.y / 4) * 4;
+    ctx.fillStyle = `rgba(${f < .2 ? '70,64,66' : '48,46,52'},${0.5 * (1 - f)})`; ctx.fillRect(x - r / 2, y - r / 2, r, r); ctx.fillRect(x - r / 2 - 4, y - r / 2 + 4, r + 8, r - 8); }
+  for (const p of parts) { if ((p.kind !== 'debris' && p.kind !== 'gib') || !inView(p.x, p.y, 20)) continue;
+    ctx.fillStyle = p.kind === 'gib' ? (p.size > 3 ? '#8a1414' : '#5c0c0c') : p.t < 0.25 ? '#c45a20' : '#1a1a1c'; const s = Math.max(2, Math.round(p.size)); ctx.fillRect(p.x | 0, p.y | 0, s + 1, s); }
+  // 타는 차: 엔진에서 시작해 터질 때가 가까울수록 커진다 / 불탄 차: 차 길이를 따라 셋
+  for (const v of S.vehicles || []) {
+    if (!inView(v.x, v.y, 120)) continue; const L = (v.len || 92) * 0.3, ca = Math.cos(v.a), sa = Math.sin(v.a);
+    if (!v.dead && v.fireT > 0) { const k = Math.min(1, v.fireT / CAR_FIRE_T); fxFrame('carfire', S.t + v.id, v.x + ca * L, v.y + sa * L + 6, 1.1 + k * 1.1, 1);
+      if (k > 0.45) fxFrame('carfire', S.t * 1.1 + v.id * 3, v.x, v.y + 8, 0.9 + k, 0.95, true); }
+    else if (v.dead && v.burn > 0) { const k = Math.min(1, v.burn / 6);
+      for (let j = -1; j <= 1; j++) fxFrame('carfire', S.t * (1 + j * 0.07) + v.id + j * 1.3, v.x + ca * L * j * 1.2, v.y + sa * L * j * 1.2 + 8, (1.3 + 0.4 * (j === 0)) * (0.55 + 0.45 * k), Math.min(1, 0.4 + k), j > 0); }
+  }
+  // 사람에 붙은 불
+  for (const g of S.guards) { if (!g.burnT || !(g.burnUntil > S.t) || !inView(g.x, g.y, 60)) continue;
+    const dead = g.state === 'DEAD', k = dead ? clamp((g.burnUntil - S.t) / 3, 0, 1) : 1;
+    fxFrame(dead ? 'carfire' : 'burnman', S.t + (g.id || 0) * 0.37, g.x, g.y + (dead ? 4 : 2), dead ? 1.1 * k + 0.2 : 0.95, k); }
+  { const P = S.player; if (P.burnUntil > S.t && !P.car) fxFrame('burnman', S.t, P.x, P.y + 2, 0.95, 1); }
+  // 폭발: 섬광 한 번 → 픽셀 불덩이·버섯 연기
+  for (const b of S.booms || []) { const t = S.t - b.t; if (!inView(b.x, b.y, 300)) continue;
+    if (t < 0.18) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(255,236,190,${0.55 * (1 - t / 0.18)})`; const r = 90 + t * 500; ctx.fillRect(b.x - r, b.y - r * 0.75, r * 2, r * 1.5); ctx.globalCompositeOperation = 'source-over'; }
+    fxFrame('carboom', t, b.x, b.y + 14, 1.55, clamp((CAR_BOOM_T - t) / 0.6, 0, 1)); }
+  ctx.globalCompositeOperation = 'lighter';
+  for (const p of parts) { if (p.kind !== 'spark' || !inView(p.x, p.y, 40)) continue; const f = p.t / p.life;
+    ctx.fillStyle = `rgba(255,${200 - f * 120 | 0},90,${1 - f})`; ctx.fillRect(p.x | 0, p.y | 0, 2, 2); }
+  // 타는 차·사람 둘레를 비추는 불빛
+  for (const v of S.vehicles || []) { if (!(v.dead && v.burn > 0 || v.fireT > 0) || !inView(v.x, v.y, 160)) continue;
+    const fl = 0.75 + 0.25 * Math.sin(S.t * 23 + v.id), r = 110 * fl, g = ctx.createRadialGradient(v.x, v.y, 0, v.x, v.y, r); g.addColorStop(0, `rgba(255,140,50,${0.22 * (v.dead ? Math.min(1, v.burn / 4) : 1)})`); g.addColorStop(1, 'rgba(255,120,40,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(v.x, v.y, r, 0, TAU); ctx.fill(); }
+  for (const g of S.guards) { if (!g.burnT || !(g.burnUntil > S.t) || g.state === 'DEAD' || !inView(g.x, g.y, 80)) continue;
+    const r = 60 + 8 * Math.sin(S.t * 19 + g.id), gr = ctx.createRadialGradient(g.x, g.y - 14, 0, g.x, g.y - 14, r); gr.addColorStop(0, 'rgba(255,140,50,.2)'); gr.addColorStop(1, 'rgba(255,120,40,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(g.x, g.y - 14, r, 0, TAU); ctx.fill(); }
+  ctx.restore();
+}

@@ -52,7 +52,8 @@ async def main():
     assert box and box['x']>=0 and box['y']>=0 and box['y']+box['height']<=height+1,(width,height,id,'departure offscreen',box)
     if id!='p0':assert '바깥'not in await z.locator('#brIdentity').inner_text(),'incorrect indoor location'
     await z.click('#btnBrGo');await z.evaluate('__game.update(.1);__game.updateHUD(true)')
-    if id in ['p1','p2']:assert await z.locator('#btnTool').is_hidden(),'empty tool exposed'
+    # v239: on touch the empty tool slot becomes the whistle satellite; it must never show an empty tool.
+    if id in ['p1','p2']:assert await z.locator('#btnTool').evaluate('(e,t)=>e.hidden?true:t&&e.dataset.art==="whistle"&&e.innerText.includes("휘파람")',width!=1280),'empty tool exposed'
     assert await z.locator('#btnAct').get_attribute('hidden') is None,'attack hidden after returning to an assassination contract'
     assert await z.evaluate('(()=>{const e=document.getElementById("objective"),b=document.querySelector("#hud .obj").getBoundingClientRect();return e.scrollHeight<=e.clientHeight+1&&b.left>=0&&b.right<=innerWidth+1})()'),(width,height,id,'clipped goal')
    await z.close()

@@ -39,7 +39,18 @@
     "끊어진 회선",
     "창가의 중개인",
     "마지막 이름",
-    "현장 정보"
+    "현장 정보",
+    "스토리 모드",
+    "자유 모드",
+    "자유 모드 · 을지로",
+    "종로 유흥가",
+    "을지로 인쇄골목",
+    "동대문 시장",
+    "청계천 상가",
+    "신당동 주택가",
+    "중구 관청가",
+    "성수 공장지대",
+    "청계천"
   ],
   "wordmarkOutlinesUnchanged": true,
   "role": "Wordmark, primary title-menu action main screen and mission briefing headings; other UI uses IBM Plex Sans KR."

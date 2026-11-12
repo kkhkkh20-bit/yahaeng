@@ -47,7 +47,8 @@ function primaryActionRaw() {
   if (P.vent) { const t = ventAmbushTarget(); if (t) return { k: 'ventKill', g: t.g, v: t.v, label: '끌어들여 기절' }; const v = nearVent(); return v ? { k: 'ventOut', v, label: v.roof ? '옥상으로 나가기' : v.street ? '거리로 나가기' : '실내로 나가기' } : { k: 'none', label: '환풍구' }; }
   if (P.hide) { const g = ambushTarget(); return g ? { k: 'ambush', g, label: '끌어들여 암살' } : { k: 'leave', label: '나오기' }; }
   if (P.jump) return { k: 'none', label: '…' };
-  if (S.vehicles) { const ca = cityAction(); if (ca) return ca; }  // 도시: 차 타기·내리기·의뢰 받기
+  if (S.vehicles) { const ca = cityAction(); if (ca) {  // 도시: 차 타기·내리기·의뢰 받기. 대상 키를 줘서 고르기 목록이 그다음(반격·공격)으로 넘어가게
+    return ca; } }
   { const cg = counterTarget(); if (cg) return { k: 'counter', g: cg, label: '반격!' }; }  // 내려치기 직전이면 무엇보다 먼저
   if (P.wire) {
     const h = wirePt(P.wire.w, P.wire.s), at = { x: h.x, y: h.y - 6 };

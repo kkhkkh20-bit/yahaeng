@@ -50,6 +50,7 @@ function drawNeonSigns() {
   const t = S.t;
   BLD.forEach((b, i) => {
     if (!b.facade || b.kind !== 'shop' || i === S.openB) return;
+    if (STAGE.cityLife && b.signs) return;  // 큰 도시 상가 간판은 drawStoreSigns 가 빛까지 한 번에 그린다 (예전 세로 네온을 또 얹으면 겹친다)
     const list = (b.signRects || []).slice();
     if (b.fh >= 3) { const txt = (b.plate || b.name || '').replace(/\s/g, ''); if (txt) { const vx = b.x1 * TILE + 8, vy = (b.y1 - b.fh + 1) * TILE + 10, vh = Math.min(txt.length * 22 + 14, (b.fh - 1) * TILE - 10); list.push({ x: vx, y: vy, w: 30, h: vh, c: [['#ff3ca8', '#ffe0f4'], ['#3ce0ff', '#e0fbff'], ['#b45aff', '#f2e0ff']][i % 3], txt, on: true, vert: true, k: 9 }); } }
     for (const r of list) {
@@ -133,7 +134,7 @@ function drawGrate(v,alpha){if(S.player.trav?.accessFlow?.obj===v)return;ctx.sav
 // Authored steel shutters and painted Korean signs for the opening freight yard.
 // Cosmetic texture uses coordinate hashes, never the AI random stream.
 function drawCityFacade(b){
- if(STAGE.agentStudy&&studyReady())return drawStudyFacade(b);
+ if(studyStage()&&studyReady())return drawStudyFacade(b);
  const x=b.x0*TILE,y=(b.y1-b.fh+1)*TILE,w=(b.x1-b.x0+1)*TILE,h=b.fh*TILE;
  ctx.save();ctx.imageSmoothingEnabled=false;paintFreeCityWall(ctx,b,x,y,w,h);
  drawFreeDepotDetails(ctx,b,x,y,w,h);

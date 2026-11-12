@@ -36,7 +36,8 @@ async def main():
      window.artBefore=artCore();window.artMap=G.mapImage();const f=G.FURN.find(f=>f.t==='table'||f.t==='desk2');window.artSurface={surface:f,surfaceU:.5};window.artAnchor=JSON.stringify(G.surfacePoint(artSurface));
    }''')
    release.set();await q.wait_for_function('__game.propArtReady',polling=100)
-   assert await q.evaluate('''()=>{const G=__game;G.refreshPropArt();return artCore()===artBefore&&G.mapImage()!==artMap&&Object.keys(G.S.floorC).length===0&&JSON.stringify(G.surfacePoint(artSurface))===artAnchor}'''),'late art load failed to repaint, moved a tabletop object or mutated the world'
+   # Art refreshes ask for one map rebuild at the start of the next frame (draw() flushes it); rAF is off here, so flush as that frame would.
+   assert await q.evaluate('''()=>{const G=__game;G.refreshPropArt();G.flushMapRebuild();return artCore()===artBefore&&G.mapImage()!==artMap&&Object.keys(G.S.floorC).length===0&&JSON.stringify(G.surfacePoint(artSurface))===artAnchor}'''),'late art load failed to repaint, moved a tabletop object or mutated the world'
    report=await q.evaluate('''async()=>{
     const G=__game,ok=(v,m)=>{if(!v)throw Error(m)},fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===id));while(G.DLG.modal)G.advanceDialog();return G.S};
     const seen=new Set(),faces=[],hair=new Set(),female=[];let props=0;

@@ -51,6 +51,7 @@ window.addEventListener('keydown', e => {
     e.preventDefault();if(!e.repeat){if(e.code==='KeyN')toggleMute();else if(['KeyQ','KeyE','KeyZ','KeyX','Space','Enter'].includes(e.code))advanceDialog();else if(e.code==='Escape')skipDialog();}return;
   }
   if (e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault();  // 브라우저 메뉴로 넘어가지 않게
+  if (STAGE?.cityLife && running && !S?.player?.car && /^Digit[1-7]$/.test(e.code)) { const have = WPN_ORDER.filter(k => (S.guns?.[k] || 0) > 0), i = +e.code.slice(5) - 1; if (i === 0) selectWeapon(null); else if (have[i - 1]) selectWeapon(have[i - 1]); return; }  // 자유 모드: 숫자로 무기 고르기  // 자유 모드: 무기 바꾸기
   if(e.code==='Digit4'||e.code==='AltLeft'||e.code==='AltRight'){e.preventDefault();return;}
   if(e.code==='Tab')e.preventDefault();
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(keyCode(e)) && running) e.preventDefault();
@@ -58,9 +59,11 @@ window.addEventListener('keydown', e => {
   if (e.code !== 'Tab') closeHudInspection();
   S.keys[keyCode(e)] = true; combatPress(e.code);
   { const c = e.code, ks = /^Arrow|^Key[ZXCV]$/.test(c) ? 'arrow' : /^Key[WASDEQF]$|^Space$/.test(c) ? 'wasd' : null; if (ks && input.kset !== ks) { input.kset = ks; if (typeof hudCache !== 'undefined') hudCache.kset = null; } }
-  if (!running || S.over) return;
+  if (!running || S.over || S.player?.cuffed) return;
   // 키는 두 벌을 함께 쓴다 — 방향키 손: Z 공격 · X 행동 · C 붙잡기 · V 다트 / WASD 손: Space 공격 · E 행동 · Q 붙잡기 · F 다트 (히트맨 PC: E 상호작용 · Q 제압)
   // 다트·도구: 톡 = 자동 조준, 누르고 있으면 겨누기. 나머지: Tab 겹친 대상 바꾸기 · G 휘파람 · 1 2 3 도구 · R 항상 걷기 · Ctrl 살금
+  // 큰 도시: F · Enter = 차 타기/내리기 (GTA처럼). 차 근처가 아니면 F는 원래대로 다트
+  if (STAGE.city && (e.code === 'KeyF' || e.code === 'Enter') && (S.player.car || nearVehicle())) { actEnv(); return; }
   if (e.code === 'Space' || e.code === 'KeyZ') actAttack();
   if (e.code === 'KeyE' || e.code === 'KeyX') actEnv();
   if (e.code === 'KeyQ' || e.code === 'KeyC') actGrab();
@@ -74,7 +77,8 @@ window.addEventListener('keydown', e => {
   if (e.code === 'Digit3') selectTool('coin');
   if (e.code === 'ControlLeft' || e.code === 'ControlRight') toggleSneak();
   if (e.code === 'KeyN') toggleMute();
-  if (e.code === 'KeyM') toggleTactical();
+  if (e.code === 'KeyL' && STAGE?.cityLife && running) { cycleWeapon(); return; }
+  if (e.code === 'KeyM') { if (STAGE?.cityLife && running) cityMapOpen(); else toggleTactical(); }  // 자유 모드: 큰 지도
   if (e.code === 'KeyG') whistle();
   if (e.code === 'Tab') { if(e.shiftKey)toggleEnvPicker();else cycleEnv(); }  // 겹친 대상 중 다른 것 고르기
   if (e.code === 'KeyI') { e.preventDefault(); toggleLoadout(); }
@@ -292,18 +296,19 @@ $('btnFull').addEventListener('click',async()=>{try{if(document.fullscreenElemen
 document.addEventListener('fullscreenchange', () => { $('btnFull').textContent = document.fullscreenElement ? '전체 화면 끄기' : '전체 화면'; });
 // The title continues the single campaign; there is no episode picker.
 function quickTarget(){return recommendedStage();}
-function setQuickLabel(label,detail=''){
- const b=$('btnQuick'),copy=document.createElement('span'),name=document.createElement('b');copy.className='title-start-copy';name.textContent=label;copy.append(name);
+function setQuickLabel(label,detail='',b=$('btnQuick')){
+ const copy=document.createElement('span'),name=document.createElement('b');copy.className='title-start-copy';name.textContent=label;copy.append(name);
  if(detail){const note=document.createElement('small');note.textContent=detail;copy.append(note);}
  b.replaceChildren(copy);b.insertAdjacentHTML('beforeend',uiSigil('arrow'));b.setAttribute('aria-label',[label,detail].filter(Boolean).join(' · '));
 }
 function syncQuick(){
+  $('btnFree').hidden=!!(window.__AGENT_CITY_STUDY__||window.__CLUB_STUDY__||!window.__CITY_XL__);setQuickLabel('자유 모드','을지로 · 청계천 · 차·조직·경찰',$('btnFree'));$('btnFree').title='본편 진행과 따로 노는 열린 도시';
   if(window.__AGENT_CITY_STUDY__){$('btnQuick').disabled=false;setQuickLabel('도시 테스트','여성 요원 · 야간 인계');$('btnQuick').title='야간 인계 · 본편 진행과 별도로 저장';$('btnNewCampaign').hidden=true;return;}
   $('btnNewCampaign').hidden=!hasCampaignSave();
   const st=STAGES[quickTarget()];if(!$('btnQuick'))return;
-  $('btnQuick').disabled=!st;if(!st){setQuickLabel('이야기 완료');return;}
+  $('btnQuick').disabled=!st;if(!st){setQuickLabel('스토리 모드','이야기 완료');return;}
   const done=LEARNING_ROUTE.every(id=>{const i=learningStageIndex(id);return i<0||learningComplete(STAGES[i]);});
-  setQuickLabel(st.firstSteps&&!campaignHasProgress()?'처음 시작':done&&!st.storyEpisode&&!st.tutorial?'다시 플레이':'이어서 하기',st.name);
+  setQuickLabel('스토리 모드',(st.firstSteps&&!campaignHasProgress()?'처음 시작':done&&!st.storyEpisode&&!st.tutorial?'다시 플레이':'이어서 하기')+' · '+st.name);
   $('btnQuick').title=st.mission||st.name;
 }
 document.querySelectorAll('.ledger-tabs button').forEach(button => button.addEventListener('click', () => {
@@ -319,6 +324,9 @@ $('btnSet2').addEventListener('click', () => { const h = $('help'); h.classList.
 { const bg = window.__TITLE_BG; if (bg) document.documentElement.style.setProperty('--title-bg', `url(${bg})`); }  // 첫 화면·브리핑·일시정지 공용 배경
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
 $('btnQuick').addEventListener('click', () => { initAudio(); if(window.__AGENT_CITY_STUDY__)start(STAGES.findIndex(s=>s.agentStudy));else beginCampaign(); });
+// 자유 모드: 큰 도시는 처음 누를 때 만든다(판 목록·본편 저장과 분리)
+function freeModeIndex(){let i=STAGES.findIndex(s=>s.freeMode);if(i<0&&window.__CITY_XL__){STAGES.push(window.__CITY_XL__());i=STAGES.length-1;}return i;}
+$('btnFree').addEventListener('click', () => { initAudio(); const i=freeModeIndex(); if(i>=0)start(i,true); });
 // Only campaign data is reset. Display, sound and control preferences are retained.
 const CAMPAIGN_SAVE_KEYS=['yahaeng.ch','yahaeng.best','yahaeng.cityDone',SKILL_STORE,FIELD_LEARNING_STORE,'yahaeng.assassinSkill',CP_KEY,'yahaeng.mod',CASE_STORE,'yahaeng.feedbackSeen'];
 function hasCampaignSave(){
@@ -361,10 +369,11 @@ $('btnPause').addEventListener('click', togglePause);
 for(const id of ['btnPause','btnCrouch','btnSneak','btnToolNext','btnCycle'])$(id).addEventListener('keydown',e=>{if(['Enter','Space'].includes(e.code))e.stopPropagation();});
 $('btnMap').addEventListener('click', toggleTactical);
 { const mi = $('mini'); if (mi) {
-  $('btnMap').style.display = 'none'; mi.addEventListener('click', toggleTactical);
+  $('btnMap').style.display = 'none'; mi.addEventListener('click', () => { if (STAGE?.cityLife && running) cityMapOpen(); else toggleTactical(); });
   mi.addEventListener('keydown', e => {
     if (e.code !== 'Enter' && e.code !== 'Space') return;
     e.preventDefault(); e.stopPropagation();
+    if (!e.repeat && STAGE?.cityLife && running) { cityMapOpen(); return; }
     if (!e.repeat) { toggleTactical(); if (!$('tacBanner').hidden) $('tacBanner').focus({ preventScroll: true }); }
   });
 } }  // 도시: 지도 버튼 대신 미니맵을 누른다
@@ -379,6 +388,7 @@ $('btnResume').addEventListener('click', () => setPause(false));
 $('btnCheckpointPause').addEventListener('click',()=>{if(cpReady())loadCheckpoint();});
 $('btnRestart2').addEventListener('click', () => { setPause(false); start(STAGE_I, true); });
 $('btnMenu2').addEventListener('click', () => { setPause(false); toMenu(); });
+$('btnFreeStats').addEventListener('click', () => { setPause(false); if (STAGE.cityLife) freeStatsPanel(); });
 $('btnMenu').addEventListener('click', toMenu);
 $('btnRetry').addEventListener('click', retryContract);
 $('btnCity').addEventListener('click', () => { const ci = STAGES.findIndex(s => s.city); if (ci >= 0) start(ci, true); });  // 다시 하기는 브리핑 없이 바로
@@ -390,6 +400,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) softP
 
 document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));
 function start(i, noBrief) {
+  seedRandom(gameSeed());  // 무작위 고정 (00_core)
   if($('briefInfo').open)$('briefInfo').close();
   clearResultTransition();
   resetCaseBoard();
@@ -399,7 +410,7 @@ function start(i, noBrief) {
   tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');
   input.sneakToggle=false;try{localStorage.setItem('yh_sneak','0');}catch(e){}syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'kunai'; input.padWhistle = false;  // 새 의뢰는 서서 시작한다. 항상 걷기 설정은 유지한다.
   running = true; paused = false;
-  newGame(i); if(STAGE.firstSteps||introductoryContract(STAGE)){input.sneakToggle=false;input.walkLock=false;input.padWhistle=!!(STAGE.firstSteps||STAGE.openingContract)&&!availableTools().some(t=>toolCount(t)>0);syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','목표·무전 펼치기'); miniBase = null; renderToasts();
+  newGame(i); document.body.classList.toggle('no-prompts', !!STAGE.noPrompts); document.body.classList.toggle('free-city', !!STAGE.cityLife); { const m = $('btnMenu2'); if (m) m.textContent = STAGE.freeMode ? '처음 화면' : '의뢰 선택'; } if(STAGE.firstSteps||introductoryContract(STAGE)){input.sneakToggle=false;input.walkLock=false;input.padWhistle=!!(STAGE.firstSteps||STAGE.openingContract)&&!availableTools().some(t=>toolCount(t)>0);syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','목표·무전 펼치기'); miniBase = null; renderToasts();
   if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)
   statsBegin('new');  // 플레이 기록: 판 시작
   if (PR&&!STAGE.artSlice) { const ks = [playerKey(S.player), ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep(ks); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다
@@ -444,6 +455,7 @@ function toMenu() {
   $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = true; syncQuick();showMenu('intro');
   renderStageList();
   newGame(STAGE_I);
+  cityTeardown();  // 자유 모드가 남긴 창·알림·소리·화면 표시 정리 (newGame 뒤에)
 }
 
 atlas.onload = async () => {

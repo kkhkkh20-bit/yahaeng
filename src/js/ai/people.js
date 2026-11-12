@@ -1,8 +1,10 @@
 function separateBodies(dt) {
   const R = 26, L = S.guards.filter(g => g.state !== 'DEAD' && g.state !== 'CAPTIVE' && !g.doomed), k = Math.min(1, dt * 6), L0 = CUR_F;
   const push = (o, dx, dy) => { setLayer(flOf(o)); const sol = o.z ? solidFor(o.z) : solidAt, nx = o.x + dx, ny = o.y + dy; if (!sol(Math.floor(nx / TILE), Math.floor(o.y / TILE))) o.x = nx; if (!sol(Math.floor(o.x / TILE), Math.floor(ny / TILE))) o.y = ny; };
+  // x 순으로 정렬해 가까운 사람끼리만 비교한다 (사람이 많은 큰 도시에서 모든 쌍을 비교하지 않게)
+  L.sort((a, b) => a.x - b.x);
   for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) {
-    const a = L[i], b = L[j]; if (flOf(a) !== flOf(b) || (a.z || 0) !== (b.z || 0) || a.climb || b.climb) continue;
+    const a = L[i], b = L[j]; if (b.x - a.x > R) break; if (flOf(a) !== flOf(b) || (a.z || 0) !== (b.z || 0) || a.climb || b.climb) continue;
     let dx = b.x - a.x, dy = b.y - a.y; if (Math.abs(dx) > R || Math.abs(dy) > R) continue;
     let d = Math.hypot(dx, dy); if (d >= R) continue; if (d < 0.01) { dx = Math.cos(a.id + j); dy = Math.sin(a.id + j); d = 1; }
     const m = (R - d) / 2 * k / d; push(a, -dx * m, -dy * m); push(b, dx * m, dy * m);

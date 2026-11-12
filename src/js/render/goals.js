@@ -32,8 +32,13 @@ function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
     if (short) tag(gl.x, y - 13 * k, short, '#dfe6f0', 1, null, 2.6);
   } else {  // 화면 밖: 가장자리 화살표 + 할 일 · 거리
     const cx = (sx0 + sx1) / 2, cy = (sy0 + sy1) / 2, ddx = gl.x - cx, ddy = gl.y - cy, kk = Math.min((sx1 - sx0) / 2 / Math.max(1e-6, Math.abs(ddx)), (sy1 - sy0) / 2 / Math.max(1e-6, Math.abs(ddy))), ex = cx + ddx * kk, ey = cy + ddy * kk, a = Math.atan2(ddy, ddx), sz = 13 * k;
+    if (STAGE.cityLife) {  // 자유 모드: 커서처럼 보이는 큰 흰 화살표 대신 둥근 표지(어두운 바탕 · 금색 테) 안의 작은 꺾쇠
+      const r = 10 * k; ctx.save(); ctx.translate(ex, ey); ctx.fillStyle = 'rgba(10,13,20,.82)'; ctx.strokeStyle = `rgba(255,215,106,${0.6 + 0.4 * pulse})`; ctx.lineWidth = 1.6 * k;
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fill(); ctx.stroke(); ctx.rotate(a); ctx.strokeStyle = '#ffd76a'; ctx.lineWidth = 2.2 * k; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.beginPath(); ctx.moveTo(-3 * k, -5 * k); ctx.lineTo(3.5 * k, 0); ctx.lineTo(-3 * k, 5 * k); ctx.stroke(); ctx.restore();
+    } else {
     ctx.save(); ctx.translate(ex, ey); ctx.rotate(a); ctx.fillStyle = `rgba(223,230,240,${pulse})`; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k;
-    ctx.beginPath(); ctx.moveTo(sz * 1.5, 0); ctx.lineTo(-sz, -sz); ctx.lineTo(-sz * 0.35, 0); ctx.lineTo(-sz, sz); ctx.closePath(); ctx.stroke(); ctx.fill(); ctx.restore();
+    ctx.beginPath(); ctx.moveTo(sz * 1.5, 0); ctx.lineTo(-sz, -sz); ctx.lineTo(-sz * 0.35, 0); ctx.lineTo(-sz, sz); ctx.closePath(); ctx.stroke(); ctx.fill(); ctx.restore(); }
     const txt = short; ctx.font = uiFont(13 * k); const th = ctx.measureText(txt).width / 2 + 10 * k, rEdge = cam.x + hw - (document.body.classList.contains('touch') ? 66 : 20) / SCALE;  // 글자가 화면·오른쪽 버튼 줄 밖으로 나가지 않게
     const lx = clamp(ex - Math.cos(a) * 46 * k, sx0 + th, Math.max(sx0 + th, rEdge - th)), ly = clamp(ey - Math.sin(a) * 30 * k, sy0 + 12 * k, sy1 - 12 * k);
     if (txt) tag(lx, ly, txt, '#dfe6f0', 1, null, 2.6);
