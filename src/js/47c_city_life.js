@@ -95,9 +95,9 @@ function deployFromCar(v) {
   for (const s of [-1, 1]) {
     const a = v.a + s * Math.PI / 2, x = v.x + Math.cos(a) * 50, y = v.y + Math.sin(a) * 50;
     if (!v.gang) { const g = spawnCop(); if (g) { g.x = x; g.y = y; g.path = null; copChase(g); out.push(g); } continue; }
-    const g = makeGuard({ kind: s < 0 ? 'g2' : 'g1', at: [Math.floor(x / TILE), Math.floor(y / TILE)], radio: false }, S.guards.length);
+    const gi = cityGuardSlot(), g = makeGuard({ kind: s < 0 ? 'g2' : 'g1', at: [Math.floor(x / TILE), Math.floor(y / TILE)], radio: false }, gi);
     g.fac = v.gang; g.outfit = FAC_OUTFIT[v.gang] || null; g.rival = true; g.radio = false; g.torch = false; g.x = x; g.y = y; g.carCrew = true;
-    g.route = [{ x, y, pause: 999 }]; S.guards.push(g); setLayer(0); buildRouteLine(g); if (PR) prWarm([charOf(g)], true);
+    g.route = [{ x, y, pause: 999 }]; placeGuard(g, gi); setLayer(0); buildRouteLine(g); if (PR) prWarm([charOf(g)], true);
     g.state = 'ALERT'; g.lastSeen = { x: S.player.x, y: S.player.y, fl: 0, z: 0 }; g.lostT = 0; g.path = null; out.push(g);
   }
   // 차 문이 열리고 → 운전석·조수석에서 몸을 빼 → 차 옆으로 내려선다 (차 옆에 툭 나타나지 않게)

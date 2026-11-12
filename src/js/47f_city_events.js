@@ -20,12 +20,12 @@ function evBanner(text, col = '#f2e7c8') {
 }
 // ---- 등장인물 · 차 · 줍는 것
 function evPerson(ev, x, y, o = {}) {
-  const g = makeGuard({ kind: o.kind || 'civ', at: [Math.floor(x / TILE), Math.floor(y / TILE)], radio: false, body: o.body }, S.guards.length);
+  const gi = cityGuardSlot(), g = makeGuard({ kind: o.kind || 'civ', at: [Math.floor(x / TILE), Math.floor(y / TILE)], radio: false, body: o.body }, gi);
   g.x = x; g.y = y; g.route = [{ x, y, pause: 999 }]; g.ri = 0; g.wait = 999; g.evt = ev.key;
   if (o.fac) { g.fac = o.fac; g.outfit = FAC_OUTFIT[o.fac] || null; g.rival = true; g.torch = false; }
   if (o.outfit) g.outfit = o.outfit;
   if (o.police) { g.police = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; }
-  S.guards.push(g); setLayer(0); if (PR) prWarm([charOf(g)], true); ev.actors.push(g); return g;
+  placeGuard(g, gi); setLayer(0); if (PR) prWarm([charOf(g)], true); ev.actors.push(g); return g;
 }
 function evGo(g, x, y) { if (!npcAlive(g)) return; g.route = [{ x, y, pause: 999 }]; g.ri = 0; g.wait = 0; g.path = null; if (g.state !== 'PANIC' && g.state !== 'ALERT') g.state = 'PATROL'; }
 function evGone(g) { if (!g) return; g.off = true; g.state = 'DEAD'; g.x = -9999; g.y = -9999; g.path = null; g.icon = null; g.say = null; }

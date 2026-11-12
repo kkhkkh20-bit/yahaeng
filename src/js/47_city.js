@@ -49,6 +49,42 @@ function spawnCop(calm) {  // calm: 사건 출동 (나를 쫓지 않는다)
   g.off = false; g.state = 'PATROL'; g.x = p.x; g.y = p.y; g.fl = 0; g.z = 0; g.hp = null; g.fhp = null; g.brawl = null; g.hunt = null; g.route = [{ x: p.x, y: p.y, pause: 999 }]; g.routeLine = null;
   if (!calm) copChase(g); return g;
 }
+// ---- 자유 모드 목록 정리: 사건·의뢰·추격으로 새로 만든 사람·차가 끝없이 쌓이지 않게
+// 사람(S.guards)은 순번으로 서로를 가리키므로(호위 → 표적, 시체 → guardId) 지우지 않고, 사라진 임시 인물의 자리를 새 인물이 물려받는다.
+// 차(S.vehicles)는 순번으로 가리키는 곳이 없어, 처음부터 있던 차가 아닌 것만 멀어지면 목록에서 뺀다.
+const TEMP_ACTOR = g => !!(g.evt || g.driverOut || g.carCrew || g.hit || g.hitEscort);
+function cityGuardRefs() {
+  const s = new Set();
+  for (const c of S.corpses || []) { if (c.g) s.add(c.g); if (c.guardId != null) s.add(c.guardId); }
+  for (const g of S.guards) if (!g.off && g.follow != null) s.add(g.follow);
+  const h = S.hit; if (h) { s.add(h.g); for (const e of h.escorts) s.add(e); }
+  if (S.ev && !S.ev.done) for (const g of S.ev.actors || []) s.add(g);
+  if (S.cuffs?.cop) s.add(S.cuffs.cop);
+  return s;
+}
+function cityGuardSlot() {
+  if (!STAGE.cityLife) return S.guards.length;
+  let used = null;
+  for (let i = 0; i < S.guards.length; i++) { const o = S.guards[i]; if (!o.off || !TEMP_ACTOR(o) || o.contact || o.beat) continue;
+    used = used || cityGuardRefs(); if (!used.has(i) && !used.has(o)) return i; }
+  return S.guards.length;
+}
+function placeGuard(g, i) { if (i < S.guards.length) S.guards[i] = g; else S.guards.push(g); return g; }
+function cityListsCleanup() {
+  if (!STAGE.cityLife || S.t < (S.cleanAt || 0)) return; S.cleanAt = S.t + 5;
+  const P = S.player, far = o => dist(o.x, o.y, P.x, P.y) > 1800 && !inView(o.x, o.y, 200);
+  S.vehBase = S.vehBase || new Set(S.vehicles);
+  // 멀리 쓰러져 있는 임시 인물(사건·의뢰·차 손님): 45초 지나면 시체 기록과 함께 치운다
+  const hitNow = S.hit && [S.hit.g, ...S.hit.escorts];
+  for (const g of S.guards) { if (g.off || g.state !== 'DEAD' || !TEMP_ACTOR(g) || hitNow?.includes(g)) continue;
+    if (!far(g)) { g._deadAt = null; continue; } g._deadAt = g._deadAt || S.t;
+    if (S.t - g._deadAt > 45) { S.corpses = (S.corpses || []).filter(c => c.g !== g && c.guardId !== g.id); evGone(g); } }
+  // 새로 생긴 차(사건·추격·조직 차): 멀리 있고 아무도 쓰지 않으면 뺀다
+  const busy = new Set([P.car, S.job?.v, ...(S.ev && !S.ev.done ? S.ev.cars || [] : [])]);
+  const before = S.vehicles.length;
+  S.vehicles = S.vehicles.filter(v => { if (S.vehBase.has(v) || busy.has(v) || v.chase || v.jacking || !far(v)) return true; v.gone = true; return false; });
+  if (S.vehicles.length !== before) VEHG = null;
+}
 function despawnCop(g) { g.off = true; g.state = 'DEAD'; g.x = -9999; g.y = -9999; g.path = null; g.icon = null; g.say = null; }
 // 먼 곳 갱신 줄이기 (도시 판만): 플레이어와 화면 양쪽에서 멀고, 평상시 상태인 행인·조직원·AI 차는
 // CITY_LOD_EVERY 번에 한 번만 갱신한다. 건너뛴 시간은 모아 두었다가 한꺼번에 넘기므로 걸음·순찰 시간은 그대로다.

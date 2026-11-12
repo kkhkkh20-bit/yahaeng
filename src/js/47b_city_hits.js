@@ -98,11 +98,11 @@ function takeHit() { if (!S.hit && !S.wanted) { const plan = planHit(); if (plan
 function startHit(plan) {
   if (S.hit) return;
   const P = S.player, { route, name } = plan;
-  const tIdx = S.guards.length, t = makeGuard({ kind: 't', route, radio: false }, tIdx); t.hit = true; t.hitName = name; t.fac = plan.fac || 'A'; if (FAC_OUTFIT[t.fac]) t.outfit = FAC_OUTFIT[t.fac]; S.guards.push(t);
+  const tIdx = cityGuardSlot(), t = makeGuard({ kind: 't', route, radio: false }, tIdx); t.hit = true; t.hitName = name; t.fac = plan.fac || 'A'; if (FAC_OUTFIT[t.fac]) t.outfit = FAC_OUTFIT[t.fac]; placeGuard(t, tIdx);
   const escorts = [];
   for (let k = 0; k < plan.escorts; k++) {
-    const g = makeGuard({ kind: k ? 'g1' : 'g2', route: [route[0]], follow: tIdx, radio: false }, S.guards.length); g.fac = plan.fac || 'A'; if (FAC_OUTFIT[g.fac]) g.outfit = FAC_OUTFIT[g.fac]; g.hitEscort = true;
-    g.x += (k ? -1 : 1) * 30; g.y += 26; S.guards.push(g); escorts.push(g);
+    const gi = cityGuardSlot(), g = makeGuard({ kind: k ? 'g1' : 'g2', route: [route[0]], follow: tIdx, radio: false }, gi); g.fac = plan.fac || 'A'; if (FAC_OUTFIT[g.fac]) g.outfit = FAC_OUTFIT[g.fac]; g.hitEscort = true;
+    g.x += (k ? -1 : 1) * 30; g.y += 26; placeGuard(g, gi); escorts.push(g);
   }
   setLayer(0); for (const g of [t, ...escorts]) buildRouteLine(g); setLayer(flOf(P));
   if (PR) prWarm([t, ...escorts].map(charOf), true);
@@ -125,7 +125,7 @@ function boothBlock() {
 function hitsUpdate(dt) {
   boothBlock(); updatePhoneRing(dt || 1 / 60);
   const P = S.player; if (P.booth) { P.x = P.booth.x; P.y = P.booth.y + 2; P.moving = false; }
-  jobsUpdate(dt || 1 / 60); cityEventsUpdate(dt || 1 / 60); factionsUpdate(dt || 1 / 60); carTheftUpdate(dt || 1 / 60);
+  jobsUpdate(dt || 1 / 60); cityEventsUpdate(dt || 1 / 60); factionsUpdate(dt || 1 / 60); carTheftUpdate(dt || 1 / 60); cityListsCleanup();
   saveFreeProgress();
   const h = S.hit; if (!h) return;
   const g = h.g;
