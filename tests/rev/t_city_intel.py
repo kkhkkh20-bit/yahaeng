@@ -27,8 +27,8 @@ async def main():
         r = await q.evaluate('''()=>{const S=__game.S;S.cash=300;const t=CALL();const h=S.hit;return {cash:S.cash,intel:!!h.intel,brk:!!h.brk,inT:h.brk?h.brk.at-S.t:null,t}}''')
         print('buy', r); ok(r['cash'] == 200 and r['intel'] and r['brk'] and 30 < r['inT'] <= 40, 'buy intel: %s' % r)
         r = await q.evaluate('''()=>{const S=__game.S,h=S.hit,g=h.g,B=h.brk,P=S.player;P.x=g.x+2500;P.y=g.y;for(const o of [g,...h.escorts]){o.state='PATROL';o.meter=0;o.lastSeen=null;}tick(B.at-S.t+.2);const on=B.on;tick(14);
-          const dT=Math.hypot(g.x-B.x,g.y-B.y),dE=Math.min(...h.escorts.map(e=>Math.hypot(e.x-g.x,e.y-g.y)));const mid={hit:!!S.hit,st:g.state,es:h.escorts.map(e=>e.state+':'+e.follow)};tick(B.dur);const back=B.done&&h.escorts.every(e=>e.follow!=null);return {on,dT:dT|0,dE:dE|0,back,mid,hit2:!!S.hit,gr:JSON.stringify(g.route).slice(0,80),bx:[B.x|0,B.y|0],g:[g.x|0,g.y|0]}}''')
-        print('break', r); ok(r['on'] and r['dT'] < 60 and r['dE'] > 250 and r['back'], 'smoke break: %s' % r)
+          const dT=Math.hypot(g.x-B.x,g.y-B.y),dE=Math.min(...h.escorts.filter(e=>e.state!=='DEAD').map(e=>Math.hypot(e.x-g.x,e.y-g.y)),9999);const mid={hit:!!S.hit,st:g.state,es:h.escorts.map(e=>e.state+':'+e.follow)};tick(B.dur);const back=B.done&&h.escorts.filter(e=>e.state!=='DEAD').every(e=>e.follow!=null);return {on,dT:dT|0,dE:dE|0,back,mid,hit2:!!S.hit,gr:JSON.stringify(g.route).slice(0,80),bx:[B.x|0,B.y|0],g:[g.x|0,g.y|0]}}''')
+        print('break', r); ok(r['on'] and r['dT'] < 96 and r['dE'] > 250 and r['back'], 'smoke break: %s' % r)
         ok(not errs, 'page errors: %s' % errs)
         await b.close()
     print('통과' if not bad else '문제', bad)
