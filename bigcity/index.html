@@ -15514,7 +15514,7 @@ function markCityDone(id) { try { const d = cityDone(); d[id] = 1; localStorage.
 function cityInit() {
   S.wanted = 0; S.wantLost = 0; S.copT = 0;
   S.contracts = (STAGE.contracts || []).map(c => ({ id: c.id, name: c.name, x: tc(c.at[0]), y: tc(c.at[1]), si: STAGES.findIndex(s => s.id === c.id) })).filter(c => c.si >= 0);
-  trafficInit(); if (STAGE.hits) hitsInit(); loadFreeProgress(); shopsInit(); cityFactionsInit(); garageInit(); S.side = null;  // 가게 · 중고차 매매 · 도색소  // 도시 안 의뢰 (공중전화)
+  trafficInit(); if (STAGE.hits) hitsInit(); loadFreeProgress(); shopsInit(); cityFactionsInit(); garageInit(); S.side = null; weatherInit();  // 가게 · 중고차 매매 · 도색소  // 도시 안 의뢰 (공중전화)
   // 순찰 경찰 둘: 시내 보도를 돈다 (조직 구역에는 들어가지 않는다)
   for (const r of STAGE.copBeats || []) { const g = makeGuard({ kind: 'g1', route: r, radio: false }, S.guards.length); g.police = true; g.beat = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; g.radio = false; setLayer(0); buildRouteLine(g); S.guards.push(g); }
   if (CITY_RET) { const P = S.player, c = S.contracts.find(o => o.id === CITY_RET.id); if (c) { P.x = c.x; P.y = c.y + 30; cam.x = P.x; cam.y = P.y; } CITY_RET = null; }
@@ -15887,7 +15887,7 @@ function boothBlock() {
 function hitsUpdate(dt) {
   boothBlock(); updatePhoneRing(dt || 1 / 60);
   const P = S.player; if (P.booth) { P.x = P.booth.x; P.y = P.booth.y + 2; P.moving = false; }
-  jobsUpdate(dt || 1 / 60); cityEventsUpdate(dt || 1 / 60); factionsUpdate(dt || 1 / 60); carTheftUpdate(dt || 1 / 60); sideUpdate(dt || 1 / 60); garageUpdate(dt || 1 / 60); cityListsCleanup();
+  jobsUpdate(dt || 1 / 60); cityEventsUpdate(dt || 1 / 60); factionsUpdate(dt || 1 / 60); carTheftUpdate(dt || 1 / 60); sideUpdate(dt || 1 / 60); garageUpdate(dt || 1 / 60); weatherUpdate(dt || 1 / 60); cityListsCleanup();
   saveFreeProgress();
   const h = S.hit; if (!h) return;
   const g = h.g;
@@ -15985,7 +15985,7 @@ function drawHits(layer) {
     drawBooth(p, false);
   }
   if (layer !== 'ui') return;
-  drawEvents(); drawContacts(); drawJobs(); drawCarPickProgress(); drawCarriedParcel(); drawSide();
+  drawEvents(); drawContacts(); drawJobs(); drawCarPickProgress(); drawCarriedParcel(); drawSide(); drawRain();
   const h = S.hit; if (!h || h.g.state === 'DEAD' && !h.g.unconscious) return;
   const g = h.g; if (flOf(g) !== flOf(S.player) || !inView(g.x, g.y, 60)) return;
   const pu = .55 + .35 * Math.sin(S.t * 5);
@@ -16356,7 +16356,7 @@ function shopsUpdate(dt) {
 function showDistrict(name) {
   let el = document.getElementById('districtName');
   if (!el) { el = document.createElement('div'); el.id = 'districtName'; el.setAttribute('aria-live', 'polite');
-    el.style.cssText = 'position:fixed;left:24px;bottom:96px;z-index:40;pointer-events:none;font:400 30px/1.2 "Yahaeng Title",var(--f-body);color:#f2e7c8;text-shadow:0 2px 0 #000,0 0 12px rgba(0,0,0,.8);opacity:0;transition:opacity .4s';
+    el.style.cssText = 'position:fixed;left:24px;bottom:96px;z-index:40;pointer-events:none;font:600 26px/1.2 "Yahaeng UI",sans-serif;letter-spacing:-.01em;color:#f2e7c8;text-shadow:0 2px 0 #000,0 0 12px rgba(0,0,0,.8);opacity:0;transition:opacity .4s';
     document.body.appendChild(el); }
   el.textContent = name; el.style.opacity = '1'; clearTimeout(el._t); el._t = setTimeout(() => { el.style.opacity = '0'; }, 2600);
 }
@@ -16571,7 +16571,7 @@ function repWitnessMul(x, y) { const r = repOf(evDist(x, y)); return r >= 30 ? 0
 function evBanner(text, col = '#f2e7c8') {
   let el = document.getElementById('evBanner');
   if (!el) { el = document.createElement('div'); el.id = 'evBanner'; el.setAttribute('aria-live', 'polite');
-    el.style.cssText = 'position:fixed;left:50%;top:16%;transform:translateX(-50%);z-index:41;pointer-events:none;font:400 22px/1.3 "Yahaeng Title",var(--f-body);text-align:center;text-shadow:0 2px 0 #000,0 0 10px rgba(0,0,0,.85);opacity:0;transition:opacity .35s;max-width:90vw';
+    el.style.cssText = 'position:fixed;left:50%;top:16%;transform:translateX(-50%);z-index:41;pointer-events:none;font:600 20px/1.35 "Yahaeng UI",sans-serif;letter-spacing:-.01em;text-align:center;text-shadow:0 2px 0 #000,0 0 10px rgba(0,0,0,.85);opacity:0;transition:opacity .35s;max-width:90vw';
     document.body.appendChild(el); }
   el.textContent = text; el.style.color = col; el.style.opacity = '1'; clearTimeout(el._t); el._t = setTimeout(() => { el.style.opacity = '0'; }, 3200);
 }
@@ -16987,7 +16987,9 @@ function drawCarriedParcel() {
 //       걸어서 셔터 앞 [행동] → 넣어 둔 차를 꺼낸다(두 대까지, 진행 저장에 함께 남는다).
 const SIDE = {
   taxi: { name: '택시 영업', vtype: 'taxi', who: '손님', call: ['택시!', '저기요, 택시!', '여기요!'], board: ['○○까지요.', '좀 빨리 가 주세요.', '○○ 가 주세요.'] },
-  amb: { name: '구급 출동', vtype: 'ambulance', who: '환자', call: ['살려 주세요...', '구급차...!', '피가... 멈추질 않아요'], board: ['병원... 병원으로...', '으윽...'] } };
+  amb: { name: '구급 출동', vtype: 'ambulance', who: '환자', call: ['살려 주세요...', '구급차...!', '피가... 멈추질 않아요'], board: ['병원... 병원으로...', '으윽...'] },
+  bus: { name: '버스 운행', vtype: 'bus', who: '승객' },
+  cop: { name: '자경단 출동', vtype: 'police', who: '도주 차량' } };
 const garageArt = A.cityGarage, garageAtlas = garageArt ? Object.assign(new Image(), { src: garageArt.src }) : null;
 const GARAGE_CAP = 2;
 // ---------- 공통: 부업 시작·끝, [행동]
@@ -16995,13 +16997,15 @@ function sideAction() {
   const P = S.player, v = P.car; if (!STAGE.cityLife) return null;
   const g = garageAction(); if (g) return g;
   if (!v || S.job || S.hit) return null;
-  const sd = S.side, k = Object.keys(SIDE).find(k => vType(v) === VTYPES[SIDE[k].vtype]);
+  const sd = S.side, k = Object.keys(SIDE).find(k => vType(v) === VTYPES[SIDE[k].vtype] || (k === 'cop' && v.police));
   if (!sd && k) return { k: 'evAct', label: SIDE[k].name + ' 시작', fn: () => sideStart(k) };
-  if (sd && !sd.fare?.aboard) return { k: 'evAct', label: SIDE[sd.kind].name + ' 끝내기', fn: () => sideEnd('영업을 마쳤다') };
+  if (sd && !sd.fare?.aboard && !(sd.kind === 'bus' && sd.riders > 0)) return { k: 'evAct', label: SIDE[sd.kind].name + ' 끝내기', fn: () => sideEnd('영업을 마쳤다') };
   return null;
 }
 function sideStart(kind) {
-  S.side = { kind, v: S.player.car, n: 0, earned: 0, fare: null, nextT: S.t + 1.5 };
+  S.side = { kind, v: S.player.car, n: 0, earned: 0, fare: null, nextT: S.t + 1.5, riders: 0 };
+  if (kind === 'bus') { if (!busPlanRoute(S.side)) { S.side = null; evBanner('지금은 노선을 짤 수 없다'); return; } evBanner('버스 운행 — 정류장마다 세워 승객을 태우고 내려라', '#8fe0a8'); play('bell', 0.4); return; }
+  if (kind === 'cop') { if (S.wanted) { S.side = null; evBanner('수배 중에는 자경단을 할 수 없다'); return; } evBanner('자경단 — 무전: 도주 차량을 들이받아 세워라', '#9fc4ff'); play('bell', 0.4); return; }
   evBanner(kind === 'taxi' ? '택시 영업 — 손 흔드는 손님 옆에 세워라' : '구급 출동 — 환자를 태워 병원으로', kind === 'taxi' ? '#ffd76a' : '#ff8a8a');
   play('bell', 0.4);
 }
@@ -17034,6 +17038,8 @@ function sideUpdate(dt) {
   const sd = S.side, P = S.player; if (!sd) return;
   if (P.car !== sd.v || sd.v.dead) { sideEnd(sd.v.dead ? '차가 부서져 영업을 접었다' : '차에서 내려 영업을 접었다'); return; }
   const f = sd.fare, v = sd.v;
+  if (sd.kind === 'bus') { busUpdate(sd, dt); return; }
+  if (sd.kind === 'cop') { copSideUpdate(sd, dt); return; }
   if (!f) { if (S.t > sd.nextT && !sideSpawnFare(sd)) sd.nextT = S.t + 3; return; }
   const g = f.g;
   if (!f.aboard) {
@@ -17075,7 +17081,7 @@ function sideDropOut(f, angry) {
 }
 // 길가 손님 머리 위 손짓 · 행선지 고리 · 남은 시간 (어둠 위)
 function drawSide() {
-  const sd = S.side; if (!sd || !sd.fare) return; const f = sd.fare, col = sd.kind === 'taxi' ? '255,215,106' : '255,120,120';
+  const sd = S.side; if (sd?.kind === 'bus') { drawBus(sd); return; } if (sd?.kind === 'cop') { drawCopSide(sd); return; } if (!sd || !sd.fare) return; const f = sd.fare, col = sd.kind === 'taxi' ? '255,215,106' : '255,120,120';
   if (!f.aboard && npcAlive(f.g) && inView(f.g.x, f.g.y, 60)) { const b = .6 + .4 * Math.sin(S.t * 8);
     ctx.strokeStyle = `rgba(${col},${b})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(f.g.x, f.g.y - 4, 22, 0, TAU); ctx.stroke();
     if (sd.kind === 'amb') { ctx.fillStyle = 'rgba(120,10,10,.6)'; ctx.beginPath(); ctx.ellipse(f.g.x + 4, f.g.y + 4, 9, 5, 0, 0, TAU); ctx.fill(); }  // 바닥에 떨어진 피
@@ -17084,6 +17090,8 @@ function drawSide() {
 }
 function sideGoal(money) {
   const sd = S.side; if (!sd) return null; const f = sd.fare, nm = SIDE[sd.kind].name;
+  if (sd.kind === 'bus') { const st = sd.stops[sd.si]; return { text: `${nm} · ${st.name} 정류장 (${sd.si + 1}/${sd.stops.length}) · 승객 ${sd.riders}명 · ${money}`, where: '', x: st.x, y: st.y, fl: 0 }; }
+  if (sd.kind === 'cop') { const c = sd.target; return c ? { text: `${nm} · 도주 차량 들이받아 세우기 · ${Math.max(0, Math.ceil(sd.until - S.t))}초 · ${money}`, where: '', x: c.x, y: c.y, fl: 0 } : { text: `${nm} · 무전 대기 · ${money}`, where: '', x: S.player.x, y: S.player.y, fl: 0 }; }
   if (!f) return { text: `${nm} · ${SIDE[sd.kind].who} 찾는 중 · ${money}`, where: '', x: S.player.x, y: S.player.y, fl: 0 };
   if (!f.aboard) return { text: `${nm} · 손 흔드는 ${SIDE[sd.kind].who} 옆에 세우기 · ${money}`, where: '', x: f.g.x, y: f.g.y, fl: 0 };
   return { text: `${nm} · '${f.to.label}'까지 ${Math.max(0, Math.ceil(f.limit - (S.t - f.t1)))}초 · ${money}`, where: '', x: f.to.x, y: f.to.y, fl: 0 };
@@ -17146,7 +17154,118 @@ function drawGarage() {
 }
 function drawMiniSide(x, T) {
   const G = S.garage; if (G) { x.fillStyle = '#e8d070'; x.fillRect(T(G.x) - 3, T(G.base) - 3, 6, 6); x.strokeStyle = 'rgba(0,0,0,.7)'; x.strokeRect(T(G.x) - 3, T(G.base) - 3, 6, 6); }
+  const sd = S.side; if (sd?.kind === 'bus') { const st = sd.stops[sd.si]; x.fillStyle = '#8fe0a8'; x.fillRect(T(st.x) - 3, T(st.y) - 3, 6, 6); }
+  if (sd?.kind === 'cop' && sd.target) { x.fillStyle = (S.t * 4 | 0) % 2 ? '#ff5a5a' : '#5a8aff'; x.beginPath(); x.arc(T(sd.target.x), T(sd.target.y), 4, 0, TAU); x.fill(); }
   const f = S.side?.fare; if (f) { const p = f.aboard ? f.to : f.g; x.fillStyle = S.side.kind === 'taxi' ? '#ffd76a' : '#ff7a7a'; x.beginPath(); x.arc(T(p.x), T(p.y), 3.5, 0, TAU); x.fill(); }
+}
+
+// ---------- 버스 운행: 정류장 5곳을 차례로. 정류장 앞(보도 쪽 차로)에 서면 내릴 사람이 내리고 기다리던 사람이 탄다. 한 명당 15만, 노선을 다 돌면 50만
+const BUS_STOP_NAMES = ['을지로입구', '청계2가', '수표교', '세운상가', '을지로3가', '충무로', '동대문시장', '종로3가', '인쇄골목', '장교동', '관수교', '신당역'];
+function busPlanRoute(sd) {
+  const P = S.player, stops = []; let at = { x: P.x, y: P.y };
+  for (let k = 0; k < 5; k++) { let best = null;
+    for (let t = 0; t < 40 && !best; t++) { const a = Math.random() * TAU, r = rnd(600, 1000), x = at.x + Math.cos(a) * r, y = at.y + Math.sin(a) * r, p = roadNear(x, y, 6);
+      if (p && dist(p.x, p.y, at.x, at.y) > 450 && stops.every(s => dist(s.x, s.y, p.x, p.y) > 400)) best = p; }
+    if (!best) return false; stops.push({ x: best.x, y: best.y, name: BUS_STOP_NAMES[(S.t * 7 + k * 5 | 0) % BUS_STOP_NAMES.length], wait: [] }); at = best; }
+  sd.stops = stops; sd.si = 0; sd.riders = 0; sd.t0 = S.t; busFillStop(sd, 0); return true;
+}
+function busFillStop(sd, i) {  // 정류장에 기다리는 사람 1~3명 (길가 보도에)
+  const st = sd.stops[i]; if (!st || st.wait.length) return; const n = 1 + ((Math.random() * 3) | 0);
+  for (let k = 0; k < n; k++) { const gi = cityGuardSlot(), x = st.x + (k - 1) * 20, y = st.y + 40, g = makeGuard({ kind: 'civ', at: [Math.floor(x / TILE), Math.floor(y / TILE)], radio: false }, gi);
+    g.x = x; g.y = y; g.route = [{ x, y, pause: 999 }]; g.ri = 0; g.wait = 999; g.evt = 'side'; placeGuard(g, gi); setLayer(0); if (PR) prWarm([charOf(g)], true); st.wait.push(g); }
+}
+function busUpdate(sd, dt) {
+  const v = sd.v, st = sd.stops[sd.si]; if (!st) return;
+  if (dist(v.x, v.y, st.x, st.y) < 900) busFillStop(sd, sd.si);
+  if (dist(v.x, v.y, st.x, st.y) < 100 && Math.abs(v.v) < 20 && !sd.dwell) {
+    sd.dwell = true; v.doorT = S.t + 0.2; v.doorSide = 1; play('switch', 0.5);
+    const off = sd.si ? Math.min(sd.riders, 1 + ((Math.random() * sd.riders) | 0)) : 0, on = st.wait.filter(npcAlive);
+    for (let k = 0; k < off; k++) after(0.3 + k * 0.4, () => { const gi = cityGuardSlot(), side = v.a + Math.PI / 2, x = v.x + Math.cos(side) * 46, y = v.y + Math.sin(side) * 46, g = makeGuard({ kind: 'civ', at: [Math.floor(x / TILE), Math.floor(y / TILE)], radio: false }, gi);
+      g.x = x; g.y = y; g.route = [{ x: x + Math.cos(side) * 60, y: y + Math.sin(side) * 60, pause: 999 }]; g.evt = 'side'; placeGuard(g, gi); if (PR) prWarm([charOf(g)], true); });
+    on.forEach((g, k) => { const side = v.a + Math.PI / 2; evGo(g, v.x + Math.cos(side) * 40, v.y + Math.sin(side) * 40); after(0.9 + k * 0.45, () => { if (S.side !== sd) return; g.off = true; g.x = -9000; g.y = -9000; }); });
+    const t = Math.max(0.9 + on.length * 0.45, 0.3 + off * 0.4) + 0.3;
+    after(t, () => { if (S.side !== sd) return; sd.riders += on.length - off; const pay = on.length * 15; if (pay) { cash(pay); sd.earned += pay; } sd.n += on.length; st.wait = [];
+      v.doorT = S.t + 0.2; play('switch', 0.4); sd.si++; sd.dwell = false;
+      if (sd.si >= sd.stops.length) { const bonus = 50; cash(bonus); sd.earned += bonus; play('bell', 0.5); evBanner(`노선 완주 · 보너스 ${bonus}만`, '#9fe0b0'); sd.riders = 0; if (!busPlanRoute(sd)) sideEnd('운행을 마쳤다'); }
+      else evBanner(`${st.name} · 탄 사람 ${on.length} · 내린 사람 ${off}${pay ? ` · ${pay}만` : ''} → 다음 ${sd.stops[sd.si].name}`, '#8fe0a8'); });
+  }
+}
+function drawBus(sd) {
+  const st = sd.stops[sd.si]; if (!st) return;
+  for (const [i, s] of sd.stops.entries()) { if (i < sd.si || !inView(s.x, s.y, 80)) continue;  // 정류장 표지: 기둥 + 파란 판
+    const x = s.x | 0, y = s.y + 36 | 0; ctx.fillStyle = '#2a2e34'; ctx.fillRect(x - 1, y - 38, 3, 40); ctx.fillStyle = '#2f6db4'; ctx.fillRect(x - 9, y - 50, 19, 13); ctx.fillStyle = '#e8f0ff'; ctx.fillRect(x - 6, y - 47, 13, 2); ctx.fillRect(x - 6, y - 43, 9, 2);
+    if (i === sd.si) { const b = .5 + .4 * Math.sin(S.t * 5); ctx.strokeStyle = `rgba(143,224,168,${b})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(s.x, s.y, 54, 0, TAU); ctx.stroke(); infoTag(s.x, s.y - 70, `${s.name} 정류장`, '#8fe0a8', .9); } }
+}
+// ---------- 자경단: 경찰차로 무전을 받는다 → 화면 밖에서 도주 차량(조직 스포츠카)이 달아난다 → 들이받아 내구성 절반 아래로 세우면 범인이 내려 손을 든다
+function copSideUpdate(sd, dt) {
+  const P = S.player;
+  if (S.wanted) { sideEnd('수배가 붙어 자경단을 접었다'); return; }
+  if (!sd.target) { if (S.t < sd.nextT) return;
+    const r = roadSpot(700, 1100); if (!r) { sd.nextT = S.t + 2; return; }
+    const v = makeVehicle({ type: ['sport', 'luxury', 'suv'][(sd.n + (S.t | 0)) % 3], x: r.x, y: r.y, a: r.a ?? 0, parked: false }); Object.assign(v, { ai: true, driver: true, flee: true, gang: 'B', c: 3, v: 120 });
+    v.d = ((Math.round((v.a || 0) / (Math.PI / 2)) % 4) + 4) % 4; S.vehicles.push(v); sd.target = v; sd.hp0 = v.hp; sd.until = S.t + 100; play('click', 0.5);
+    evBanner('무전: 도주 차량 발견 — 들이받아 세워라', '#9fc4ff'); return; }
+  const c = sd.target;
+  if (c.dead || c.hp <= sd.hp0 * 0.5) {  // 섰다: 범인이 내려 손을 든다
+    c.ai = false; c.v = 0; c.flee = false; c.driver = false; c.doorT = S.t + 0.2; c.doorSide = -1;
+    const gi = cityGuardSlot(), side = c.a - Math.PI / 2, g = makeGuard({ kind: 'g2', at: [Math.floor(c.x / TILE), Math.floor(c.y / TILE)], radio: false }, gi);
+    g.x = c.x + Math.cos(side) * 46; g.y = c.y + Math.sin(side) * 46; g.fac = 'B'; g.outfit = FAC_OUTFIT.B || null; g.evt = 'side'; g.route = [{ x: g.x, y: g.y, pause: 999 }]; placeGuard(g, gi); if (PR) prWarm([charOf(g)], true);
+    gsay(g, '아, 알았어! 쏘지 마!', 2.5); after(4, () => evGone(g));
+    const pay = 120 + Math.max(0, Math.round(sd.until - S.t)); cash(pay); sd.earned += pay; sd.n++; applyStanding({ P: 3, B: -2 });
+    evBanner(`도주 차량 검거 · ${pay}만`, '#9fe0b0'); play('bell', 0.5); sd.target = null; sd.nextT = S.t + 6; return; }
+  if (S.t > sd.until || dist(c.x, c.y, P.x, P.y) > 3200) { c.flee = false; evBanner('도주 차량을 놓쳤다', '#f2b0a0'); sd.target = null; sd.nextT = S.t + 8; }
+  if ((sd.sirenT = (sd.sirenT || 0) - dt) <= 0) { sd.sirenT = 0.55; play('metal', 0.12, 2.9); }  // 사이렌 대용: 높은 쇳소리 깜빡
+}
+function drawCopSide(sd) {
+  const c = sd.target; if (!c || !inView(c.x, c.y, 80)) return; const b = (S.t * 4 | 0) % 2;
+  ctx.strokeStyle = b ? 'rgba(255,90,90,.85)' : 'rgba(90,140,255,.85)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(c.x, c.y, 58, 0, TAU); ctx.stroke();
+  const k = clamp(c.hp / sd.hp0, 0, 1); ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(c.x - 26, c.y - 74, 52, 6); ctx.fillStyle = '#ff6a5a'; ctx.fillRect(c.x - 25, c.y - 73, Math.round(50 * k), 4);
+  infoTag(c.x, c.y - 84, '도주 차량', '#ff9a8a', .9);
+}
+
+// ---------------------------------------------------------------- 자유 모드 날씨: 비
+// 2~4분 맑다가 1~2분 비가 온다(서서히 들고 난다). 비가 오면 화면에 사선 빗줄기(픽셀)·땅에 튀는 빗방울·젖은 길의 푸른 윤기,
+// 빗소리(걸러 낸 잡음). 젖은 길은 미끄러워 급하게 꺾으면 더 쉽게 미끄러지고 브레이크가 덜 듣는다. 실내(층)에서는 안 보인다.
+const RAIN_MAX = 1;
+function weatherInit() { S.rain = { k: 0, on: false, next: S.t + rnd(90, 160), drops: null }; }
+const rainK = () => (STAGE.cityLife && S.rain) ? S.rain.k : 0;
+function weatherUpdate(dt) {
+  const W = S.rain; if (!W || !STAGE.cityLife) return;
+  if (S.t > W.next) { W.on = !W.on; W.next = S.t + (W.on ? rnd(60, 120) : rnd(120, 240)); if (W.on) evBanner('비가 내리기 시작한다 — 길이 미끄럽다', '#a8c8e8'); else evBanner('비가 그쳤다', '#c8d8e8'); }
+  W.k = clamp(W.k + (W.on ? 1 : -1) * dt / 8, 0, RAIN_MAX);  // 8초에 걸쳐 들고 난다
+  rainSound(W.k);
+  // 비 오는 날 행인 몇은 처마 밑으로 서두른다 (말 한마디)
+  if (W.k > 0.6 && (W.sayT = (W.sayT || 0) - dt) <= 0) { W.sayT = rnd(6, 12); const P = S.player;
+    for (const g of actorsNear(P.x, P.y)) if (g.civ && npcAlive(g) && g.state === 'PATROL' && Math.random() < 0.3) { gsay(g, ['비 오네...', '우산 없는데', '아 젖겠다'][(Math.random() * 3) | 0], 1.6); break; } }
+}
+// 빗소리: 걸러 낸 잡음 고리 하나를 비 세기만큼 키운다
+let RAIN_SND = null;
+function rainSound(k) {
+  if (!AC || muted) return;
+  if (!RAIN_SND) { if (k <= 0) return; const sr = AC.sampleRate, n = sr * 2, b = AC.createBuffer(1, n, sr), d = b.getChannelData(0); let lp = 0;
+    for (let i = 0; i < n; i++) { lp += 0.25 * ((Math.random() * 2 - 1) - lp); d[i] = lp + (Math.random() < 0.002 ? (Math.random() - 0.5) * 0.8 : 0); }
+    const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain(); s.buffer = b; s.loop = true; f.type = 'highpass'; f.frequency.value = 900; g.gain.value = 0;
+    s.connect(f); f.connect(g); g.connect(master); s.start(); RAIN_SND = { g }; }
+  const inside = flOf(S.player) > 0, want = k * (inside ? 0.05 : 0.16) * (S.player.car ? 0.7 : 1);
+  RAIN_SND.g.gain.setTargetAtTime(want, AC.currentTime, 0.4);
+}
+// 그리기 (어둠 위, 화면 영역만): 젖은 길 윤기 → 튀는 빗방울 → 사선 빗줄기
+function drawRain() {
+  const k = rainK(); if (k <= 0.01 || flOf(S.player)) return;
+  const [vx, vy, vw, vh] = viewRect(40);
+  ctx.save();
+  ctx.fillStyle = `rgba(40,70,110,${0.1 * k})`; ctx.fillRect(vx, vy, vw, vh);  // 젖은 밤길의 푸른 기운
+  const t = S.t, n = Math.round(400 * k * Math.min(1.6, vw * vh / 1.2e6)), seed = i => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  // 튀는 빗방울: 자리마다 0.35초 주기로 작은 왕관
+  ctx.fillStyle = `rgba(205,225,245,${0.7 * k})`;
+  for (let i = 0; i < n * 0.5; i++) { const ph = (t * 2.8 + seed(i + 900)) % 1; if (ph > 0.35) continue; const x = vx + seed(i + 500) * vw | 0, y = vy + seed(i + 700) * vh | 0, r = ph < 0.15 ? 1 : 2;
+    ctx.fillRect(x - r, y, 1, 1); ctx.fillRect(x + r, y, 1, 1); if (ph < 0.12) ctx.fillRect(x, y - 1, 1, 1); }
+  // 빗줄기: 화면 위에서 아래로, 바람에 살짝 기운다 (1px 폭 픽셀 선)
+  ctx.fillStyle = `rgba(185,210,240,${0.6 * k})`;
+  const fall = 1100, len = 16, lean = 0.22;
+  for (let i = 0; i < n; i++) { const off = (t * fall + seed(i) * vh) % vh, x0 = vx + seed(i + 100) * (vw + 60) - 30 + off * lean, y0 = vy + off;
+    ctx.fillRect(x0 | 0, y0 | 0, 1, len / 2 | 0); ctx.fillRect((x0 + len * lean / 2) | 0, (y0 + len / 2) | 0, 1, len / 2 | 0); }  // 두 토막: 살짝 기운 선
+  ctx.restore();
 }
 
 // ---------------------------------------------------------------- 차량 (도시 판): 도로를 다니는 차 · 세워 둔 차 · 내가 모는 차
@@ -17307,7 +17426,7 @@ function aiDrive(v, dt) {
   let hor = v.d === 0 || v.d === 2, sgn = DV[v.d][0] + DV[v.d][1];
   if (v.lane == null) v.lane = hor ? v.y : v.x;
   if (v.turn && onDeckLevel(v)) planTurn(v);  // 땅에서 정해 둔 꺾기는 고가에 오르면 취소 (고가 밑 교차로에서는 못 꺾는다)
-  const T = vType(v), blk = aheadBlocked(v); let want = v.chase ? Math.min(AI_SPD * 2, T.max) : Math.min(AI_SPD, T.max * .55);  // 버스·트럭은 천천히
+  const T = vType(v), blk = aheadBlocked(v); let want = v.chase ? Math.min(AI_SPD * 2, T.max) : v.flee ? Math.min(AI_SPD * 2.2, T.max) : Math.min(AI_SPD, T.max * .55);  // 버스·트럭은 천천히
   if (blk) { v.stopT += dt; want = 0;
     if (blk !== 'car' && v.stopT > 1.4 && (v.honkT -= dt) <= 0) { v.honkT = 2.5; play('metal', 0.25 * proxVol(v), 2.4); if (blk === 'ped' || blk === 'me') noise(v.x, v.y, 120, 'car', 0); }
   } else v.stopT = 0;
@@ -17436,7 +17555,7 @@ function pedWaits(g) {
 // 횡단보도는 교차로 앞 70px(둘이 나란히 걷는 폭), 정지선은 그 바깥 84px. 차는 앞머리가 정지선에 닿게 선다(차 중심 = 정지선 + 차 반 길이)
 const XWALK = 70, STOP_LINE = 84, STOP_GAP = STOP_LINE + CAR_LEN / 2 - 6, stopGap = v => STOP_LINE + (v.len || CAR_LEN) / 2 - 6;
 function trafficStopDistance(v){
- if(v.chase||onDeckLevel(v))return null;  // 고가 위는 신호가 없다
+ if(v.chase||v.flee||onDeckLevel(v))return null;  // 고가 위는 신호가 없다 · 달아나는 차는 신호를 무시한다
  const locks=S.trafficJunctions||(S.trafficJunctions={}),hor=v.d%2===0,sgn=DV[v.d][0]+DV[v.d][1],VGr=vehGrid();
  // 내가 달리는 도로 줄(가로 차 = 그 y의 도로, 세로 차 = 그 x의 도로)에 걸친 교차로만 본다
  const RXs=STAGE.roadsX||[],RYs=STAGE.roadsY||[],lane=hor?RYs.find(ry=>v.y>ry*TILE&&v.y<(ry+4)*TILE):RXs.find(rx=>v.x>rx*TILE&&v.x<(rx+4)*TILE);if(lane==null)return null;
@@ -17560,8 +17679,9 @@ function updateDriving(P, mx, my, mag, dt) {
     } else { v.rev = false; fwd = Math.abs(d) > 1.9 ? 0.25 * k : k; steer = clamp(d * 2.2, -1, 1); }
   } else if (isTouch && mag <= 0.15) v.rev = false;
   const T = vType(v);
-  if (fwd > 0.2) v.v = v.v < -4 ? Math.min(0, v.v + CAR_BRAKE * dt) : Math.min(T.max, v.v + T.acc * Math.min(1, fwd) * dt);
-  else if (fwd < -0.2) v.v = v.v > 4 ? Math.max(0, v.v - CAR_BRAKE * dt) : Math.max(-150, v.v - T.acc * 0.8 * Math.min(1, -fwd) * dt);
+  const BRK = CAR_BRAKE * (1 - 0.3 * rainK());  // 젖은 길: 브레이크가 덜 듣는다
+  if (fwd > 0.2) v.v = v.v < -4 ? Math.min(0, v.v + BRK * dt) : Math.min(T.max, v.v + T.acc * Math.min(1, fwd) * dt);
+  else if (fwd < -0.2) v.v = v.v > 4 ? Math.max(0, v.v - BRK * dt) : Math.max(-150, v.v - T.acc * 0.8 * Math.min(1, -fwd) * dt);
   else { const f = CAR_FRIC * dt; v.v = Math.abs(v.v) <= f ? 0 : v.v - Math.sign(v.v) * f; }
   // 핸들은 바퀴가 굴러야 돈다. 후진 중에는 실제 차처럼 반대로 돈다
   // 핸들은 바퀴가 굴러야 돈다(자유 모드는 느려도 잘 돈다). 후진 중에는 실제 차처럼 반대로 돈다
@@ -17898,8 +18018,8 @@ const SKID_MAX = 900;
 function carDrift(v, steer, fwd, dt) {
   if (!STAGE.cityLife) return;
   if (v.va == null) v.va = v.a;
-  const spd = Math.abs(v.v), hard = Math.abs(steer) > 0.55 && spd > 230, brake = fwd < -0.2 && v.v > 240;
-  const grip = hard ? 4.2 : brake ? 4.5 : 12;  // 너무 쉽게 돌지 않게: 자유 모드 운전 보조  // 1초에 맞춰 도는 정도
+  const spd = Math.abs(v.v), hard = Math.abs(steer) > 0.55 && spd > 230 * (1 - 0.3 * rainK()), brake = fwd < -0.2 && v.v > 240;
+  const grip = (hard ? 4.2 : brake ? 4.5 : 12) * (1 - 0.45 * rainK());  // 젖은 길은 더 미끄럽다  // 너무 쉽게 돌지 않게: 자유 모드 운전 보조  // 1초에 맞춰 도는 정도
   v.va += angDiff(v.va, v.a) * Math.min(1, grip * dt);
   const slip = Math.abs(angDiff(v.a, v.va));
   if (slip > 0.05) v.v *= 1 - Math.min(0.5, slip * 0.55) * dt;  // 옆으로 미끄러지면 속도가 깎인다
@@ -25901,7 +26021,7 @@ function installGameApi() {
     touchPlayFrame,initActionFlow,actionFlowGoal,updateActionFlow,bodyRecoveryGoal,ambientEntryGrace,guideCivilianOut,facScan,zoneAt,concealedAttackCandidate,skillRewardRows,missionSkillPoints,skillPath,skillTreeLayout,meleeReach,MELEE_CONTACT,challengeStatus:id=>!!CH[id]?.[1](),canKill,dropTarget,wireDropTarget,deviceReady,SKILL_TREE,SKILL_BRANCHES,SKILL_BY_ID,loadSkillTree,storeSkillTree,skillBudget,skillSpent,learnTreeSkill,resetTreeSkills,skillOn,syncRuntimeSkills,skillNoise,skillMoveMul,skillViewMul,skillDetection,projectileRange,availableTools,selectTool,toolCount,toolDetail,actBlade,actSmoke,actRadio,actHack,updateTechWork,updateSkillDevices,smokeCells,smokeContains,smokeRayRange,hackTarget,radioAcquireTarget,drawSkillLinks,drawSkillDevices,
     feedbackEvent, feedbackState, feedbackReceipt, feedbackOnce, guardTaskCue, cancelWork, drawFinishFeedback, drawDefeatFeedback, hapticFeedback, continueResultTraining,
     cabinetMaxAngle, cabinetFrontStand, purchasedPropsReady, purchasedPropCargoBounds, purchasedPropFurnBounds, purchasedPropFurnKey, purchasedPropWallLayout, get purchasedPropsAtlas(){return purchasedPropsAtlas;}, purchasedPropFrame, purchasedBridgeBounds, purchasedCabinetLeaves, purchasedReady, purchasedFrame, drawPurchasedStairs, drawPurchasedBridge, drawPurchasedVent, drawPurchasedCargo, drawPurchasedLadder, drawPurchasedPipe, drawPurchasedSwitch, drawPurchasedDoor, drawPurchasedManhole, drawPurchasedPaper, drawPurchasedFreight, get purchasedAtlas(){return purchasedAtlas;},
-    ASSASSIN_SKILLS, ASSASSIN_BEATS, assassinAttackFrame, initAssassinSkills, assassinOpportunity, assassinPath, assassinVictim, beginAssassinSkill, updateAssassinSkill, cancelAssassinSkill, openAssassinMenu, closeAssassinMenu, chooseAssassinSkill, spawnEffect, drawEffects, updateEffects, get effectAtlas(){return{ready:!!fxAtlas?.complete&&!!fxAtlas?.naturalWidth,limit:FX_LIMIT,meta:FX_META};}, refreshBodyLighting, syncOccupiedLights, syncWorkLights, get PLANS(){return PLANS;}, publicSuspicion, updateSharpEye, identityTime, groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, portraitFor, get castArtReady(){return !!castPortraitImage.naturalWidth&&!!strayDogImage.naturalWidth;}, drawDog, speakerOf, bossRadio, episodeRadioMessage, syncEpisodeRadio, episodeStoryMessage, acknowledgeEpisodeStory, playEpisodeCoda, episodeNumber, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,updateAlert,rememberSuspect,disguiseKnowledge,syncDisguiseKnowledge,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, chooseEscape,syncFlowRoutes,startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, coverTarget, coverPullRoute, updatePull, coverAt, enterCover, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, drawPR, fluidSource, fluidSprite, updateHeroVisual, heroMotionClock, heroTransitionPose, heroStrikeFrame, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, buildingShift:b=>buildingShift(b),traffic:{makeVehicle,carMove,carOverlap,carPts,updateVehicles,trafficStopDistance,signalState,walkState,signalTime,signalLets,carEnter,carExit,updateDriving,carExplode,get isTouch(){return isTouch;}},events:{eventAction,repOf,get list(){return EVENTS;},evDist,standOf,openContact,factionAction,applyStanding,contactMissions,cityGuardSlot,cityListsCleanup,evGone,sideStart,garageStore,garageTake,cityActionList}, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget,   nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, quickStashChoice, beginQuickStash, updateQuickStash, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; },  setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
+    ASSASSIN_SKILLS, ASSASSIN_BEATS, assassinAttackFrame, initAssassinSkills, assassinOpportunity, assassinPath, assassinVictim, beginAssassinSkill, updateAssassinSkill, cancelAssassinSkill, openAssassinMenu, closeAssassinMenu, chooseAssassinSkill, spawnEffect, drawEffects, updateEffects, get effectAtlas(){return{ready:!!fxAtlas?.complete&&!!fxAtlas?.naturalWidth,limit:FX_LIMIT,meta:FX_META};}, refreshBodyLighting, syncOccupiedLights, syncWorkLights, get PLANS(){return PLANS;}, publicSuspicion, updateSharpEye, identityTime, groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, portraitFor, get castArtReady(){return !!castPortraitImage.naturalWidth&&!!strayDogImage.naturalWidth;}, drawDog, speakerOf, bossRadio, episodeRadioMessage, syncEpisodeRadio, episodeStoryMessage, acknowledgeEpisodeStory, playEpisodeCoda, episodeNumber, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,updateAlert,rememberSuspect,disguiseKnowledge,syncDisguiseKnowledge,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, chooseEscape,syncFlowRoutes,startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, coverTarget, coverPullRoute, updatePull, coverAt, enterCover, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, drawPR, fluidSource, fluidSprite, updateHeroVisual, heroMotionClock, heroTransitionPose, heroStrikeFrame, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, buildingShift:b=>buildingShift(b),traffic:{makeVehicle,carMove,carOverlap,carPts,updateVehicles,trafficStopDistance,signalState,walkState,signalTime,signalLets,carEnter,carExit,updateDriving,carExplode,get isTouch(){return isTouch;}},events:{eventAction,repOf,get list(){return EVENTS;},evDist,standOf,openContact,factionAction,applyStanding,contactMissions,cityGuardSlot,cityListsCleanup,evGone,sideStart,garageStore,garageTake,cityActionList,setRain:on=>{const W=S.rain;if(W){W.on=on;W.k=on?1:0;W.next=S.t+999;}},get rainK(){return rainK();}}, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget,   nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, quickStashChoice, beginQuickStash, updateQuickStash, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; },  setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
     mapImage() { const c = document.createElement('canvas'); c.width = mapC.width; c.height = mapC.height; drawBig(c.getContext('2d'), mapC); return c.toDataURL(); },
     npcDown, startBrawl, declareWar, facWitness, zoneAt, Z_PUB, Z_RES, Z_HOS, stairDir, setLayer, wallUpSpot, landBelow, nearWinClimb, nearWinDrop, doAct: a => actPrimary(Object.assign({}, a, { viaZ: true })), get MW() { return MW; }, get FURN() { return FURN; }, hurt: (why, origin) => hurtPlayer(null, why, origin), tileCh: (x, y) => G[y] && G[y][x], get MH() { return MH; },
     validate() {
