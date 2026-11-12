@@ -158,7 +158,7 @@ function aiDrive(v, dt) {
   if (v.turn && onDeckLevel(v)) planTurn(v);  // 땅에서 정해 둔 꺾기는 고가에 오르면 취소 (고가 밑 교차로에서는 못 꺾는다)
   const T = vType(v), blk = aheadBlocked(v); let want = v.chase ? Math.min(AI_SPD * 2, T.max) : v.flee ? Math.min(AI_SPD * 2.2, T.max) : Math.min(STAGE.cityLife ? CITY_CRUISE : AI_SPD, T.max * (STAGE.cityLife ? .7 : .55));  // 버스·트럭은 천천히
   if (blk) { v.stopT += dt; want = 0;
-    if (blk !== 'car' && v.stopT > 1.4 && (v.honkT -= dt) <= 0) { v.honkT = 2.5; play('metal', 0.25 * proxVol(v), 2.4); if (blk === 'ped' || blk === 'me') noise(v.x, v.y, 120, 'car', 0); }
+    if (blk !== 'car' && v.stopT > 1.4 && (v.honkT -= dt) <= 0) { v.honkT = 2.5; play('metal', 0.25 * proxVol(v), 2.4); if (blk === 'me' || blk === 'ped' && !STAGE.cityLife) noise(v.x, v.y, 120, 'car', 0); }  // 자유 모드: 길 건너는 행인에게 울리는 경적은 그냥 거리 소리 (경비를 부르지 않는다)
   } else v.stopT = 0;
   if (v.panicT > S.t) { want = Math.max(want, v.panicSpd); v.stopT = 0; }  // 다중 추돌: 앞차가 섰는데 미처 못 선다
   if((v.crashUntil||0)>S.t)want=0;

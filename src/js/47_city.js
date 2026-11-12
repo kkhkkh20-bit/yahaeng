@@ -12,10 +12,12 @@ function cityInit() {
   trafficInit(); if (STAGE.hits) hitsInit(); loadFreeProgress(); shopsInit(); cityFactionsInit(); garageInit(); S.side = null; weatherInit(); heatInit(); havocInit(); gunsInit(); rampageInit(); warInit(); safehouseInit(); hunterInit();  // 가게 · 중고차 매매 · 도색소  // 도시 안 의뢰 (공중전화)
   // 순찰 경찰 둘: 시내 보도를 돈다 (조직 구역에는 들어가지 않는다)
   for (const r of STAGE.copBeats || []) { const g = makeGuard({ kind: 'g1', route: r, radio: false }, S.guards.length); g.police = true; g.beat = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; g.radio = false; setLayer(0); buildRouteLine(g); S.guards.push(g); }
-  // 자유 모드 첫 화면: 칼 든 조직원이 바로 옆에 서 있지 않게 — 300px 안의 조직원은 자기 순찰로에서 가장 먼 자리로 보낸다
+  // 자유 모드 첫 화면: 칼 든 조직원이 바로 옆에 서 있지 않게 — 300px 안의 조직원은 제자리 근처, 나와 350px 넘게 떨어진 빈 길로 옮긴다
+  // (순찰로 끝으로 보내면 다른 조직 구역이라 싸움이 난다)
   if (STAGE.cityLife) { const P = S.player; for (const g of S.guards) { if (g.civ || g.police || !g.fac || g.state === 'DEAD' || dist(g.x, g.y, P.x, P.y) > 300) continue;
-    let bi = -1, bd = 0; (g.route || []).forEach((w, i) => { const d = dist(w.x, w.y, P.x, P.y); if (d > bd) { bd = d; bi = i; } });
-    if (bi >= 0 && bd > 300) { g.x = g.route[bi].x; g.y = g.route[bi].y; g.ri = bi; g.path = null; g.wait = 0; } } }
+    let best = null; for (let r = 120; r <= 640 && !best; r += 40) for (let k = 0; k < 9 && !best; k++) { const a = Math.atan2(g.y - P.y, g.x - P.x) + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 0.3, x = g.x + Math.cos(a) * r, y = g.y + Math.sin(a) * r, tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
+      if (inMap(tx, ty) && !solidAt(tx, ty) && bldAt(tx, ty) < 0 && dist(x, y, P.x, P.y) > 350) best = { x: tc(tx), y: tc(ty) }; }
+    if (best) { g.x = best.x; g.y = best.y; g.path = null; g.wait = 0; } } }
   if (CITY_RET) { const P = S.player, c = S.contracts.find(o => o.id === CITY_RET.id); if (c) { P.x = c.x; P.y = c.y + 30; cam.x = P.x; cam.y = P.y; } CITY_RET = null; }
 }
 // 의뢰 판의 거리: 교통(도로가 있으면)과 순찰 경찰. 수배·병원·의뢰 장소는 도시에만

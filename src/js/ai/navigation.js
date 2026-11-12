@@ -205,7 +205,7 @@ function cityRoadCost() {
   for (let i = 0; i < a.length; i++) if (G0[(i / MW) | 0]?.[i % MW] !== '.') a[i] = 0;
   ROAD_COST = { a, mw: MW, mh: MH, g: G0 }; return a;
 }
-const pathExtra = g => STAGE.cityLife && STAGE.roadsX && !flOf(g) && !g.z && ['PATROL', 'RETURN'].includes(g.state) && !g.hunter && !g.evt ? cityRoadCost() : null;
+const pathExtra = g => STAGE.cityLife && STAGE.roadsX && !flOf(g) && !g.z && ['PATROL', 'RETURN'].includes(g.state) && !g.hunter && !g.evt && (g.civ || g.police) ? cityRoadCost() : null;  // 조직원은 아무 데서나 건넌다
 function pathTo(g, x, y) {
   const sol = npcRouteSolid(g), sx = Math.floor(g.x / TILE), sy = Math.floor(g.y / TILE), tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
   // A remembered sound/contact can fall inside a bin or wall. Keep that
@@ -227,7 +227,8 @@ function pathTo(g, x, y) {
       return;
     }
   }
-  g.path = astar(sx, sy, tx, ty, sol, pathExtra(g)); g.pathGoal = { x, y }; g.pathFailedAt = S.t;
+  const ex = pathExtra(g);  // 목적지가 차도 위(길가에 세운 차 등)면 그리로 곧장 간다
+  g.path = astar(sx, sy, tx, ty, sol, ex && !ex[ty * MW + tx] ? ex : null); g.pathGoal = { x, y }; g.pathFailedAt = S.t;
   if (!g.path.length && sx === tx && sy === ty && dist(g.x, g.y, x, y) > 6 && !sol(tx, ty)) g.path = [{ x, y }];
   if (g.path.length && !sol(tx, ty)) Object.assign(g.path[g.path.length - 1], { x, y });
 }

@@ -13,7 +13,7 @@ function hitGradeTrack() {
   if (!h.alerted && h.escorts.some(e => npcAlive(e) && (e.state === 'ALERT' || e.state === 'SEARCH'))) h.alerted = true;
 }
 function hitGrade(h) {
-  const extra = Math.max(0, (S.corpses || []).length - h.c0 - 1);
+  const extra = (S.corpses || []).slice(h.c0).filter(c => !c.byNpc && c.g !== h.g && !(c.guardId != null && c.guardId === h.g.id)).length;  // 내가 쓰러뜨린 다른 사람만 (도시 어딘가의 조직 싸움 시체는 등급과 무관)
   const i = h.maxWanted === 0 && !h.alerted && !extra ? 0 : h.maxWanted === 0 ? 1 : h.maxWanted <= 2 ? 2 : 3;
   const [g, name, mul, col] = HIT_GRADES[i]; return { g, name, mul, col, extra };
 }
