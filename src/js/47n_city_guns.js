@@ -22,7 +22,8 @@ function gunChip() {
   let el = document.getElementById('wpnChip'); if (!STAGE.cityLife) { if (el) el.remove(); return; }
   if (!el) { el = document.createElement('button'); el.id = 'wpnChip'; el.type = 'button'; el.style.cssText = 'position:fixed;right:58px;bottom:calc(env(safe-area-inset-bottom,0px) + 214px);z-index:35;padding:6px 10px;background:rgba(12,14,20,.82);color:#efe6cf;border:1px solid #4a5160;border-radius:6px;font:600 13px "Yahaeng UI",sans-serif;pointer-events:auto';
     el.addEventListener('click', e => { e.stopPropagation(); cycleWeapon(); }); document.body.appendChild(el); }
-  el.textContent = S.wpn ? `${WEAPONS[S.wpn].name} ${S.guns[S.wpn]}` : '맨손 ⇄'; el.hidden = !Object.values(S.guns || {}).some(n => n > 0);
+  const arm = S.player.armor > 0 ? ` · 조끼 ${S.player.armor}` : '';
+  el.textContent = (S.wpn ? `${WEAPONS[S.wpn].name} ${S.ramp && S.ramp.wpn === S.wpn ? '∞' : S.guns[S.wpn]}` : '맨손 ⇄') + arm; el.hidden = !Object.values(S.guns || {}).some(n => n > 0) && !arm;
 }
 // [공격]이 총을 쏠 차례인가: 붙잡을 사람이 손 닿는 데 없을 때
 function gunAttack() {
@@ -115,5 +116,6 @@ function drawGuns() {
 // 조직 연락책의 무기 거래 (호감도 0 이상)
 function weaponShop(f) {
   const rows = WPN_ORDER.map(k => { const W = WEAPONS[k]; return { name: `${W.name} (+${W.ammo})`, price: W.price, ok: (S.cash || 0) >= W.price, buy: () => { if ((S.cash || 0) < W.price) return; S.cash -= W.price; S.guns[k] = (S.guns[k] || 0) + W.ammo; if (!S.wpn) S.wpn = k; play('loot', 0.5); gunChip(); saveFreeProgress(true); weaponShop(f); } }; });
+  const P = S.player; rows.push({ name: `방탄조끼 (${ARMOR_MAX}번 막는다)`, price: ARMOR_PRICE, ok: (S.cash || 0) >= ARMOR_PRICE && (P.armor | 0) < ARMOR_MAX, buy: () => { if ((S.cash || 0) < ARMOR_PRICE || (P.armor | 0) >= ARMOR_MAX) return; S.cash -= ARMOR_PRICE; P.armor = ARMOR_MAX; play('loot', 0.5); gunChip(); saveFreeProgress(true); weaponShop(f); } });
   shopPanel(`${STAND_NAME[f]} 무기 거래 · 가진 돈 ${S.cash || 0}만`, rows);
 }

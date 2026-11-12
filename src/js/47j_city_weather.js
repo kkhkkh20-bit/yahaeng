@@ -44,11 +44,11 @@ function drawRain() {
 }
 // 처음 화면으로 나갈 때: 자유 모드가 띄운 창·알림·소리를 모두 정리한다 (다음 판·메뉴에 남지 않게)
 function cityTeardown() {
-  for (const id of ['evBanner', 'districtName', 'shopPanel']) { const el = document.getElementById(id); if (el) el.remove(); }
+  for (const id of ['evBanner', 'districtName', 'shopPanel', 'rampHud']) { const el = document.getElementById(id); if (el) el.remove(); }
   if (CMAP) { CMAP.el.remove(); CMAP = null; }
   { const w = document.getElementById('wpnChip'); if (w) w.remove(); }
   if (S) S.heli = null; if (typeof HELI_SND !== 'undefined' && HELI_SND && AC) HELI_SND.g.gain.setTargetAtTime(0, AC.currentTime, 0.1);
-  if (S) { S.shopOpen = false; S.side = null; S.wp = null; S.wpPath = null; if (S.rain) { S.rain.on = false; S.rain.k = 0; } }
+  if (S) { S.shopOpen = false; S.side = null; S.wp = null; S.wpPath = null; S.ramp = null; if (S.rain) { S.rain.on = false; S.rain.k = 0; } }
   document.body.classList.remove('free-city', 'no-prompts');
   if (AC) { const now = AC.currentTime; if (RAIN_SND) RAIN_SND.g.gain.setTargetAtTime(0, now, 0.1); if (typeof SCREECH !== 'undefined' && SCREECH) SCREECH.g.gain.setTargetAtTime(0, now, 0.05); }
   if (typeof musicRadio === 'function') musicRadio(false);

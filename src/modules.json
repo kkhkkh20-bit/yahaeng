@@ -358,6 +358,10 @@
       "group": "city"
     },
     {
+      "path": "47o_city_rampage.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },

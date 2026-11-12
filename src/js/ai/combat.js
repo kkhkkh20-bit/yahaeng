@@ -17,6 +17,7 @@ function updateGun(g, dt, sameF) {
 }
 function hurtPlayer(g, why, origin=g) {
   const P = S.player; if (P.hurtT > 0 || S.over) return;
+  if (STAGE.cityLife && typeof armorAbsorb === 'function' && armorAbsorb()) return;  // 자유 모드 방탄조끼
   if (P.car) { const v = P.car; if (g) { v.hp -= 1; v.smoke = 1.5; P.hurtT = 0.9; play('metal', 0.5, 0.8); if (v.hp <= 0) carWreck(v); } return; }  // 차 안: 차가 대신 맞는다
   if (!S.saidHurt && P.hp > 1) { S.saidHurt = true; after(0.6, () => bark('hero', 'hurt')); }
   rememberDamage(P,origin);spawnEffect('impact',{x:P.x,y:P.y-20,fl:flOf(P),z:P.z||0},{scale:.65});
