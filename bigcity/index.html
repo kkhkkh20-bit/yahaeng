@@ -11640,7 +11640,7 @@ function cityRoadCost() {
   for (let i = 0; i < a.length; i++) if (G0[(i / MW) | 0]?.[i % MW] !== '.') a[i] = 0;
   ROAD_COST = { a, mw: MW, mh: MH, g: G0 }; return a;
 }
-const pathExtra = g => STAGE.cityLife && STAGE.roadsX && !flOf(g) && !g.z && ['PATROL', 'RETURN'].includes(g.state) && !g.hunter && !g.evt ? cityRoadCost() : null;
+const pathExtra = g => STAGE.cityLife && STAGE.roadsX && !flOf(g) && !g.z && ['PATROL', 'RETURN'].includes(g.state) && !g.hunter && !g.evt && (g.civ || g.police) ? cityRoadCost() : null;  // 조직원은 아무 데서나 건넌다
 function pathTo(g, x, y) {
   const sol = npcRouteSolid(g), sx = Math.floor(g.x / TILE), sy = Math.floor(g.y / TILE), tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
   // A remembered sound/contact can fall inside a bin or wall. Keep that
@@ -11662,7 +11662,8 @@ function pathTo(g, x, y) {
       return;
     }
   }
-  g.path = astar(sx, sy, tx, ty, sol, pathExtra(g)); g.pathGoal = { x, y }; g.pathFailedAt = S.t;
+  const ex = pathExtra(g);  // 목적지가 차도 위(길가에 세운 차 등)면 그리로 곧장 간다
+  g.path = astar(sx, sy, tx, ty, sol, ex && !ex[ty * MW + tx] ? ex : null); g.pathGoal = { x, y }; g.pathFailedAt = S.t;
   if (!g.path.length && sx === tx && sy === ty && dist(g.x, g.y, x, y) > 6 && !sol(tx, ty)) g.path = [{ x, y }];
   if (g.path.length && !sol(tx, ty)) Object.assign(g.path[g.path.length - 1], { x, y });
 }
@@ -15545,6 +15546,12 @@ function cityInit() {
   trafficInit(); if (STAGE.hits) hitsInit(); loadFreeProgress(); shopsInit(); cityFactionsInit(); garageInit(); S.side = null; weatherInit(); heatInit(); havocInit(); gunsInit(); rampageInit(); warInit(); safehouseInit(); hunterInit();  // 가게 · 중고차 매매 · 도색소  // 도시 안 의뢰 (공중전화)
   // 순찰 경찰 둘: 시내 보도를 돈다 (조직 구역에는 들어가지 않는다)
   for (const r of STAGE.copBeats || []) { const g = makeGuard({ kind: 'g1', route: r, radio: false }, S.guards.length); g.police = true; g.beat = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; g.radio = false; setLayer(0); buildRouteLine(g); S.guards.push(g); }
+  // 자유 모드 첫 화면: 칼 든 조직원이 바로 옆에 서 있지 않게 — 300px 안의 조직원은 제자리 근처, 나와 350px 넘게 떨어진 빈 길로 옮긴다
+  // (순찰로 끝으로 보내면 다른 조직 구역이라 싸움이 난다)
+  if (STAGE.cityLife) { const P = S.player; for (const g of S.guards) { if (g.civ || g.police || !g.fac || g.state === 'DEAD' || dist(g.x, g.y, P.x, P.y) > 300) continue;
+    let best = null; for (let r = 120; r <= 640 && !best; r += 40) for (let k = 0; k < 9 && !best; k++) { const a = Math.atan2(g.y - P.y, g.x - P.x) + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 0.3, x = g.x + Math.cos(a) * r, y = g.y + Math.sin(a) * r, tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
+      if (inMap(tx, ty) && !solidAt(tx, ty) && bldAt(tx, ty) < 0 && dist(x, y, P.x, P.y) > 350) best = { x: tc(tx), y: tc(ty) }; }
+    if (best) { g.x = best.x; g.y = best.y; g.path = null; g.wait = 0; } } }
   if (CITY_RET) { const P = S.player, c = S.contracts.find(o => o.id === CITY_RET.id); if (c) { P.x = c.x; P.y = c.y + 30; cam.x = P.x; cam.y = P.y; } CITY_RET = null; }
 }
 // 의뢰 판의 거리: 교통(도로가 있으면)과 순찰 경찰. 수배·병원·의뢰 장소는 도시에만
@@ -18047,7 +18054,7 @@ function hitGradeTrack() {
   if (!h.alerted && h.escorts.some(e => npcAlive(e) && (e.state === 'ALERT' || e.state === 'SEARCH'))) h.alerted = true;
 }
 function hitGrade(h) {
-  const extra = Math.max(0, (S.corpses || []).length - h.c0 - 1);
+  const extra = (S.corpses || []).slice(h.c0).filter(c => !c.byNpc && c.g !== h.g && !(c.guardId != null && c.guardId === h.g.id)).length;  // 내가 쓰러뜨린 다른 사람만 (도시 어딘가의 조직 싸움 시체는 등급과 무관)
   const i = h.maxWanted === 0 && !h.alerted && !extra ? 0 : h.maxWanted === 0 ? 1 : h.maxWanted <= 2 ? 2 : 3;
   const [g, name, mul, col] = HIT_GRADES[i]; return { g, name, mul, col, extra };
 }
@@ -18649,7 +18656,7 @@ function aiDrive(v, dt) {
   if (v.turn && onDeckLevel(v)) planTurn(v);  // 땅에서 정해 둔 꺾기는 고가에 오르면 취소 (고가 밑 교차로에서는 못 꺾는다)
   const T = vType(v), blk = aheadBlocked(v); let want = v.chase ? Math.min(AI_SPD * 2, T.max) : v.flee ? Math.min(AI_SPD * 2.2, T.max) : Math.min(STAGE.cityLife ? CITY_CRUISE : AI_SPD, T.max * (STAGE.cityLife ? .7 : .55));  // 버스·트럭은 천천히
   if (blk) { v.stopT += dt; want = 0;
-    if (blk !== 'car' && v.stopT > 1.4 && (v.honkT -= dt) <= 0) { v.honkT = 2.5; play('metal', 0.25 * proxVol(v), 2.4); if (blk === 'ped' || blk === 'me') noise(v.x, v.y, 120, 'car', 0); }
+    if (blk !== 'car' && v.stopT > 1.4 && (v.honkT -= dt) <= 0) { v.honkT = 2.5; play('metal', 0.25 * proxVol(v), 2.4); if (blk === 'me' || blk === 'ped' && !STAGE.cityLife) noise(v.x, v.y, 120, 'car', 0); }  // 자유 모드: 길 건너는 행인에게 울리는 경적은 그냥 거리 소리 (경비를 부르지 않는다)
   } else v.stopT = 0;
   if (v.panicT > S.t) { want = Math.max(want, v.panicSpd); v.stopT = 0; }  // 다중 추돌: 앞차가 섰는데 미처 못 선다
   if((v.crashUntil||0)>S.t)want=0;
@@ -27202,10 +27209,10 @@ function resize() {
 function targetScale() {
   if (tactical) { const fit = Math.min(W / (MW * TILE), (H - 90) / (MH * TILE)) * 0.96; return H > W * 1.3 ? Math.max(fit, Math.min(W / (MW * TILE) * 2.3, 0.62)) : fit; }  // 세로: 지도를 크게 보여 주고 끌어서 옮긴다
   const P = S && S.player;
-  const cityPhone = STAGE.cityLife && isTouch ? 0.78 : 1;  // 큰 도시 휴대폰: 세로 화면 가로 8칸은 너무 가깝다 — 걸을 때 약 10칸, 운전할 때는 그만큼 더 넓게
+  const cityPhone = STAGE.cityLife && isTouch ? 0.78 * (H > W * 1.3 ? 0.8 : 1) : 1;  // 휴대폰 세로는 가로가 좁다: 한 번 더 넓게 (걷기 약 12칸)  // 큰 도시 휴대폰: 세로 화면 가로 8칸은 너무 가깝다 — 걸을 때 약 10칸, 운전할 때는 그만큼 더 넓게
   if (P && P.car) return BASE_SCALE * userZoom * cityPhone * (STAGE.cityLife ? 0.62 - Math.min(0.2, Math.abs(P.car.v) / 2000) : 0.72 - Math.min(0.14, Math.abs(P.car.v) / 2600));  // 운전: 멀리 본다 (빠를수록 더, 큰 도시는 더 넓게)
   if (STAGE.cityLife && S.scope) return BASE_SCALE * userZoom * cityPhone * 0.6;  // 저격 조준경: 멀리 본다 (47w)
-  if (STAGE.cityLife && P && !P.z) return BASE_SCALE * userZoom * skillViewMul() * (isTouch ? 0.78 : 1.12);  // 큰 도시를 걸을 때는 가깝게: 차에 오르면 도시가 확 넓어진다
+  if (STAGE.cityLife && P && !P.z) return BASE_SCALE * userZoom * skillViewMul() * (isTouch ? cityPhone : 1.12);  // 큰 도시를 걸을 때는 가깝게: 차에 오르면 도시가 확 넓어진다
   const districtView=STAGE.agentStudy&&isTouch&&H>W*1.3?.80:1;
   return BASE_SCALE * districtView * userZoom * skillViewMul() * (quarterNear(P)?1.08:1) * (P && P.z >= 3 ? 0.8 : P && (P.z || P.jump) ? 0.9 : 1);
 }
