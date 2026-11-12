@@ -99,6 +99,11 @@ function deployFromCar(v) {
     g.route = [{ x, y, pause: 999 }]; S.guards.push(g); setLayer(0); buildRouteLine(g); if (PR) prWarm([charOf(g)], true);
     g.state = 'ALERT'; g.lastSeen = { x: S.player.x, y: S.player.y, fl: 0, z: 0 }; g.lostT = 0; g.path = null; out.push(g);
   }
+  // 차 문이 열리고 → 운전석·조수석에서 몸을 빼 → 차 옆으로 내려선다 (차 옆에 툭 나타나지 않게)
+  out.forEach((g, n) => { const s = n ? 1 : -1, x = g.x, y = g.y; g.x = v.x; g.y = v.y; g.a = v.a + s * Math.PI / 2; g.moving = true; g.exitCar = true; g.atkCd = Math.max(g.atkCd || 0, 0.9);
+    after(n * 0.15, () => { v.doorT = S.t + 0.25; v.doorSide = s; play('switch', 0.35); });
+    let k = 0; const step = () => { k++; g.x = v.x + (x - v.x) * k / 6; g.y = v.y + (y - v.y) * k / 6; if (k < 6) after(0.05, step); else g.exitCar = false; };
+    after(0.1 + n * 0.15, step); });
   return out;
 }
 // 조직이 나를 쫓다 놓칠 만큼 멀어지면 차를 부른다 (조직마다 한 대)
