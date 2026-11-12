@@ -382,6 +382,10 @@
       "group": "city"
     },
     {
+      "path": "47u_city_safehouse.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },

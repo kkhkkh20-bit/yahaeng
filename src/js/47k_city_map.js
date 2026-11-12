@@ -15,7 +15,7 @@ function cityMapOpen() {
   const btns = document.createElement('div'); btns.style.cssText = 'display:flex;gap:8px'; btns.append(clr, cls); head.append(t, btns);
   const cv = document.createElement('canvas'); cv.style.cssText = 'max-width:96vw;max-height:calc(100vh - 110px);image-rendering:pixelated;border:2px solid #3b4250;border-radius:4px;cursor:crosshair;touch-action:none';
   const legend = document.createElement('div'); legend.style.cssText = 'font-size:12px;color:#b4bcb8;display:flex;gap:14px;flex-wrap:wrap;justify-content:center';
-  legend.innerHTML = [['#7fd6ff', '나'], ['#e8d070', '내 차고'], ['#6aa8ff', '중고차'], ['#ff7a7a', '병원'], ['#9fc4ff', '지구대'], ['#c9a0ff', '연락책'], ['#8fe0c4', '공중전화'], ['#ffd76a', '목적지']].map(([c, n]) => `<span><i style="display:inline-block;width:9px;height:9px;background:${c};margin-right:5px;border-radius:2px"></i>${n}</span>`).join('');
+  legend.innerHTML = [['#7fd6ff', '나'], ['#e8d070', '내 차고'], ['#78e696', '은신처'], ['#6aa8ff', '중고차'], ['#ff7a7a', '병원'], ['#9fc4ff', '지구대'], ['#c9a0ff', '연락책'], ['#8fe0c4', '공중전화'], ['#ffd76a', '목적지']].map(([c, n]) => `<span><i style="display:inline-block;width:9px;height:9px;background:${c};margin-right:5px;border-radius:2px"></i>${n}</span>`).join('');
   el.append(head, cv, legend); document.body.appendChild(el);
   const base = buildMiniBase(Math.min(1400, innerWidth * 1.4), Math.min(1000, (innerHeight - 110) * 1.4)); cv.width = base.width; cv.height = base.height;
   CMAP = { el, cv, base }; S.shopOpen = true; cityMapDraw();
@@ -31,6 +31,7 @@ function cityMapDraw() {
   const dot = (px, py, col, r = 5, sq) => { x.fillStyle = col; x.strokeStyle = 'rgba(0,0,0,.8)'; x.lineWidth = 1.5; x.beginPath(); if (sq) x.rect(T(px) - r, T(py) - r, r * 2, r * 2); else x.arc(T(px), T(py), r, 0, TAU); x.fill(); x.stroke(); };
   const label = (px, py, txt) => { x.font = '600 12px "Yahaeng UI",sans-serif'; x.textAlign = 'center'; x.fillStyle = 'rgba(0,0,0,.7)'; x.fillText(txt, T(px) + 1, T(py) - 8); x.fillStyle = '#efe6cf'; x.fillText(txt, T(px), T(py) - 9); };
   if (S.garage) { dot(S.garage.x, S.garage.base, '#e8d070', 6, true); label(S.garage.x, S.garage.base, '내 차고'); }
+  for (const s of S.safes || []) { dot(s.x, s.y, s.owned ? '#78e696' : 'rgba(200,200,190,.5)', 5, true); if (!s.i) continue; label(s.x, s.y, s.owned ? '은신처' : `매물 ${s.price}만`); }
   if (S.dealer) { const D = S.dealer, cx = (D.lot[0] + D.lot[2]) / 2, cy = (D.lot[1] + D.lot[3]) / 2; dot(cx, cy, '#6aa8ff', 6, true); label(cx, cy, '중고차'); }
   if (STAGE.hospital) { const hx = tc(STAGE.hospital[0]), hy = tc(STAGE.hospital[1]); dot(hx, hy, '#ff7a7a', 6, true); label(hx, hy, '병원'); }
   if (STAGE.police) { const px = tc(STAGE.police[0]), py = tc(STAGE.police[1]); dot(px, py, '#9fc4ff', 6, true); label(px, py, '지구대'); }

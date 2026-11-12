@@ -14,6 +14,7 @@ const GARAGE_CAP = 2;
 // ---------- 공통: 부업 시작·끝, [행동]
 function sideAction() {
   const P = S.player, v = P.car; if (!STAGE.cityLife) return null;
+  const sh = safehouseAction(); if (sh) return sh;
   const g = garageAction(); if (g) return g;
   if (!v || S.job || S.hit) return null;
   const sd = S.side, k = Object.keys(SIDE).find(k => vType(v) === VTYPES[SIDE[k].vtype] || (k === 'cop' && v.police));
