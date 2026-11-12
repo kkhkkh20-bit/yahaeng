@@ -30,9 +30,9 @@ function enterBooth(p) {
     P.booth = p; P.x = inside.x; P.y = inside.y; P.a = -Math.PI / 2; P.moving = false;
     play('metal', 0.25, 1.9);  // 수화기 드는 소리
     const ringing = S.ringPhone === p; if (ringing) { S.ringPhone = null; S.ringNext = S.t + 25; }
-    const plan = !ringing || S.hit || S.wanted > 0 ? null : planHit(), lines = ringing ? phoneLines(plan) : [['hero', ['신호음뿐이다. 걸 데도 없다.', '...끊긴 전화다.'][(S.t | 0) % 2]]];
+    const plan = !ringing || S.hit || S.job || S.wanted > 0 ? null : planJob(), lines = ringing ? (jobLines(plan) || phoneLines(null)) : [['hero', ['신호음뿐이다. 걸 데도 없다.', '...끊긴 전화다.'][(S.t | 0) % 2]]];  // 암살·차 가져오기·배달·경주 중 하나
     S.phoneCall = true;
-    say(lines, true, () => { S.phoneCall = false; play('click', 0.5); if (plan) startHit(plan); leaveBooth(); });
+    say(lines, true, () => { S.phoneCall = false; play('click', 0.5); if (plan) startJob(plan); leaveBooth(); });
   };
 }
 function leaveBooth() {
@@ -48,12 +48,12 @@ const DIR8 = ['동쪽', '남동쪽', '남쪽', '남서쪽', '서쪽', '북서쪽
 function updatePhoneRing(dt) {
   const P = S.player;
   if (S.ringPhone) {
-    const p = S.ringPhone; if (S.t - S.ringT0 > 40 || S.hit) { S.ringPhone = null; S.ringNext = S.t + 12; return; }
+    const p = S.ringPhone; if (S.t - S.ringT0 > 40 || S.hit || S.job) { S.ringPhone = null; S.ringNext = S.t + 12; return; }
     const ph = (S.t - S.ringT0) % 3;  // 따르릉-따르릉, 쉼
     if ((ph < 0.4 || (ph > 0.6 && ph < 1.0)) && (S.ringBeat || 0) <= S.t) { S.ringBeat = S.t + 0.05; ringTone(clamp(1 - dist(P.x, P.y, p.x, p.y) / 1400, 0, 1)); }
     return;
   }
-  if (S.hit || S.wanted > 0 || S.t < (S.ringNext ?? 6)) return;
+  if (S.hit || S.job || S.wanted > 0 || S.t < (S.ringNext ?? 6)) return;
   const near = (S.phones || []).filter(p => { const d = dist(P.x, P.y, p.x, p.y); return d > 250 && d < 1300; });
   if (!near.length) { S.ringNext = S.t + 4; return; }
   S.ringPhone = near[(Math.random() * near.length) | 0]; S.ringT0 = S.t;
@@ -66,6 +66,7 @@ function ringTone(vol) {
 }
 function phoneLines(plan) {
   if (S.hit) return [['master', `${S.hit.name} 일부터 끝내. 아직 숨 쉬고 있다더군.`], ['hero', '...알았어.']];
+  if (S.job) return [['master', '맡은 일부터 끝내고 걸어.'], ['hero', '...알았어.']];
   if (S.wanted > 0) return [['master', '지금 경찰이 너를 쫓고 있잖나. 이 번호로 다시 걸지 마.'], ['master', '열기부터 식혀. 그다음에 일을 주지.']];
   if (!plan) return [['master', '오늘은 일이 없다. 끊어.']];
   const P = S.player, a = Math.atan2(plan.cy - P.y, plan.cx - P.x), dir = DIR8[((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8];
@@ -124,6 +125,7 @@ function boothBlock() {
 function hitsUpdate(dt) {
   boothBlock(); updatePhoneRing(dt || 1 / 60);
   const P = S.player; if (P.booth) { P.x = P.booth.x; P.y = P.booth.y + 2; P.moving = false; }
+  jobsUpdate(dt || 1 / 60);
   const h = S.hit; if (!h) return;
   const g = h.g;
   if (!S.guards.includes(g)) { S.hit = null; return; }
@@ -136,6 +138,7 @@ function hitsUpdate(dt) {
 }
 function hitGoal() {
   const h = S.hit, P = S.player, money = `수입 ${S.cash || 0}만`;
+  if (S.job) return jobGoal(money);
   if (!h) {
     const p = S.ringPhone; if (!p) return { text: `거리를 돈다 · ${money}`, where: '', x: null, y: null, fl: 0 };
     return { text: `울리는 공중전화 받기 · ${money}`, where: '', x: p.x, y: p.y, fl: 0 };
@@ -175,12 +178,13 @@ function drawHits(layer) {
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = ring ? 'rgba(255,236,190,.28)' : 'rgba(255,236,190,.10)'; ctx.fillRect(p.x - 13, p.y - 50, 26, 58);
       if (ring) { ctx.fillStyle = 'rgba(255,90,70,.5)'; ctx.fillRect(p.x - BOOTH_HW - 2, p.y - 60, BOOTH_HW * 2 + 4, 9); } ctx.restore();  // 부스 안 형광등 · 울릴 때 지붕 띠가 깜빡인다
       const P = S.player; if (P.booth === p || (P.trav && Math.abs(P.x - p.x) < BOOTH_HW && Math.abs(P.y - p.y) < 14)) drawBooth(p, true);
-      if (!STAGE.noPrompts && !S.hit) { const pu = .5 + .4 * Math.sin(S.t * 4); ctx.strokeStyle = `rgba(80,220,170,${pu})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y - 4, 24, 0, TAU); ctx.stroke(); infoTag(p.x, p.y + 22, '공중전화', '#8fe0c4', .9); }
+      if (!STAGE.noPrompts && !S.hit && !S.job) { const pu = .5 + .4 * Math.sin(S.t * 4); ctx.strokeStyle = `rgba(80,220,170,${pu})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y - 4, 24, 0, TAU); ctx.stroke(); infoTag(p.x, p.y + 22, '공중전화', '#8fe0c4', .9); }
       continue;
     }
     drawBooth(p, false);
   }
   if (layer !== 'ui') return;
+  drawJobs();
   const h = S.hit; if (!h || h.g.state === 'DEAD' && !h.g.unconscious) return;
   const g = h.g; if (flOf(g) !== flOf(S.player) || !inView(g.x, g.y, 60)) return;
   const pu = .55 + .35 * Math.sin(S.t * 5);

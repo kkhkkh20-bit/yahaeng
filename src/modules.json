@@ -318,6 +318,10 @@
       "group": "city"
     },
     {
+      "path": "47e_city_jobs.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },
