@@ -505,3 +505,5 @@ body.episode-coached #hud .obj:not(.open) .tut-detail{display:none}
 #hud .obj.open .objective-read-hint{display:block}
 @media(max-width:480px){body.first-episode #mini{visibility:hidden}}
 body.no-prompts #hud .keys{display:none}
+/* 자유 모드(큰 도시): 잠입 도구 버튼(웅크림·던질 것·붙잡기·옷·도구 바꾸기)은 숨기고 [행동]·[공격]만 남긴다 */
+body.free-city #btnCrouch,body.free-city #quickItems,body.free-city #btnTool,body.free-city #btnToolNext,body.free-city #btnGrab,body.free-city #btnDress,body.free-city #btnSkill{display:none!important}

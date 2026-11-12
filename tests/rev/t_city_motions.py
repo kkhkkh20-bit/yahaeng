@@ -39,6 +39,10 @@ async def main():
         def ok(v, m):
             if not v: bad.append(m)
         touch = await q.evaluate(SETUP); ok(touch, 'not a touch device')
+        pad = await q.evaluate('''()=>{__game.updateHUD(true);return [...document.querySelectorAll('button')].filter(b=>b.offsetParent&&b.getBoundingClientRect().width>0).map(b=>b.id+':'+b.textContent.trim())}''')
+        print('pad', pad)
+        ok(not any(x.split(':')[0] in ('btnCrouch','btnTool','btnToolNext','btnGrab','quickStone','quickCoin') for x in pad), 'stealth buttons still shown in free mode: %s' % pad)
+        ok(any(x.startswith('btnAct:') and '공격' in x for x in pad) and any(x.startswith('btnCarry:') for x in pad), 'free-mode pad lacks attack/action: %s' % pad)
         bo = await q.evaluate(BOOTH); print('booth', bo); ok(bo['k'] == 'hitPhone' and bo['walkSteps'] > 10 and bo['walkMono'] and bo['inBooth'] and bo['outSteps'] > 10 and bo['outside'], 'booth walk in/out missing: %s' % bo)
         car = await q.evaluate(CAR); print('car', car)
         ok(car['enterSteps'] > 15 and car['inCar'] and car['doorFrames'] > 5 and car['exitSteps'] > 15 and car['outCar'], 'car enter/exit motion missing: %s' % car)

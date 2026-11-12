@@ -84,7 +84,7 @@ function padButton(el, key, a, idle) {
   const quiet=key==='actH'&&subduedAction(a);
   const ic = quiet?'ko':a.k === 'cap' ? (a.hold ? 'ko' : 'kill') : a.k === 'none' && a.stalk ? (koTap(a.stalk) ? 'ko' : 'kill') : actIcon(a), v = quiet?'기절 상태':actVerb(a, ic) || idle, hold = quiet?'<small>길게 살해</small>':a.skillLocked ? '<small>배워야 사용</small>' : a.hold ? `<small>${holdHint(a)}</small>` : '';
   // Share the authored action symbols with world prompts; keep the verb and accessible label.
-  const shortV=key==='actH'&&a.k==='none'?'제압':a.k==='dress'?'옷 입기':a.k==='camroom'?(S.camsOff?'기록 삭제':'감시 정지'):v;
+  const shortV=key==='actH'&&a.k==='none'?(STAGE.cityLife?(S.player.car?'경적':'공격'):'제압'):a.k==='dress'?'옷 입기':a.k==='camroom'?(S.camsOff?'기록 삭제':'감시 정지'):v;
   const html = hudArt(key==='actH'?(ic==='kill'?'blade':'attack'):key==='dressH'?'dress':'action')+`<b>${shortV}</b>` + hold;
   if (hudCache[key] !== html) { hudCache[key] = html; el.innerHTML = html; }
   // A shortened visible verb can stay identical while distance/availability changes.
