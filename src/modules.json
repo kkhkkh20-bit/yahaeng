@@ -338,6 +338,10 @@
       "group": "city"
     },
     {
+      "path": "47j_city_weather.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },

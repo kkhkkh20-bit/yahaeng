@@ -156,7 +156,7 @@ function aiDrive(v, dt) {
   let hor = v.d === 0 || v.d === 2, sgn = DV[v.d][0] + DV[v.d][1];
   if (v.lane == null) v.lane = hor ? v.y : v.x;
   if (v.turn && onDeckLevel(v)) planTurn(v);  // 땅에서 정해 둔 꺾기는 고가에 오르면 취소 (고가 밑 교차로에서는 못 꺾는다)
-  const T = vType(v), blk = aheadBlocked(v); let want = v.chase ? Math.min(AI_SPD * 2, T.max) : Math.min(AI_SPD, T.max * .55);  // 버스·트럭은 천천히
+  const T = vType(v), blk = aheadBlocked(v); let want = v.chase ? Math.min(AI_SPD * 2, T.max) : v.flee ? Math.min(AI_SPD * 2.2, T.max) : Math.min(AI_SPD, T.max * .55);  // 버스·트럭은 천천히
   if (blk) { v.stopT += dt; want = 0;
     if (blk !== 'car' && v.stopT > 1.4 && (v.honkT -= dt) <= 0) { v.honkT = 2.5; play('metal', 0.25 * proxVol(v), 2.4); if (blk === 'ped' || blk === 'me') noise(v.x, v.y, 120, 'car', 0); }
   } else v.stopT = 0;
@@ -285,7 +285,7 @@ function pedWaits(g) {
 // 횡단보도는 교차로 앞 70px(둘이 나란히 걷는 폭), 정지선은 그 바깥 84px. 차는 앞머리가 정지선에 닿게 선다(차 중심 = 정지선 + 차 반 길이)
 const XWALK = 70, STOP_LINE = 84, STOP_GAP = STOP_LINE + CAR_LEN / 2 - 6, stopGap = v => STOP_LINE + (v.len || CAR_LEN) / 2 - 6;
 function trafficStopDistance(v){
- if(v.chase||onDeckLevel(v))return null;  // 고가 위는 신호가 없다
+ if(v.chase||v.flee||onDeckLevel(v))return null;  // 고가 위는 신호가 없다 · 달아나는 차는 신호를 무시한다
  const locks=S.trafficJunctions||(S.trafficJunctions={}),hor=v.d%2===0,sgn=DV[v.d][0]+DV[v.d][1],VGr=vehGrid();
  // 내가 달리는 도로 줄(가로 차 = 그 y의 도로, 세로 차 = 그 x의 도로)에 걸친 교차로만 본다
  const RXs=STAGE.roadsX||[],RYs=STAGE.roadsY||[],lane=hor?RYs.find(ry=>v.y>ry*TILE&&v.y<(ry+4)*TILE):RXs.find(rx=>v.x>rx*TILE&&v.x<(rx+4)*TILE);if(lane==null)return null;
@@ -409,8 +409,9 @@ function updateDriving(P, mx, my, mag, dt) {
     } else { v.rev = false; fwd = Math.abs(d) > 1.9 ? 0.25 * k : k; steer = clamp(d * 2.2, -1, 1); }
   } else if (isTouch && mag <= 0.15) v.rev = false;
   const T = vType(v);
-  if (fwd > 0.2) v.v = v.v < -4 ? Math.min(0, v.v + CAR_BRAKE * dt) : Math.min(T.max, v.v + T.acc * Math.min(1, fwd) * dt);
-  else if (fwd < -0.2) v.v = v.v > 4 ? Math.max(0, v.v - CAR_BRAKE * dt) : Math.max(-150, v.v - T.acc * 0.8 * Math.min(1, -fwd) * dt);
+  const BRK = CAR_BRAKE * (1 - 0.3 * rainK());  // 젖은 길: 브레이크가 덜 듣는다
+  if (fwd > 0.2) v.v = v.v < -4 ? Math.min(0, v.v + BRK * dt) : Math.min(T.max, v.v + T.acc * Math.min(1, fwd) * dt);
+  else if (fwd < -0.2) v.v = v.v > 4 ? Math.max(0, v.v - BRK * dt) : Math.max(-150, v.v - T.acc * 0.8 * Math.min(1, -fwd) * dt);
   else { const f = CAR_FRIC * dt; v.v = Math.abs(v.v) <= f ? 0 : v.v - Math.sign(v.v) * f; }
   // 핸들은 바퀴가 굴러야 돈다. 후진 중에는 실제 차처럼 반대로 돈다
   // 핸들은 바퀴가 굴러야 돈다(자유 모드는 느려도 잘 돈다). 후진 중에는 실제 차처럼 반대로 돈다

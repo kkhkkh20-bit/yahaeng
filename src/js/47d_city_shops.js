@@ -101,7 +101,7 @@ function shopsUpdate(dt) {
 function showDistrict(name) {
   let el = document.getElementById('districtName');
   if (!el) { el = document.createElement('div'); el.id = 'districtName'; el.setAttribute('aria-live', 'polite');
-    el.style.cssText = 'position:fixed;left:24px;bottom:96px;z-index:40;pointer-events:none;font:400 30px/1.2 "Yahaeng Title",var(--f-body);color:#f2e7c8;text-shadow:0 2px 0 #000,0 0 12px rgba(0,0,0,.8);opacity:0;transition:opacity .4s';
+    el.style.cssText = 'position:fixed;left:24px;bottom:96px;z-index:40;pointer-events:none;font:600 26px/1.2 "Yahaeng UI",sans-serif;letter-spacing:-.01em;color:#f2e7c8;text-shadow:0 2px 0 #000,0 0 12px rgba(0,0,0,.8);opacity:0;transition:opacity .4s';
     document.body.appendChild(el); }
   el.textContent = name; el.style.opacity = '1'; clearTimeout(el._t); el._t = setTimeout(() => { el.style.opacity = '0'; }, 2600);
 }
