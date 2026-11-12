@@ -14,5 +14,5 @@ function sewerEscapeGoal(){
 function syncSewerCheckpoint(){
  const P=S.player;if(!STAGE.sewerRoutes||!P.under)return;
  if(!ugAt(Math.floor(P.x/TILE),Math.floor(P.y/TILE)))S.sewerLegacyRoute=true;
- if(S.sewerLegacyRoute){buildSewers(S.hides.filter(h=>h.type==='well'),true);ugC=bigify(renderSewers());}
+ if(S.sewerLegacyRoute){buildSewers(S.hides.filter(h=>h.type==='well'),true);ugC=bigSewers();}
 }

@@ -64,7 +64,7 @@ function drawMini() {
 // 판 지도 그림: 구운 지도를 줄여 그리고 출발(하늘)·탈출(노랑)·훔칠 것(금색 ◆)·표적(빨강 ●)을 찍는다
 function stageMap(w, labels) {
   const mw = MW * TILE, mh = MH * TILE, s = w / mw, h = Math.round(mh * s), c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
-  x.imageSmoothingEnabled = true; drawBig(x, mapC, 0, 0, mw, mh, 0, 0, w, h); x.fillStyle = 'rgba(7,10,18,.35)'; x.fillRect(0, 0, w, h);
+  x.imageSmoothingEnabled = true; if (mapC && mapC.lazy) x.drawImage(buildMiniBase(w, h), 0, 0, w, h); else drawBig(x, mapC, 0, 0, mw, mh, 0, 0, w, h); x.fillStyle = 'rgba(7,10,18,.35)'; x.fillRect(0, 0, w, h);
   const R = Math.max(3, w / 90), pt = (px, py, col, sh, lab) => { const X = px * s, Y = py * s; x.fillStyle = col; x.strokeStyle = 'rgba(7,10,18,.9)'; x.lineWidth = Math.max(1.5, R / 3); x.beginPath();
     if (sh === 'd') { x.moveTo(X, Y - R * 1.4); x.lineTo(X + R * 1.1, Y); x.lineTo(X, Y + R * 1.4); x.lineTo(X - R * 1.1, Y); x.closePath(); } else x.arc(X, Y, sh === 'r' ? R * 1.6 : R, 0, TAU);
     if (sh === 'r') { x.lineWidth = R * 0.7; x.strokeStyle = col; x.stroke(); } else { x.stroke(); x.fill(); }

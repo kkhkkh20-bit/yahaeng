@@ -13,17 +13,42 @@ let mapRebuildWanted = false;
 function requestMapRebuild() { mapRebuildWanted = true; }
 function flushMapRebuild() { if (!mapRebuildWanted || !G) return; mapRebuildWanted = false; const L = CUR_F; try { setLayer(0); mapC = renderMapBig(); S.floorC = {}; } finally { setLayer(L); } }
 function renderMapBig() {
-  const T = BIG_T, Wp = MW * TILE, Hp = MH * TILE;
+  const Wp = MW * TILE, Hp = MH * TILE;
   if (Wp * Hp <= 4096 * 4096) return bigify(renderMap());
-  const nx = Math.ceil(Wp / T), ny = Math.ceil(Hp / T), tiles = [];
-  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
-    const px0 = i * T, py0 = j * T, w = Math.min(T, Wp - px0), h = Math.min(T, Hp - py0);
+  return lazyBig(Wp, Hp, (px0, py0, w, h) => {
     const x0 = Math.max(0, Math.floor(px0 / TILE) - 1), y0 = Math.max(0, Math.floor(py0 / TILE) - 1), x1 = Math.min(MW - 1, Math.ceil((px0 + w) / TILE)), y1 = Math.min(MH - 1, Math.ceil((py0 + h) / TILE));
-    const c = renderMap({ x0, y0, x1, y1, marks: true }), t = document.createElement('canvas'); t.width = w; t.height = h;
-    t.getContext('2d').drawImage(c, px0 - x0 * TILE, py0 - y0 * TILE, w, h, 0, 0, w, h); c.width = c.height = 1; tiles.push(t);
-  }
-  return { big: true, width: Wp, height: Hp, nx, ny, tiles };
+    const L = CUR_F; let c; try { setLayer(0); c = renderMap({ x0, y0, x1, y1, marks: true }); } finally { setLayer(L); }
+    const t = document.createElement('canvas'); t.width = w; t.height = h;
+    t.getContext('2d').drawImage(c, px0 - x0 * TILE, py0 - y0 * TILE, w, h, 0, 0, w, h); c.width = c.height = 0; return t;
+  });
 }
+// 큰 그림을 조각마다 처음 보일 때 굽고, 최근에 쓴 조각 LAZY_CAP장만 남긴다.
+// 큰 도시를 한꺼번에 구우면 캔버스가 5억 픽셀을 넘어 휴대폰(특히 아이폰 사파리)이 탭을 강제로 닫는다
+const LAZY_CAP = (window.matchMedia && matchMedia('(pointer:coarse)').matches) ? 14 : 40;
+function lazyBig(Wp, Hp, bake) {
+  const T = BIG_T, nx = Math.ceil(Wp / T), ny = Math.ceil(Hp / T);
+  return { big: true, lazy: true, width: Wp, height: Hp, nx, ny, tiles: new Array(nx * ny).fill(null), live: [],
+    get(k) { let t = this.tiles[k]; const L = this.live;
+      if (t) { const i = L.indexOf(k); if (i >= 0 && i !== L.length - 1) { L.splice(i, 1); L.push(k); } return t; }
+      const i = k % nx, j = (k / nx) | 0; t = this.tiles[k] = bake(i * T, j * T, Math.min(T, Wp - i * T), Math.min(T, Hp - j * T)); L.push(k);
+      while (L.length > LAZY_CAP) { const o = L.shift(), c = this.tiles[o]; if (c) c.width = c.height = 0; this.tiles[o] = null; }
+      return t; } };
+}
+// 화면 둘레(반 조각 여유)에서 아직 안 구운 조각을 한 프레임에 하나만 미리 굽는다: 달리다 새 조각에서 멈칫하지 않게
+function prefetchBig(B) {
+  if (!B || !B.lazy) return; const [vx, vy, vw, vh] = viewRect(BIG_T / 2), T = BIG_T;
+  for (let j = Math.max(0, Math.floor(vy / T)); j <= Math.min(B.ny - 1, Math.floor((vy + vh) / T)); j++)
+    for (let i = Math.max(0, Math.floor(vx / T)); i <= Math.min(B.nx - 1, Math.floor((vx + vw) / T)); i++) if (!B.tiles[j * B.nx + i]) { B.get(j * B.nx + i); return; }
+}
+// 하수도 · 환풍구 그림: 칸이 하나도 없으면 그리지 않고, 큰 지도면 조각마다 필요할 때 굽는다
+function bigLayer(render, has) {
+  let any = false; for (let ty = 0; ty < MH && !any; ty++) for (let tx = 0; tx < MW; tx++) if (has(tx, ty)) { any = true; break; }
+  if (!any) return null;
+  const Wp = MW * TILE, Hp = MH * TILE;
+  if (Wp * Hp <= 4096 * 4096) return bigify(render());
+  return lazyBig(Wp, Hp, (px0, py0, w, h) => render({ px0, py0, w, h }));
+}
+const bigSewers = () => bigLayer(renderSewers, (x, y) => ugAt(x, y)), bigVents = () => bigLayer(renderVents, (x, y) => ventAt(x, y));
 function bigify(c) {
   if (!c) return c; const T = BIG_T, nx = Math.ceil(c.width / T), ny = Math.ceil(c.height / T), tiles = [];
   for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
@@ -38,7 +63,7 @@ function drawBig(x, B, sx = 0, sy = 0, sw = B.width, sh = B.height, dx = sx, dy 
   const kx = dw / sw, ky = dh / sh, T = BIG_T;
   const x0 = Math.max(0, sx), y0 = Math.max(0, sy), x1 = Math.min(B.width, sx + sw), y1 = Math.min(B.height, sy + sh); if (x1 <= x0 || y1 <= y0) return;
   for (let j = Math.floor(y0 / T); j <= Math.floor((y1 - 1) / T); j++) for (let i = Math.floor(x0 / T); i <= Math.floor((x1 - 1) / T); i++) {
-    const t = B.tiles[j * B.nx + i], tx0 = Math.max(x0, i * T), ty0 = Math.max(y0, j * T), tx1 = Math.min(x1, i * T + t.width), ty1 = Math.min(y1, j * T + t.height);
+    const t = B.lazy ? B.get(j * B.nx + i) : B.tiles[j * B.nx + i], tx0 = Math.max(x0, i * T), ty0 = Math.max(y0, j * T), tx1 = Math.min(x1, i * T + t.width), ty1 = Math.min(y1, j * T + t.height);
     if (tx1 <= tx0 || ty1 <= ty0) continue;
     x.drawImage(t, tx0 - i * T, ty0 - j * T, tx1 - tx0, ty1 - ty0, dx + (tx0 - sx) * kx, dy + (ty0 - sy) * ky, (tx1 - tx0) * kx, (ty1 - ty0) * ky);
   }
@@ -295,7 +320,7 @@ function newGame(si) {
   S.bfuses=S.bfuses||[];
   for(const d of STAGE.buildingFuses||[]){const [x,y,sx,sy]=d.at;if(!S.bfuses.some(f=>f.b===d.b&&f.tx===x&&f.ty===y))S.bfuses.push({b:d.b,tx:x,ty:y,x:tc(sx),y:tc(sy),at:d.at.slice(),cut:false,t:5,guard:null});}
   S.bushes = []; for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'B') S.bushes.push({ type: 'bush', tx, ty, x: tc(tx), y: tc(ty) });
-  mapC = renderMapBig(); ugC = bigify(renderSewers()); ventC = bigify(renderVents());
+  mapC = renderMapBig(); ugC = bigSewers(); ventC = bigVents();
   S.floorC = {};
   cam.x = S.player.x; cam.y = S.player.y; S.fade = 0.6;  // 시작할 때 어둠에서 서서히
   clearTimeout(window.__hintT); clearTimeout(window.__hintT2);
@@ -440,10 +465,11 @@ function carveNet(grid, nodes) {
   const inT = [nodes[0]], rest = nodes.slice(1); grid[nodes[0].ty * MW + nodes[0].tx] = 1;
   while (rest.length) { let bi = 0, bj = 0, bd = 1e9; rest.forEach((w, i) => inT.forEach((t, j) => { const d = Math.abs(w.tx - t.tx) + Math.abs(w.ty - t.ty); if (d < bd) { bd = d; bi = i; bj = j; } })); carve(inT[bj], rest[bi]); inT.push(rest[bi]); rest.splice(bi, 1); }
 }
-function renderVents() {
-  const c = document.createElement('canvas'); c.width = MW * TILE; c.height = MH * TILE;
-  const x = c.getContext('2d');
-  for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) {
+function renderVents(R) {
+  const c = document.createElement('canvas'); c.width = R ? R.w : MW * TILE; c.height = R ? R.h : MH * TILE;
+  const tx0 = R ? Math.floor(R.px0 / TILE) : 0, ty0 = R ? Math.floor(R.py0 / TILE) : 0, tx1 = R ? Math.min(MW, Math.ceil((R.px0 + R.w) / TILE)) : MW, ty1 = R ? Math.min(MH, Math.ceil((R.py0 + R.h) / TILE)) : MH;
+  const x = c.getContext('2d'); if (R) x.translate(-R.px0, -R.py0);
+  for (let ty = ty0; ty < ty1; ty++) for (let tx = tx0; tx < tx1; tx++) {
     if (!ventAt(tx, ty)) continue;
     const px = tx * TILE, py = ty * TILE, m = 9;
     const n = ventAt(tx, ty - 1), so = ventAt(tx, ty + 1), w = ventAt(tx - 1, ty), e = ventAt(tx + 1, ty);
@@ -458,10 +484,11 @@ function renderVents() {
   }
   return c;
 }
-function renderSewers() {
-  const c = document.createElement('canvas'); c.width = MW * TILE; c.height = MH * TILE;
-  const x = c.getContext('2d'); x.imageSmoothingEnabled = false; const f = F.stone0;
-  for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) {
+function renderSewers(R) {
+  const c = document.createElement('canvas'); c.width = R ? R.w : MW * TILE; c.height = R ? R.h : MH * TILE;
+  const tx0 = R ? Math.floor(R.px0 / TILE) : 0, ty0 = R ? Math.floor(R.py0 / TILE) : 0, tx1 = R ? Math.min(MW, Math.ceil((R.px0 + R.w) / TILE)) : MW, ty1 = R ? Math.min(MH, Math.ceil((R.py0 + R.h) / TILE)) : MH;
+  const x = c.getContext('2d'); if (R) x.translate(-R.px0, -R.py0); x.imageSmoothingEnabled = false; const f = F.stone0;
+  for (let ty = ty0; ty < ty1; ty++) for (let tx = tx0; tx < tx1; tx++) {
     if (!ugAt(tx, ty)) continue;
     const px = tx * TILE, py = ty * TILE;
     x.drawImage(atlas, f[0], f[1], f[2], f[3], px, py, TILE, TILE);
@@ -601,7 +628,7 @@ function bakeCastShadows(x, R) {
   for (const w of S.wires || []) { const a = w.a, b = w.b; s.lineWidth = 2.5; s.beginPath(); s.moveTo(a.x + a.z * SHD.x, a.y + a.z * SHD.y); s.lineTo(b.x + b.z * SHD.x, b.y + b.z * SHD.y); s.stroke(); }
   s.globalCompositeOperation = 'destination-out';  // 건물 바닥 안(실내)과 건물 자기 자리에는 드리우지 않는다
   BLD.forEach(b => { if (!b.vacant && near(b)) s.fillRect(b.x0 * TILE, b.y0 * TILE, (b.x1 - b.x0 + 1) * TILE, (b.y1 - b.y0 + 1) * TILE); });
-  x.save(); x.globalAlpha = 0.45; x.filter = 'blur(3px)'; x.drawImage(c, px0, py0); x.restore();
+  x.save(); x.globalAlpha = 0.45; x.filter = 'blur(3px)'; x.drawImage(c, px0, py0); x.restore(); c.width = c.height = 0;
 }
 function renderMap(R) {
   // R = {x0, y0, x1, y1}: 그 사각형(칸)만 그린다 (위층 평면 캐시용)

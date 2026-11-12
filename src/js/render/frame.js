@@ -12,7 +12,7 @@ function draw() {
   ctx.fillStyle = '#05070c'; ctx.fillRect(0, 0, canvas.width, canvas.height);
   worldTransform(ctx, sc);
   ctx.imageSmoothingEnabled = false;
-  drawBig(ctx, mapC, ...viewRect(60));
+  drawBig(ctx, mapC, ...viewRect(60)); prefetchBig(mapC);
   drawRiver(ctx);
   const P = S.player;
   SPEECH_R = []; MARK_R = []; ACTION_R = []; TAGQ = [];  // 이번 화면의 글자 표시를 모은다 (끝에서 flushTags)
