@@ -32,6 +32,8 @@ async def main():
           window.prop=(id,dx=24)=>{const a={id,name:id,x:P.x+dx,y:P.y,fl:0,taken:false};S.props.push(a);return a};
           window.body=(dx)=>{const c={x:P.x+dx,y:P.y,fl:0,z:0,ch:'sam',outfit:'crew',stripped:false,carried:false,stashed:false};S.corpses.push(c);return c};
         }''')
+        # Mission sprite sheets load asynchronously; the paired lift lock exists only once the carried body's sheet is ready.
+        await pg.evaluate('async () => { fresh(); await window.__game.prLoadBody(window.__PR.looks.sam); }')
         result = await pg.evaluate('''() => {
           const G=window.__game,passed=[];
           fresh();const a=prop('can'),b=prop('medicine',-24);
