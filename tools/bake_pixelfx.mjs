@@ -24,7 +24,14 @@ const defs=[
  // 자유 모드 차: 타는 차(검게 탄 차체 위 불길, 고리) · 폭발(섬광 → 불덩이 → 버섯 연기, 앞 3.4초)
  ['carfire','fire/campfire',.5,{wood:['#07070a','#111115','#1a1a1f','#24242a','#2e2e35','#3a3a42'],height:26},1,15],
  ['carboom','explosions/big-explosion',.55,{},1,15,3.4],
- ['burnman','status/burning',.6,{},1,15]
+ ['burnman','status/burning',.6,{},1,15],
+ // 자유 모드 총: 총별 총구 불꽃 · 날아가는 총알(탄두와 꼬리) · 벽 탄착 불티 · 쇠에 튕김 · 저격 명중
+ ['muzzleSmg','projectiles/muzzle-smg',.5,{height:0,light:.12},.95],
+ ['muzzleShot','projectiles/muzzle-shotgun',.55,{height:0,light:.16},.95],
+ ['tracer','projectiles/bullet-tracer',.5,{length:90},1,30],
+ ['bulletHit','impacts/bullet-impact',.42,{height:0},.95],
+ ['ricochet','impacts/ricochet',.4,{},.95],
+ ['critHit','impacts/crit-hit',.36,{height:10},1]
 ];
 const all=[],manifest={version:1,upstream:'a84159688af3ca37a4be05a0d422b94451b2e24e',effects:{}};
 for(const [key,recipe,scale,options,opacity,fpsOpt,cut] of defs){

@@ -7,7 +7,7 @@ function updateGun(g, dt, sameF) {
   if (!g.aim) { sfx('aim'); hint('gun', '전체 경보가 울리면 정예와 증원은 권총을 꺼낸다. 붉은 조준선이 굵어지면 쏜다 — 벽·차 뒤로 시야를 끊어라'); }
   g.aim = (g.aim || 0) + dt; g.want = Math.atan2(P.y - g.y, P.x - g.x); g.moving = false;
   if (g.aim >= GUN_AIM) {
-    g.aim = 0; g.gunCd = GUN_CD; sfx('gun'); noise(g.x, g.y, 520, 'shot', flOf(g)); S.shakeT = Math.max(S.shakeT || 0, 0.12);
+    g.aim = 0; g.gunCd = GUN_CD; g.shotT = S.t; if (STAGE.cityLife && typeof gunSound === 'function') gunSound(GUN_FX.npc, Math.max(0.4, proxVol(g))); else sfx('gun'); noise(g.x, g.y, 520, 'shot', flOf(g)); S.shakeT = Math.max(S.shakeT || 0, 0.12);
     if(pixelFxEnabled())spawnEffect('muzzle',{x:g.x+Math.cos(g.a)*18,y:g.y-23+Math.sin(g.a)*12,fl:flOf(g),z:g.z||0},{angle:g.a});
     else S.fx.push({ k: 'muzzle', x: g.x + Math.cos(g.a) * 18, y: g.y + Math.sin(g.a) * 18, t: 0 });
     if (canSee(g, P.x, P.y, Math.max(0.4, P.light), P.hidden, P.mode === 'sneak', P.z, flOf(P)) > 0) hurtPlayer(null, '총에 맞았다.',g);

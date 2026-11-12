@@ -50,3 +50,13 @@ function gunPose(P, moving, running) {
   const ks = (S.t - (P.shotT || -9)) / GUN_SHOT_T; if (ks < 1 && !moving) return { anim: now + 'Shoot', frame: ks * 5 };
   return { anim: now + (moving ? (running ? 'Run' : 'Walk') : 'Aim'), frame: -1 };
 }
+
+// 적의 총 든 모습 (구운 gun* 동작): 겨누는 중(경찰 조준·킬러 조준·총격전) → 겨누기, 막 쏨 → 반동, 무장하고 쫓음 → 겨누고 뛰기
+function npcGunPose(g) {
+  if (g.state === 'DEAD' || g.civ && !g.hunter && !g.aimH) return null;
+  const shot = (S.t - (g.shotT || -9)) / GUN_SHOT_T; if (shot < 1) return { anim: 'gunShoot', frame: shot * 5 };
+  if ((g.aim || 0) > 0 || (g.aimH || 0) > 0) return { anim: 'gunAim', frame: -1 };
+  if (g.warSide != null && S.war && !S.war.over) return { anim: g.moving ? 'gunWalk' : 'gunAim', frame: -1 };
+  if (g.police && !g.contact && S.wanted >= 2 && ['ALERT', 'SEARCH'].includes(g.state)) return { anim: g.moving ? 'gunRun' : 'gunAim', frame: -1 };
+  return null;
+}

@@ -39,7 +39,7 @@ async def main():
  if set(groups)-{'Gait','Action','Combat','Gun','Rifle'}:raise ValueError('Unknown motion group')
  for body in selected:
   look,shape,_=RECIPES[body]
-  for group in (groups if body in HERO or (body=='key' and set(groups)<={'Gun','Rifle'}) else ['React']):jobs.append((body,group,look,shape))
+  for group in (groups if body in HERO or set(groups)<={'Gun','Rifle'} else ['React']):jobs.append((body,group,look,shape))
  server=ThreadingHTTPServer(('127.0.0.1',0),partial(QuietHandler,directory=str(H)));threading.Thread(target=server.serve_forever,daemon=True).start()
  try:
   async with async_playwright()as p:

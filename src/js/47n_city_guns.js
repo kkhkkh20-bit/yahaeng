@@ -21,6 +21,14 @@ const WEAPONS = {
   sniper: { name: '저격총', rate: 1.3, dmg: 1, spread: 0.004, pellets: 1, range: 1000, sound: 1.3, ammo: 6, price: 1200, sniper: true },  // 멈춰 서야 조준경 (47w)
   grenade: { name: '수류탄', rate: 0.9, throw: true, ammo: 3, price: 250 },
   molotov: { name: '화염병', rate: 0.8, throw: true, ammo: 3, price: 150 } };
+// 총별 연출 (PixelFX 도트): 총구 불꽃 · 날아가는 총알(속도·크기·밝기) · 벽/쇠/사람에 맞은 효과 · 소리
+const GUN_FX = {
+  pistol:   { muzzle: 'muzzle', ms: 0.7, speed: 2600, ts: 0.55, ta: 0.95, wall: 'bulletHit', ws: 0.7, metal: 'ricochet', mts: 0.55, body: 'impact', bs: 0.6, snd: 'gPistol', vol: 0.55, shake: 0.06, casing: 1 },
+  silenced: { muzzle: 'muzzle', ms: 0.3, ma: 0.5, speed: 2300, ts: 0.4, ta: 0.5, wall: 'bulletHit', ws: 0.45, metal: 'ricochet', mts: 0.4, body: 'impact', bs: 0.45, snd: 'gSilenced', vol: 0.45, shake: 0.02, casing: 1 },
+  smg:      { muzzle: 'muzzleSmg', ms: 0.6, speed: 2900, ts: 0.48, ta: 0.85, wall: 'bulletHit', ws: 0.55, metal: 'ricochet', mts: 0.45, body: 'impact', bs: 0.5, snd: 'gSmg', vol: 0.42, shake: 0.04, casing: 1 },
+  shotgun:  { muzzle: 'muzzleShot', ms: 0.75, speed: 2100, ts: 0.32, ta: 0.75, wall: 'dart', ws: 0.7, metal: 'ricochet', mts: 0.35, body: 'impact', bs: 0.75, snd: 'gShotgun', vol: 0.75, shake: 0.16, casing: 0, pump: 0.38 },
+  sniper:   { muzzle: 'muzzleShot', ms: 0.55, speed: 4400, ts: 1.0, ta: 1, wall: 'bulletHit', ws: 1.0, metal: 'ricochet', mts: 0.8, body: 'critHit', bs: 0.75, snd: 'gSniper', vol: 0.8, shake: 0.2, casing: 1, bolt: 0.55 },
+  npc:      { muzzle: 'muzzle', ms: 0.55, speed: 2500, ts: 0.5, ta: 0.85, wall: 'bulletHit', ws: 0.6, metal: 'ricochet', mts: 0.5, body: 'impact', bs: 0.55, snd: 'gPistol', vol: 0.4, shake: 0, casing: 0 } };
 const WPN_ORDER = ['pistol', 'silenced', 'smg', 'shotgun', 'sniper', 'grenade', 'molotov'];
 function gunsInit() { S.guns = Object.assign({}, S.gunsSaved || {}); S.wpn = S.wpnSaved && S.guns[S.wpnSaved] > 0 ? S.wpnSaved : null; S.gunT = 0; S.tracers = []; S.firePools = []; S.nades = []; S.kills = { n: 0, t: -9 }; gunChip(); }
 const wpnOn = () => STAGE.cityLife && S.wpn && (S.guns[S.wpn] || 0) > 0;
@@ -76,16 +84,17 @@ function fireWeapon(inCar) {
   const shots = W.burst || 1;
   for (let b = 0; b < shots; b++) after(b * 0.07, () => { if ((S.guns[S.wpn] || 0) <= 0 || S.wpn == null) return; S.guns[S.wpn]--; gunChip();
     const mx = P.x + Math.cos(a0) * off, my = P.y - 14 + Math.sin(a0) * off;
-    P.shotT = S.t; spawnEffect('muzzle', { x: mx, y: my, fl: 0, z: 0 }, { scale: W.silent ? 0.35 : 0.7, angle: a0, alpha: W.silent ? 0.6 : 1, startAt: 0 }); if (W.silent) { play('thud', 0.3, 1.9); play('click', 0.25, 0.7); } else gunSound(W.sound);
-    S.shakeT = Math.max(S.shakeT || 0, 0.06 * W.sound); (S.fireParts || (S.fireParts = [])).push({ kind: 'debris', x: P.x, y: P.y - 10, vx: Math.cos(a0 + Math.PI / 2) * 80, vy: -40, t: 0, life: 0.4, size: 1.5, rot: 0 });  // 탄피
-    for (let k = 0; k < W.pellets; k++) shootRay(mx, my, a0 + rnd(-W.spread, W.spread), W.range, W.dmg, W.sniper && P.z > 0);
+    const FX = GUN_FX[S.wpn] || GUN_FX.pistol;
+    P.shotT = S.t; spawnEffect(FX.muzzle, { x: mx, y: my, fl: 0, z: 0 }, { scale: FX.ms, angle: a0, alpha: FX.ma ?? 1, startAt: 0 }); gunSound(FX);
+    S.shakeT = Math.max(S.shakeT || 0, FX.shake); if (FX.casing) (S.fireParts || (S.fireParts = [])).push({ kind: 'debris', x: P.x, y: P.y - 10, vx: Math.cos(a0 + Math.PI / 2) * 80, vy: -40, t: 0, life: 0.4, size: 1.5, rot: 0 });  // 탄피
+    for (let k = 0; k < W.pellets; k++) shootRay(mx, my, a0 + rnd(-W.spread, W.spread), W.range, W.dmg, W.sniper && P.z > 0, FX);
     const loud = W.silent ? 140 : 700 * W.sound; noise(P.x, P.y, loud, 'gun', 0);  // 소음 권총: 바로 옆에서만 들린다
     if (!S.wanted || S.wanted < 2) { if (witnessed(P.x, P.y, W.silent ? 170 : 520)) addWanted(S.wanted ? 1 : 2, W.silent ? '쏘는 걸 누가 봤다' : '총소리에 신고가 들어갔다'); }
     for (const g of actorsNearWide(P.x, P.y, W.silent ? 150 : 500)) if (g.civ && npcAlive(g) && g.state !== 'PANIC') civPanic(g, P.x, P.y, 8); });
   if ((S.guns[S.wpn] || 0) <= shots) after(0.3, () => { if ((S.guns[S.wpn] || 0) <= 0) { evBanner(`${WEAPONS[S.wpn]?.name || ''} 탄약이 떨어졌다`); cycleWeapon(); } });
 }
 // 총알 한 줄: 8px씩 나아가며 벽(멈춤)·사람(쓰러짐)·차(내구성)를 본다
-function shootRay(x0, y0, a, range, dmg, over) {  // over: 옥상에서 쏜 저격 — 건물 벽 위로 날아간다
+function shootRay(x0, y0, a, range, dmg, over, FX = GUN_FX.pistol) {  // over: 옥상에서 쏜 저격 — 건물 벽 위로 날아간다
   const ca = Math.cos(a), sa = Math.sin(a), P = S.player; let hit = null, ex = x0 + ca * range, ey = y0 + sa * range;
   const cands = S.guards.filter(g => g !== P && npcAlive(g) && !g.off && !flOf(g) && !g.z && Math.abs(g.x - x0) < range + 20 && Math.abs(g.y - y0) < range + 20);
   const cars = S.vehicles.filter(v => !v.dead && (v.z || 0) < 0.3 && Math.abs(v.x - x0) < range + 60 && Math.abs(v.y - y0) < range + 60 && v !== P.car);
@@ -93,13 +102,13 @@ function shootRay(x0, y0, a, range, dmg, over) {  // over: 옥상에서 쏜 저�
     if (!over && solidAt(Math.floor(x / TILE), Math.floor(y / TILE))) { ex = x; ey = y; hit = 'wall'; break; }
     const g = cands.find(g => Math.abs(g.x - x) < 13 && Math.abs(g.y - 12 - y) < 20); if (g) { ex = x; ey = y; hit = g; break; }
     const v = cars.find(v => carPts(v).some(([px, py]) => dist(px, py, x, y) < (v.r || 21))); if (v) { ex = x; ey = y; hit = v; break; } }
-  S.tracers.push({ x0, y0, x1: ex, y1: ey, t: S.t });
-  if (hit === 'wall') { const f = { x: ex, y: ey, a: 0, len: 4 }; fireEmit(f, 'spark', 4, f); return; }
+  bulletFly(x0, y0, ex, ey, FX, hit === 'wall' ? 'wall' : hit && S.guards.includes(hit) ? 'body' : hit ? 'metal' : null);
+  if (hit === 'wall') return;
   if (hit && S.guards.includes(hit)) {  // 사람
-    const g = hit; g.shotT = S.t; g.shotD = dist(x0, y0, g.x, g.y); if (g.shotD > 500) { slowMo(0.45); S.flash = 0.12; } bloodBurst(g.x, g.y - 12, a, 4); g.x += ca * 10; g.y += sa * 10;
+    const g = hit; g.shotT = S.t; g.shotD = dist(x0, y0, g.x, g.y); if (g.shotD > 500) { slowMo(0.45); S.flash = 0.12; } bloodBurst(g.x, g.y - 12, a, FX === GUN_FX.shotgun || FX === GUN_FX.sniper ? 7 : 4); g.x += ca * 10; g.y += sa * 10;
     if (g.warSide != null) warHitByPlayer(g); npcDown(g, null, true); const c = S.corpses[S.corpses.length - 1]; if (c && c.g === g) c.byNpc = false;  // 내가 쐈다: 조직 호감도에 잡힌다
     if (typeof cityVictim === 'function') cityVictim(g); gunStreak(g); return; }
-  if (hit) { const v = hit; v.hp -= dmg * 0.5; v.smoke = 1.5; const f = { x: ex, y: ey, a: 0, len: 4 }; fireEmit(f, 'spark', 6, f); play('metal', 0.3, 1.7);
+  if (hit) { const v = hit; v.hp -= dmg * (FX === GUN_FX.sniper ? 2 : 0.5); v.smoke = 1.5;
     if (v.hp <= 0) carExplode(v); else if (v.driver && v.ai && Math.random() < 0.3) { v.ai = false; v.v = 0; pileupBehind(v); } }
 }
 function gunStreak(g) {
@@ -107,13 +116,30 @@ function gunStreak(g) {
   const word = ['', '', '더블!', '트리플!', '쿼드라!', '펜타!'][Math.min(5, K.n)] || `${K.n}연속!`;
   if (K.n >= 2) { evBanner(word, '#ff6a5a'); slowMo(0.25 + 0.1 * Math.min(4, K.n)); }
 }
-// 총소리: 짧은 터지는 잡음 + 낮은 쿵 (합성, 한 번 만들어 둔다)
-function gunSound(k) {
-  if (!AC || muted) return;
-  if (!SB.gunshot) { const sr = AC.sampleRate, n = Math.floor(sr * 0.35), b = AC.createBuffer(1, n, sr), d = b.getChannelData(0); let lp = 0;
-    for (let i = 0; i < n; i++) { const t = i / sr; lp += 0.5 * ((Math.random() * 2 - 1) - lp); d[i] = (lp * Math.exp(-t * 28) * 1.2 + Math.sin(2 * Math.PI * 70 * t) * Math.exp(-t * 18) * 0.7) * (t < 0.002 ? t / 0.002 : 1); }
-    SB.gunshot = b; }
-  play('gunshot', 0.55 * k, 1 / Math.max(0.7, k));
+// 총소리 (합성, 총마다 한 번 만들어 둔다): 권총 짧고 날카롭게 · 소음 권총 '퉁' · 기관단총 가볍고 짧게 · 산탄총 묵직한 폭음 · 저격총 큰 폭음 + 메아리
+function gunBuf(name, len, fn) { if (SB[name]) return; const sr = AC.sampleRate, n = Math.floor(sr * len), b = AC.createBuffer(1, n, sr), d = b.getChannelData(0); let lp = 0, hp = 0;
+  for (let i = 0; i < n; i++) { const t = i / sr, w = Math.random() * 2 - 1; lp += 0.5 * (w - lp); hp = w - lp; d[i] = fn(t, w, lp, hp) * (t < 0.0015 ? t / 0.0015 : 1); } SB[name] = b; }
+function gunSound(FX, vol = 1) {
+  if (!AC || muted) return; const s = 2 * Math.PI;
+  gunBuf('gPistol', 0.32, (t, w, lp, hp) => hp * Math.exp(-t * 55) * 0.9 + lp * Math.exp(-t * 24) * 0.8 + Math.sin(s * 95 * t) * Math.exp(-t * 22) * 0.6);
+  gunBuf('gSilenced', 0.18, (t, w, lp) => lp * Math.exp(-t * 60) * 0.7 + Math.sin(s * 140 * t) * Math.exp(-t * 45) * 0.5);
+  gunBuf('gSmg', 0.16, (t, w, lp, hp) => hp * Math.exp(-t * 80) * 0.8 + lp * Math.exp(-t * 40) * 0.6 + Math.sin(s * 120 * t) * Math.exp(-t * 35) * 0.4);
+  gunBuf('gShotgun', 0.7, (t, w, lp, hp) => lp * Math.exp(-t * 9) * 1.1 + hp * Math.exp(-t * 30) * 0.5 + Math.sin(s * 55 * t) * Math.exp(-t * 7) * 0.9);
+  gunBuf('gSniper', 1.6, (t, w, lp, hp) => { const e = (u) => u < 0 ? 0 : Math.exp(-u * 14); return hp * Math.exp(-t * 40) * 1 + lp * Math.exp(-t * 10) * 0.9 + Math.sin(s * 62 * t) * Math.exp(-t * 6) * 0.8 + lp * (e(t - 0.32) * 0.35 + e(t - 0.7) * 0.18); });  // 메아리 두 번
+  play(FX.snd, FX.vol * vol, rnd(0.95, 1.05));
+  if (FX.pump) after(FX.pump, () => { play('click', 0.45, 0.6); after(0.12, () => play('click', 0.4, 0.9)); });  // 산탄총 펌프
+  if (FX.bolt) after(FX.bolt, () => { play('metal', 0.25, 2.2); after(0.15, () => play('click', 0.35, 0.8)); });  // 저격총 노리쇠
+}
+// 날아가는 총알: PixelFX 탄두(꼬리 달린 불빛)가 총구에서 맞은 곳까지 실제로 날아가고, 닿는 순간 맞은 곳에 따라 효과
+function bulletFly(x0, y0, x1, y1, FX, hit) {
+  const L = dist(x0, y0, x1, y1), a = Math.atan2(y1 - y0, x1 - x0), dur = Math.max(0.02, L / FX.speed);
+  (S.bullets || (S.bullets = [])).push({ x0, y0, x1, y1, a, t0: S.t, dur, FX });
+  if (S.bullets.length > 60) S.bullets.shift();
+  if (!hit) return;
+  after(dur, () => { const at = { x: x1, y: y1, fl: 0, z: 0 };
+    if (hit === 'wall') { spawnEffect(FX.wall, at, { scale: FX.ws, angle: a + Math.PI, startAt: 0 }); if (inView(x1, y1, 40)) play('click', 0.18 * FX.ws, 2.4); }
+    else if (hit === 'metal') { spawnEffect(FX.metal, at, { scale: FX.mts, angle: a, startAt: 0 }); play('metal', 0.32 * FX.mts, 1.6 + Math.random() * 0.5); }
+    else spawnEffect(FX.body, at, { scale: FX.bs, angle: a, startAt: 0 }); });
 }
 // 던지기: 바라보는 쪽 또는 노린 사람 쪽으로 포물선
 function throwThing(kind, a, tgt) {
@@ -122,7 +148,7 @@ function throwThing(kind, a, tgt) {
 }
 function gunsUpdate(dt) {
   if (!STAGE.cityLife || !S.nades) return;
-  S.tracers = S.tracers.filter(t => S.t - t.t < 0.08);
+  S.tracers = S.tracers.filter(t => S.t - t.t < 0.08); if (S.bullets?.length) S.bullets = S.bullets.filter(b => S.t - b.t0 <= b.dur + 0.05);
   for (let i = S.nades.length - 1; i >= 0; i--) { const n = S.nades[i], f = (S.t - n.t0) / n.fly; if (f < 1) continue;
     if (n.kind === 'molotov') { S.nades.splice(i, 1); play('glass', 0.7); S.firePools.push({ x: n.x1, y: n.y1, t: S.t, r: 64 }); addWanted(S.wanted ? 0 : 1, '화염병이 터졌다'); continue; }
     if (S.t - n.t0 > n.fly + n.fuse) { S.nades.splice(i, 1); havocBlast(n.x1, n.y1, 2, '수류탄에 휘말렸다.'); addWanted(1, '폭발이 일어났다'); } }
@@ -132,10 +158,19 @@ function gunsUpdate(dt) {
     for (const v of S.vehicles) if (!v.dead && dist(v.x, v.y, F.x, F.y) < F.r + 20) { v.hp -= 0.25; if (v.hp <= 0) carExplode(v); }
     const P = S.player; if (!P.car && dist(P.x, P.y, F.x, F.y) < F.r * 0.8) ignitePlayer(); }
 }
+function drawBullets() {
+  const L = S.bullets; if (!L?.length) return; const m = FX_META?.effects?.tracer, ok = m && fxAtlas?.complete && fxAtlas.naturalWidth;
+  for (const b of L) { const k = (S.t - b.t0) / b.dur; if (k < 0 || k > 1) continue; const x = b.x0 + (b.x1 - b.x0) * k, y = b.y0 + (b.y1 - b.y0) * k; if (!inView(x, y, 60)) continue;
+    if (ok) { const r = m.frames[Math.floor((S.t - b.t0) * m.fps) % m.frames.length]; if (!r[2]) continue;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(b.a); ctx.scale(b.FX.ts, b.FX.ts); ctx.globalAlpha = b.FX.ta; ctx.imageSmoothingEnabled = false; ctx.globalCompositeOperation = 'lighter';
+      ctx.drawImage(fxAtlas, r[0], r[1], r[2], r[3], -m.origin[0] + (r[4] || 0), -m.origin[1] + (r[5] || 0), r[2], r[3]); ctx.restore(); }
+    else { ctx.fillStyle = '#ffe9a0'; ctx.fillRect(x - 1, y - 1, 2, 2); } }
+}
 function drawGuns() {
+  drawBullets();
   if (!S.tracers) return;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  for (const t of S.tracers) { ctx.strokeStyle = `rgba(255,230,160,${0.9 * (1 - (S.t - t.t) / 0.08)})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(t.x0, t.y0); ctx.lineTo(t.x1, t.y1); ctx.stroke(); }
+  for (const t of S.tracers) { ctx.strokeStyle = `rgba(255,230,160,${0.6 * (1 - (S.t - t.t) / 0.08)})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(t.x0, t.y0); ctx.lineTo(t.x1, t.y1); ctx.stroke(); }  // (적 총알 등 오래된 방식)
   ctx.restore();
   for (const F of S.firePools) { if (!inView(F.x, F.y, 90)) continue; const k = clamp((8 - (S.t - F.t)) / 1.5, 0, 1);
     for (let j = 0; j < 5; j++) { const a = j / 5 * TAU + F.t, r = F.r * (j ? 0.6 : 0); fxFrame('carfire', S.t + j * 0.4, F.x + Math.cos(a) * r, F.y + Math.sin(a) * r * 0.6 + 8, 1.2 * k + 0.2, k); } }

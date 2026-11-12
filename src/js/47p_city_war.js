@@ -65,9 +65,9 @@ function npcShoot(g, tgt) {
   const P = S.player, a = Math.atan2(tgt.y - g.y, tgt.x - g.x); g.a = a; g.want = a;
   const mx = g.x + Math.cos(a) * 16, my = g.y - 14 + Math.sin(a) * 16, vol = proxVol(g);
   if (inView(g.x, g.y, 60)) spawnEffect('muzzle', { x: mx, y: my, fl: 0, z: 0 }, { scale: 0.55, angle: a, alpha: 1, startAt: 0 });
-  if (vol > 0.02) play('gunshot', 0.4 * vol, 1.1); noise(g.x, g.y, 600, 'gun', 0);
+  if (vol > 0.02) gunSound(GUN_FX.npc, vol); noise(g.x, g.y, 600, 'gun', 0); g.shotT = S.t;
   const hit = Math.random() < (tgt === P ? 0.3 : 0.45), miss = hit ? 0 : rnd(-0.25, 0.25), ex = tgt.x + Math.cos(a + Math.PI / 2) * miss * 60, ey = tgt.y - 12 + Math.sin(a + Math.PI / 2) * miss * 60;
-  S.tracers.push({ x0: mx, y0: my, x1: ex, y1: ey, t: S.t });
+  bulletFly(mx, my, ex, ey, GUN_FX.npc, hit ? (tgt === P && P.car ? 'metal' : 'body') : null);
   for (const c of actorsNearWide(g.x, g.y, 420)) if (c.civ && npcAlive(c) && c.state !== 'PANIC') civPanic(c, g.x, g.y, 10);
   if (!hit) return;
   if (tgt === P) { if (P.car) { const v = P.car; v.hp -= 0.5; v.smoke = 1.5; play('metal', 0.4, 1.6); if (v.hp <= 0) carExplode(v); } else hurtPlayer(null, `${STAND_NAME[g.fac] || '조직'} 총에 맞았다.`, g); return; }

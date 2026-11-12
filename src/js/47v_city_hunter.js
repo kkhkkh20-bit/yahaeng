@@ -40,9 +40,9 @@ function hunterStep(g, dt) {
     g.aimH += dt;
     if (g.aimH >= HUNT_AIM) { g.aimH = 0; g.huntCd = 1.6;
       const mx = g.x + Math.cos(g.a) * 16, my = g.y - 14 + Math.sin(g.a) * 16; spawnEffect('muzzle', { x: mx, y: my, fl: 0, z: 0 }, { scale: 0.6, angle: g.a, alpha: 1, startAt: 0 });
-      play('gunshot', 0.5, 1.05); noise(g.x, g.y, 600, 'gun', 0); (S.tracers || (S.tracers = [])).push({ x0: mx, y0: my, x1: P.x, y1: P.y - 12, t: S.t });
+      gunSound(GUN_FX.npc, Math.max(0.4, proxVol(g))); noise(g.x, g.y, 600, 'gun', 0); g.shotT = S.t; const hitP = Math.random() < 0.55; bulletFly(mx, my, P.x + (hitP ? 0 : rnd(-30, 30)), P.y - 12 + (hitP ? 0 : rnd(-30, 30)), GUN_FX.npc, hitP ? 'body' : null);
       for (const c of actorsNearWide(g.x, g.y, 400)) if (c.civ && c !== g && npcAlive(c) && c.state !== 'PANIC') civPanic(c, g.x, g.y, 10);
-      if (Math.random() < 0.55) hurtPlayer(null, '킬러의 총에 맞았다.', g); }
+      if (hitP) hurtPlayer(null, '킬러의 총에 맞았다.', g); }
     return;
   }
   g.aimH = 0;
