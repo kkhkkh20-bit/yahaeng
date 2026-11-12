@@ -98,15 +98,15 @@ function takeHit() { if (!S.hit && !S.wanted) { const plan = planHit(); if (plan
 function startHit(plan) {
   if (S.hit) return;
   const P = S.player, { route, name } = plan;
-  const tIdx = S.guards.length, t = makeGuard({ kind: 't', route, radio: false }, tIdx); t.hit = true; t.hitName = name; t.fac = 'A'; S.guards.push(t);
+  const tIdx = S.guards.length, t = makeGuard({ kind: 't', route, radio: false }, tIdx); t.hit = true; t.hitName = name; t.fac = plan.fac || 'A'; if (FAC_OUTFIT[t.fac]) t.outfit = FAC_OUTFIT[t.fac]; S.guards.push(t);
   const escorts = [];
   for (let k = 0; k < plan.escorts; k++) {
-    const g = makeGuard({ kind: k ? 'g1' : 'g2', route: [route[0]], follow: tIdx, radio: false }, S.guards.length); g.fac = 'A'; g.hitEscort = true;
+    const g = makeGuard({ kind: k ? 'g1' : 'g2', route: [route[0]], follow: tIdx, radio: false }, S.guards.length); g.fac = plan.fac || 'A'; if (FAC_OUTFIT[g.fac]) g.outfit = FAC_OUTFIT[g.fac]; g.hitEscort = true;
     g.x += (k ? -1 : 1) * 30; g.y += 26; S.guards.push(g); escorts.push(g);
   }
   setLayer(0); for (const g of [t, ...escorts]) buildRouteLine(g); setLayer(flOf(P));
   if (PR) prWarm([t, ...escorts].map(charOf), true);
-  S.hit = { g: t, escorts, name, t0: S.t, wantedAtStart: S.wanted };
+  S.hit = { g: t, escorts, name, t0: S.t, wantedAtStart: S.wanted, ko: !!plan.ko, pay: plan.pay, stand: plan.stand, by: plan.by };
   if (!STAGE.noPrompts) toast(`의뢰: ${name} 처치`, 2.4, 'good');
 }
 // 부스는 사람이 지나가지 못한다 (안에 든 나만 예외)
@@ -125,13 +125,17 @@ function boothBlock() {
 function hitsUpdate(dt) {
   boothBlock(); updatePhoneRing(dt || 1 / 60);
   const P = S.player; if (P.booth) { P.x = P.booth.x; P.y = P.booth.y + 2; P.moving = false; }
-  jobsUpdate(dt || 1 / 60); cityEventsUpdate(dt || 1 / 60);
+  jobsUpdate(dt || 1 / 60); cityEventsUpdate(dt || 1 / 60); factionsUpdate(dt || 1 / 60);
   saveFreeProgress();
   const h = S.hit; if (!h) return;
   const g = h.g;
   if (!S.guards.includes(g)) { S.hit = null; return; }
-  if (g.state === 'DEAD' && !g.unconscious) {
-    const quiet = !S.wanted, pay = HIT_PAY + (quiet ? HIT_QUIET_BONUS : 0);
+  const ko = g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko);
+  if (g.state === 'DEAD' && (!ko || h.ko)) {
+    // 경찰 검거 미션(h.ko): 기절시키면 제값, 죽이면 3분의 1. 조직 미션: 보수와 호감도 변화가 따로 정해져 있다
+    const quiet = !S.wanted, pay = h.ko ? (ko ? h.pay : Math.round(h.pay / 3)) : h.pay != null ? h.pay + (quiet ? 50 : 0) : HIT_PAY + (quiet ? HIT_QUIET_BONUS : 0);
+    if (h.stand) applyStanding(h.ko && !ko ? Object.fromEntries(Object.entries(h.stand).map(([k, v]) => [k, v > 0 ? Math.round(v / 3) : v])) : h.stand);
+    if (h.ko && ko) { evGone(g); for (const e of h.escorts) if (npcAlive(e)) evFlee(e, S.player.x, S.player.y, 20); }  // 연행: 기절한 수배자는 경찰이 데려간다
     S.cash = (S.cash || 0) + pay; S.hitN++; S.hit = null;
     play('bell', 0.6); if (!STAGE.noPrompts) toast(`의뢰 완료 · ${pay}만${quiet ? ' (조용히)' : ''}`, 2.6, 'good');
     if (typeof feedbackPulse === 'function') feedbackPulse(document.querySelector('#hud .obj'), 'loot');
@@ -146,7 +150,7 @@ function hitGoal() {
     return { text: `울리는 공중전화 받기 · ${money}`, where: '', x: p.x, y: p.y, fl: 0 };
   }
   const g = h.g;
-  return { text: (g.unconscious ? `${h.name} 기절 — 숨통을 끊어라` : `${h.name} 처치`) + ` · ${money}`, where: '', x: g.x, y: g.y, fl: flOf(g), g };
+  return { text: (h.ko ? `${h.name} 검거 — 기절시키기` : g.unconscious ? `${h.name} 기절 — 숨통을 끊어라` : `${h.name} 처치`) + ` · ${money}`, where: '', x: g.x, y: g.y, fl: flOf(g), g };
 }
 // 공중전화 부스 (위에서 비스듬히 본 유리 상자: 은색 기둥 · 유리벽 · 안쪽 벽의 파란 전화기 · 빨간 지붕 띠)와 표적 표시
 // layer 'world': 조명을 받는 부스 · 'ui': 어둠 위 — 안에 든 나를 덮는 앞 유리, 부스 안 불빛, 표적 고리
@@ -186,7 +190,7 @@ function drawHits(layer) {
     drawBooth(p, false);
   }
   if (layer !== 'ui') return;
-  drawEvents(); drawJobs();
+  drawEvents(); drawContacts(); drawJobs();
   const h = S.hit; if (!h || h.g.state === 'DEAD' && !h.g.unconscious) return;
   const g = h.g; if (flOf(g) !== flOf(S.player) || !inView(g.x, g.y, 60)) return;
   const pu = .55 + .35 * Math.sin(S.t * 5);

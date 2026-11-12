@@ -9,7 +9,7 @@ function markCityDone(id) { try { const d = cityDone(); d[id] = 1; localStorage.
 function cityInit() {
   S.wanted = 0; S.wantLost = 0; S.copT = 0;
   S.contracts = (STAGE.contracts || []).map(c => ({ id: c.id, name: c.name, x: tc(c.at[0]), y: tc(c.at[1]), si: STAGES.findIndex(s => s.id === c.id) })).filter(c => c.si >= 0);
-  trafficInit(); if (STAGE.hits) hitsInit(); loadFreeProgress(); shopsInit();  // 가게 · 중고차 매매 · 도색소  // 도시 안 의뢰 (공중전화)
+  trafficInit(); if (STAGE.hits) hitsInit(); loadFreeProgress(); shopsInit(); cityFactionsInit();  // 가게 · 중고차 매매 · 도색소  // 도시 안 의뢰 (공중전화)
   // 순찰 경찰 둘: 시내 보도를 돈다 (조직 구역에는 들어가지 않는다)
   for (const r of STAGE.copBeats || []) { const g = makeGuard({ kind: 'g1', route: r, radio: false }, S.guards.length); g.police = true; g.beat = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; g.radio = false; setLayer(0); buildRouteLine(g); S.guards.push(g); }
   if (CITY_RET) { const P = S.player, c = S.contracts.find(o => o.id === CITY_RET.id); if (c) { P.x = c.x; P.y = c.y + 30; cam.x = P.x; cam.y = P.y; } CITY_RET = null; }
@@ -77,7 +77,7 @@ function cityUpdate(dt) {
   const P = S.player, cops = S.guards.filter(g => g.police && !g.off && g.state !== 'DEAD');
   if (S.wanted > 0) {
     // 경찰끼리 무전: 하나라도 나를 보면 모두 그 자리로
-    const seen = cops.some(g => g.state === 'ALERT' && g.seen);
+    const seen = !(S.crowdT > S.t) && cops.some(g => g.state === 'ALERT' && g.seen);  // 시위대 속에 섞이면 눈에 안 띈다
     if (seen) { S.wantLost = 0; for (const g of cops) copChase(g); }
     else { S.wantLost += dt; for (const g of cops) if (g.state !== 'ALERT' && g.state !== 'DEAD' && !P.hide && !P.under && !P.vent && canSee(g, P.x, P.y, Math.max(0.4, P.light || 0), P.hidden, P.mode === 'sneak', P.z, flOf(P)) > 0) copChase(g); }
     const need = WANT_COPS[S.wanted];
@@ -130,7 +130,7 @@ function cityRespawn(why) {
 function cityAction() {
   const P = S.player;
   if (STAGE.cityLife) { const a = shopAction(); if (a) return a; }
-  { const e = eventAction(); if (e) return e; }  // 구역 이벤트 (차 안에서도: 드래그 레이스)
+  { const e = eventAction() || factionAction(); if (e) return e; }  // 구역 이벤트 (차 안에서도: 드래그 레이스)
   if (P.car) return { k: 'carOut', v: P.car, label: P.car.fireT > 0 ? '뛰어내리기!' : '차에서 내리기' };
   if (P.z || flOf(P) || P.hide) return null;
   if (STAGE.hits) { const h = hitAction(); if (h) return h; }

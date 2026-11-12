@@ -184,7 +184,7 @@ const EVENTS = [
     focus: ev => { const c = ev.crowd.filter(npcAlive); if (!c.length) return null; return { x: c.reduce((s, g) => s + g.x, 0) / c.length, y: c.reduce((s, g) => s + g.y, 0) / c.length }; },
     update(ev, dt) { const c = this.focus(ev), P = S.player; if (!c) { evEnd(ev, '시위대가 흩어졌다', true); return; }
       if ((ev.sloganT = (ev.sloganT || 0) - dt) <= 0) { ev.sloganT = 2.2; const g = ev.crowd[(S.t * 3 | 0) % ev.crowd.length]; if (npcAlive(g)) gsay(g, ['물가를 잡아라!', '재개발 반대!', '상인도 사람이다!'][(S.t | 0) % 3], 2); }
-      if (S.wanted > 0 && !P.car && dist(P.x, P.y, c.x, c.y) < 170) { S.wantLost = (S.wantLost || 0) + dt * 2.5; ev.hid = true; }
+      if (S.wanted > 0 && !P.car && dist(P.x, P.y, c.x, c.y) < 170) { S.wantLost = (S.wantLost || 0) + dt * 2.5; S.crowdT = S.t + 0.3; ev.hid = true; }
       if (S.t - ev.t0 > 95) evEnd(ev, ev.hid ? '시위대 속에서 경찰 눈을 피했다' : '시위 행진이 지나갔다', true); },
     goal: () => '시위 행진 — 섞이면 수배가 빨리 풀린다' },
   // 성수 공장지대 ① 즉석 드래그 레이스: 판돈 100만, 직선 결승선까지 먼저

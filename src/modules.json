@@ -326,6 +326,10 @@
       "group": "city"
     },
     {
+      "path": "47g_city_factions.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },

@@ -87,6 +87,7 @@ function endJob(ok, msg, pay = 0) {
   const j = S.job; if (!j) return;
   if (j.v) j.v.jobCar = false;
   S.job = null; S.ringNext = S.t + (ok ? 15 : 20);
+  if (ok && j.stand) applyStanding(j.stand);
   if (ok) { S.cash = (S.cash || 0) + pay; play('bell', 0.6); if (typeof feedbackPulse === 'function') feedbackPulse(document.querySelector('#hud .obj'), 'loot'); }
   else play('lose', 0.3);
   if (!STAGE.noPrompts) toast(msg, 2.8, ok ? 'good' : 'warn');
@@ -97,9 +98,9 @@ function jobsUpdate(dt) {
   if (j.kind === 'car') {
     const v = j.v;
     if (!S.vehicles.includes(v) || v.dead) { endJob(false, '일 실패 — 차가 망가졌다'); return; }
-    const D = S.dealer, inLotNow = D && v.x > D.lot[0] && v.x < D.lot[2] && v.y > D.lot[1] && v.y < D.lot[3];
+    const D = S.dealer, inLotNow = j.drop ? dist(v.x, v.y, j.drop.x, j.drop.y) < 110 : D && v.x > D.lot[0] && v.x < D.lot[2] && v.y > D.lot[1] && v.y < D.lot[3];
     if (P.car === v && inLotNow && Math.abs(v.v) < 25) {
-      const k = clamp(v.hp / (j.hp0 || v.hpMax || 6), 0, 1), pay = Math.round(JOB_PAY.car * (0.35 + 0.65 * k) / 10) * 10;
+      const k = clamp(v.hp / (j.hp0 || v.hpMax || 6), 0, 1), pay = Math.round((j.pay || JOB_PAY.car) * (0.35 + 0.65 * k) / 10) * 10;
       v.jobCar = false; carExit(true); v.ai = false; v.parked = true;
       endJob(true, `${j.name} 넘겼다 · ${pay}만${k < 1 ? ' (흠집만큼 깎였다)' : ''}`, pay);
     }
@@ -108,26 +109,27 @@ function jobsUpdate(dt) {
   if (j.kind === 'parcel') {
     if (!j.got) { if (dist(P.x, P.y, j.from.x, j.from.y) < 70) { j.got = true; j.deadline = S.t + Math.round(dist(j.from.x, j.from.y, j.to.x, j.to.y) / 170 + 15); j.total = j.deadline - S.t; play('loot', 0.5); if (!STAGE.noPrompts) toast(`꾸러미를 받았다 — ${jobLeft(j)}초 안에 '${j.toSign}'까지`, 2.6, 'good'); } return; }
     if (S.t > j.deadline) { endJob(false, '일 실패 — 늦었다'); return; }
-    if (dist(P.x, P.y, j.to.x, j.to.y) < (P.car ? 110 : 70)) { const spare = (j.deadline - S.t) / j.total, pay = JOB_PAY.parcel + Math.round(spare * 100 / 10) * 10; endJob(true, `배달 완료 · ${pay}만`, pay); }
+    if (dist(P.x, P.y, j.to.x, j.to.y) < (P.car ? 110 : 70)) { const spare = (j.deadline - S.t) / j.total, pay = (j.pay || JOB_PAY.parcel) + Math.round(spare * 100 / 10) * 10; endJob(true, `배달 완료 · ${pay}만`, pay); }
     return;
   }
   if (j.kind === 'race') {
     if (!j.started) { const p = j.pts[0]; if (P.car && dist(P.x, P.y, p.x, p.y) < 160) { j.started = S.t; j.i = 1; j.deadline = S.t + j.limit; play('bell', 0.4); if (!STAGE.noPrompts) toast(`출발! ${j.limit}초`, 1.6, 'good'); } return; }
     if (S.t > j.deadline) { endJob(false, '경주 실패 — 시간 초과'); return; }
     const p = j.pts[j.i]; if (P.car && dist(P.x, P.y, p.x, p.y) < 150) { j.i++; play('click', 0.6);
-      if (j.i >= j.pts.length) { endJob(true, `경주 완주 · ${Math.round(S.t - j.started)}초 · ${JOB_PAY.race}만`, JOB_PAY.race); } }
+      if (j.i >= j.pts.length) { const pay = j.pay || JOB_PAY.race; endJob(true, `${j.patrol ? '순찰 완료' : '경주 완주'} · ${Math.round(S.t - j.started)}초 · ${pay}만`, pay); } }
   }
 }
 // 목표 문구 · 화살표가 가리킬 곳
 function jobGoal(money) {
   const j = S.job, P = S.player;
   if (j.kind === 'car') { const v = j.v, D = S.dealer;
+    if (P.car === v && j.drop) return { text: `${j.name}를 ${j.drop.label}에 세우기 · ${money}`, where: '', x: j.drop.x, y: j.drop.y, fl: 0 };
     if (P.car === v && D) return { text: `${j.name}를 매매 마당에 세우기 · ${money}`, where: '', x: (D.lot[0] + D.lot[2]) / 2, y: (D.lot[1] + D.lot[3]) / 2, fl: 0 };
     return { text: `${j.name} 훔치기 · ${money}`, where: '', x: v.x, y: v.y, fl: 0 }; }
   if (j.kind === 'parcel') return j.got ? { text: `'${j.toSign}'까지 배달 · ${jobLeft(j)}초 · ${money}`, where: '', x: j.to.x, y: j.to.y, fl: 0 } : { text: `'${j.fromSign}'에서 꾸러미 받기 · ${money}`, where: '', x: j.from.x, y: j.from.y, fl: 0 };
   const p = j.pts[Math.min(j.i, j.pts.length - 1)];
   if (!j.started) return { text: `${P.car ? '' : '차를 구해 '}출발점 교차로로 · ${money}`, where: '', x: p.x, y: p.y, fl: 0 };
-  return { text: `경주 ${j.i}/${j.pts.length - 1} · ${jobLeft(j)}초 · ${money}`, where: '', x: p.x, y: p.y, fl: 0 };
+  return { text: `${j.patrol ? '순찰' : '경주'} ${j.i}/${j.pts.length - 1} · ${jobLeft(j)}초 · ${money}`, where: '', x: p.x, y: p.y, fl: 0 };
 }
 // 땅 표시 (어둠 위): 목표 자리에 고리와 이름표
 function drawJobs() {
@@ -138,6 +140,7 @@ function drawJobs() {
     if (tag && !STAGE.noPrompts) infoTag(x, y - r - 18, tag, `rgb(${col})`, .95); };
   if (j.kind === 'car') { const v = j.v, D = S.dealer;
     if (S.player.car !== v) ring(v.x, v.y, 52, '255,200,90', j.name + ' · 가져갈 차');
+    else if (j.drop) ring(j.drop.x, j.drop.y, 90, '120,230,150', j.drop.label + '에 세우기');
     else if (D) { const x = (D.lot[0] + D.lot[2]) / 2, y = (D.lot[1] + D.lot[3]) / 2; ring(x, y, 90, '120,230,150', '여기에 세우기'); } return; }
   if (j.kind === 'parcel') { if (!j.got) ring(j.from.x, j.from.y, 34, '255,200,90', '꾸러미 받기'); else ring(j.to.x, j.to.y, 40, '120,230,150', '배달'); return; }
   const n = j.pts.length; for (let k = Math.max(0, j.i); k < Math.min(n, j.i + 2); k++) { const p = j.pts[k], last = k === n - 1;
@@ -151,13 +154,13 @@ function loadFreeProgress() {
   if (!STAGE.freeMode) return; let d = null;
   try { d = JSON.parse(localStorage.getItem(FREE_SAVE) || 'null'); } catch (e) {}
   if (!d) return;
-  S.cash = Math.max(0, d.cash | 0); S.jobN = d.jobN | 0; S.hitN = d.hitN | 0; S.rep = d.rep && typeof d.rep === 'object' ? d.rep : {}; S.freeLoaded = true;
+  S.cash = Math.max(0, d.cash | 0); S.jobN = d.jobN | 0; S.hitN = d.hitN | 0; S.rep = d.rep && typeof d.rep === 'object' ? d.rep : {}; S.stand = d.stand && typeof d.stand === 'object' ? d.stand : {}; S.freeLoaded = true;
   if (!STAGE.noPrompts && (S.cash || S.jobN)) toast(`이어서 · 수입 ${S.cash}만`, 2, 'good');
 }
 function saveFreeProgress(force) {
   if (!STAGE.freeMode || !S) return;
   if (!force && S.t - (S.freeSaveT || 0) < 2) return; S.freeSaveT = S.t;
-  const d = { cash: S.cash | 0, jobN: S.jobN | 0, hitN: S.hitN | 0, rep: S.rep || {} }, k = JSON.stringify(d);
+  const d = { cash: S.cash | 0, jobN: S.jobN | 0, hitN: S.hitN | 0, rep: S.rep || {}, stand: S.stand || {} }, k = JSON.stringify(d);
   if (k === S.freeSaveK) return; S.freeSaveK = k;
   try { localStorage.setItem(FREE_SAVE, k); } catch (e) {}
 }
@@ -165,6 +168,7 @@ function saveFreeProgress(force) {
 function drawMiniCity(x, T) {
   if (!STAGE.cityLife) return;
   const blink = Math.floor(S.t * 4) % 2 === 0;
+  drawMiniContacts(x, T);
   if (S.dealer) { const D = S.dealer; x.fillStyle = '#6aa8ff'; x.fillRect(T((D.lot[0] + D.lot[2]) / 2) - 3, T((D.lot[1] + D.lot[3]) / 2) - 3, 6, 6); }
   if (S.ringPhone && blink) { x.fillStyle = '#7fe0a8'; x.beginPath(); x.arc(T(S.ringPhone.x), T(S.ringPhone.y), 3.5, 0, TAU); x.fill(); }
   if (S.ev && !S.ev.done && dist(S.ev.x, S.ev.y, S.player.x, S.player.y) < 1800 && blink) { x.fillStyle = '#ff5a46'; x.beginPath(); x.arc(T(S.ev.x), T(S.ev.y), 3.5, 0, TAU); x.fill(); }
