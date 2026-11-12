@@ -8,7 +8,7 @@ from pathlib import Path
 from playwright.async_api import async_playwright
 
 R = Path(__file__).resolve().parents[2]
-SP = R / 'build'
+SP = R / 'build/test_logs'; SP.mkdir(parents=True, exist_ok=True)
 
 async def main():
     bad = []
