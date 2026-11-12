@@ -390,6 +390,10 @@
       "group": "city"
     },
     {
+      "path": "47w_city_sniper.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },

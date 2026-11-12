@@ -48,7 +48,7 @@ function cityTeardown() {
   if (CMAP) { CMAP.el.remove(); CMAP = null; }
   { const w = document.getElementById('wpnChip'); if (w) w.remove(); }
   if (S) S.heli = null; if (typeof HELI_SND !== 'undefined' && HELI_SND && AC) HELI_SND.g.gain.setTargetAtTime(0, AC.currentTime, 0.1);
-  if (S) { S.shopOpen = false; S.side = null; S.wp = null; S.wpPath = null; S.ramp = null; S.war = null; S.safeIn = null; S.hunter = null; if (S.rain) { S.rain.on = false; S.rain.k = 0; } }
+  if (S) { S.shopOpen = false; S.side = null; S.wp = null; S.wpPath = null; S.ramp = null; S.war = null; S.safeIn = null; S.hunter = null; S.scope = false; S.stillT = 0; if (S.rain) { S.rain.on = false; S.rain.k = 0; } }
   document.body.classList.remove('free-city', 'no-prompts');
   if (AC) { const now = AC.currentTime; if (RAIN_SND) RAIN_SND.g.gain.setTargetAtTime(0, now, 0.1); if (typeof SCREECH !== 'undefined' && SCREECH) SCREECH.g.gain.setTargetAtTime(0, now, 0.05); }
   if (typeof musicRadio === 'function') musicRadio(false);

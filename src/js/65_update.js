@@ -137,7 +137,7 @@ function moveCamera(dt) {
     cam.x += (MW * TILE / 2 - cam.x) * k; cam.y += (MH * TILE / 2 + 40 / SCALE - cam.y) * k; return; }
   if (S.tacCam) S.tacCam = null;
   if (isTouch) {
-    const cv = S.player.car, lx = cv ? Math.cos(cv.a) * cv.v * 0.5 : 0, ly = cv ? Math.sin(cv.a) * cv.v * 0.5 : 0;  // 운전: 달리는 앞쪽을 더 보여 준다
+    const cv = S.player.car, sc = S.scope && STAGE.cityLife ? scopeLead() : null, lx = cv ? Math.cos(cv.a) * cv.v * 0.5 : sc ? sc.x : 0, ly = cv ? Math.sin(cv.a) * cv.v * 0.5 : sc ? sc.y : 0;  // 운전: 달리는 앞쪽 · 저격 조준경: 겨누는 쪽
     const tx = clamp(S.player.x + lx, Math.min(vw / 2 - 40 / SCALE, MW * TILE / 2), Math.max(MW * TILE - vw / 2 + 140 / SCALE, MW * TILE / 2));
     // 기본 앞보기를 유지하되 실제 조작부 위에 캐릭터와 근접 안내가 들어오게 한다.
     const anchor=touchPlayFrame().y/H,bounds=cameraYBounds(vh),ty=clamp(S.player.y+ly+vh*(.5-anchor),bounds[0],bounds[1]);
@@ -145,7 +145,7 @@ function moveCamera(dt) {
   } else {
     // 앞보기: 보는 방향(조준 중이면 겨누는 곳)으로 화면을 조금 앞세운다
     const P = S.player, ap = input.aiming && aimPoint();
-    const cv = P.car, lx = cv ? Math.cos(cv.a) * cv.v * 0.5 : ap ? (ap.x - P.x) * 0.35 : Math.cos(P.a) * (S.over?0:P.moving ? 70 : 30), ly = cv ? Math.sin(cv.a) * cv.v * 0.5 : ap ? (ap.y - P.y) * 0.35 : Math.sin(P.a) * (S.over?0:P.moving ? 55 : 24);
+    const sc = S.scope && STAGE.cityLife ? scopeLead() : null, cv = P.car, lx = cv ? Math.cos(cv.a) * cv.v * 0.5 : sc ? sc.x : ap ? (ap.x - P.x) * 0.35 : Math.cos(P.a) * (S.over?0:P.moving ? 70 : 30), ly = cv ? Math.sin(cv.a) * cv.v * 0.5 : sc ? sc.y : ap ? (ap.y - P.y) * 0.35 : Math.sin(P.a) * (S.over?0:P.moving ? 55 : 24);
     S.lead = S.lead || { x: 0, y: 0 }; const lk = 1 - Math.exp(-dt * 2.5); S.lead.x += (lx - S.lead.x) * lk; S.lead.y += (ly - S.lead.y) * lk;
     // 가장자리: 캐릭터가 화면 구석의 HUD(도움말·조작 안내) 밑에 깔리지 않도록 맵 밖으로 조금 더 따라간다
     const ox = vw * .16, bounds = cameraYBounds(vh);

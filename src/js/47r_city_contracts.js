@@ -11,8 +11,9 @@ const CONTRACTS = {
   accident: { name: '사고 위장', mul: 1.5, fail: 0.5, brief: '사고처럼 보여야 한다. 차로 치든, 불을 내든, 터뜨리든. 칼이나 총 자국이 남으면 반값이다.', rule: '사고로 위장 (차·불·폭발)' },
   blade: { name: '칼로만', mul: 1.4, fail: 0.5, brief: '의뢰인이 손으로 끝내길 원한다. 총소리도, 불도, 차도 안 된다. 어기면 반값.', rule: '칼로만 (총·차·불·폭발 금지)' },
   photo: { name: '사진만', mul: 1.3, brief: '얼굴 사진 한 장뿐이다. 그 블록 어딘가를 돈다. 직접 찾아서 얼굴을 확인해.', rule: '사진만 — 블록을 돌며 얼굴 찾기' },
+  snipe: { name: '저격', mul: 1.4, fail: 0.6, brief: '멀리서 한 발로 끝내라. 500px 밖에서 총으로. 저격총은 조직 연락책이 판다. 가까이서 끝내면 값을 깎는다.', rule: '저격 (500px 밖에서 총으로)' },
   timed: { name: '시간 제한', mul: 1.3, time: 180, brief: '3분 뒤에 그놈이 서울을 뜬다. 그 전에 끝내. 놓치면 없던 일이다.', rule: '3분 안에' } };
-const CONTRACT_KINDS = ['accident', 'blade', 'photo', 'timed', 'plain'];
+const CONTRACT_KINDS = ['accident', 'blade', 'photo', 'timed', 'snipe', 'plain'];
 function pickContract() {
   if (!S.hitN) return 'plain';
   const pool = CONTRACT_KINDS.filter(k => k !== S.lastContract); return pool[(Math.random() * pool.length) | 0];
@@ -31,6 +32,7 @@ function contractMul(h, g) {
   let ok = true;
   if (h.ctr === 'accident') ok = ['car', 'fire', 'blast'].includes(cause);
   else if (h.ctr === 'blade') ok = cause === 'blade';
+  else if (h.ctr === 'snipe') ok = cause === 'gun' && (g.shotD || 0) >= 500;
   return { ok, mul: ok ? C.mul : (C.fail || 1), cause, C };
 }
 // 매 프레임 (의뢰 중): 시간 제한 · 사진 의뢰 얼굴 확인

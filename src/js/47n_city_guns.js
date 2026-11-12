@@ -9,9 +9,10 @@ const WEAPONS = {
   silenced: { name: '소음 권총', rate: 0.45, dmg: 1, spread: 0.015, pellets: 1, range: 460, sound: 0.3, ammo: 12, price: 700, silent: true },  // 암살용: 140px 밖에선 안 들린다
   smg: { name: '기관단총', rate: 0.09, dmg: 1, spread: 0.08, pellets: 1, range: 460, sound: 0.8, ammo: 60, price: 800, burst: 3 },
   shotgun: { name: '산탄총', rate: 0.8, dmg: 1, spread: 0.22, pellets: 6, range: 300, sound: 1.4, ammo: 16, price: 600 },
+  sniper: { name: '저격총', rate: 1.3, dmg: 1, spread: 0.004, pellets: 1, range: 1000, sound: 1.3, ammo: 6, price: 1200, sniper: true },  // 멈춰 서야 조준경 (47w)
   grenade: { name: '수류탄', rate: 0.9, throw: true, ammo: 3, price: 250 },
   molotov: { name: '화염병', rate: 0.8, throw: true, ammo: 3, price: 150 } };
-const WPN_ORDER = ['pistol', 'silenced', 'smg', 'shotgun', 'grenade', 'molotov'];
+const WPN_ORDER = ['pistol', 'silenced', 'smg', 'shotgun', 'sniper', 'grenade', 'molotov'];
 function gunsInit() { S.guns = Object.assign({}, S.gunsSaved || {}); S.wpn = S.wpnSaved && S.guns[S.wpnSaved] > 0 ? S.wpnSaved : null; S.gunT = 0; S.tracers = []; S.firePools = []; S.nades = []; S.kills = { n: 0, t: -9 }; gunChip(); }
 const wpnOn = () => STAGE.cityLife && S.wpn && (S.guns[S.wpn] || 0) > 0;
 function cycleWeapon() {
@@ -34,15 +35,17 @@ function gunAttack() {
 }
 function gunAim() {
   const P = S.player; let best = null, bs = 1e9;
-  for (const g of actorsNearWide(P.x, P.y, 440)) { if (g === P || !npcAlive(g) || g.off || flOf(g) || g.z) continue; const d = dist(P.x, P.y, g.x, g.y); if (d > (S.driveAim ? 380 : 420) || d < 8) continue;
-    const da = Math.abs(angDiff(P.a, Math.atan2(g.y - P.y, g.x - P.x))); if (da > 1.22 && !S.driveAim) continue; if (!los(P.x, P.y, g.x, g.y)) continue;
-    const pri = (g.police || g.fac && !g.civ) ? 0.6 : 1, s = (d + (S.driveAim ? 0 : da * 220)) * pri; if (s < bs) { bs = s; best = g; } }
+  for (const g of (S.snipeAim ? S.guards : actorsNearWide(P.x, P.y, 440))) { if (g === P || !npcAlive(g) || g.off || flOf(g) || g.z) continue; const d = dist(P.x, P.y, g.x, g.y); const sn = S.snipeAim; if (d > (sn ? 1000 : S.driveAim ? 380 : 420) || d < 8) continue;
+    const da = Math.abs(angDiff(P.a, Math.atan2(g.y - P.y, g.x - P.x))); if (da > (sn ? 0.45 : 1.22) && !S.driveAim) continue; if (!(sn && P.z) && !los(P.x, P.y, g.x, g.y)) continue;
+    const pri = (S.hit && S.hit.g === g && sn ? 0.3 : 1) * ((g.police || g.fac && !g.civ) ? 0.6 : 1), s = (d + (S.driveAim ? 0 : da * 220)) * pri; if (s < bs) { bs = s; best = g; } }
   return best;
 }
 function actorsNearWide(x, y, r) { return S.guards.filter(g => Math.abs(g.x - x) < r && Math.abs(g.y - y) < r); }
 function fireWeapon(inCar) {
-  const P = S.player, W = WEAPONS[S.wpn]; if (S.t < S.gunT) return; S.gunT = S.t + W.rate;
-  S.driveAim = !!inCar; const tgt = gunAim(); S.driveAim = false; const off = inCar ? 30 : 18;
+  const P = S.player, W = WEAPONS[S.wpn]; if (S.t < S.gunT) return;
+  if (W.sniper && !inCar && !scopeReady()) { evBanner('멈춰 서야 조준경이 잡힌다', '#c8c0b0'); return; }
+  S.gunT = S.t + W.rate;
+  S.driveAim = !!inCar; S.snipeAim = !!W.sniper && !inCar; const tgt = gunAim(); S.snipeAim = false; S.driveAim = false; const off = inCar ? 30 : 18;
   const a0 = tgt ? Math.atan2(tgt.y - 10 - P.y, tgt.x - P.x) : P.a; P.a = a0;
   if (W.throw) { throwThing(S.wpn, a0, tgt); S.guns[S.wpn]--; gunChip(); return; }
   const shots = W.burst || 1;
@@ -50,25 +53,25 @@ function fireWeapon(inCar) {
     const mx = P.x + Math.cos(a0) * off, my = P.y - 14 + Math.sin(a0) * off;
     spawnEffect('muzzle', { x: mx, y: my, fl: 0, z: 0 }, { scale: W.silent ? 0.35 : 0.7, angle: a0, alpha: W.silent ? 0.6 : 1, startAt: 0 }); if (W.silent) { play('thud', 0.3, 1.9); play('click', 0.25, 0.7); } else gunSound(W.sound);
     S.shakeT = Math.max(S.shakeT || 0, 0.06 * W.sound); (S.fireParts || (S.fireParts = [])).push({ kind: 'debris', x: P.x, y: P.y - 10, vx: Math.cos(a0 + Math.PI / 2) * 80, vy: -40, t: 0, life: 0.4, size: 1.5, rot: 0 });  // 탄피
-    for (let k = 0; k < W.pellets; k++) shootRay(mx, my, a0 + rnd(-W.spread, W.spread), W.range, W.dmg);
+    for (let k = 0; k < W.pellets; k++) shootRay(mx, my, a0 + rnd(-W.spread, W.spread), W.range, W.dmg, W.sniper && P.z > 0);
     const loud = W.silent ? 140 : 700 * W.sound; noise(P.x, P.y, loud, 'gun', 0);  // 소음 권총: 바로 옆에서만 들린다
     if (!S.wanted || S.wanted < 2) { if (witnessed(P.x, P.y, W.silent ? 170 : 520)) addWanted(S.wanted ? 1 : 2, W.silent ? '쏘는 걸 누가 봤다' : '총소리에 신고가 들어갔다'); }
     for (const g of actorsNearWide(P.x, P.y, W.silent ? 150 : 500)) if (g.civ && npcAlive(g) && g.state !== 'PANIC') civPanic(g, P.x, P.y, 8); });
   if ((S.guns[S.wpn] || 0) <= shots) after(0.3, () => { if ((S.guns[S.wpn] || 0) <= 0) { evBanner(`${WEAPONS[S.wpn]?.name || ''} 탄약이 떨어졌다`); cycleWeapon(); } });
 }
 // 총알 한 줄: 8px씩 나아가며 벽(멈춤)·사람(쓰러짐)·차(내구성)를 본다
-function shootRay(x0, y0, a, range, dmg) {
+function shootRay(x0, y0, a, range, dmg, over) {  // over: 옥상에서 쏜 저격 — 건물 벽 위로 날아간다
   const ca = Math.cos(a), sa = Math.sin(a), P = S.player; let hit = null, ex = x0 + ca * range, ey = y0 + sa * range;
   const cands = S.guards.filter(g => g !== P && npcAlive(g) && !g.off && !flOf(g) && !g.z && Math.abs(g.x - x0) < range + 20 && Math.abs(g.y - y0) < range + 20);
   const cars = S.vehicles.filter(v => !v.dead && (v.z || 0) < 0.3 && Math.abs(v.x - x0) < range + 60 && Math.abs(v.y - y0) < range + 60 && v !== P.car);
   for (let s = 10; s < range; s += 8) { const x = x0 + ca * s, y = y0 + sa * s;
-    if (solidAt(Math.floor(x / TILE), Math.floor(y / TILE))) { ex = x; ey = y; hit = 'wall'; break; }
+    if (!over && solidAt(Math.floor(x / TILE), Math.floor(y / TILE))) { ex = x; ey = y; hit = 'wall'; break; }
     const g = cands.find(g => Math.abs(g.x - x) < 13 && Math.abs(g.y - 12 - y) < 20); if (g) { ex = x; ey = y; hit = g; break; }
     const v = cars.find(v => carPts(v).some(([px, py]) => dist(px, py, x, y) < (v.r || 21))); if (v) { ex = x; ey = y; hit = v; break; } }
   S.tracers.push({ x0, y0, x1: ex, y1: ey, t: S.t });
   if (hit === 'wall') { const f = { x: ex, y: ey, a: 0, len: 4 }; fireEmit(f, 'spark', 4, f); return; }
   if (hit && S.guards.includes(hit)) {  // 사람
-    const g = hit; g.shotT = S.t; bloodBurst(g.x, g.y - 12, a, 4); g.x += ca * 10; g.y += sa * 10;
+    const g = hit; g.shotT = S.t; g.shotD = dist(x0, y0, g.x, g.y); if (g.shotD > 500) { slowMo(0.45); S.flash = 0.12; } bloodBurst(g.x, g.y - 12, a, 4); g.x += ca * 10; g.y += sa * 10;
     if (g.warSide != null) warHitByPlayer(g); npcDown(g, null, true); const c = S.corpses[S.corpses.length - 1]; if (c && c.g === g) c.byNpc = false;  // 내가 쐈다: 조직 호감도에 잡힌다
     if (typeof cityVictim === 'function') cityVictim(g); gunStreak(g); return; }
   if (hit) { const v = hit; v.hp -= dmg * 0.5; v.smoke = 1.5; const f = { x: ex, y: ey, a: 0, len: 4 }; fireEmit(f, 'spark', 6, f); play('metal', 0.3, 1.7);

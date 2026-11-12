@@ -73,6 +73,7 @@ function targetScale() {
   const P = S && S.player;
   const cityPhone = STAGE.cityLife && isTouch ? 0.78 : 1;  // 큰 도시 휴대폰: 세로 화면 가로 8칸은 너무 가깝다 — 걸을 때 약 10칸, 운전할 때는 그만큼 더 넓게
   if (P && P.car) return BASE_SCALE * userZoom * cityPhone * (STAGE.cityLife ? 0.62 - Math.min(0.2, Math.abs(P.car.v) / 2000) : 0.72 - Math.min(0.14, Math.abs(P.car.v) / 2600));  // 운전: 멀리 본다 (빠를수록 더, 큰 도시는 더 넓게)
+  if (STAGE.cityLife && S.scope) return BASE_SCALE * userZoom * cityPhone * 0.6;  // 저격 조준경: 멀리 본다 (47w)
   if (STAGE.cityLife && P && !P.z) return BASE_SCALE * userZoom * skillViewMul() * (isTouch ? 0.78 : 1.12);  // 큰 도시를 걸을 때는 가깝게: 차에 오르면 도시가 확 넓어진다
   const districtView=STAGE.agentStudy&&isTouch&&H>W*1.3?.80:1;
   return BASE_SCALE * districtView * userZoom * skillViewMul() * (quarterNear(P)?1.08:1) * (P && P.z >= 3 ? 0.8 : P && (P.z || P.jump) ? 0.9 : 1);
