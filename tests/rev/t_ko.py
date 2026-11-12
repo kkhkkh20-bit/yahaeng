@@ -29,11 +29,11 @@ async def main():
         await pg.evaluate(PIN, [1, 29, 9, 0]); await pg.evaluate('() => { const S = window.__game.S, P = S.player; P.x = 32 * 48 + 24; P.y = 9 * 48 + 24; P.z = 0; P.fl = 0; P.carrying = null; }')
         await pg.wait_for_timeout(2500); r = await pg.evaluate('() => [window.__game.S.guards[1].state, Math.round(window.__game.S.guards[1].meter * 100) / 100]'); print('허가 옷', r)
         if r[0] in ('WARN', 'ALERT') or r[1] > 0.5: bad.append('허가 옷인데 경고·발각된다 %s' % r)
-        # 4 눈썰미: 같은 옷 반장이 가까이서 보면 알아챈다
+        # 4 눈썰미: 같은 옷 반장이 가까이서 보면 알아챈다 (v251부터 목격자 본인만 기억 · 무전 보고 전에는 전체 발각 아님)
         await pg.evaluate('() => { const S = window.__game.S, q = S.guards[1]; q.enforcer = true; q.a=q.want=q.post=0;q.still=true;q.glanceT=999;S.player.a=Math.PI;S.player.light=1; S.player.x = q.x + 70; S.player.y = q.y; }')
         st = None
         for t in range(20):
-            await pg.wait_for_timeout(250); st = await pg.evaluate('() => [window.__game.S.guards[1].state, window.__game.S.player.disguiseBlown]')
+            await pg.wait_for_timeout(250); st = await pg.evaluate('() => [window.__game.S.guards[1].state, window.__game.knownFace(window.__game.S.guards[1])]')
             if st[1]: break
         print('눈썰미', st)
         if not st[1] or st[0] != 'ALERT': bad.append('눈썰미가 변장을 못 알아챈다 %s' % st)

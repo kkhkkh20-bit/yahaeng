@@ -119,8 +119,16 @@ class CompoundControls:
    if await self.q.evaluate('__game.S.player.fl||0')==f:await self.env('up'if up else'fdown')
    assert await self.q.evaluate('__game.S.player.fl||0')==(f+1 if up else f-1)
  async def light(self):
-  at=await self.q.evaluate('''()=>{const G=__game,P=G.S.player,l=G.S.lamps.find(l=>!l.outdoor&&!l.off&&(l.fl||0)===(P.fl||0)&&l.control);return l&&l.control}''')
-  await self.walk(at['x']+24,at['y']);await self.env('lamp')
+  # v259: a room light is operated at its fixture (lampControl), not at a wall switch by
+  # the entrance. Stand within hand reach of it but outside every live camera's view.
+  at=await self.q.evaluate('''()=>{const G=__game,P=G.S.player,l=G.S.lamps.find(l=>!l.outdoor&&!l.off&&(l.fl||0)===(P.fl||0)&&l.control);if(!l)return null;
+   const c=G.lampControl(l),cams=G.S.cams.filter(k=>G.camOn(k)&&(k.fl||0)===(c.fl||0)),L0=G.layer;G.setLayer(c.fl||0);
+   try{for(const r of [0,42,36,24])for(let i=0;i<16;i++){const a=i*Math.PI/8,p={x:c.x+Math.cos(a)*r,y:c.y+Math.sin(a)*r};
+    if(G.solidAt(Math.floor(p.x/48),Math.floor(p.y/48))||G.castRay(c.x,c.y,a,r)<r-1)continue;if(cams.every(k=>[[0,0],[-16,0],[16,0],[0,-16],[0,16]].every(([dx,dy])=>!G.cameraSees(k,p.x+dx,p.y+dy,1))))return p;}}finally{G.setLayer(L0);}
+   return c}''')
+  assert at,'no lit room light on this floor'
+  if await self.q.evaluate('__game.S.player.y')>at['y']:await self.walk(at['x'],await self.q.evaluate('__game.S.player.y'))  # come up from below, outside the cone
+  await self.walk(at['x'],at['y']);await self.env('lamp')
   assert await self.q.evaluate('__game.S.lamps.some(l=>!l.outdoor&&l.off)')
   await self.shot('lights-out')
  async def camera_cable(self):

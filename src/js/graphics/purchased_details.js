@@ -52,7 +52,7 @@ function drawPurchasedFreight(c,f,shadow){
  if(shadow){c.save();c.fillStyle='#09121b44';c.fillRect(f.x*TILE+4,(f.y+f.h)*TILE-8,f.w*TILE-8,12);c.restore();}
  // Real storage cabinets keep their source aspect; no hand-painted carton grid.
  const count=Math.max(1,f.w),r=purchasedFrame('cabinetBlue'),scale=Math.min(1.5,(TILE-6)/r[2],(f.h*TILE+40)/r[3]);
- for(let i=0;i<count;i++)purchasedBlit(c,'cabinetBlue',(f.x+i)*TILE+(TILE-r[2]*scale)/2,(f.y+f.h)*TILE-r[3]*scale-3,r[2]*scale,r[3]*scale);return true;
+ c.save();for(let i=0;i<count;i++)purchasedBlit(c,'cabinetBlue',(f.x+i)*TILE+(TILE-r[2]*scale)/2,(f.y+f.h)*TILE-r[3]*scale-3,r[2]*scale,r[3]*scale);c.restore();return true;
 }
 function drawPurchasedDoor(d){
  if(!purchasedReady())return false;const bi=bldAt(d.tx,d.ty),style=officeStyle(bi,flOf(d)),wood=style===OFFICE_STYLES.residence||style===OFFICE_STYLES.estate,key=wood?'doorWood':'doorOffice',r=purchasedFrame(key),a=doorVisualOpen(d)*Math.PI/2;

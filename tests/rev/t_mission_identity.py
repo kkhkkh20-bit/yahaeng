@@ -18,7 +18,8 @@ async def main():
    assert '클럽 실장'in await q.locator('#brIdentity .target').inner_text() and '처치'in await q.locator('#brIdentity .target').inner_text()
    assert '장부'in await q.locator('#brIdentity .item').first.inner_text() and '회수'in await q.locator('#brIdentity .item').first.inner_text()
    assert await q.locator('#brTodo').is_hidden(),'optional guard appears as required task'
-   assert await q.locator('#brIdentity canvas[data-ready]').count()==3,'actual actor/object art not ready'
+   # v263: in the briefing only the target keeps a drawn actor canvas; items show an emblem sigil instead.
+   assert await q.locator('#brIdentity .target canvas[data-ready]').count()==1 and await q.locator('#brIdentity canvas:not([data-ready])').count()==0 and await q.locator('#brIdentity .item .mission-emblem svg').count()==2,'actual actor/object art not ready'
    await q.screenshot(path=str(O/f'brief-{width}.png'),full_page=True)
    await q.click('#btnBrGo');await q.keyboard.press('Escape');await q.evaluate('for(let i=0;i<14;i++)__game.advanceGameFrame(.05);__game.updateHUD(true);__game.moveCamera(1);__game.benchDraw(1)')
    assert await q.evaluate('__game.nextGoal().routeGuide&&__game.nextGoal().text.includes("관찰")&&!__game.nextGoal().g'),'living guard hijacks mission'

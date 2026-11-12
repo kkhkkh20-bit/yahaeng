@@ -55,12 +55,12 @@ async def main():
         await pg.wait_for_timeout(300); await pg.evaluate('() => T.G().actPrimary()'); await pg.wait_for_timeout(1300)  # 책상에서 챙기기
         r = await pg.evaluate('() => [T.bad(), T.S().items[0].got, T.S().stats.gotAs, T.S().player.disguiseBlown]'); print('조끼 → 장부', r)
         if r[0] or not r[1] or r[2] != 'staff': bad.append('직원 조끼로 사무실 장부까지 못 간다 %s' % r)
-        # 3 사장 눈썰미: 조끼 차림으로 사장 코앞에 서 있으면 알아채고 신고하러 간다
+        # 3 사장 눈썰미: 조끼 차림으로 사장 코앞에 서 있으면 알아채고 신고하러 간다 (v251부터 목격자 본인이 기억 · 신고가 끝나야 전체 공유)
         await fresh(); await pg.evaluate('() => { const P = T.S().player; P.outfit = "staff"; P.disguise = "staff"; P.disguiseBlown = false; }')
         await pg.evaluate('''() => { const b = T.npc('boss'); b.x = 33 * 48 + 24; b.y = 13 * 48 + 24; b.wait = 99; b.a = 0; b.want = 0; b.path = null; T.at(34, 13); }''')
         r = None
         for t in range(16):
-            await pg.wait_for_timeout(250); r = await pg.evaluate('() => [T.S().player.disguiseBlown, T.npc("boss").state]')
+            await pg.wait_for_timeout(250); r = await pg.evaluate('() => [T.G().knownFace(T.npc("boss")), T.npc("boss").state]')
             if r[0]: break
         print('사장 눈썰미', r)
         if not r[0] or r[1] not in ('REPORT', 'PANIC'): bad.append('사장이 직원 조끼를 알아보지 못한다 %s' % r)
