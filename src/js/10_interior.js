@@ -483,7 +483,7 @@ function castRay(x, y, ang, max, ign) {
 }
 function los(x0, y0, x1, y1, ign) { const d = dist(x0, y0, x1, y1); if (d < 2) return true; return castRay(x0, y0, Math.atan2(y1 - y0, x1 - x0), d, ign) >= d - 1; }
 
-function astar(sx, sy, gx, gy, solidAt = solidAtG) {
+function astar(sx, sy, gx, gy, solidAt = solidAtG, extra = null) {  // extra: 칸마다 더하는 걸음 비용 (Uint8Array, 자유 모드 무단횡단 막기)
   if (solidAt(gx, gy)) {
     let best = null;
     for (let r = 1; r < 3 && !best; r++) for (let oy = -r; oy <= r; oy++) for (let ox = -r; ox <= r; ox++) if (!solidAt(gx + ox, gy + oy) && !best) best = [gx + ox, gy + oy];
@@ -506,7 +506,7 @@ function astar(sx, sy, gx, gy, solidAt = solidAtG) {
       if (solidAt(nx, ny)) continue;
       if (o[0] && o[1] && (solidAt(cx + o[0], cy) || solidAt(cx, cy + o[1]))) continue;
       const ni = ny * MW + nx; if (closed[ni]) continue;
-      const ng = gS[cur] + (o[0] && o[1] ? 1.414 : 1);
+      const ng = gS[cur] + (o[0] && o[1] ? 1.414 : 1) + (extra ? extra[ny * MW + nx] : 0);
       if (ng < gS[ni]) { gS[ni] = ng; from[ni] = cur; open.push(ni); }
     }
   }

@@ -3,7 +3,7 @@
 // 방향 d: 0 동 · 1 남 · 2 서 · 3 북
 const DV = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 const CAR_LEN = 92, CAR_W = 42, CAR_R = 21;  // 차 길이·폭(px), 충돌 원 반지름 (앞뒤 원 둘)
-const CAR_MAX = 430, CAR_ACC = 320, CAR_BRAKE = 700, CAR_FRIC = 160, CAR_TURN = 3.1, AI_SPD = 165;
+const CAR_MAX = 430, CAR_ACC = 320, CAR_BRAKE = 700, CAR_FRIC = 160, CAR_TURN = 3.1, AI_SPD = 165, CITY_CRUISE = 280;  // 자유 모드 차는 달리기(160)보다 확실히 빠르게
 // 차 기준 칸: 땅이 막혔거나 건물 자리면 못 지나간다 (문틈으로 들어가지 않게)
 const carBlocked = (tx, ty) => !inMap(tx, ty) || SOLID.has(G0[ty][tx]) || (BI && BI[ty * MW + tx] >= 0);
 // 차로 중심 좌표: 가로 도로(위쪽 칸 ry)에서 동쪽(0)으로 가면 아래 차로, 서쪽(2)은 위 차로 · 세로 도로(왼쪽 칸 rx)에서 남쪽(1)은 왼 차로, 북쪽(3)은 오른 차로
@@ -117,7 +117,7 @@ function updateVehicles(dt) {
     if (v.dead) { v.burn = Math.max(0, v.burn - dt); if ((v.z || 0) > 0.001) deckStep(v, dt); continue; }  // 부서진 차도 공중이면 떨어진다
     if (v.smoke > 0) v.smoke -= dt;
     if (v === (S.player.car || {}) || v.scripted) continue;  // 내 차는 updateDriving · 이벤트가 직접 움직이는 차
-    if (!v.ai) { if (Math.abs(v.v) > 1) { v.v *= Math.pow(0.08, dt); carMove(v, dt); } continue; }  // 주인 없는 차: 미끄러지다 선다
+    if (!v.ai) { if (Math.abs(v.v) > 1) { v.v *= Math.pow(v.coastT > S.t ? 0.55 : 0.08, dt); carMove(v, dt); hitPeople(v, dt); } continue; }  // 사람이 뛰어내린 차는 한동안 굴러가며 앞을 친다  // 주인 없는 차: 미끄러지다 선다
     let vdt = dt;
     if (STAGE.city) { vdt = cityLodStep(v, dt, cityLodVehicleCalm(v)); if (!vdt) continue; }  // 도시: 멀리서 그냥 다니는 차는 덜 자주
     aiDrive(v, vdt);
@@ -156,7 +156,7 @@ function aiDrive(v, dt) {
   let hor = v.d === 0 || v.d === 2, sgn = DV[v.d][0] + DV[v.d][1];
   if (v.lane == null) v.lane = hor ? v.y : v.x;
   if (v.turn && onDeckLevel(v)) planTurn(v);  // 땅에서 정해 둔 꺾기는 고가에 오르면 취소 (고가 밑 교차로에서는 못 꺾는다)
-  const T = vType(v), blk = aheadBlocked(v); let want = v.chase ? Math.min(AI_SPD * 2, T.max) : v.flee ? Math.min(AI_SPD * 2.2, T.max) : Math.min(AI_SPD, T.max * .55);  // 버스·트럭은 천천히
+  const T = vType(v), blk = aheadBlocked(v); let want = v.chase ? Math.min(AI_SPD * 2, T.max) : v.flee ? Math.min(AI_SPD * 2.2, T.max) : Math.min(STAGE.cityLife ? CITY_CRUISE : AI_SPD, T.max * (STAGE.cityLife ? .7 : .55));  // 버스·트럭은 천천히
   if (blk) { v.stopT += dt; want = 0;
     if (blk !== 'car' && v.stopT > 1.4 && (v.honkT -= dt) <= 0) { v.honkT = 2.5; play('metal', 0.25 * proxVol(v), 2.4); if (blk === 'ped' || blk === 'me') noise(v.x, v.y, 120, 'car', 0); }
   } else v.stopT = 0;
@@ -387,6 +387,7 @@ function carMove0(v, dt, turn=0) {
    // 내 차가 벽을 비스듬히 받으면 멈추지 않고 벽을 따라 미끄러진다 (운전 보조): x만, y만 가 보고 되는 쪽으로
    if(o===true&&!v.ai&&STAGE.cityLife&&S.player.car===v){const nx=v.x,ny=v.y;for(const [tx,ty] of [[nx,oy],[ox,ny]]){v.x=tx;v.y=ty;if(!carOverlap(v)){const along=Math.hypot(tx-ox,ty-oy)/Math.max(.001,Math.hypot(nx-ox,ny-oy));if(along>.35){v.v*=1-(1-along)*.5;const wa=Math.atan2(ty-oy,tx-ox)+(v.v<0?Math.PI:0),pa=v.a;v.a+=angDiff(v.a,wa)*.12;if(carOverlap(v))v.a=pa;if(v.va!=null)v.va=v.a;o=null;break;}}}if(o){v.x=nx;v.y=ny;}}
    if(!o)continue;
+   if(o!==true&&STAGE.cityLife&&S.player.car===v&&carPush(v,o,ox,oy))continue;  // 천천히 받은 채로 계속 밀면 그 차를 밀고 간다
    const speed=Math.abs(v.v),hit=o===true?speed:Math.max(0,(v.v*Math.cos(v.a)-(o.v||0)*Math.cos(o.a))*(o.x-v.x)/Math.max(1,dist(v.x,v.y,o.x,o.y))+(v.v*Math.sin(v.a)-(o.v||0)*Math.sin(o.a))*(o.y-v.y)/Math.max(1,dist(v.x,v.y,o.x,o.y)));
    v.x=ox;v.y=oy;v.a=oa;v.v=v.ai?0:-v.v*.2;if(v.va!=null)v.va=v.a;
    if(o!==true){o.v=0;o.stopT=0;v.crashUntil=o.crashUntil=S.t+.8;if(STAGE.cityLife){if(v.panicT>S.t||o.panicT>S.t)pileHit(v,o);else if(S.player.car===v&&o.ai&&speed>200)pileupBehind(o);}}
@@ -403,6 +404,19 @@ function carMove0(v, dt, turn=0) {
    return speed;
   }
   return 0;
+}
+// 밀기: 내 차가 다른 차에 천천히(상대 속도 140 이하) 닿은 채 계속 가면, 그 차를 같은 만큼 민다.
+// 무거운 차일수록 느리게 밀린다(내 속도 상한 = 150 × 내 무게 / 상대 무게). 비스듬히 밀면 상대 차가 조금 돈다. 벽에 막히면 못 민다
+function carPush(v, o, ox, oy) {
+  const dx = v.x - ox, dy = v.y - oy, step = Math.hypot(dx, dy); if (step < 1e-4 || Math.abs(v.v) > 140 + Math.abs(o.v || 0)) return false;
+  const d = Math.max(1, dist(v.x, v.y, o.x, o.y)); if ((dx * (o.x - v.x) + dy * (o.y - v.y)) / d / step < 0.2) return false;  // 그 차 쪽으로 가는 중이어야 민다
+  const px = o.x, py = o.y, pa = o.a, pva = o.va, side = -(o.x - v.x) * Math.sin(v.a) + (o.y - v.y) * Math.cos(v.a);
+  const put = (rot) => { o.x = px + dx; o.y = py + dy; o.a = pa + rot; if (pva != null) o.va = o.a; return !carOverlap(o); };
+  if (!put(clamp(side * 0.0006 * Math.sign(v.v), -0.02, 0.02)) && !put(0)) { o.x = px; o.y = py; o.a = pa; o.va = pva; return false; }  // 벽·다른 차에 막히면 못 민다
+  const mv = vType(v).mass, mo = vType(o).mass, cap = 150 * mv / mo; if (Math.abs(v.v) > cap) v.v = Math.sign(v.v) * cap;
+  o.v = 0; o.stopT = 0; o.crashUntil = S.t + 1.2; o.pushedT = S.t;
+  if (S.t > (v.pushSnd || 0)) { v.pushSnd = S.t + 0.35; play('metal', 0.18, 0.5); }
+  return true;
 }
 // 차가 사람을 친다: 빠르면 처치, 느리면 넘어뜨린다 (기절). 내가 몰면 내 짓이다
 function hitPeople(v, dt) {
@@ -421,7 +435,7 @@ function hitPeople(v, dt) {
   }
   // 내가 걷다가 달려오는 차에 치임
   const P = S.player;
-  if (!mine && !P.car && !P.cuffed && !P.z && !flOf(P) && !P.hide && spd > 120 && pts.some(([px, py]) => dist(px, py, P.x, P.y) < v.r + 10)) { if (STAGE.cityLife) { spawnEffect('impact', { x: P.x, y: P.y - 16, fl: 0, z: 0 }, { scale: 1.1 }); bloodSpray(P.x, P.y, v.a, spd > 220 ? 6 : 3); S.shakeT = 0.35; if (spd > 220) { P.hurtT = 0; hurtPlayer(null, '차에 치였다.'); } }  // 세게 치이면 두 칸
+  if (!mine && !(v.coastT > S.t) && !P.car && !P.cuffed && !P.z && !flOf(P) && !P.hide && spd > 120 && pts.some(([px, py]) => dist(px, py, P.x, P.y) < v.r + 10)) { if (STAGE.cityLife) { spawnEffect('impact', { x: P.x, y: P.y - 16, fl: 0, z: 0 }, { scale: 1.1 }); bloodSpray(P.x, P.y, v.a, spd > 220 ? 6 : 3); S.shakeT = 0.35; if (spd > 220) { P.hurtT = 0; hurtPlayer(null, '차에 치였다.'); } }  // 세게 치이면 두 칸
     hurtPlayer(null, '차에 치였다.'); P.x += Math.cos(v.a + Math.PI / 2) * 30; P.y += Math.sin(v.a + Math.PI / 2) * 30; v.v = 0; }
 }
 // 내가 운전: 조이스틱(방향키) 쪽으로 차머리를 돌리며 가속. 거의 반대쪽이면 브레이크 → 후진
@@ -505,16 +519,18 @@ function carExit(force) {
   v.va = null; v.skidding = false; v.skidPrev = null;
   const out = (v.r || CAR_R) + 31, spots = [v.a - Math.PI / 2, v.a + Math.PI / 2, v.a + Math.PI, v.a].map(a => ({ a, x: v.x + Math.cos(a) * out, y: v.y + Math.sin(a) * out }));
   const ok = spots.find(p => !solidAt(Math.floor(p.x / TILE), Math.floor(p.y / TILE)) && !S.vehicles.some(o => o !== v && dist(o.x, o.y, p.x, p.y) < 50)) || spots[0];
-  const fast = Math.abs(v.v) >= 150;
+  const spd = Math.abs(v.v), jump = STAGE.cityLife ? spd >= 60 : spd >= 150, fast = jump, hard = STAGE.cityLife ? spd >= 240 : true;
   P.car = null; P.vx = 0; P.vy = 0;
-  if (Math.abs(v.v) < 150) v.v = 0; play('switch', 0.4);  // 빨리 달리다 뛰어내리면 차는 혼자 굴러간다
+  if (!jump) v.v = 0; else v.coastT = S.t + 3; play('switch', 0.4);  // 달리다 뛰어내리면 차는 혼자 굴러가다 선다(3초 동안 천천히)
   v.parked = true;
   if (!STAGE.cityLife || force === 'instant') { P.x = ok.x; P.y = ok.y; collide(P, 13, groundSolidP); return; }
   // 문을 열고 → 운전석에서 몸을 빼 → 차 옆으로 걸어 나온다. 달리다 뛰어내리면 굴러 떨어진다
-  const door = { x: v.x + Math.cos(ok.a) * ((v.r || CAR_R) + 6), y: v.y + Math.sin(ok.a) * ((v.r || CAR_R) + 6) }, dur = fast ? 0.5 : 0.55;
+  const door = { x: v.x + Math.cos(ok.a) * ((v.r || CAR_R) + 6), y: v.y + Math.sin(ok.a) * ((v.r || CAR_R) + 6) }, dur = fast ? 0.6 : 0.55;
+  if (fast) {  // 뛰어내리면 차가 가던 쪽으로 몸이 쏠려 구른다 (속도만큼 더 멀리, 벽이면 짧게)
+    const mv = (v.v >= 0 ? 1 : -1) * Math.min(110, spd * 0.28); for (let k = 1; k >= 0; k -= 0.25) { const x = ok.x + Math.cos(v.a) * mv * k, y = ok.y + Math.sin(v.a) * mv * k; if (!solidAt(Math.floor(x / TILE), Math.floor(y / TILE))) { ok.x = x; ok.y = y; break; } } }
   P.x = v.x; P.y = v.y; v.doorT = S.t + 0.18; v.doorSide = ok.a === v.a - Math.PI / 2 ? -1 : 1;
   startTrav({ pts: [{ x: v.x, y: v.y, f: 0 }, { x: door.x, y: door.y, f: 0.45 }, { x: ok.x, y: ok.y, f: 1 }], dur, phases: fast ? [{ to: 0.4, pose: 'walk' }, { to: 1, pose: 'roll' }] : [{ to: 1, pose: 'walk' }], face: ok.a });
-  P.trav.end = () => { collide(P, 13, groundSolidP); if (fast) { play('thud', 0.6); S.shakeT = Math.max(S.shakeT || 0, 0.15); if (!P.hurtT) { P.hurtT = 0; hurtPlayer(null, '달리는 차에서 뛰어내렸다.'); } } };
+  P.trav.end = () => { collide(P, 13, groundSolidP); if (fast) { play('thud', 0.6); S.shakeT = Math.max(S.shakeT || 0, hard ? 0.15 : 0.07); spawnEffect('dust', { x: P.x, y: P.y, fl: 0, z: 0 }, { scale: 1.2 }); if (hard && !P.hurtT) { P.hurtT = 0; hurtPlayer(null, '달리는 차에서 뛰어내렸다.'); } } };
 }
 // 경찰차 표시: 지붕 경광등이 빨강·파랑으로 번갈아 번쩍이고(쫓을 때 · 서 있을 때도 약하게), 지붕에 '경찰' 글씨.
 // 차 좌표(차머리가 위)에서 그린다. 경광등 자리는 그림에서 잰 값(차 길이의 앞에서 32%)

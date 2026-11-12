@@ -175,7 +175,7 @@ function cityActionList() {
   if (STAGE.cityLife) { const a = shopAction(); if (a) out.push(a); }
   for (const f of [cuffAction, carbombAction, poisonAction, havocAction, sideAction, eventAction, factionAction]) { const e = f(); if (e) out.push(e); }  // 구역 이벤트·부업 (차 안에서도: 드래그 레이스·택시)
   const one = a => { if (a) out.push(a); return out; };
-  if (P.car) return one({ k: 'carOut', v: P.car, label: P.car.fireT > 0 ? '뛰어내리기!' : '차에서 내리기' });
+  if (P.car) return one({ k: 'carOut', v: P.car, label: P.car.fireT > 0 ? '뛰어내리기!' : Math.abs(P.car.v) >= 60 ? '뛰어내리기' : '차에서 내리기' });
   if (P.z || flOf(P) || P.hide) return out;
   if (STAGE.hits) { const h = hitAction(); if (h) return one(h); }
   for (const c of S.contracts || []) if (dist(P.x, P.y, c.x, c.y) < 64) return one({ k: 'contract', c, at: { x: c.x, y: c.y - 40 }, label: '의뢰 받기 — ' + (STAGES[c.si].name) });

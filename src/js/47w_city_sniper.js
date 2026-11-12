@@ -30,8 +30,8 @@ function carHintUpdate() {
     el.style.cssText = 'position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);z-index:34;pointer-events:none;display:flex;gap:6px;font:600 13px "Yahaeng UI",sans-serif;color:#efe6cf;white-space:nowrap';
     document.body.appendChild(el); }
   const gun = wpnOn(), W = gun && WEAPONS[S.wpn];
-  const keys = isTouch ? [['행동 버튼', P.car.fireT > 0 ? '뛰어내리기!' : '차에서 내리기'], ['공격 버튼', gun ? (W.throw ? '창밖으로 던지기' : '창밖으로 쏘기') : '경적']]
-    : [['F', P.car.fireT > 0 ? '뛰어내리기!' : '내리기'], ['Space', gun ? (W.throw ? '던지기' : '창밖 사격') : '경적'], ['L', '무기'], ['M', '지도']];
+  const keys = isTouch ? [['행동 버튼', P.car.fireT > 0 || Math.abs(P.car.v) >= 60 ? '뛰어내리기' : '차에서 내리기'], ['공격 버튼', gun ? (W.throw ? '창밖으로 던지기' : '창밖으로 쏘기') : '경적']]
+    : [['F', P.car.fireT > 0 || Math.abs(P.car.v) >= 60 ? '뛰어내리기' : '내리기'], ['Space', gun ? (W.throw ? '던지기' : '창밖 사격') : '경적'], ['L', '무기'], ['M', '지도']];
   const html = keys.map(([k, t]) => `<span style="background:rgba(12,14,20,.78);border:1px solid #4a5160;border-radius:5px;padding:4px 8px"><b style="color:#ffd76a">${k}</b> ${t}</span>`).join('');
   if (el.dataset.k !== html) { el.innerHTML = html; el.dataset.k = html; } el.hidden = false;
 }
