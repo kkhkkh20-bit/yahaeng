@@ -77,7 +77,7 @@ const FREE_ACH = [
   ['cabbie', '택시 기사', '택시 손님 5명', s => s.taxi >= 5, 80], ['medic', '생명의 은인', '환자 3명을 병원으로', s => s.patients >= 3, 100],
   ['busman', '버스 운전사', '버스 승객 20명', s => s.busRiders >= 20, 80], ['vigil', '정의의 사도', '도주 차량 3대 검거', s => s.perps >= 3, 120],
   ['boom', '불꽃놀이', '차 5대 폭발', s => s.explosions >= 5, 50], ['five', '공공의 적', '수배 ★★★★★', s => s.maxWanted >= 5, 100],
-  ['rampage', '광란', '광란 도전 3번 성공', s => s.rampages >= 3, 150], ['gunner', '총잡이', '총으로 50명', s => s.gunKills >= 50, 100],
+  ['ghost', '유령', '의뢰 등급 S 3번', s => s.ghost >= 3, 200], ['rampage', '광란', '광란 도전 3번 성공', s => s.rampages >= 3, 150], ['gunner', '총잡이', '총으로 50명', s => s.gunKills >= 50, 100],
   ['road', '장거리 운전', '20km 운전', s => (s.dist || 0) / 1000 >= 20, 100], ['rich', '부자', '모두 5,000만 벌기', s => s.earned >= 5000, 300]];
 function achCheck() {
   if ((S.achT = (S.achT || 0) + 1) % 30) return; const st = S.fst;

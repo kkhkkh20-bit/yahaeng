@@ -366,6 +366,10 @@
       "group": "city"
     },
     {
+      "path": "47q_city_grade.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },

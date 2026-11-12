@@ -6,11 +6,12 @@
 // 통쾌: 2초 안 연속 처치는 '더블! 트리플! 쿼드라!' + 짧은 느린 화면, 총구 불꽃(PixelFX)·탄피·피.
 const WEAPONS = {
   pistol: { name: '권총', rate: 0.28, dmg: 1, spread: 0.03, pellets: 1, range: 520, sound: 1, ammo: 24, price: 300 },
+  silenced: { name: '소음 권총', rate: 0.45, dmg: 1, spread: 0.015, pellets: 1, range: 460, sound: 0.3, ammo: 12, price: 700, silent: true },  // 암살용: 140px 밖에선 안 들린다
   smg: { name: '기관단총', rate: 0.09, dmg: 1, spread: 0.08, pellets: 1, range: 460, sound: 0.8, ammo: 60, price: 800, burst: 3 },
   shotgun: { name: '산탄총', rate: 0.8, dmg: 1, spread: 0.22, pellets: 6, range: 300, sound: 1.4, ammo: 16, price: 600 },
   grenade: { name: '수류탄', rate: 0.9, throw: true, ammo: 3, price: 250 },
   molotov: { name: '화염병', rate: 0.8, throw: true, ammo: 3, price: 150 } };
-const WPN_ORDER = ['pistol', 'smg', 'shotgun', 'grenade', 'molotov'];
+const WPN_ORDER = ['pistol', 'silenced', 'smg', 'shotgun', 'grenade', 'molotov'];
 function gunsInit() { S.guns = Object.assign({}, S.gunsSaved || {}); S.wpn = S.wpnSaved && S.guns[S.wpnSaved] > 0 ? S.wpnSaved : null; S.gunT = 0; S.tracers = []; S.firePools = []; S.nades = []; S.kills = { n: 0, t: -9 }; gunChip(); }
 const wpnOn = () => STAGE.cityLife && S.wpn && (S.guns[S.wpn] || 0) > 0;
 function cycleWeapon() {
@@ -47,12 +48,12 @@ function fireWeapon(inCar) {
   const shots = W.burst || 1;
   for (let b = 0; b < shots; b++) after(b * 0.07, () => { if ((S.guns[S.wpn] || 0) <= 0 || S.wpn == null) return; S.guns[S.wpn]--; gunChip();
     const mx = P.x + Math.cos(a0) * off, my = P.y - 14 + Math.sin(a0) * off;
-    spawnEffect('muzzle', { x: mx, y: my, fl: 0, z: 0 }, { scale: 0.7, angle: a0, alpha: 1, startAt: 0 }); gunSound(W.sound);
+    spawnEffect('muzzle', { x: mx, y: my, fl: 0, z: 0 }, { scale: W.silent ? 0.35 : 0.7, angle: a0, alpha: W.silent ? 0.6 : 1, startAt: 0 }); if (W.silent) { play('thud', 0.3, 1.9); play('click', 0.25, 0.7); } else gunSound(W.sound);
     S.shakeT = Math.max(S.shakeT || 0, 0.06 * W.sound); (S.fireParts || (S.fireParts = [])).push({ kind: 'debris', x: P.x, y: P.y - 10, vx: Math.cos(a0 + Math.PI / 2) * 80, vy: -40, t: 0, life: 0.4, size: 1.5, rot: 0 });  // 탄피
     for (let k = 0; k < W.pellets; k++) shootRay(mx, my, a0 + rnd(-W.spread, W.spread), W.range, W.dmg);
-    noise(P.x, P.y, 700 * W.sound, 'gun', 0);
-    if (!S.wanted || S.wanted < 2) { if (witnessed(P.x, P.y, 520)) addWanted(S.wanted ? 1 : 2, '총소리에 신고가 들어갔다'); }
-    for (const g of actorsNearWide(P.x, P.y, 500)) if (g.civ && npcAlive(g) && g.state !== 'PANIC') civPanic(g, P.x, P.y, 8); });
+    const loud = W.silent ? 140 : 700 * W.sound; noise(P.x, P.y, loud, 'gun', 0);  // 소음 권총: 바로 옆에서만 들린다
+    if (!S.wanted || S.wanted < 2) { if (witnessed(P.x, P.y, W.silent ? 170 : 520)) addWanted(S.wanted ? 1 : 2, W.silent ? '쏘는 걸 누가 봤다' : '총소리에 신고가 들어갔다'); }
+    for (const g of actorsNearWide(P.x, P.y, W.silent ? 150 : 500)) if (g.civ && npcAlive(g) && g.state !== 'PANIC') civPanic(g, P.x, P.y, 8); });
   if ((S.guns[S.wpn] || 0) <= shots) after(0.3, () => { if ((S.guns[S.wpn] || 0) <= 0) { evBanner(`${WEAPONS[S.wpn]?.name || ''} 탄약이 떨어졌다`); cycleWeapon(); } });
 }
 // 총알 한 줄: 8px씩 나아가며 벽(멈춤)·사람(쓰러짐)·차(내구성)를 본다

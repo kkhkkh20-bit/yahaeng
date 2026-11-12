@@ -106,7 +106,7 @@ function startHit(plan) {
   }
   setLayer(0); for (const g of [t, ...escorts]) buildRouteLine(g); setLayer(flOf(P));
   if (PR) prWarm([t, ...escorts].map(charOf), true);
-  S.hit = { g: t, escorts, name, t0: S.t, wantedAtStart: S.wanted, ko: !!plan.ko, pay: plan.pay, stand: plan.stand, by: plan.by };
+  S.hit = { g: t, escorts, name, t0: S.t, wantedAtStart: S.wanted, ko: !!plan.ko, pay: plan.pay, stand: plan.stand, by: plan.by }; if (STAGE.cityLife) hitGradeStart(S.hit);
   if (!STAGE.noPrompts) toast(`의뢰: ${name} 처치`, 2.4, 'good');
 }
 // 부스는 사람이 지나가지 못한다 (안에 든 나만 예외)
@@ -128,7 +128,7 @@ function hitsUpdate(dt) {
   jobsUpdate(dt || 1 / 60); cityEventsUpdate(dt || 1 / 60); factionsUpdate(dt || 1 / 60); carTheftUpdate(dt || 1 / 60); sideUpdate(dt || 1 / 60); garageUpdate(dt || 1 / 60); weatherUpdate(dt || 1 / 60); wpUpdate(dt || 1 / 60); heatUpdate(dt || 1 / 60); havocUpdate(dt || 1 / 60); gunsUpdate(dt || 1 / 60); rampageUpdate(dt || 1 / 60); warUpdate(dt || 1 / 60); cityListsCleanup();
   saveFreeProgress();
   const h = S.hit; if (!h) return;
-  const g = h.g;
+  const g = h.g; hitGradeTrack();
   if (!S.guards.includes(g)) { S.hit = null; return; }
   const ko = g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko);
   if (h.ko && ko && !h.cuffed) return;  // 검거: 기절시킨 뒤 수갑을 채워야 끝난다 (47h cuffAction)
@@ -137,8 +137,9 @@ function hitsUpdate(dt) {
     const quiet = !S.wanted, pay = h.ko ? (ko ? h.pay : Math.round(h.pay / 3)) : h.pay != null ? h.pay + (quiet ? 50 : 0) : HIT_PAY + (quiet ? HIT_QUIET_BONUS : 0);
     if (h.stand) applyStanding(h.ko && !ko ? Object.fromEntries(Object.entries(h.stand).map(([k, v]) => [k, v > 0 ? Math.round(v / 3) : v])) : h.stand);
     if (h.ko && ko) for (const e of h.escorts) if (npcAlive(e)) evFlee(e, S.player.x, S.player.y, 20);  // 연행: 수갑 찬 수배자는 순찰차가 데려간다 (47h)
-    S.cash = (S.cash || 0) + pay; S.hitN++; S.hit = null;
-    play('bell', 0.6); if (!STAGE.noPrompts) toast(`의뢰 완료 · ${pay}만${quiet ? ' (조용히)' : ''}`, 2.6, 'good');
+    const paid = STAGE.cityLife ? hitFinish(h, pay) : pay;
+    S.cash = (S.cash || 0) + paid; S.hitN++; S.hit = null;
+    play('bell', 0.6); if (!STAGE.noPrompts) toast(`의뢰 완료 · ${paid}만${quiet ? ' (조용히)' : ''}`, 2.6, 'good');
     if (typeof feedbackPulse === 'function') feedbackPulse(document.querySelector('#hud .obj'), 'loot');
   }
 }
