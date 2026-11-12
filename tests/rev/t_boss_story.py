@@ -18,7 +18,10 @@ async def main():
     print('CHECK',width,id,flush=True)
     await q.wait_for_function('(__game.updateHUD(true),!__game.warmStatus.pending&&[...document.querySelectorAll("#brIdentity .target canvas")].every(c=>c.dataset.ready))',polling=100)
     rows=await q.evaluate('''()=>{const G=__game;return G.S.guards.filter(g=>g.target).map(g=>({name:G.targetName(g),key:G.characterLook(g),speaker:G.speakerOf(g),palette:G.characterPalette(g)}))}''')
-    assert await q.locator('#brStory').is_visible()
+    # v259 moved the story text behind the briefing's 현장 정보 dialog; open it to read the story.
+    await q.locator('#btnBriefInfo').click();assert await q.locator('#briefInfo').evaluate('e=>e.open')
+    assert await q.locator('#brStory').is_visible() and (await q.locator('#brStory').inner_text()).strip()
+    await q.locator('#btnBriefInfoClose').click();assert not await q.locator('#briefInfo').evaluate('e=>e.open')
     assert await q.locator('.target-profile').count()==len(rows)
     assert all(row['speaker']['role'] and row['speaker']['key']==row['key'] for row in rows),rows
     assert not await q.evaluate('document.documentElement.scrollWidth>innerWidth'),(width,id,'overflow')

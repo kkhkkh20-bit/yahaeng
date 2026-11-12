@@ -8,7 +8,9 @@ async def main():
   await q.goto((Path(__file__).resolve().parents[2]/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game');await q.evaluate('document.fonts.ready')
   assert await q.locator('#intro h1').inner_text()=='야행'
   assert await q.evaluate('document.fonts.check(\'100px "Yahaeng Title"\')')
-  assert await q.locator('#intro .brief,#intro .title-kicker,#intro .title-en').count()==0
+  assert await q.locator('#intro .brief,#intro .title-en').count()==0
+  # v256 title redesign keeps one short genre kicker above the logo; it must stay a label, not a briefing.
+  assert all(len(t.strip())<=8 for t in await q.locator('#intro .title-kicker').all_inner_texts())
   assert await q.locator('#btnLedger').is_hidden()
   for selector in ['#btnQuick','#intro [data-case-open]','#btnSkillsIntro','#btnHelp','#btnQuick','#intro [data-case-open]','#btnSkillsIntro']:
    await q.keyboard.press('ArrowDown');assert await q.locator(selector).evaluate('e=>e===document.activeElement'),selector
