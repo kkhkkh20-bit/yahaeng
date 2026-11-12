@@ -20,3 +20,17 @@ function drawScope() {
   for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { ctx.beginPath(); ctx.moveTo(x + dx * (r - 6), y + dy * (r - 6)); ctx.lineTo(x + dx * (r + 8), y + dy * (r + 8)); ctx.stroke(); }
   ctx.setLineDash([2, 6]); ctx.strokeStyle = 'rgba(255,80,60,.35)'; ctx.beginPath(); ctx.moveTo(P.x, P.y - 14); ctx.lineTo(x, y); ctx.stroke(); ctx.restore();
 }
+// ---------------------------------------------------------------- 운전 중 조작 안내 (화면 아래 가운데, 차에 있는 동안만)
+// 무엇으로 내리는지 헷갈리지 않게: PC는 키, 휴대폰은 버튼 이름으로
+function carHintUpdate() {
+  let el = document.getElementById('carHint'); const P = S.player, on = STAGE.cityLife && P.car && !S.downing && !S.cuffs && !DLG.modal;
+  if (!on) { if (el) el.hidden = true; return; }
+  if (!el) { el = document.createElement('div'); el.id = 'carHint'; el.setAttribute('aria-live', 'off');
+    el.style.cssText = 'position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);z-index:34;pointer-events:none;display:flex;gap:6px;font:600 13px "Yahaeng UI",sans-serif;color:#efe6cf;white-space:nowrap';
+    document.body.appendChild(el); }
+  const gun = wpnOn(), W = gun && WEAPONS[S.wpn];
+  const keys = isTouch ? [['행동 버튼', P.car.fireT > 0 ? '뛰어내리기!' : '차에서 내리기'], ['공격 버튼', gun ? (W.throw ? '창밖으로 던지기' : '창밖으로 쏘기') : '경적']]
+    : [['F', P.car.fireT > 0 ? '뛰어내리기!' : '내리기'], ['Space', gun ? (W.throw ? '던지기' : '창밖 사격') : '경적'], ['L', '무기'], ['M', '지도']];
+  const html = keys.map(([k, t]) => `<span style="background:rgba(12,14,20,.78);border:1px solid #4a5160;border-radius:5px;padding:4px 8px"><b style="color:#ffd76a">${k}</b> ${t}</span>`).join('');
+  if (el.dataset.k !== html) { el.innerHTML = html; el.dataset.k = html; } el.hidden = false;
+}

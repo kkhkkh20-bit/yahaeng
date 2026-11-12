@@ -138,7 +138,8 @@ function moveCamera(dt) {
   if (S.tacCam) S.tacCam = null;
   if (isTouch) {
     const cv = S.player.car, sc = S.scope && STAGE.cityLife ? scopeLead() : null, lx = cv ? Math.cos(cv.a) * cv.v * 0.5 : sc ? sc.x : 0, ly = cv ? Math.sin(cv.a) * cv.v * 0.5 : sc ? sc.y : 0;  // 운전: 달리는 앞쪽 · 저격 조준경: 겨누는 쪽
-    const tx = clamp(S.player.x + lx, Math.min(vw / 2 - 40 / SCALE, MW * TILE / 2), Math.max(MW * TILE - vw / 2 + 140 / SCALE, MW * TILE / 2));
+    const ex = STAGE.cityLife ? 0 : 1;  // 큰 도시: 지도 밖(채움 그림)이 화면에 안 들어오게 끝에서 멈춘다
+    const tx = clamp(S.player.x + lx, Math.min(vw / 2 - 40 * ex / SCALE, MW * TILE / 2), Math.max(MW * TILE - vw / 2 + 140 * ex / SCALE, MW * TILE / 2));
     // 기본 앞보기를 유지하되 실제 조작부 위에 캐릭터와 근접 안내가 들어오게 한다.
     const anchor=touchPlayFrame().y/H,bounds=cameraYBounds(vh),ty=clamp(S.player.y+ly+vh*(.5-anchor),bounds[0],bounds[1]);
     cam.x += (tx - cam.x) * k; cam.y += (ty - cam.y) * k;
@@ -148,16 +149,16 @@ function moveCamera(dt) {
     const sc = S.scope && STAGE.cityLife ? scopeLead() : null, cv = P.car, lx = cv ? Math.cos(cv.a) * cv.v * 0.5 : sc ? sc.x : ap ? (ap.x - P.x) * 0.35 : Math.cos(P.a) * (S.over?0:P.moving ? 70 : 30), ly = cv ? Math.sin(cv.a) * cv.v * 0.5 : sc ? sc.y : ap ? (ap.y - P.y) * 0.35 : Math.sin(P.a) * (S.over?0:P.moving ? 55 : 24);
     S.lead = S.lead || { x: 0, y: 0 }; const lk = 1 - Math.exp(-dt * 2.5); S.lead.x += (lx - S.lead.x) * lk; S.lead.y += (ly - S.lead.y) * lk;
     // 가장자리: 캐릭터가 화면 구석의 HUD(도움말·조작 안내) 밑에 깔리지 않도록 맵 밖으로 조금 더 따라간다
-    const ox = vw * .16, bounds = cameraYBounds(vh);
+    const ox = STAGE.cityLife ? 0 : vw * .16, bounds = cameraYBounds(vh);  // 큰 도시: 지도 끝에서 카메라를 멈춘다 (밖은 보이지 않게)
     const tx = vw >= MW * TILE ? MW * TILE / 2 : clamp(P.x + S.lead.x, vw / 2 - ox, MW * TILE - vw / 2 + ox);
     const ty = clamp(P.y + S.lead.y, bounds[0], bounds[1]);
     cam.x += (tx - cam.x) * k; cam.y += (ty - cam.y) * k;
   }
 }
 function cameraYBounds(vh = H / SCALE) {
-  const middle=MH*TILE/2,frame=isTouch?touchPlayFrame():null,top=(frame?frame.y:24)/SCALE;
+  const middle=MH*TILE/2,frame=isTouch?touchPlayFrame():null,top=STAGE.cityLife?0:(frame?frame.y:24)/SCALE;
   // 맵 끝에서도 같은 플레이 영역을 확보한다. 하단 조작부가 캐릭터를 밀어내지 않는다.
-  const bottom=(frame?H-frame.y:24)/SCALE;
+  const bottom=STAGE.cityLife?0:(frame?H-frame.y:24)/SCALE;
   return [Math.min(vh / 2 - top, middle), Math.max(MH * TILE - vh / 2 + bottom, middle)];
 }
 
