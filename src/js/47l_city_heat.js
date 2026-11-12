@@ -46,14 +46,15 @@ function drawHeli() {
   if (!H.leave && inView(H.sx, H.sy, 120)) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; const g = ctx.createRadialGradient(H.sx, H.sy, 0, H.sx, H.sy, HELI_SPOT * 1.25);
     g.addColorStop(0, `rgba(235,240,255,${H.lit ? 0.42 : 0.3})`); g.addColorStop(0.75, 'rgba(225,232,255,.18)'); g.addColorStop(1, 'rgba(225,232,255,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(H.sx, H.sy, HELI_SPOT * 1.25, 0, TAU); ctx.fill(); ctx.restore(); }
   if (!inView(H.x, H.y, 200)) return;
-  ctx.save(); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(H.x + 70, H.y + 110, 40, 18, H.a, 0, TAU); ctx.fill();  // 그림자 (높이 떠 있다)
-  ctx.translate(H.x, H.y); ctx.rotate(H.a); ctx.scale(1.6, 1.6); ctx.imageSmoothingEnabled = false;  // 차보다 조금 크게
-  ctx.fillStyle = '#1a2440'; ctx.fillRect(-46, -3, 34, 6); ctx.fillRect(-50, -9, 6, 18);  // 꼬리 · 꼬리날개
-  ctx.fillStyle = '#20305a'; ctx.beginPath(); ctx.ellipse(0, 0, 22, 12, 0, 0, TAU); ctx.fill(); ctx.fillStyle = '#e8ecf4'; ctx.fillRect(-14, -2, 24, 4);  // 몸통 · 흰 띠
-  ctx.fillStyle = '#7fb0e8'; ctx.beginPath(); ctx.ellipse(13, 0, 7, 8, 0, 0, TAU); ctx.fill();  // 앞 유리
-  const blink = (S.t * 3 | 0) % 2; ctx.fillStyle = blink ? '#ff3a3a' : '#3a6aff'; ctx.fillRect(-4, -14, 4, 4); ctx.fillStyle = blink ? '#3a6aff' : '#ff3a3a'; ctx.fillRect(-4, 10, 4, 4);
-  ctx.strokeStyle = 'rgba(200,210,230,.35)'; ctx.lineWidth = 3; const r = S.t * 28; for (let i = 0; i < 4; i++) { const a = r + i * Math.PI / 2; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a) * 44, Math.sin(a) * 44); ctx.stroke(); }
-  ctx.fillStyle = 'rgba(200,210,230,.08)'; ctx.beginPath(); ctx.arc(0, 0, 44, 0, TAU); ctx.fill();
+  // 그림자 (높이 떠 있다 — 북서쪽 빛) · 몸체(도트, 경찰 남색) · 회전 날개(정지/흐림 두 장을 돌린다) · 경광등
+  ctx.save(); ctx.globalAlpha = 0.35; ctx.filter = 'brightness(0)'; drawItem('heli', H.x + 70, H.y + 100, 1.7, H.a + Math.PI / 2); ctx.restore();
+  if (!drawItem('heli', H.x, H.y, 1.7, H.a + Math.PI / 2)) { ctx.fillStyle = '#20305a'; ctx.beginPath(); ctx.ellipse(H.x, H.y, 30, 16, H.a, 0, TAU); ctx.fill(); }
+  drawItem('rotorBlur', H.x + Math.cos(H.a) * 8, H.y + Math.sin(H.a) * 8, 1.7, S.t * 21, 0.75);
+  drawItem('rotor', H.x + Math.cos(H.a) * 8, H.y + Math.sin(H.a) * 8, 1.7, S.t * 21 + 0.4, 0.25);
+  const blink = (S.t * 3 | 0) % 2, nx = Math.cos(H.a + Math.PI / 2), ny = Math.sin(H.a + Math.PI / 2);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (const [s, col] of [[1, blink ? '#ff3a3a' : '#3a6aff'], [-1, blink ? '#3a6aff' : '#ff3a3a']]) { const lx = H.x + nx * 22 * s - Math.cos(H.a) * 4, ly = H.y + ny * 22 * s - Math.sin(H.a) * 4;
+    const gr = ctx.createRadialGradient(lx, ly, 0, lx, ly, 14); gr.addColorStop(0, col); gr.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = gr; ctx.fillRect(lx - 14, ly - 14, 28, 28); }
   ctx.restore();
 }
 // ---------- 도로 검문

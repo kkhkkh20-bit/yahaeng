@@ -13,7 +13,7 @@ from run import outline
 R=Path(__file__).resolve().parents[2];H=R/'tools/prerender';O=R/'build/pr';FR=64
 HERO=['hero','heroSuit','heroWorker','heroCrew','heroAgent','heroAgentCrew','heroAgentWorker','heroAgentFormal']
 # Seconds per loop keep physical footsteps and paired actors on their own clocks.
-PERIODS={'walk':1,'run':.64,'sneak':1.24,'idleC':3.2,'crouch':3.2,'carry':8/7,'grab':.55/.4,'hold':8/9,'hugStep':4/4.5,'hang':4/6,'climb':4/7,'workHigh':.7,'workLow':.7}
+PERIODS={'gunAim':2.4,'gunWalk':1,'gunRun':.64,'rifleAim':2.4,'rifleWalk':1,'rifleRun':.64,'walk':1,'run':.64,'sneak':1.24,'idleC':3.2,'crouch':3.2,'carry':8/7,'grab':.55/.4,'hold':8/9,'hugStep':4/4.5,'hang':4/6,'climb':4/7,'workHigh':.7,'workLow':.7}
 def flow(name,t,a):return f"renderFluidPose('{name}',{t},{a})"
 def regular(clip,t,a,cr=0):return f"renderFrame('{clip}',{t},{a},{cr})"
 def pair(kind,t,a,part,clip='Idle'):
@@ -26,20 +26,24 @@ def recipe(group):
  if group=='Action':
   return [('duck',17,False,lambda t,a:f"renderHidePose('duck',{t},{a})"),('dress',37,False,lambda t,a:flow('dress',t,a)),('workHigh',16,True,lambda t,a:flow('workHigh',t,a)),('workLow',16,True,lambda t,a:flow('workLow',t,a)),('climb',16,True,lambda t,a:flow('climb',t,a)),('hang',16,True,lambda t,a:flow('hang',t,a)),('ledgePull',25,False,lambda t,a:f"renderHidePose('ledgePull',{t},{a})"),('hugStep',16,True,lambda t,a:flow('hugStep',t,a))]+[(f'settle{k}',7,False,lambda t,a,k=k:flow(f'settle{k}',t,a)) for k in range(4)]
  if group=='Combat':return [(name,25,False,lambda t,a,name=name:pair(name,t*3,a,'a')) for name in ['stab','choke']]
+ if group in('Gun','Rifle'):  # 자유 모드 총: 꺼내기 · 겨눈 채 서기 · 겨누고 걷기 · 뛰기 · 쏘기(반동). 권총 / 장총(기관단총·산탄총·저격총)
+  pre='gun' if group=='Gun' else 'rifle';model='pistol' if group=='Gun' else 'rifle'
+  g=lambda kind:(lambda t,a,kind=kind,model=model:f"(window.gunModel='{model}',renderGunPose('{kind}',{t},{a}))")
+  return [(pre+'Draw',9,False,g('draw')),(pre+'Aim',2,True,g('aim')),(pre+'Walk',16,True,g('walk')),(pre+'Run',16,True,g('run')),(pre+'Shoot',6,False,g('shoot'))]
  raise ValueError(group)
 def reaction():return [('stabbed',25,False,lambda t,a:pair('stab',t*3,a,'b')),('choked',25,False,lambda t,a:pair('choke',t*3,a,'b')),('death',16,False,lambda t,a:regular('Death',.2+t*3.25,a))]
 async def main():
  selected=next((x.split('=',1)[1].split(',') for x in sys.argv if x.startswith('--only=')),HERO+['key']+[k for k in RECIPES if not k.startswith('hero') and not k.endswith(('Motion','Lid')) and k not in ['kid','key']])
  m=json.loads((O/'pr_meta.json').read_text());m.setdefault('fluidBodies',{});jobs=[]
  groups=next((x.split('=',1)[1].split(',') for x in sys.argv if x.startswith('--groups=')),['Gait','Action','Combat'])
- if set(groups)-{'Gait','Action','Combat'}:raise ValueError('Unknown motion group')
+ if set(groups)-{'Gait','Action','Combat','Gun','Rifle'}:raise ValueError('Unknown motion group')
  for body in selected:
   look,shape,_=RECIPES[body]
-  for group in (groups if body in HERO else ['React']):jobs.append((body,group,look,shape))
+  for group in (groups if body in HERO or (body=='key' and set(groups)<={'Gun','Rifle'}) else ['React']):jobs.append((body,group,look,shape))
  server=ThreadingHTTPServer(('127.0.0.1',0),partial(QuietHandler,directory=str(H)));threading.Thread(target=server.serve_forever,daemon=True).start()
  try:
   async with async_playwright()as p:
-   b=await p.chromium.launch(executable_path='/usr/bin/chromium',args=['--enable-unsafe-swiftshader']);q=await b.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
+   b=await (p.chromium.launch(executable_path='/usr/bin/chromium',args=['--enable-unsafe-swiftshader']) if Path('/usr/bin/chromium').exists() else p.chromium.launch(args=['--enable-unsafe-swiftshader']));q=await b.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
    await q.goto(f'http://127.0.0.1:{server.server_port}/render.html?modular');await q.evaluate('window.__ready')
    for body,group,look,shape in jobs:
     victim=group=='React';await q.evaluate('(v)=>loadModularLook(...v)',['hero',look] if victim else [look,'guard']);await q.evaluate('(s)=>setBody(s,'+('1'if victim else'0')+')',shape);await q.evaluate('(c)=>setTex(c)',KEY);await q.evaluate('(p)=>window.spritePadding=p',FRAME_PADDING.get(body,1))

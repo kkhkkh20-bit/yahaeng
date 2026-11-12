@@ -4,6 +4,15 @@
 // 총알은 즉시 맞는 선(벽에서 멈춤): 사람은 한 방(산탄은 퍼짐), 차는 내구성을 깎아 터지기도 한다. 총소리는 멀리 들려 신고·경찰을 부른다.
 // 수류탄: 1.2초 뒤 폭발(havocBlast). 화염병: 떨어진 자리에 8초 불바다 — 들어온 사람에게 불이 붙고 차가 탄다.
 // 통쾌: 2초 안 연속 처치는 '더블! 트리플! 쿼드라!' + 짧은 느린 화면, 총구 불꽃(PixelFX)·탄피·피.
+// 도트 아이템 아틀라스 (src/art/weapons: 총·수류탄·화염병·폭약·조끼·독침·락픽·탄띠·구급약·동전·경찰 헬기)
+const itemArt = A.cityItems, itemAtlas = itemArt ? Object.assign(new Image(), { src: itemArt.src }) : null;
+const itemReady = () => !!(itemAtlas && itemAtlas.complete && itemAtlas.naturalWidth);
+// 가운데(x,y) 기준으로 그린다. rot: 라디안, k: 배율
+function drawItem(name, x, y, k = 1, rot = 0, alpha = 1, flipY = false) {
+  const f = itemArt?.frames?.[name]; if (!f || !itemReady()) return false;
+  ctx.save(); ctx.imageSmoothingEnabled = false; ctx.globalAlpha *= alpha; ctx.translate(x, y); if (rot) ctx.rotate(rot); if (flipY) ctx.scale(1, -1);
+  ctx.drawImage(itemAtlas, f[0], f[1], f[2], f[3], -f[2] * k / 2, -f[3] * k / 2, f[2] * k, f[3] * k); ctx.restore(); return true;
+}
 const WEAPONS = {
   pistol: { name: '권총', rate: 0.28, dmg: 1, spread: 0.03, pellets: 1, range: 520, sound: 1, ammo: 24, price: 300 },
   silenced: { name: '소음 권총', rate: 0.45, dmg: 1, spread: 0.015, pellets: 1, range: 460, sound: 0.3, ammo: 12, price: 700, silent: true },  // 암살용: 140px 밖에선 안 들린다
@@ -20,12 +29,28 @@ function cycleWeapon() {
   const i = have.indexOf(S.wpn); S.wpn = i < 0 ? have[0] : i === have.length - 1 ? null : have[i + 1]; play('click', 0.4); gunChip(); evBanner(S.wpn ? `${WEAPONS[S.wpn].name} · ${S.guns[S.wpn]}` : '맨손', '#e8d070');
 }
 // 화면의 무기 칩 (공격 버튼 위): 누르면 바꾼다
+// 무기·소지품 막대 (화면 오른쪽, 공격 버튼 위): 맨손 + 가진 무기(도트 아이콘·남은 탄) — 누르거나 숫자 1~7로 고른다.
+// 아래 줄: 소지품(락픽·폭약·독침·조끼) 개수. 고른 칸은 노란 테두리
+const itemIcon = (() => { const cache = {}; return name => { if (cache[name]) return cache[name]; const f = itemArt?.frames?.[name]; if (!f || !itemReady()) return null;
+  const k = Math.max(1, Math.min(3, Math.floor(30 / Math.max(f[2], f[3] * 1.6)))), c = document.createElement('canvas'); c.width = f[2] * k; c.height = f[3] * k; const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
+  x.drawImage(itemAtlas, f[0], f[1], f[2], f[3], 0, 0, c.width, c.height); return cache[name] = c.toDataURL(); }; })();
+function selectWeapon(k) { if (!STAGE.cityLife || !S.guns) return; if (k && !((S.guns[k] || 0) > 0)) return; if (S.ramp && k !== S.ramp.wpn) return; S.wpn = k; play('click', 0.4); gunChip(); }
 function gunChip() {
   let el = document.getElementById('wpnChip'); if (!STAGE.cityLife) { if (el) el.remove(); return; }
-  if (!el) { el = document.createElement('button'); el.id = 'wpnChip'; el.type = 'button'; el.style.cssText = 'position:fixed;right:58px;bottom:calc(env(safe-area-inset-bottom,0px) + 214px);z-index:35;padding:6px 10px;background:rgba(12,14,20,.82);color:#efe6cf;border:1px solid #4a5160;border-radius:6px;font:600 13px "Yahaeng UI",sans-serif;pointer-events:auto';
-    el.addEventListener('click', e => { e.stopPropagation(); cycleWeapon(); }); document.body.appendChild(el); }
-  const arm = S.player.armor > 0 ? ` · 조끼 ${S.player.armor}` : '';
-  el.textContent = (S.wpn ? `${WEAPONS[S.wpn].name} ${S.ramp && S.ramp.wpn === S.wpn ? '∞' : S.guns[S.wpn]}` : '맨손 ⇄') + arm; el.hidden = !Object.values(S.guns || {}).some(n => n > 0) && !arm;
+  if (!el) { el = document.createElement('div'); el.id = 'wpnChip'; el.setAttribute('role', 'toolbar'); el.setAttribute('aria-label', '무기');
+    el.style.cssText = 'position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 214px);z-index:35;display:flex;flex-direction:column;align-items:flex-end;gap:4px;pointer-events:none;font:600 12px "Yahaeng UI",sans-serif;color:#efe6cf';
+    el.addEventListener('click', e => { const b = e.target.closest('button[data-w]'); if (!b) return; e.stopPropagation(); selectWeapon(b.dataset.w || null); });
+    document.body.appendChild(el); }
+  const P = S.player, have = WPN_ORDER.filter(k => (S.guns[k] || 0) > 0), inf = k => S.ramp && S.ramp.wpn === k;
+  const slot = (k, i) => { const on = (S.wpn || null) === k, ic = k ? itemIcon(k) : null, n = k ? (inf(k) ? '∞' : S.guns[k]) : '';
+    return `<button type="button" data-w="${k || ''}" title="${k ? WEAPONS[k].name : '맨손'} (${i + 1})" style="pointer-events:auto;display:flex;align-items:center;gap:5px;min-width:44px;height:34px;padding:2px 7px;background:rgba(12,14,20,${on ? .92 : .7});color:inherit;border:${on ? 2 : 1}px solid ${on ? '#ffd76a' : '#4a5160'};border-radius:6px;font:inherit;cursor:pointer">`
+      + `<small style="color:#8a90a0">${i + 1}</small>` + (ic ? `<img src="${ic}" alt="" style="image-rendering:pixelated;max-height:24px">` : `<span>${k ? WEAPONS[k].name : '맨손'}</span>`) + (n !== '' ? `<b>${n}</b>` : '') + '</button>'; };
+  const row = ['', ...have].map((k, i) => slot(k || null, i)).join('');
+  const inv = [['lockpick', P.picks], ['bomb', P.bombs], ['poison', P.poison], ['vest', P.armor]].filter(([, n]) => n > 0)
+    .map(([k, n]) => { const ic = itemIcon(k); return `<span title="${({ lockpick: '락픽', bomb: '폭약', poison: '독침', vest: '방탄조끼' })[k]} ${n}" style="display:flex;align-items:center;gap:3px;background:rgba(12,14,20,.7);border:1px solid #3b4250;border-radius:5px;padding:2px 6px">${ic ? `<img src="${ic}" alt="" style="image-rendering:pixelated;max-height:18px">` : k}<b>${n}</b></span>`; }).join('');
+  const html = `<div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;max-width:calc(100vw - 24px)">${row}</div>` + (inv ? `<div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px">${inv}</div>` : '');
+  if (el.dataset.k !== html) { el.innerHTML = html; el.dataset.k = html; }
+  el.hidden = !have.length && !inv;
 }
 // [공격]이 총을 쏠 차례인가: 붙잡을 사람이 손 닿는 데 없을 때
 function gunAttack() {
@@ -51,7 +76,7 @@ function fireWeapon(inCar) {
   const shots = W.burst || 1;
   for (let b = 0; b < shots; b++) after(b * 0.07, () => { if ((S.guns[S.wpn] || 0) <= 0 || S.wpn == null) return; S.guns[S.wpn]--; gunChip();
     const mx = P.x + Math.cos(a0) * off, my = P.y - 14 + Math.sin(a0) * off;
-    spawnEffect('muzzle', { x: mx, y: my, fl: 0, z: 0 }, { scale: W.silent ? 0.35 : 0.7, angle: a0, alpha: W.silent ? 0.6 : 1, startAt: 0 }); if (W.silent) { play('thud', 0.3, 1.9); play('click', 0.25, 0.7); } else gunSound(W.sound);
+    P.shotT = S.t; spawnEffect('muzzle', { x: mx, y: my, fl: 0, z: 0 }, { scale: W.silent ? 0.35 : 0.7, angle: a0, alpha: W.silent ? 0.6 : 1, startAt: 0 }); if (W.silent) { play('thud', 0.3, 1.9); play('click', 0.25, 0.7); } else gunSound(W.sound);
     S.shakeT = Math.max(S.shakeT || 0, 0.06 * W.sound); (S.fireParts || (S.fireParts = [])).push({ kind: 'debris', x: P.x, y: P.y - 10, vx: Math.cos(a0 + Math.PI / 2) * 80, vy: -40, t: 0, life: 0.4, size: 1.5, rot: 0 });  // 탄피
     for (let k = 0; k < W.pellets; k++) shootRay(mx, my, a0 + rnd(-W.spread, W.spread), W.range, W.dmg, W.sniper && P.z > 0);
     const loud = W.silent ? 140 : 700 * W.sound; noise(P.x, P.y, loud, 'gun', 0);  // 소음 권총: 바로 옆에서만 들린다
@@ -116,7 +141,8 @@ function drawGuns() {
     for (let j = 0; j < 5; j++) { const a = j / 5 * TAU + F.t, r = F.r * (j ? 0.6 : 0); fxFrame('carfire', S.t + j * 0.4, F.x + Math.cos(a) * r, F.y + Math.sin(a) * r * 0.6 + 8, 1.2 * k + 0.2, k); } }
   for (const n of S.nades) { const f = Math.min(1, (S.t - n.t0) / n.fly), x = n.x0 + (n.x1 - n.x0) * f, y = n.y0 + (n.y1 - n.y0) * f - Math.sin(f * Math.PI) * 60;
     ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(n.x0 + (n.x1 - n.x0) * f - 3, n.y0 + (n.y1 - n.y0) * f + 10, 6, 3);
-    ctx.fillStyle = n.kind === 'grenade' ? '#3a4a2a' : '#7a5a2a'; ctx.fillRect(x - 3, y - 3, 6, 6); if (n.kind === 'molotov') { ctx.fillStyle = '#ffb040'; ctx.fillRect(x - 1, y - 6, 2, 3); }
+    drawItem(n.kind, x, y, 1.6, f < 1 ? (S.t - n.t0) * 14 : 0.6);  // 날아가며 돈다 (도트 수류탄·화염병)
+    if (n.kind === 'molotov' && f < 1) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(255,170,60,.55)'; ctx.beginPath(); ctx.arc(x, y - 6, 3 + Math.sin(S.t * 30), 0, TAU); ctx.fill(); ctx.restore(); }
     if (n.kind === 'grenade' && f >= 1 && ((S.t * 8) | 0) % 2) { ctx.fillStyle = '#ff3a2a'; ctx.fillRect(x - 1, y - 1, 2, 2); } }
 }
 // 조직 연락책의 무기 거래 (호감도 0 이상)

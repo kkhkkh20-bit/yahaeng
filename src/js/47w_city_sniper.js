@@ -9,6 +9,7 @@ function sniperUpdate(dt) {
   const on = S.stillT > 0.3; if (on && !S.scope) play('click', 0.35, 1.6); S.scope = on;
   if (on && (S.scopeT = (S.scopeT || 0) - dt) <= 0) { S.scopeT = 0.12; S.snipeAim = true; S.scopeTgt = gunAim(); S.snipeAim = false; }
   if (!on) S.scopeTgt = null;
+  if ((S.chipT = (S.chipT || 0) - dt) <= 0) { S.chipT = 0.3; gunChip(); }  // 소지품 개수·아이콘 갱신 (같으면 DOM을 건드리지 않는다)
 }
 // 카메라 앞보기: 표적(없으면 바라보는 쪽 600px)까지의 45%
 function scopeLead() { const P = S.player, g = S.scopeTgt, x = g ? g.x : P.x + Math.cos(P.a) * 600, y = g ? g.y : P.y + Math.sin(P.a) * 600; return { x: (x - P.x) * 0.45, y: (y - P.y) * 0.45 }; }
@@ -33,4 +34,19 @@ function carHintUpdate() {
     : [['F', P.car.fireT > 0 ? '뛰어내리기!' : '내리기'], ['Space', gun ? (W.throw ? '던지기' : '창밖 사격') : '경적'], ['L', '무기'], ['M', '지도']];
   const html = keys.map(([k, t]) => `<span style="background:rgba(12,14,20,.78);border:1px solid #4a5160;border-radius:5px;padding:4px 8px"><b style="color:#ffd76a">${k}</b> ${t}</span>`).join('');
   if (el.dataset.k !== html) { el.innerHTML = html; el.dataset.k = html; } el.hidden = false;
+}
+
+// ---------------------------------------------------------------- 총 든 모습 (구운 동작: gun* 권총 / rifle* 기관단총·산탄총·저격총)
+// 무기를 고르면 0.32초 동안 허리에서 꺼내 든다(gunDraw). 든 동안: 서면 겨누기(Aim) · 걸으면 겨누고 걷기 · 뛰면 뛰기.
+// 쏠 때마다 0.22초 반동(Shoot). 맨손으로 바꾸면 꺼내기를 거꾸로(집어넣기). 던지는 무기는 기존 던지기 동작(punch)
+const GUN_DRAW_T = 0.32, GUN_SHOT_T = 0.22;
+const gunFamily = k => !k || WEAPONS[k]?.throw ? null : ['pistol', 'silenced'].includes(k) ? 'gun' : 'rifle';
+function gunPose(P, moving, running) {
+  if (P.car || P.hide || P.trav || P.climb || P.z && !STAGE.cityLife) return null;
+  const now = wpnOn() ? gunFamily(S.wpn) : null, G = P.gunVis || (P.gunVis = { fam: null, t: -9, out: null, tOut: -9 });
+  if (now !== G.fam) { if (G.fam && !now) { G.out = G.fam; G.tOut = S.t; } G.fam = now; G.t = S.t; }
+  if (!now) { const k = (S.t - G.tOut) / GUN_DRAW_T; if (G.out && k < 1) return { anim: G.out + 'Draw', frame: (1 - k) * 8 }; return null; }
+  const kd = (S.t - G.t) / GUN_DRAW_T; if (kd < 1) return { anim: now + 'Draw', frame: kd * 8 };
+  const ks = (S.t - (P.shotT || -9)) / GUN_SHOT_T; if (ks < 1 && !moving) return { anim: now + 'Shoot', frame: ks * 5 };
+  return { anim: now + (moving ? (running ? 'Run' : 'Walk') : 'Aim'), frame: -1 };
 }

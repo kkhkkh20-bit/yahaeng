@@ -1,0 +1,11 @@
+Derived atlas (items.webp) for Yahaeng. Not a standalone asset; do not redistribute separately.
+
+- Guns, grenade, molotov, explosive charge, body armour: "The Ultimate Weapons Pack" by Jestan
+  https://jestan.itch.io/weapons-pack — used under the pack's license (attribution to Jestan; commercial use allowed;
+  raw files not redistributed except as part of a game).
+- Syringe, key, ammo belt, medkit: "Various inventory 24 pixel icon set" by OceansDream
+  https://opengameart.org/content/various-inventory-24-pixel-icon-set — CC-BY 3.0
+- Coin pile: "CC0 currency icons" compiled by AntumDeluge (Dungeon Crawl Stone Soup tiles)
+  https://opengameart.org/content/cc0-currency-icons — CC0
+- Helicopter and rotor: "Attack helicopter" by morgan3d
+  https://opengameart.org/content/attack-helicopter-0 — CC-BY 4.0 (body recoloured)

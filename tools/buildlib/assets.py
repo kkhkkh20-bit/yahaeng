@@ -55,6 +55,10 @@ def campaign_assets(root):
     if (river/'river.json').exists():
         assets['cityRiver']=json.loads((river/'river.json').read_text())
         assets['cityRiver']['src']='data:image/webp;base64,'+base64.b64encode((river/'river.webp').read_bytes()).decode()
+    wp=Path(root)/'src/art/weapons'
+    if (wp/'items.json').exists():
+        assets['cityItems']=json.loads((wp/'items.json').read_text())
+        assets['cityItems']['src']='data:image/webp;base64,'+base64.b64encode((wp/'items.webp').read_bytes()).decode()
     if (river/'garage.json').exists():
         assets['cityGarage']=json.loads((river/'garage.json').read_text())
         assets['cityGarage']['src']='data:image/webp;base64,'+base64.b64encode((river/'garage.webp').read_bytes()).decode()

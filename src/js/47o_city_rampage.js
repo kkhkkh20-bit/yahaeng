@@ -69,9 +69,9 @@ function pickupsUpdate(dt) {
     if (P.car || flOf(P) || S.t - k.t < 0.4 || dist(P.x, P.y, k.x, k.y) > 26) continue;
     S.pickups.splice(i, 1); play('loot', 0.45);
     if (k.kind === 'cash') { S.cash = (S.cash || 0) + k.n; fstat('earned', k.n); toast(`돈 +${k.n}만`, 1.2, 'good'); }
-    else { if (S.ramp && S.ramp.wpn === k.wpn) S.ramp.prevAmmo += k.n; else S.guns[k.wpn] = (S.guns[k.wpn] || 0) + k.n; if (!S.wpn) S.wpn = k.wpn; gunChip(); toast(`${WEAPONS[k.wpn].name} 탄 +${k.n}`, 1.2, 'good'); } }
+    else { if (S.ramp && S.ramp.wpn === k.wpn) S.ramp.prevAmmo += k.n; else S.guns[k.wpn] = (S.guns[k.wpn] || 0) + k.n; if (!S.wpn) S.wpn = k.wpn; gunChip(); toast(`${WEAPONS[k.wpn].name}을(를) 주웠다 · 탄 +${k.n}`, 1.4, 'good'); play('click', 0.4, 0.8); } }
 }
-function dropPickup(x, y, kind, wpn, n) { if (solidAt(Math.floor(x / TILE), Math.floor(y / TILE))) return; S.pickups.push({ x, y, kind, wpn, n, t: S.t }); if (S.pickups.length > 40) S.pickups.shift(); }
+function dropPickup(x, y, kind, wpn, n) { if (solidAt(Math.floor(x / TILE), Math.floor(y / TILE))) return; S.pickups.push({ x, y, kind, wpn, n, t: S.t, rot: rnd(-0.6, 0.6) }); if (S.pickups.length > 40) S.pickups.shift(); }
 // 방탄조끼: hurtPlayer가 먼저 부른다. 막으면 true
 function armorAbsorb() {
   const P = S.player; if (!STAGE.cityLife || !(P.armor > 0) || P.car) return false;
@@ -84,15 +84,12 @@ function drawRampage() {
   for (let i = 0; i < S.rampSpots.length; i++) { const p = S.rampSpots[i]; if (!rampLive(i) || !inView(p.x, p.y, 40)) continue;
     const b = 0.6 + 0.4 * Math.sin(S.t * 4 + i), y = p.y - 6 - Math.abs(Math.sin(S.t * 2.2 + i)) * 5;
     ctx.fillStyle = `rgba(255,60,40,${0.18 * b})`; ctx.beginPath(); ctx.ellipse(p.x, p.y + 6, 22, 9, 0, 0, TAU); ctx.fill();
-    // 붉은 해골 픽셀 (10x10)
-    const px = (x, w, yy, c) => { ctx.fillStyle = c; ctx.fillRect(Math.round(p.x - 10 + x * 2), Math.round(y - 10 + yy * 2), w * 2, 2); };
-    const red = `rgba(255,${70 + 40 * b | 0},50,1)`;
-    [[2, 6, 0], [1, 8, 1], [0, 10, 2], [0, 10, 3], [0, 10, 4], [1, 8, 6], [2, 6, 7], [3, 1, 8], [5, 1, 8], [7, 1, 8]].forEach(([x, w, yy]) => px(x, w, yy, red));
-    px(0, 10, 5, red); px(2, 2, 3, '#1a0606'); px(6, 2, 3, '#1a0606'); px(2, 2, 4, '#1a0606'); px(6, 2, 4, '#1a0606'); px(4, 2, 6, '#1a0606');
-    ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.lineWidth = 1; ctx.strokeRect(Math.round(p.x - 10.5), Math.round(y - 10.5), 21, 19); }
+    // 표식: 그 자리에서 쥐게 될 무기(도트)가 붉은 빛 위에 떠 돈다
+    const gl = ctx.createRadialGradient(p.x, y, 0, p.x, y, 26); gl.addColorStop(0, `rgba(255,70,50,${0.55 * b})`); gl.addColorStop(1, 'rgba(255,40,30,0)');
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = gl; ctx.fillRect(p.x - 26, y - 26, 52, 52); ctx.restore();
+    drawItem(RAMPS[i].wpn, p.x, y, 1.6, Math.sin(S.t * 2 + i) * 0.25); }
   for (const k of S.pickups || []) { if (!inView(k.x, k.y, 20)) continue; const fade = S.t - k.t > 50 && (S.t * 6 | 0) % 2, bob = Math.sin(S.t * 3 + k.x) * 1.5; if (fade) continue;
-    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(k.x - 6, k.y + 4, 12, 3);
-    if (k.kind === 'cash') { ctx.fillStyle = '#2f7a3a'; ctx.fillRect(k.x - 7, k.y - 4 + bob, 14, 7); ctx.fillStyle = '#9fe08a'; ctx.fillRect(k.x - 2, k.y - 2 + bob, 4, 3); }
-    else { ctx.fillStyle = '#4a5238'; ctx.fillRect(k.x - 6, k.y - 5 + bob, 12, 8); ctx.fillStyle = '#e8c860'; ctx.fillRect(k.x - 4, k.y - 7 + bob, 2, 3); ctx.fillRect(k.x - 1, k.y - 7 + bob, 2, 3); ctx.fillRect(k.x + 2, k.y - 7 + bob, 2, 3); }
-    ctx.strokeStyle = 'rgba(255,240,200,.55)'; ctx.strokeRect(k.x - 7.5, k.y - 5.5 + bob, 15, 9); }
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(k.x, k.y + 5, 9, 3, 0, 0, TAU); ctx.fill();
+    // 바닥에 떨어진 총 그 자체(쏜 사람이 쥐고 있던 총) · 돈은 동전 더미
+    if (k.kind === 'cash') drawItem('cash', k.x, k.y - 3 + bob, 0.8); else drawItem(k.wpn || 'ammo', k.x, k.y - 2 + bob, 1.2, k.rot || 0); }
 }

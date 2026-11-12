@@ -51,6 +51,7 @@ window.addEventListener('keydown', e => {
     e.preventDefault();if(!e.repeat){if(e.code==='KeyN')toggleMute();else if(['KeyQ','KeyE','KeyZ','KeyX','Space','Enter'].includes(e.code))advanceDialog();else if(e.code==='Escape')skipDialog();}return;
   }
   if (e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault();  // 브라우저 메뉴로 넘어가지 않게
+  if (STAGE?.cityLife && running && !S?.player?.car && /^Digit[1-7]$/.test(e.code)) { const have = WPN_ORDER.filter(k => (S.guns?.[k] || 0) > 0), i = +e.code.slice(5) - 1; if (i === 0) selectWeapon(null); else if (have[i - 1]) selectWeapon(have[i - 1]); return; }  // 자유 모드: 숫자로 무기 고르기  // 자유 모드: 무기 바꾸기
   if(e.code==='Digit4'||e.code==='AltLeft'||e.code==='AltRight'){e.preventDefault();return;}
   if(e.code==='Tab')e.preventDefault();
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(keyCode(e)) && running) e.preventDefault();
@@ -76,7 +77,7 @@ window.addEventListener('keydown', e => {
   if (e.code === 'Digit3') selectTool('coin');
   if (e.code === 'ControlLeft' || e.code === 'ControlRight') toggleSneak();
   if (e.code === 'KeyN') toggleMute();
-  if (e.code === 'KeyL' && STAGE?.cityLife && running) { cycleWeapon(); return; }  // 자유 모드: 무기 바꾸기
+  if (e.code === 'KeyL' && STAGE?.cityLife && running) { cycleWeapon(); return; }
   if (e.code === 'KeyM') { if (STAGE?.cityLife && running) cityMapOpen(); else toggleTactical(); }  // 자유 모드: 큰 지도
   if (e.code === 'KeyG') whistle();
   if (e.code === 'Tab') { if(e.shiftKey)toggleEnvPicker();else cycleEnv(); }  // 겹친 대상 중 다른 것 고르기

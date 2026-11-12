@@ -39,8 +39,8 @@ async def main():
           [...document.querySelectorAll('#shopPanel button')].find(b=>b.textContent.includes('무기 거래')).click();
           const ab=[...document.querySelectorAll('#shopPanel button')].find(b=>b.textContent.includes('방탄조끼'));if(!ab)return {row:false};const c0=S.cash;ab.click();
           document.querySelector('#shopPanel button:last-child').click();const arm=P.armor;P.hurtT=0;const hp=P.hp;G.events.hurtPlayer(null,'test');
-          return {row:true,arm,paid:c0-S.cash,hp0:hp,hp1:P.hp,arm1:P.armor,chip:document.getElementById('wpnChip').textContent}}''')
-        print('armor', r); ok(r.get('row') and r['arm'] == 3 and r['paid'] == 400 and r['hp1'] == r['hp0'] and r['arm1'] == 2 and '조끼 2' in r['chip'], 'armour: %s' % r)
+          return {row:true,arm,paid:c0-S.cash,hp0:hp,hp1:P.hp,arm1:P.armor,chip:(document.querySelector('#wpnChip [title^="방탄조끼"]')||{}).title||''}}''')
+        print('armor', r); ok(r.get('row') and r['arm'] == 3 and r['paid'] == 400 and r['hp1'] == r['hp0'] and r['arm1'] == 2 and r['chip'] == '방탄조끼 2', 'armour: %s' % r)
         r = await q.evaluate('''()=>{const G=__game,S=G.S;G.events.saveFreeProgress(true);const d=JSON.parse(localStorage.getItem('yahaeng.free1')||'{}');return {armor:d.armor,ramp:d.ramp,pistol:d.guns&&d.guns.pistol}}''')
         print('save', r); ok(r['armor'] == 2 and r['ramp'] and r['ramp'].get('0') == 1, 'save: %s' % r)
         ok(not errs, 'page errors: %s' % errs)
