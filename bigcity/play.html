@@ -1130,6 +1130,8 @@ body.episode-coached #hud .obj:not(.open) .tut-detail{display:none}
 #hud .obj.open .objective-read-hint{display:block}
 @media(max-width:480px){body.first-episode #mini{visibility:hidden}}
 body.no-prompts #hud .keys{display:none}
+/* 자유 모드(큰 도시): 잠입 도구 버튼(웅크림·던질 것·붙잡기·옷·도구 바꾸기)은 숨기고 [행동]·[공격]만 남긴다 */
+body.free-city #btnCrouch,body.free-city #quickItems,body.free-city #btnTool,body.free-city #btnToolNext,body.free-city #btnGrab,body.free-city #btnDress,body.free-city #btnSkill{display:none!important}
 
 /* Shared in-game UI. One complete Korean face and one weight, across every state.
 Copyright © 2017 IBM Corp. with Reserved Font Name "Plex"
@@ -7019,7 +7021,7 @@ function cityBoundaryWall(c,tx,ty){
 }
 function refreshFreeCity(){
  if(!freeCityDirty||!S||!mapC)return;freeCityDirty=false;if(!STAGE.freeCityPilot&&!STAGE.freeCityExteriors)return;
- const layer=CUR_F;try{setLayer(0);requestMapRebuild();S.floorC={};miniBase=null;BLD.forEach((b,i)=>{if(freeCityBuilding(b)){b.roofC=buildRoofCanvas(b,i);b.cityPropsC=null;}});}finally{setLayer(layer);}
+ const layer=CUR_F;try{setLayer(0);requestMapRebuild();S.floorC={};miniBase=null;BLD.forEach((b,i)=>{if(freeCityBuilding(b)){if(b.dropRoof)b.dropRoof();else b.roofC=buildRoofCanvas(b,i);b.cityPropsC=null;}}); /* 큰 도시는 지붕을 버려 두면 다음에 보일 때 새 그림으로 굽는다 */}finally{setLayer(layer);}
 }
 function drawCityRoofProps(b){
  if(!freeCityBuilding(b)||!freeCityReady()||!b.kitProps?.length)return;
@@ -9369,6 +9371,15 @@ function prefetchBig(B) {
   for (let j = Math.max(0, Math.floor(vy / T)); j <= Math.min(B.ny - 1, Math.floor((vy + vh) / T)); j++)
     for (let i = Math.max(0, Math.floor(vx / T)); i <= Math.min(B.nx - 1, Math.floor((vx + vw) / T)); i++) if (!B.tiles[j * B.nx + i]) { B.get(j * B.nx + i); return; }
 }
+// 큰 도시 지붕 그림: 건물 수백 채를 시작할 때 다 굽지 않고(약 80MB), 처음 쓸 때 굽고 최근 ROOF_CAP채만 남긴다
+const ROOF_CAP = (window.matchMedia && matchMedia('(pointer:coarse)').matches) ? 70 : 160, roofLive = [];
+function lazyRoof(b, i) {
+  let c = null;
+  Object.defineProperty(b, 'roofC', { configurable: true, enumerable: true,
+    get() { if (!c) { c = buildRoofCanvas(b, i); roofLive.push(b); while (roofLive.length > ROOF_CAP) { const o = roofLive.shift(); if (o !== b) o.dropRoof(); } } return c; },
+    set(v) { c = v; } });
+  b.dropRoof = () => { if (c && c.width) { c.width = c.height = 0; } c = null; };
+}
 // 하수도 · 환풍구 그림: 칸이 하나도 없으면 그리지 않고, 큰 지도면 조각마다 필요할 때 굽는다
 function bigLayer(render, has) {
   let any = false; for (let ty = 0; ty < MH && !any; ty++) for (let tx = 0; tx < MW; tx++) if (has(tx, ty)) { any = true; break; }
@@ -9643,7 +9654,7 @@ function newGame(si) {
       if (b === church) { b.church = true; b.plate = '새빛교회'; }
     });
   }
-  BLD.forEach((b, i) => { b.alt = (STAGE.bricks ? STAGE.bricks[i % STAGE.bricks.length] : i % 2); b.roofC = b.vacant ? null : buildRoofCanvas(b, i); });
+  BLD.forEach((b, i) => { b.alt = (STAGE.bricks ? STAGE.bricks[i % STAGE.bricks.length] : i % 2); if (STAGE.cityLife && !b.vacant) lazyRoof(b, i); else b.roofC = b.vacant ? null : buildRoofCanvas(b, i); });
   kitAttach();
   initAssassinSkills(); applyWorldPolicy(); syncWorkLights(); syncOccupiedLights(); syncRoomSwitches(); initRoomFinish(); syncOutdoorLamps(); capturePhysicalLayout();
   S.bfuses=S.bfuses||[];
@@ -10463,9 +10474,17 @@ function syncOutdoorLamps() {
     LG=null;for(const k in lightCache)delete lightCache[k];
   }setLayer(L0);return n;
 }
+// 거리 가로등 기둥을 256px 칸으로 나눠 둔다: 사람 수백 명이 매 프레임 가로등 전부(수백 개)를 훑지 않게
+function streetPostsNear(x,y){
+ const L=S.lamps||[];let G=S._postGrid;
+ if(!G||G.n!==L.length||G.src!==L){G=S._postGrid={n:L.length,src:L,cells:new Map()};for(const l of L){const m=l.mount;if(m?.kind!=='street')continue;const k=(Math.floor(m.ax/256))+','+(Math.floor(m.ay/256));let c=G.cells.get(k);if(!c)G.cells.set(k,c=[]);c.push(l);}}
+ const cx=Math.floor(x/256),cy=Math.floor(y/256),out=[];
+ for(let j=cy-1;j<=cy+1;j++)for(let i=cx-1;i<=cx+1;i++){const c=G.cells.get(i+','+j);if(c)for(const l of c)out.push(l);}
+ return out;
+}
 function collideLightPosts(o,r,solid) {
   if(!S || flOf(o) || o.z || solid!==solidAt&&solid!==groundSolidP)return;
-  for(const l of S.lamps) {
+  for(const l of streetPostsNear(o.x,o.y)) {
     const m=l.mount;if(m?.kind!=='street')continue;
     const dx=o.x-m.ax,dy=o.y-m.ay,R=r+4;if(Math.abs(dx)>=R||Math.abs(dy)>=R)continue;
     const d=Math.hypot(dx,dy);if(d>=R)continue;
@@ -11371,7 +11390,7 @@ function npcPostLegClear(a,b,sol=solidAt){
 function avoidStreetPost(g){
   if(flOf(g)||g.z||!g.path?.length)return;
   const next=g.path[0],dx=next.x-g.x,dy=next.y-g.y,d=Math.hypot(dx,dy);if(d<1)return;
-  for(const l of S.lamps){
+  for(const l of d<240?streetPostsNear(g.x+dx/2,g.y+dy/2):S.lamps){
     const m=l.mount;if(m?.kind!=='street')continue;
     const u=clamp(((m.ax-g.x)*dx+(m.ay-g.y)*dy)/(d*d),0,1);
     if(u<=0||dist(g.x+dx*u,g.y+dy*u,m.ax,m.ay)>=19)continue;
@@ -15468,7 +15487,7 @@ function despawnCop(g) { g.off = true; g.state = 'DEAD'; g.x = -9999; g.y = -999
 // 먼 곳 갱신 줄이기 (도시 판만): 플레이어와 화면 양쪽에서 멀고, 평상시 상태인 행인·조직원·AI 차는
 // CITY_LOD_EVERY 번에 한 번만 갱신한다. 건너뛴 시간은 모아 두었다가 한꺼번에 넘기므로 걸음·순찰 시간은 그대로다.
 // 한 번에 넘기는 시간은 CITY_LOD_MAX_DT 로 막아 벽 통과나 큰 순간이동을 막는다. 의뢰 판은 경비 동선 타이밍을 그대로 둔다.
-const CITY_LOD_EVERY = 3, CITY_LOD_FAR = 1100, CITY_LOD_MAX_DT = 0.15, CITY_LOD_VFAR = 2200, CITY_LOD_VEVERY = 8, CITY_LOD_VMAX_DT = 0.4;  // 아주 먼 사람·차는 더 드물게
+const CITY_LOD_EVERY = 4, CITY_LOD_FAR = 950, CITY_LOD_MAX_DT = 0.15, CITY_LOD_VFAR = 2200, CITY_LOD_VEVERY = 8, CITY_LOD_VMAX_DT = 0.4;  // 아주 먼 사람·차는 더 드물게
 function cityLodFar(o) {
   const P = S.player;
   return dist(o.x, o.y, P.x, P.y) > CITY_LOD_FAR && dist(o.x, o.y, cam.x, cam.y) > CITY_LOD_FAR;
@@ -16547,10 +16566,11 @@ function carMove0(v, dt, turn=0) {
 // 차가 사람을 친다: 빠르면 처치, 느리면 넘어뜨린다 (기절). 내가 몰면 내 짓이다
 function hitPeople(v, dt) {
   const spd = Math.abs(v.v); if (spd < 70 || onDeckLevel(v)) return;  // 고가 위 차는 땅 사람을 치지 않는다
-  const mine = S.player.car === v;
+  const mine = S.player.car === v, pts = carPts(v), reach = (v.len || 92) / 2 + v.r + 14;  // 차 둘레 상자 밖 사람은 바로 건너뛴다 (차 160대 × 사람 470명)
   for (const g of S.guards) {
+    if (Math.abs(g.x - v.x) > reach || Math.abs(g.y - v.y) > reach) continue;
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || flOf(g) || g.z || g.off) continue;
-    if (!carPts(v).some(([px, py]) => dist(px, py, g.x, g.y) < v.r + 12)) continue;
+    if (!pts.some(([px, py]) => dist(px, py, g.x, g.y) < v.r + 12)) continue;
     const lethal = STAGE.cityLife ? spd > 100 : spd > 170;  // 큰 도시: 제법 달리던 차에 치이면 죽는다
     if (mine) { if (!STAGE.cityLife) { play('thud', 0.8); S.shakeT = 0.2; } S.stats.runOver = (S.stats.runOver || 0) + 1; npcDown(g, null, lethal); const c = S.corpses[S.corpses.length - 1]; if (c && c.g === g) { c.byNpc = false; c.byCar = true; }
       if (STAGE.cityLife) carImpact(v, g, lethal);
@@ -16560,7 +16580,7 @@ function hitPeople(v, dt) {
   }
   // 내가 걷다가 달려오는 차에 치임
   const P = S.player;
-  if (!mine && !P.car && !P.cuffed && !P.z && !flOf(P) && !P.hide && spd > 120 && carPts(v).some(([px, py]) => dist(px, py, P.x, P.y) < v.r + 10)) { if (STAGE.cityLife) { spawnEffect('impact', { x: P.x, y: P.y - 16, fl: 0, z: 0 }, { scale: 1.1 }); bloodSpray(P.x, P.y, v.a, spd > 220 ? 6 : 3); S.shakeT = 0.35; if (spd > 220) { P.hurtT = 0; hurtPlayer(null, '차에 치였다.'); } }  // 세게 치이면 두 칸
+  if (!mine && !P.car && !P.cuffed && !P.z && !flOf(P) && !P.hide && spd > 120 && pts.some(([px, py]) => dist(px, py, P.x, P.y) < v.r + 10)) { if (STAGE.cityLife) { spawnEffect('impact', { x: P.x, y: P.y - 16, fl: 0, z: 0 }, { scale: 1.1 }); bloodSpray(P.x, P.y, v.a, spd > 220 ? 6 : 3); S.shakeT = 0.35; if (spd > 220) { P.hurtT = 0; hurtPlayer(null, '차에 치였다.'); } }  // 세게 치이면 두 칸
     hurtPlayer(null, '차에 치였다.'); P.x += Math.cos(v.a + Math.PI / 2) * 30; P.y += Math.sin(v.a + Math.PI / 2) * 30; v.v = 0; }
 }
 // 내가 운전: 조이스틱(방향키) 쪽으로 차머리를 돌리며 가속. 거의 반대쪽이면 브레이크 → 후진
@@ -20603,7 +20623,7 @@ function selectVisionFocus() {
   for(const c of S.cams||[])if(same(c)&&camOn(c)&&exposed(c))considerNear(c,true);
   return nearest;
 }
-function showVisionField(actor) { return !!(tactical||input.scan||visionFrame?.actor===actor); }
+function showVisionField(actor) { return !!(tactical||input.scan||(!STAGE.cityLife&&visionFrame?.actor===actor)); }  // 큰 도시: 행인 시야 테두리를 늘 그리지 않는다 (지도·살피기에서만)
 function drawFacingCue(g) {
   if(g.civ||g.dog)return;
   const r=19,k=1/clamp(SCALE,.65,1.4),a=g.a;
@@ -21880,7 +21900,7 @@ function invalidateLightRegion(fl,tx,ty){
 }
 
 const LIGHTQ = 4, lightCache = {};
-const lampFieldCache=new WeakMap();
+let lampFieldCache=new WeakMap();
 function lightArtSignature(){return[officeReady(),purchasedPropsReady(),purchasedReady(),freeCityReady(),!!propAtlas.naturalWidth].map(Number).join('');}
 function cachedLampField(l){
  const art=lightArtSignature(),old=lampFieldCache.get(l);
@@ -21898,6 +21918,7 @@ function lightMap(key, lamps) {
   if (!lc) { lc = lightCache[key] = { c: document.createElement('canvas') }; lc.c.width = Math.ceil(MW * TILE / LIGHTQ); lc.c.height = Math.ceil(MH * TILE / LIGHTQ); }
   lc.sig = sig;lc.floor=CUR_F; const x = lc.c.getContext('2d'); x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, lc.c.width, lc.c.height); x.setTransform(1 / LIGHTQ, 0, 0, 1 / LIGHTQ, 0, 0);
   for (const l of lamps) { if (l.flk || !lampOn(l)) continue; const f=cachedLampField(l),b=f.bounds;x.drawImage(f.c,b.x,b.y,b.w,b.h); }
+  if (STAGE.cityLife) lampFieldCache = new WeakMap();  // 큰 도시: 가로등 수백 개의 낱장 빛(약 70MB)은 합친 뒤 버린다. 켜고 꺼질 때만 다시 굽는다
   return lc.c;
 }
 function lampLight(x, l, flick) {  // 벽에 가린 빛(다각형) 안을 둥근 그라데이션으로
@@ -22584,6 +22605,7 @@ function draw() {
 // 위층 창가에서 바깥을 내려다보는 사람: 바깥(1층 높이)에서 볼 때 창문에서 뻗는 옅은 시선 부채꼴 (winSee 와 같은 조건)
 
 function drawWinWatch() {
+  if (STAGE.cityLife) return;  // 큰 도시: 창가 감시 부채꼴은 잠입 의뢰용 표시라 그리지 않는다 (사람 수백 명을 매 프레임 훑던 비용)
   const P = S.player;
   for (const g of S.guards) {
     if (!flOf(g) || g.state === 'DEAD' || g.state === 'CAPTIVE' || g.state === 'SLEEP' || g.dog) continue;
@@ -23312,7 +23334,7 @@ function padButton(el, key, a, idle) {
   const quiet=key==='actH'&&subduedAction(a);
   const ic = quiet?'ko':a.k === 'cap' ? (a.hold ? 'ko' : 'kill') : a.k === 'none' && a.stalk ? (koTap(a.stalk) ? 'ko' : 'kill') : actIcon(a), v = quiet?'기절 상태':actVerb(a, ic) || idle, hold = quiet?'<small>길게 살해</small>':a.skillLocked ? '<small>배워야 사용</small>' : a.hold ? `<small>${holdHint(a)}</small>` : '';
   // Share the authored action symbols with world prompts; keep the verb and accessible label.
-  const shortV=key==='actH'&&a.k==='none'?'제압':a.k==='dress'?'옷 입기':a.k==='camroom'?(S.camsOff?'기록 삭제':'감시 정지'):v;
+  const shortV=key==='actH'&&a.k==='none'?(STAGE.cityLife?(S.player.car?'경적':'공격'):'제압'):a.k==='dress'?'옷 입기':a.k==='camroom'?(S.camsOff?'기록 삭제':'감시 정지'):v;
   const html = hudArt(key==='actH'?(ic==='kill'?'blade':'attack'):key==='dressH'?'dress':'action')+`<b>${shortV}</b>` + hold;
   if (hudCache[key] !== html) { hudCache[key] = html; el.innerHTML = html; }
   // A shortened visible verb can stay identical while distance/availability changes.
@@ -23350,7 +23372,7 @@ const isAtk = a => !!a && (ATK_K.has(a.k) || !!a.kill);
 // 겹친 대상까지 훑은 행동 후보 (사람 근처 '공격 우선' 바꾸기 없이 날것 그대로)
 // 한 프레임 안에서 화면·버튼·라벨이 같은 계산을 되풀이하지 않게 (시각·위치가 같으면 그대로). 버튼을 누를 땐 새로 구한다
 let RC = null;
-const rcKey = () => { const P = S.player; return S.t + '|' + P.x + '|' + P.y + '|' + (P.fl || 0) + '|' + (P.z || 0) + '|' + !!P.interact + !!P.pick + !!P.trav + !!P.lunge + !!P.grabIn + '|' + (P.strikeT > 0) + '|' + !!P.hidden + '|' + !!S.skills?.ambush + '|' + !!S.practiceSkills?.ambush + '|' + !!S.skills?.electric + '|' + !!S.practiceSkills?.electric + '|' + !!P.captive + !!P.carrying + !!P.hide + !!P.ledge + !!P.wire; };
+const rcKey = () => { const P = S.player; return (STAGE.cityLife && !P.car ? Math.floor(S.t * 12) + '|' + Math.round(P.x / 5) + '|' + Math.round(P.y / 5) : S.t + '|' + P.x + '|' + P.y) + '|' + (P.fl || 0) + '|' + (P.z || 0) + '|' + !!P.interact + !!P.pick + !!P.trav + !!P.lunge + !!P.grabIn + '|' + (P.strikeT > 0) + '|' + !!P.hidden + '|' + !!S.skills?.ambush + '|' + !!S.practiceSkills?.ambush + '|' + !!S.skills?.electric + '|' + !!S.practiceSkills?.electric + '|' + !!P.captive + !!P.carrying + !!P.hide + !!P.ledge + !!P.wire; };
 function rawChoices(n = 7) {
   const key = rcKey(); if (RC && RC.key === key) return RC.out.slice();
   const out = rawChoices0(n); RC = { key, out }; return out.slice();
@@ -23556,9 +23578,10 @@ function miniGuardVisible(g) {
 }
 function drawMini() {
   const cv = document.getElementById('mini'); if (!cv || !S) return;
+  if (miniBase?.stage===S && S.t - miniT < 0.12 && S.t >= miniT) return;  // 레이아웃 읽기(getBoundingClientRect)도 1/8초에 한 번만
+  miniT = S.t;
   { const tp = document.querySelector('#hud .top'), hc = document.getElementById('hintCard'); if (tp) { const tb = Math.round(tp.getBoundingClientRect().bottom); if (tb !== drawMini.tb) { drawMini.tb = tb; document.documentElement.style.setProperty('--topb', tb + 'px'); } }
     const v = S.entrySel ? 'hidden' : ''; if (cv.style.visibility !== v) { cv.style.visibility = v; if (hc) hc.style.visibility = v; } }
-  if (miniBase?.stage===S && S.t - miniT < 0.12 && S.t >= miniT) return; miniT = S.t;
   // 주인공(과 행동 표시)이 미니맵·목표·도움말 밑에 들어가면 그 판을 옅게 한다
   { const cr = canvas.getBoundingClientRect(), ip=STAGE.artSlice&&!tactical&&window.__clubView?.ready?window.__clubView.actorScreen(S.player):null,px = ip?ip.x:cr.left + (S.player.x - cam.x) * SCALE + W / 2, py = ip?ip.y:cr.top + (S.player.y - cam.y) * SCALE + H / 2;
     for (const el of [cv, document.querySelector('#hud .obj'), document.getElementById('hintCard')]) { if (!el) continue; const r = el.getBoundingClientRect(); const over = r.width > 0 && px > r.left - 40 && px < r.right + 40 && py > r.top - 70 && py < r.bottom + 40; el.classList.toggle('hudfade', over); } }
@@ -25178,7 +25201,7 @@ function start(i, noBrief) {
   tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');
   input.sneakToggle=false;try{localStorage.setItem('yh_sneak','0');}catch(e){}syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'kunai'; input.padWhistle = false;  // 새 의뢰는 서서 시작한다. 항상 걷기 설정은 유지한다.
   running = true; paused = false;
-  newGame(i); document.body.classList.toggle('no-prompts', !!STAGE.noPrompts); if(STAGE.firstSteps||introductoryContract(STAGE)){input.sneakToggle=false;input.walkLock=false;input.padWhistle=!!(STAGE.firstSteps||STAGE.openingContract)&&!availableTools().some(t=>toolCount(t)>0);syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','목표·무전 펼치기'); miniBase = null; renderToasts();
+  newGame(i); document.body.classList.toggle('no-prompts', !!STAGE.noPrompts); document.body.classList.toggle('free-city', !!STAGE.cityLife); if(STAGE.firstSteps||introductoryContract(STAGE)){input.sneakToggle=false;input.walkLock=false;input.padWhistle=!!(STAGE.firstSteps||STAGE.openingContract)&&!availableTools().some(t=>toolCount(t)>0);syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','목표·무전 펼치기'); miniBase = null; renderToasts();
   if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)
   statsBegin('new');  // 플레이 기록: 판 시작
   if (PR&&!STAGE.artSlice) { const ks = [playerKey(S.player), ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep(ks); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다
