@@ -334,6 +334,10 @@
       "group": "city"
     },
     {
+      "path": "47i_city_side.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },

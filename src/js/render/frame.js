@@ -272,7 +272,7 @@ function draw() {
   drawOutdoorLampFixtures();
   drawTrafficSignals();
   if (S.decks?.length && !flOf(P)) drawDecks();  // 고가도로·높은 다리: 지붕·신호등보다 위 (고가 밑 신호등은 가려진다)
-  if (STAGE.cityLife) drawCuffs();
+  if (STAGE.cityLife) { drawCuffs(); if (!flOf(P)) drawGarage(); }  // 내 차고 셔터: 집 앞벽보다 위
   const aboveBridge=p=>!!(P.wire||(P.jump&&!lowJ)||travUp||P.z>p.z);
   if(!tactical)drawPlanks('front',aboveBridge);
   if (exteriorClip) ctx.restore();

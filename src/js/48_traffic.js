@@ -393,6 +393,7 @@ function hitPeople(v, dt) {
 // 내가 운전: 조이스틱(방향키) 쪽으로 차머리를 돌리며 가속. 거의 반대쪽이면 브레이크 → 후진
 function updateDriving(P, mx, my, mag, dt) {
   const v = P.car; P.moving = false; P.mode = 'walk'; P.vx = 0; P.vy = 0; P.z = 0; P.fl = 0;
+  if (v.jacking) { P.x = v.x; P.y = v.y; return; }  // 차고에 들어가는 중 등 스크립트로 움직이는 차
   if (v.dead) { carExit(STAGE.cityLife ? true : 'instant'); return; }
   if (v.revT > 0 && (v.revT -= dt) <= 0) v.revT = 0;
   // 운전은 차 기준: 위 = 가속(전진) · 아래 = 브레이크 후 후진 · 좌우 = 핸들. 화면 방향으로 걷듯이 몰지 않는다

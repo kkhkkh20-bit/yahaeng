@@ -9,7 +9,7 @@ function markCityDone(id) { try { const d = cityDone(); d[id] = 1; localStorage.
 function cityInit() {
   S.wanted = 0; S.wantLost = 0; S.copT = 0;
   S.contracts = (STAGE.contracts || []).map(c => ({ id: c.id, name: c.name, x: tc(c.at[0]), y: tc(c.at[1]), si: STAGES.findIndex(s => s.id === c.id) })).filter(c => c.si >= 0);
-  trafficInit(); if (STAGE.hits) hitsInit(); loadFreeProgress(); shopsInit(); cityFactionsInit();  // 가게 · 중고차 매매 · 도색소  // 도시 안 의뢰 (공중전화)
+  trafficInit(); if (STAGE.hits) hitsInit(); loadFreeProgress(); shopsInit(); cityFactionsInit(); garageInit(); S.side = null;  // 가게 · 중고차 매매 · 도색소  // 도시 안 의뢰 (공중전화)
   // 순찰 경찰 둘: 시내 보도를 돈다 (조직 구역에는 들어가지 않는다)
   for (const r of STAGE.copBeats || []) { const g = makeGuard({ kind: 'g1', route: r, radio: false }, S.guards.length); g.police = true; g.beat = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; g.radio = false; setLayer(0); buildRouteLine(g); S.guards.push(g); }
   if (CITY_RET) { const P = S.player, c = S.contracts.find(o => o.id === CITY_RET.id); if (c) { P.x = c.x; P.y = c.y + 30; cam.x = P.x; cam.y = P.y; } CITY_RET = null; }
@@ -164,16 +164,22 @@ function cityRespawn(why) {
   toast((why ? why + ' ' : '') + '— 병원에서 깨어났다', 3, 'warn');
 }
 // [행동] 후보: 차에서 내리기 · 의뢰 받기 · 차 타기
+// 후보를 차례로 모아, 고르기 목록이 이미 고른 것(ACT_SKIP)은 건너뛰고 다음 후보를 낸다 (택시 영업 ↔ 차에서 내리기를 둘 다 고를 수 있게)
 function cityAction() {
-  const P = S.player;
-  if (STAGE.cityLife) { const a = shopAction(); if (a) return a; }
-  { const e = cuffAction() || eventAction() || factionAction(); if (e) return e; }  // 구역 이벤트 (차 안에서도: 드래그 레이스)
-  if (P.car) return { k: 'carOut', v: P.car, label: P.car.fireT > 0 ? '뛰어내리기!' : '차에서 내리기' };
-  if (P.z || flOf(P) || P.hide) return null;
-  if (STAGE.hits) { const h = hitAction(); if (h) return h; }
-  for (const c of S.contracts || []) if (dist(P.x, P.y, c.x, c.y) < 64) return { k: 'contract', c, at: { x: c.x, y: c.y - 40 }, label: '의뢰 받기 — ' + (STAGES[c.si].name) };
-  const v = nearVehicle(); if (v && carLocked(v)) return carLockAction(v); if (v) return { k: 'carIn', v, at: { x: v.x, y: v.y - 56 }, label: v.driver ? '운전자 끌어내고 타기' : '차 타기' };
+  for (const a of cityActionList()) { const key = a.targetObject || (a.targetObject = a.v || a.s || a.c || 'city:' + a.k + ':' + a.label); if (!ACT_SKIP.has(key)) return a; }
   return null;
+}
+function cityActionList() {
+  const P = S.player, out = [];
+  if (STAGE.cityLife) { const a = shopAction(); if (a) out.push(a); }
+  for (const f of [cuffAction, sideAction, eventAction, factionAction]) { const e = f(); if (e) out.push(e); }  // 구역 이벤트·부업 (차 안에서도: 드래그 레이스·택시)
+  const one = a => { if (a) out.push(a); return out; };
+  if (P.car) return one({ k: 'carOut', v: P.car, label: P.car.fireT > 0 ? '뛰어내리기!' : '차에서 내리기' });
+  if (P.z || flOf(P) || P.hide) return out;
+  if (STAGE.hits) { const h = hitAction(); if (h) return one(h); }
+  for (const c of S.contracts || []) if (dist(P.x, P.y, c.x, c.y) < 64) return one({ k: 'contract', c, at: { x: c.x, y: c.y - 40 }, label: '의뢰 받기 — ' + (STAGES[c.si].name) });
+  const v = nearVehicle(); if (v && carLocked(v)) return one(carLockAction(v)); if (v) return one({ k: 'carIn', v, at: { x: v.x, y: v.y - 56 }, label: v.driver ? '운전자 끌어내고 타기' : '차 타기' });
+  return out;
 }
 function cityContract(c) {
   if (S.wanted > 0) { toast('수배 중에는 의뢰를 받을 수 없다 — 먼저 경찰을 따돌려라', 2.4, 'warn'); return; }

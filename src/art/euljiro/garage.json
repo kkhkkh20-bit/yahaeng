@@ -1,0 +1,42 @@
+{
+ "pack": "Dotonbori City v3",
+ "artist": "GuttyKreum",
+ "source": "https://guttykreum.itch.io/dotonbori-city-game-assets",
+ "sourceSha256": "ddc41bdf9124343d9a928e689efcaa5f27f7792feb027a076e7added1440ce73",
+ "tile": 32,
+ "note": "Garage shutters for Yahaeng. Not a standalone asset.",
+ "frames": {
+  "shutterGrey": {
+   "rect": [
+    0,
+    0,
+    32,
+    32
+   ]
+  },
+  "shutterBrown0": {
+   "rect": [
+    34,
+    0,
+    32,
+    32
+   ]
+  },
+  "shutterBrown1": {
+   "rect": [
+    68,
+    0,
+    32,
+    32
+   ]
+  },
+  "shutterBrown2": {
+   "rect": [
+    102,
+    0,
+    32,
+    32
+   ]
+  }
+ }
+}

@@ -55,6 +55,9 @@ def campaign_assets(root):
     if (river/'river.json').exists():
         assets['cityRiver']=json.loads((river/'river.json').read_text())
         assets['cityRiver']['src']='data:image/webp;base64,'+base64.b64encode((river/'river.webp').read_bytes()).decode()
+    if (river/'garage.json').exists():
+        assets['cityGarage']=json.loads((river/'garage.json').read_text())
+        assets['cityGarage']['src']='data:image/webp;base64,'+base64.b64encode((river/'garage.webp').read_bytes()).decode()
     if (river/'deck.json').exists():
         assets['cityDeck']=json.loads((river/'deck.json').read_text())
         assets['cityDeck']['src']='data:image/webp;base64,'+base64.b64encode((river/'deck.webp').read_bytes()).decode()
