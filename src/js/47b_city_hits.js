@@ -74,6 +74,7 @@ function phoneLines(plan) {
   const where = `${river}${dir}${plan.sign ? `, '${plan.sign}' 간판 걸린 블록` : ' 블록'}`;
   const esc = plan.escorts > 1 ? '경호원 둘이 바짝 붙어 다닌다. 정면으로 들어가면 시끄러워질 거다.' : '경호원 하나가 붙어 다닌다. 눈치 빠른 놈이니 등 뒤를 잡아.';
   return [['master', '올빼미군. 일이 하나 들어왔다.'], ['master', `이름은 ${plan.name}. ${where}을 돌고 있다.`], ['master', esc],
+    ...(plan.ctr && CONTRACTS[plan.ctr]?.brief ? [['master', `이번 건은 '${CONTRACTS[plan.ctr].name}'이다. ${CONTRACTS[plan.ctr].brief}`]] : []),
     ['master', `처리하면 ${HIT_PAY}만. 경찰 안 붙게 조용히 끝내면 ${HIT_QUIET_BONUS}만 더 얹어 주지.`], ['hero', '알았다. 끊지.']];
 }
 // 블록 둘레 보도를 도는 길 (도시 행인과 같은 규칙)
@@ -92,7 +93,7 @@ function planHit() {
   const [bx, by] = blocks[(Math.random() * blocks.length) | 0], rev = Math.random() < 0.5, route = hitRing(bx, by, rev);
   const [ox, oy] = hitBlock(bx, by), e = hitSpan(), inB = b => b.x0 >= ox && b.x1 <= ox + e && b.y0 >= oy && b.y1 <= oy + e;
   const shop = BLD.find(b => b.kind === 'shop' && b.signs && (b.signs[0] || '').trim() && inB(b));
-  return { bx, by, route, name: HIT_NAMES[S.hitN % HIT_NAMES.length], escorts: 1 + (S.hitN >= 2 ? 1 : 0), cx: tc(ox + e / 2), cy: tc(oy + e / 2), sign: shop ? shop.signs[0].trim() : '' };
+  return { bx, by, route, name: HIT_NAMES[S.hitN % HIT_NAMES.length], escorts: 1 + (S.hitN >= 2 ? 1 : 0), cx: tc(ox + e / 2), cy: tc(oy + e / 2), sign: shop ? shop.signs[0].trim() : '', ctr: STAGE.cityLife ? pickContract() : 'plain' };
 }
 function takeHit() { if (!S.hit && !S.wanted) { const plan = planHit(); if (plan) startHit(plan); } }
 function startHit(plan) {
@@ -106,7 +107,7 @@ function startHit(plan) {
   }
   setLayer(0); for (const g of [t, ...escorts]) buildRouteLine(g); setLayer(flOf(P));
   if (PR) prWarm([t, ...escorts].map(charOf), true);
-  S.hit = { g: t, escorts, name, t0: S.t, wantedAtStart: S.wanted, ko: !!plan.ko, pay: plan.pay, stand: plan.stand, by: plan.by }; if (STAGE.cityLife) hitGradeStart(S.hit);
+  S.hit = { g: t, escorts, name, t0: S.t, wantedAtStart: S.wanted, ko: !!plan.ko, pay: plan.pay, stand: plan.stand, by: plan.by }; if (STAGE.cityLife) { hitGradeStart(S.hit); const k = plan.pay == null && !plan.ko ? plan.ctr || 'plain' : 'plain'; Object.assign(S.hit, { ctr: k, cx: plan.cx, cy: plan.cy, deadline: S.t + (CONTRACTS[k].time || 1e9) }); }
   if (!STAGE.noPrompts) toast(`의뢰: ${name} 처치`, 2.4, 'good');
 }
 // 부스는 사람이 지나가지 못한다 (안에 든 나만 예외)
@@ -128,7 +129,7 @@ function hitsUpdate(dt) {
   jobsUpdate(dt || 1 / 60); cityEventsUpdate(dt || 1 / 60); factionsUpdate(dt || 1 / 60); carTheftUpdate(dt || 1 / 60); sideUpdate(dt || 1 / 60); garageUpdate(dt || 1 / 60); weatherUpdate(dt || 1 / 60); wpUpdate(dt || 1 / 60); heatUpdate(dt || 1 / 60); havocUpdate(dt || 1 / 60); gunsUpdate(dt || 1 / 60); rampageUpdate(dt || 1 / 60); warUpdate(dt || 1 / 60); cityListsCleanup();
   saveFreeProgress();
   const h = S.hit; if (!h) return;
-  const g = h.g; hitGradeTrack();
+  const g = h.g; hitGradeTrack(); if (STAGE.cityLife) { contractUpdate(); if (!S.hit) return; }
   if (!S.guards.includes(g)) { S.hit = null; return; }
   const ko = g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko);
   if (h.ko && ko && !h.cuffed) return;  // 검거: 기절시킨 뒤 수갑을 채워야 끝난다 (47h cuffAction)
@@ -152,7 +153,8 @@ function hitGoal() {
     return { text: `울리는 공중전화 받기 · ${money}`, where: '', x: p.x, y: p.y, fl: 0 };
   }
   const g = h.g;
-  return { text: (h.ko ? (g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko) ? `${h.name} 기절 — 수갑 채우기` : `${h.name} 검거 — 기절시키기`) : g.unconscious ? `${h.name} 기절 — 숨통을 끊어라` : `${h.name} 처치`) + ` · ${money}`, where: '', x: g.x, y: g.y, fl: flOf(g), g };
+  if (STAGE.cityLife && contractHides(h)) return { text: `사진 속 ${h.name} 찾기 — 표시된 블록을 돌며 얼굴 확인 · ${money}`, where: '', x: h.cx, y: h.cy, fl: 0 };
+  return { text: (h.ko ? (g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko) ? `${h.name} 기절 — 수갑 채우기` : `${h.name} 검거 — 기절시키기`) : g.unconscious ? `${h.name} 기절 — 숨통을 끊어라` : `${h.name} 처치`) + (STAGE.cityLife ? contractGoal(h) : '') + ` · ${money}`, where: '', x: g.x, y: g.y, fl: flOf(g), g };
 }
 // 공중전화 부스 (위에서 비스듬히 본 유리 상자: 은색 기둥 · 유리벽 · 안쪽 벽의 파란 전화기 · 빨간 지붕 띠)와 표적 표시
 // layer 'world': 조명을 받는 부스 · 'ui': 어둠 위 — 안에 든 나를 덮는 앞 유리, 부스 안 불빛, 표적 고리
@@ -225,7 +227,7 @@ function drawHits(layer) {
   }
   if (layer !== 'ui') return;
   drawEvents(); drawContacts(); drawJobs(); drawCarPickProgress(); drawCarriedParcel(); drawWpRoute(); drawSide(); drawRampage(); drawGuns(); drawHeli(); drawRain();
-  const h = S.hit; if (!h || h.g.state === 'DEAD' && !h.g.unconscious) return;
+  const h = S.hit; if (!h || h.g.state === 'DEAD' && !h.g.unconscious || contractHides(h)) return;
   const g = h.g; if (flOf(g) !== flOf(S.player) || !inView(g.x, g.y, 60)) return;
   const pu = .55 + .35 * Math.sin(S.t * 5);
   ctx.strokeStyle = `rgba(232,71,60,${pu})`; ctx.lineWidth = 2.5; ctx.setLineDash([6, 5]); ctx.beginPath(); ctx.arc(g.x, g.y, 22, 0, TAU); ctx.stroke(); ctx.setLineDash([]);

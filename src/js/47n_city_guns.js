@@ -68,7 +68,7 @@ function shootRay(x0, y0, a, range, dmg) {
   S.tracers.push({ x0, y0, x1: ex, y1: ey, t: S.t });
   if (hit === 'wall') { const f = { x: ex, y: ey, a: 0, len: 4 }; fireEmit(f, 'spark', 4, f); return; }
   if (hit && S.guards.includes(hit)) {  // 사람
-    const g = hit; bloodBurst(g.x, g.y - 12, a, 4); g.x += ca * 10; g.y += sa * 10;
+    const g = hit; g.shotT = S.t; bloodBurst(g.x, g.y - 12, a, 4); g.x += ca * 10; g.y += sa * 10;
     if (g.warSide != null) warHitByPlayer(g); npcDown(g, null, true); const c = S.corpses[S.corpses.length - 1]; if (c && c.g === g) c.byNpc = false;  // 내가 쐈다: 조직 호감도에 잡힌다
     if (typeof cityVictim === 'function') cityVictim(g); gunStreak(g); return; }
   if (hit) { const v = hit; v.hp -= dmg * 0.5; v.smoke = 1.5; const f = { x: ex, y: ey, a: 0, len: 4 }; fireEmit(f, 'spark', 6, f); play('metal', 0.3, 1.7);

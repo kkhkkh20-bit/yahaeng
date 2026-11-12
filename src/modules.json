@@ -370,6 +370,10 @@
       "group": "city"
     },
     {
+      "path": "47r_city_contracts.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },

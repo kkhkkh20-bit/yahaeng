@@ -19,7 +19,7 @@ async def main():
         await q.goto((R / 'build/preview_city.html').as_uri() + '?nostats&study=city-xl'); await q.wait_for_function('!!window.__game')
         await q.evaluate('''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));while(G.DLG.modal)G.advanceDialog();
           window.tick=s=>{for(let t=0;t<s;t+=1/60)G.update(1/60)};tick(.3);const S=G.S;S.evNext={};for(const e of G.events.list)S.evNext[e.d]=1e9;S.copT=1e9;S.warNext=1e9;S.cash=0;S.stand={};}''')
-        HIT = '''(w)=>{const G=__game,S=G.S,E=G.events;S.wanted=0;const plan=E.planHit();if(!plan)return {plan:false};E.startHit(plan);const h=S.hit;
+        HIT = '''(w)=>{const G=__game,S=G.S,E=G.events;S.wanted=0;const plan=E.planHit();if(!plan)return {plan:false};plan.ctr='plain';E.startHit(plan);const h=S.hit;
           for(const e of h.escorts){e.x=-9000;e.route=[{x:-9000,y:-9000,pause:999}];}tick(.1);if(w)S.wanted=w;tick(.1);const c0=S.cash;G.npcDown(h.g,null,true);tick(.2);
           return {plan:true,paid:S.cash-c0,done:!S.hit,banner:(document.getElementById('evBanner')||{}).textContent||''}}'''
         r = await q.evaluate(HIT, 0); print('S', r); ok(r['plan'] and r['done'] and r['paid'] == 800 and '등급 S' in r['banner'], 'grade S: %s' % r)
