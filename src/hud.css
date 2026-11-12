@@ -511,3 +511,5 @@ body.free-city #btnCrouch,body.free-city #quickItems,body.free-city #btnTool,bod
 /* 자유 모드 일시정지: 스토리 전용 조직도는 숨긴다 */
 body.free-city #pause [data-case-open]{display:none}
 body:not(.free-city) #btnFreeStats{display:none}
+/* 자유 모드: 지상·체력·수배 줄 뒤에 어두운 판을 깔아 지붕·간판 위에서도 읽히게 */
+body.free-city #hud .status{background:rgba(10,13,20,.74);border-radius:6px;padding:3px 9px;width:max-content;max-width:calc(100vw - 32px);box-shadow:0 1px 0 rgba(255,255,255,.04) inset}

@@ -408,13 +408,14 @@ function carMove0(v, dt, turn=0) {
 // 밀기: 내 차가 다른 차에 천천히(상대 속도 140 이하) 닿은 채 계속 가면, 그 차를 같은 만큼 민다.
 // 무거운 차일수록 느리게 밀린다(내 속도 상한 = 150 × 내 무게 / 상대 무게). 비스듬히 밀면 상대 차가 조금 돈다. 벽에 막히면 못 민다
 function carPush(v, o, ox, oy) {
-  const dx = v.x - ox, dy = v.y - oy, step = Math.hypot(dx, dy); if (step < 1e-4 || Math.abs(v.v) > 140 + Math.abs(o.v || 0)) return false;
+  const dx = v.x - ox, dy = v.y - oy, step = Math.hypot(dx, dy), still = o.pushBy === v && S.t - (o.pushedT || -9) < 0.3;  // 이미 밀고 있으면 가속해도 충돌로 바뀌지 않는다
+  if (step < 1e-4 || (!still && Math.abs(v.v) > 140 + Math.abs(o.v || 0))) return false;
   const d = Math.max(1, dist(v.x, v.y, o.x, o.y)); if ((dx * (o.x - v.x) + dy * (o.y - v.y)) / d / step < 0.2) return false;  // 그 차 쪽으로 가는 중이어야 민다
   const px = o.x, py = o.y, pa = o.a, pva = o.va, side = -(o.x - v.x) * Math.sin(v.a) + (o.y - v.y) * Math.cos(v.a);
   const put = (rot) => { o.x = px + dx; o.y = py + dy; o.a = pa + rot; if (pva != null) o.va = o.a; return !carOverlap(o); };
   if (!put(clamp(side * 0.0006 * Math.sign(v.v), -0.02, 0.02)) && !put(0)) { o.x = px; o.y = py; o.a = pa; o.va = pva; return false; }  // 벽·다른 차에 막히면 못 민다
   const mv = vType(v).mass, mo = vType(o).mass, cap = 150 * mv / mo; if (Math.abs(v.v) > cap) v.v = Math.sign(v.v) * cap;
-  o.v = 0; o.stopT = 0; o.crashUntil = S.t + 1.2; o.pushedT = S.t;
+  o.v = 0; o.stopT = 0; o.crashUntil = S.t + 1.2; o.pushedT = S.t; o.pushBy = v;
   if (S.t > (v.pushSnd || 0)) { v.pushSnd = S.t + 0.35; play('metal', 0.18, 0.5); }
   return true;
 }

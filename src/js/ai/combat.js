@@ -10,7 +10,11 @@ function updateGun(g, dt, sameF) {
     g.aim = 0; g.gunCd = GUN_CD; g.shotT = S.t; if (STAGE.cityLife && typeof gunSound === 'function') gunSound(GUN_FX.npc, Math.max(0.4, proxVol(g))); else sfx('gun'); noise(g.x, g.y, 520, 'shot', flOf(g)); S.shakeT = Math.max(S.shakeT || 0, 0.12);
     if(pixelFxEnabled())spawnEffect('muzzle',{x:g.x+Math.cos(g.a)*18,y:g.y-23+Math.sin(g.a)*12,fl:flOf(g),z:g.z||0},{angle:g.a});
     else S.fx.push({ k: 'muzzle', x: g.x + Math.cos(g.a) * 18, y: g.y + Math.sin(g.a) * 18, t: 0 });
-    if (canSee(g, P.x, P.y, Math.max(0.4, P.light), P.hidden, P.mode === 'sneak', P.z, flOf(P)) > 0) hurtPlayer(null, '총에 맞았다.',g);
+    // 자유 모드 경찰: 움직이는 표적은 잘 못 맞힌다 (★2 45% · ★3 55% · ★4+ 65%, 달리면·차 뒤면 더 낮게). 빗나가면 총알이 옆으로 날아간다
+    const seeP = canSee(g, P.x, P.y, Math.max(0.4, P.light), P.hidden, P.mode === 'sneak', P.z, flOf(P)) > 0;
+    const hitP = !STAGE.cityLife ? seeP : seeP && Math.random() < (S.wanted >= 4 ? 0.65 : S.wanted >= 3 ? 0.55 : 0.45) * (P.moving && P.mode === 'run' ? 0.7 : 1);
+    if (STAGE.cityLife && typeof bulletFly === 'function') { const mx = g.x + Math.cos(g.a) * 18, my = g.y - 23 + Math.sin(g.a) * 12; bulletFly(mx, my, P.x + (hitP ? 0 : rnd(-34, 34)), P.y - 12 + (hitP ? 0 : rnd(-30, 30)), GUN_FX.npc, hitP ? 'body' : null); }
+    if (hitP) hurtPlayer(null, '총에 맞았다.',g);
     else toast('총알이 빗나갔다', 1.2);
   }
   return true;

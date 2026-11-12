@@ -89,7 +89,8 @@ function fireWeapon(inCar) {
     S.shakeT = Math.max(S.shakeT || 0, FX.shake); if (FX.casing) (S.fireParts || (S.fireParts = [])).push({ kind: 'debris', x: P.x, y: P.y - 10, vx: Math.cos(a0 + Math.PI / 2) * 80, vy: -40, t: 0, life: 0.4, size: 1.5, rot: 0 });  // 탄피
     for (let k = 0; k < W.pellets; k++) shootRay(mx, my, a0 + rnd(-W.spread, W.spread), W.range, W.dmg, W.sniper && P.z > 0, FX);
     const loud = W.silent ? 140 : 700 * W.sound; noise(P.x, P.y, loud, 'gun', 0);  // 소음 권총: 바로 옆에서만 들린다
-    if (!S.wanted || S.wanted < 2) { if (witnessed(P.x, P.y, W.silent ? 170 : 520)) addWanted(S.wanted ? 1 : 2, W.silent ? '쏘는 걸 누가 봤다' : '총소리에 신고가 들어갔다'); }
+    // 아무도 안 맞힌 총질: 처음엔 별 하나(경찰은 맨손으로 잡으러 온다). 계속 쏘면(목격된 총성 8발) 별 둘 — 그때부터 경찰도 총을 꺼낸다
+    if ((!S.wanted || S.wanted < 2) && witnessed(P.x, P.y, W.silent ? 170 : 520)) { if (!S.wanted) { S.gunHeat = 0; addWanted(1, W.silent ? '쏘는 걸 누가 봤다' : '총소리에 신고가 들어갔다'); } else if ((S.gunHeat = (S.gunHeat || 0) + 1) >= 8) { S.gunHeat = 0; addWanted(1, '총질을 멈추지 않는다'); } }
     for (const g of actorsNearWide(P.x, P.y, W.silent ? 150 : 500)) if (g.civ && npcAlive(g) && g.state !== 'PANIC') civPanic(g, P.x, P.y, 8); });
   if ((S.guns[S.wpn] || 0) <= shots) after(0.3, () => { if ((S.guns[S.wpn] || 0) <= 0) { evBanner(`${WEAPONS[S.wpn]?.name || ''} 탄약이 떨어졌다`); cycleWeapon(); } });
 }
