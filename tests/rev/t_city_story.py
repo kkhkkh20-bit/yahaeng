@@ -47,6 +47,15 @@ async def main():
           return{sign:true,label,began,done:!S.hit,dead:g.state==='DEAD',banner:(document.getElementById('evBanner')||{}).textContent||''}}''')
         print('sign', json.dumps(r, ensure_ascii=False))
         ok(r['sign'] and r['label'] and '간판' in r['label'] and r['began'] and r['dead'] and r['done'] and '간판 사고 성공' in r['banner'], 'sign drop contract: %s' % r)
+        # 뺑소니: 차로 치면 성공
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,E=G.events,T=G.traffic,P=S.player;S.hit=null;S.job=null;S.wanted=0;P.z=0;P.trav=null;const plan=E.planHit();plan.ctr='roadkill';E.startHit(plan);const h=S.hit,g=h.g;
+          const ry=G.STAGE.roadsY[2],rx=G.STAGE.roadsX[2],y=(ry+3)*48,x=(rx+8)*48;for(const o of S.vehicles)if(Math.abs(o.x-x)<900&&Math.abs(o.y-y)<300){o.x=-9999;o.ai=false;}
+          for(const e of h.escorts){e.x=-9000;e.route=[{x:-9000,y:-9000,pause:999}];}g.x=x+220;g.y=y;g.route=[{x:g.x,y:g.y,pause:999}];g.path=null;g.state='PATROL';
+          const me=T.makeVehicle({type:'sedan',x,y,a:0,parked:true});me.unlocked=true;S.vehicles.push(me);P.car=me;me.ai=false;P.x=x;P.y=y;
+          for(let k=0;k<300&&S.hit;k++){T.updateDriving(P,0,-1,1,1/60);G.update(1/60);}
+          return{dead:g.state==='DEAD',done:!S.hit,banner:(document.getElementById('evBanner')||{}).textContent||''}}''')
+        print('roadkill', json.dumps(r, ensure_ascii=False))
+        ok(r['dead'] and r['done'] and '뺑소니 성공' in r['banner'], 'roadkill contract: %s' % r)
         ok(not errs, 'page errors: %s' % errs)
         await b.close()
     print('통과' if not bad else '문제', bad)

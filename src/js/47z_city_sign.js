@@ -11,15 +11,15 @@ function signStart(h) {
     const a = route[i], b = route[(i + 1) % route.length], ax = Math.floor(a.x / TILE), ay = Math.floor(a.y / TILE), bx = Math.floor(b.x / TILE), by = Math.floor(b.y / TILE);
     if (ay !== by) continue;  // 가로로 걷는 보도 구간만: 그 위(북쪽)가 건물 정면이다
     for (let x = Math.min(ax, bx) + 2; x <= Math.max(ax, bx) - 2; x++) {
-      const bi = bldAt(x, ay - 1); if (bi < 0) continue; const B = BLD[bi]; if (!B || B.y1 !== ay - 1 || !(lvAt(x, ay - 1) > 0)) continue;
+      const bi = bldAt(x, ay - 1); if (bi < 0) continue; const B = BLD[bi]; if (!B || B.y1 !== ay - 1) continue; const ey = B.y1 - (B.fh || 0); if (ey < B.y0 || !(rLv(x, ey) > 0)) continue;  /* 매다는 곳은 정면 벽 위, 옥상 끝 줄 */
       const pipe = pipes.find(l => l.bx >= B.x0 && l.bx <= B.x1 && l.by === B.y1 + 1 && Math.abs(l.bx - x) <= 8);
-      if (pipe) cands.push({ x, y: ay - 1, pipe, d: Math.abs(pipe.bx - x) });
+      if (pipe) cands.push({ x, y: ey, ay, pipe, d: Math.abs(pipe.bx - x) });
     }
   }
   if (!cands.length) return false;
   cands.sort((p, q) => p.d - q.d || p.x - q.x);
   const c = cands[(cands.length / 3) | 0];
-  const t = { k: 'drop', at: [c.x, c.y], hit: [c.x - 1, c.y + 1, c.x + 1, c.y + 1], text: '낡은 간판', i: 7, cityHit: h };
+  const t = { k: 'drop', at: [c.x, c.y], hit: [c.x - 1, c.ay, c.x + 1, c.ay], text: '낡은 간판', i: 7, cityHit: h };
   S.traps.push(t); h.sign = t; h.signPipe = c.pipe;
   return true;
 }
