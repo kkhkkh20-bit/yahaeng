@@ -56,6 +56,7 @@ function carTheftUpdate(dt) {
 }
 // 차 그림 안(차 좌표계)에서: 경보 깜빡이 · 따는 중 반짝이는 자물쇠 · 깨진 창
 function drawCarTheft(v) {
+  if (v.hazardT > S.t && ((S.t * 2.5) | 0) % 2) { ctx.fillStyle = '#ffa020'; for (const [x, y] of [[-19, -44], [15, -44], [-19, 41], [15, 41]]) ctx.fillRect(x, y, 4, 3); }  // 사고 난 차 비상등
   if (v.alarmT > S.t && ((S.t * 4) | 0) % 2) { ctx.fillStyle = '#ffb030'; for (const [x, y] of [[-19, -44], [15, -44], [-19, 41], [15, 41]]) ctx.fillRect(x, y, 4, 3); }
   if (v.glassBroken) { ctx.fillStyle = 'rgba(205,230,245,.85)'; for (const [x, y] of [[-21, -14], [-20, -8], [-21, -3], [-19, -11]]) ctx.fillRect(x, y, 2, 2); }
 }

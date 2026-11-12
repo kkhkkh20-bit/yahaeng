@@ -160,6 +160,7 @@ function aiDrive(v, dt) {
   if (blk) { v.stopT += dt; want = 0;
     if (blk !== 'car' && v.stopT > 1.4 && (v.honkT -= dt) <= 0) { v.honkT = 2.5; play('metal', 0.25 * proxVol(v), 2.4); if (blk === 'ped' || blk === 'me') noise(v.x, v.y, 120, 'car', 0); }
   } else v.stopT = 0;
+  if (v.panicT > S.t) { want = Math.max(want, v.panicSpd); v.stopT = 0; }  // 다중 추돌: 앞차가 섰는데 미처 못 선다
   if((v.crashUntil||0)>S.t)want=0;
   const stop=trafficStopDistance(v);if(stop!=null)want=Math.min(want,Math.sqrt(2*CAR_BRAKE*Math.max(0,stop-6)),Math.max(0,stop-6)/Math.max(dt,1/60));  // 먼 차는 큰 걸음으로 움직여도 정지선을 넘지 않게
   if (v.chase && copCarArrive(v, dt)) return;
@@ -325,6 +326,7 @@ const carPts = v => { const hl = v.hl ?? 25, ca = Math.cos(v.a), sa = Math.sin(v
 function carOverlap(v) {
   const R = v.r || CAR_R;
   if (deckBlocked(v)) return true;
+  if (STAGE.cityLife && rubbleBlocks(v)) return true;  // 무너진 고가·건물 잔해
   for (const [px, py] of carPts(v)) {
     if ((v.z || 0) > 0.15) break;  // 고가 위·떨어지는 중: 땅의 벽·건물은 아래에 있다
     const tx0 = Math.floor((px - R) / TILE), tx1 = Math.floor((px + R) / TILE), ty0 = Math.floor((py - R) / TILE), ty1 = Math.floor((py + R) / TILE);
@@ -356,7 +358,7 @@ function carMove0(v, dt, turn=0) {
    if(!o)continue;
    const speed=Math.abs(v.v),hit=o===true?speed:Math.max(0,(v.v*Math.cos(v.a)-(o.v||0)*Math.cos(o.a))*(o.x-v.x)/Math.max(1,dist(v.x,v.y,o.x,o.y))+(v.v*Math.sin(v.a)-(o.v||0)*Math.sin(o.a))*(o.y-v.y)/Math.max(1,dist(v.x,v.y,o.x,o.y)));
    v.x=ox;v.y=oy;v.a=oa;v.v=v.ai?0:-v.v*.2;if(v.va!=null)v.va=v.a;
-   if(o!==true){o.v=0;o.stopT=0;v.crashUntil=o.crashUntil=S.t+.8;}
+   if(o!==true){o.v=0;o.stopT=0;v.crashUntil=o.crashUntil=S.t+.8;if(STAGE.cityLife){if(v.panicT>S.t||o.panicT>S.t)pileHit(v,o);else if(S.player.car===v&&o.ai&&speed>200)pileupBehind(o);}}
    if(hit>60&&(v.impactAfter||0)<=S.t){
     v.impactAfter=S.t+.65;if(o!==true)o.impactAfter=S.t+.65;
     const x=o===true?v.x+Math.cos(v.a)*40:(v.x+o.x)/2,y=o===true?v.y+Math.sin(v.a)*40:(v.y+o.y)/2;
@@ -365,7 +367,7 @@ function carMove0(v, dt, turn=0) {
     const near=clamp(1-dist(x,y,S.player.x,S.player.y)/600,0,1);
     if(near){crashSound(hit,near);if(hit>140)S.shakeT=Math.max(S.shakeT||0,.08*near);}
     // 무거운 차와 부딪히면 가벼운 차가 더 크게 망가진다 (버스·트럭에 받히면 승용차는 두세 칸)
-    if(hit>(STAGE.cityLife?230:175)){const mv=vType(v).mass,mo=o===true?3:vType(o).mass;v.hp-=Math.max(1,Math.round(mo/mv));v.smoke=1.5;if(o!==true){o.hp-=Math.max(1,Math.round(mv/mo));o.smoke=1.5;}const wreck=STAGE.cityLife?carExplode:carWreck;if(v.hp<=0)wreck(v);if(o!==true&&o.hp<=0)wreck(o);}
+    if(hit>(STAGE.cityLife?(v.panicT>S.t||(o!==true&&o.panicT>S.t)?110:230):175)){const mv=vType(v).mass,mo=o===true?3:vType(o).mass;v.hp-=Math.max(1,Math.round(mo/mv));v.smoke=1.5;if(o!==true){o.hp-=Math.max(1,Math.round(mv/mo));o.smoke=1.5;}const wreck=STAGE.cityLife?carExplode:carWreck;if(v.hp<=0)wreck(v);if(o!==true&&o.hp<=0)wreck(o);}
    }
    return speed;
   }
@@ -503,7 +505,7 @@ function honk() { const v = S.player.car; if (!v || (v.honkT || 0) > S.t) return
 function drawVehicles() {
   if (!S.vehicles) return;
   const vx0 = cam.x - W / SCALE / 2 - 120, vx1 = cam.x + W / SCALE / 2 + 120, vy0 = cam.y - H / SCALE / 2 - 120, vy1 = cam.y + H / SCALE / 2 + 120;
-  if (STAGE.cityLife) { drawSkids(); drawCarScorch(); drawGlassBits(); }
+  if (STAGE.cityLife) { drawSkids(); drawCarScorch(); drawGlassBits(); drawRubble(); }
   if (S.decks?.length) drawDeckShadows();
   for (const v of S.vehicles) {
     if (v.x < vx0 || v.x > vx1 || v.y < vy0 || v.y > vy1 || (v.z || 0) > 0.01) continue;  // 고가 위 차는 drawDecks에서

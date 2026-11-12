@@ -7,8 +7,8 @@ const SHOP_ITEMS = {
   약국: [{ name: '구급약 (체력 가득)', price: 40, can: P => P.hp < P.hpMax, buy: P => { P.hp = P.hpMax; } }],
   편의점: [{ name: '담배 한 갑 (+3)', price: 5, buy: P => { P.coins = (P.coins || 0) + 3; } }, { name: '빈 캔 세 개 (+3)', price: 3, buy: P => { P.stones = (P.stones || 0) + 3; } },
     { name: '구급약 (체력 +1)', price: 15, can: P => P.hp < P.hpMax, buy: P => { P.hp = Math.min(P.hpMax, P.hp + 1); } }],
-  철물: [{ name: '락픽 두 개 (+2) — 잠긴 차 따기', price: 25, buy: P => { P.picks = (P.picks || 0) + 2; } }, { name: '다트 세 개 (+3)', price: 30, buy: P => { P.kunai = (P.kunai || 0) + 3; } }, { name: '연막탄 (+1)', price: 40, buy: P => { P.smokes = (P.smokes || 0) + 1; } }],
-  공구: [{ name: '락픽 두 개 (+2) — 잠긴 차 따기', price: 25, buy: P => { P.picks = (P.picks || 0) + 2; } }, { name: '다트 세 개 (+3)', price: 30, buy: P => { P.kunai = (P.kunai || 0) + 3; } }, { name: '연막탄 (+1)', price: 40, buy: P => { P.smokes = (P.smokes || 0) + 1; } }],
+  철물: [{ name: '락픽 두 개 (+2) — 잠긴 차 따기', price: 25, buy: P => { P.picks = (P.picks || 0) + 2; } }, { name: '폭약 (+1) — 교각·작은 건물', price: 150, buy: P => { P.bombs = (P.bombs || 0) + 1; } }, { name: '다트 세 개 (+3)', price: 30, buy: P => { P.kunai = (P.kunai || 0) + 3; } }, { name: '연막탄 (+1)', price: 40, buy: P => { P.smokes = (P.smokes || 0) + 1; } }],
+  공구: [{ name: '락픽 두 개 (+2) — 잠긴 차 따기', price: 25, buy: P => { P.picks = (P.picks || 0) + 2; } }, { name: '폭약 (+1) — 교각·작은 건물', price: 150, buy: P => { P.bombs = (P.bombs || 0) + 1; } }, { name: '다트 세 개 (+3)', price: 30, buy: P => { P.kunai = (P.kunai || 0) + 3; } }, { name: '연막탄 (+1)', price: 40, buy: P => { P.smokes = (P.smokes || 0) + 1; } }],
 };
 const RESPRAY_PRICE = 50, SELL_RATE = 0.3;
 function shopsInit() {

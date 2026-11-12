@@ -350,6 +350,10 @@
       "group": "city"
     },
     {
+      "path": "47m_city_havoc.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },

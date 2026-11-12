@@ -12,7 +12,7 @@ function advanceGameFrame(elapsed) {
   let advanced=false;
   for(let i=0;i<count;i++){
     if(!running||paused||S.over||tactical||DLG.modal||hudInspecting())break;
-    let dt=step;if(S.hitStop>0){S.hitStop-=step;dt=step*.06;}
+    let dt=step;if(S.hitStop>0){S.hitStop-=step;dt=step*.06;}else if(S.slowMo>0){S.slowMo-=step;dt=step*.35;}  // 자유 모드 큰 폭발·붕괴: 짧은 느린 화면
     advanced=true;
     if(input.aiming)focusUpdate(dt,false);else update(dt,false);
   }
