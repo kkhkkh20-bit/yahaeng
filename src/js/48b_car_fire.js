@@ -15,7 +15,7 @@ function carFireUpdate(dt) {
     const k = v.hp / (v.hpMax || 6);
     if (k <= 0.25) {
       if (!v.fireT) { v.fireT = 0.001; if (near) play('kill2', 0.25); if (P.car === v) { toast('차에 불이 붙었다! 터지기 전에 [행동]으로 뛰어내려라', 3, 'warn big'); S.flash = Math.max(S.flash || 0, 0.25); } }
-      v.fireT += dt; if (near && Math.random() < dt * (30 + v.fireT * 14)) fireEmit(v, 'fire', 1);  // 터질 때가 가까울수록 더 크게 탄다
+      v.fireT += dt; if (v.fireHold && v.fireT > 1) v.fireT = 1;  // 이벤트: 내가 다가갈 때까지 불이 커지지 않는다 if (near && Math.random() < dt * (30 + v.fireT * 14)) fireEmit(v, 'fire', 1);  // 터질 때가 가까울수록 더 크게 탄다
       if (v.fireT >= CAR_FIRE_T) carExplode(v);
     } else v.fireT = 0;
     if (k <= 0.5 && near && Math.random() < dt * (k <= 0.25 ? 14 : 6)) fireEmit(v, 'smoke', 1);

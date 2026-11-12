@@ -322,6 +322,10 @@
       "group": "city"
     },
     {
+      "path": "47f_city_events.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },

@@ -51,7 +51,7 @@ function shopPanel(title, rows, onClose) {
   for (const r of rows) {
     const b = document.createElement('button'); b.type = 'button'; b.disabled = !r.ok;
     b.style.cssText = 'display:flex;justify-content:space-between;gap:20px;width:100%;margin:4px 0;padding:10px 12px;background:#1d222c;color:inherit;border:1px solid #3b4250;border-radius:4px;font:inherit;font-size:15px;cursor:pointer;opacity:' + (r.ok ? 1 : .45);
-    const a = document.createElement('span'), p = document.createElement('span'); a.textContent = r.name; p.textContent = r.price + '만'; p.style.color = '#c9a24a'; b.append(a, p);
+    const a = document.createElement('span'), p = document.createElement('span'); a.textContent = r.name; p.textContent = r.price == null ? (r.tag || '') : r.price + '만'; p.style.color = '#c9a24a'; b.append(a, p);
     b.onclick = () => { r.buy(); }; el.append(b);
   }
   const c = document.createElement('button'); c.type = 'button'; c.textContent = '나가기'; c.style.cssText = 'margin-top:8px;width:100%;padding:9px;background:none;color:#b4bcb8;border:1px solid #3b4250;border-radius:4px;font:inherit;cursor:pointer';
@@ -64,7 +64,7 @@ function shopPanel(title, rows, onClose) {
 function pay(price) { if ((S.cash || 0) < price) { play('click', 0.3); return false; } S.cash -= price; play('loot', 0.6); hudCache.objH = null; return true; }
 function openShop(s) {
   const P = S.player, items = SHOP_ITEMS[s.name] || [];
-  const show = () => shopPanel(s.name, items.map(it => ({ name: it.name, price: it.price, ok: (S.cash || 0) >= it.price && (!it.can || it.can(P)), buy: () => { if ((!it.can || it.can(P)) && pay(it.price)) { it.buy(P); if (typeof syncTools === 'function') syncTools(); show(); } } })));
+  const show = () => shopPanel(s.name + repTag(evDist(P.x, P.y)), items.map(it => ({ name: it.name, price: repPrice(it.price), ok: (S.cash || 0) >= repPrice(it.price) && (!it.can || it.can(P)), buy: () => { if ((!it.can || it.can(P)) && pay(repPrice(it.price))) { it.buy(P); if (typeof syncTools === 'function') syncTools(); show(); } } })));
   show();
 }
 function openDealer() {
@@ -82,7 +82,7 @@ function sellCar(v) {
 function shopsUpdate(dt) {
   if (!STAGE.cityLife) return;
   const P = S.player, name = STAGE.districtAt?.(Math.floor(P.x / TILE), Math.floor(P.y / TILE));
-  if (name && name !== S.districtName) { S.districtName = name; showDistrict(name); }
+  if (name && name !== S.districtName) { S.districtName = name; showDistrict(name + repTag(name === '청계천' ? '청계천 상가' : name)); }
   const v = P.car;
   if (v && v.forSale) {  // 값을 안 내고 탔다: 훔친 차
     v.forSale = null; addWanted(2, '전시장 차를 훔쳤다'); play('metal', 0.6, 2.2); noise(v.x, v.y, 420, 'alarm', 0);

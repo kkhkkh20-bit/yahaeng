@@ -102,7 +102,7 @@ function updateVehicles(dt) {
   for (const v of S.vehicles) {
     if (v.dead) { v.burn = Math.max(0, v.burn - dt); if ((v.z || 0) > 0.001) deckStep(v, dt); continue; }  // 부서진 차도 공중이면 떨어진다
     if (v.smoke > 0) v.smoke -= dt;
-    if (v === (S.player.car || {})) continue;  // 내 차는 updateDriving
+    if (v === (S.player.car || {}) || v.scripted) continue;  // 내 차는 updateDriving · 이벤트가 직접 움직이는 차
     if (!v.ai) { if (Math.abs(v.v) > 1) { v.v *= Math.pow(0.08, dt); carMove(v, dt); } continue; }  // 주인 없는 차: 미끄러지다 선다
     let vdt = dt;
     if (STAGE.city) { vdt = cityLodStep(v, dt, cityLodVehicleCalm(v)); if (!vdt) continue; }  // 도시: 멀리서 그냥 다니는 차는 덜 자주

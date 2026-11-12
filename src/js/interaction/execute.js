@@ -13,6 +13,7 @@ function actPrimary(force) {
     case 'leave': leaveHide(); break;
     case 'carIn': carEnter(a.v); break;
     case 'carOut': carExit(); break;
+    case 'evAct': a.fn && a.fn(); break;
     case 'contract': cityContract(a.c); break;
     case 'shop': openShop(a.s); break;
     case 'dealer': openDealer(); break;

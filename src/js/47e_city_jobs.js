@@ -151,13 +151,13 @@ function loadFreeProgress() {
   if (!STAGE.freeMode) return; let d = null;
   try { d = JSON.parse(localStorage.getItem(FREE_SAVE) || 'null'); } catch (e) {}
   if (!d) return;
-  S.cash = Math.max(0, d.cash | 0); S.jobN = d.jobN | 0; S.hitN = d.hitN | 0; S.freeLoaded = true;
+  S.cash = Math.max(0, d.cash | 0); S.jobN = d.jobN | 0; S.hitN = d.hitN | 0; S.rep = d.rep && typeof d.rep === 'object' ? d.rep : {}; S.freeLoaded = true;
   if (!STAGE.noPrompts && (S.cash || S.jobN)) toast(`이어서 · 수입 ${S.cash}만`, 2, 'good');
 }
 function saveFreeProgress(force) {
   if (!STAGE.freeMode || !S) return;
   if (!force && S.t - (S.freeSaveT || 0) < 2) return; S.freeSaveT = S.t;
-  const d = { cash: S.cash | 0, jobN: S.jobN | 0, hitN: S.hitN | 0 }, k = JSON.stringify(d);
+  const d = { cash: S.cash | 0, jobN: S.jobN | 0, hitN: S.hitN | 0, rep: S.rep || {} }, k = JSON.stringify(d);
   if (k === S.freeSaveK) return; S.freeSaveK = k;
   try { localStorage.setItem(FREE_SAVE, k); } catch (e) {}
 }
@@ -167,6 +167,7 @@ function drawMiniCity(x, T) {
   const blink = Math.floor(S.t * 4) % 2 === 0;
   if (S.dealer) { const D = S.dealer; x.fillStyle = '#6aa8ff'; x.fillRect(T((D.lot[0] + D.lot[2]) / 2) - 3, T((D.lot[1] + D.lot[3]) / 2) - 3, 6, 6); }
   if (S.ringPhone && blink) { x.fillStyle = '#7fe0a8'; x.beginPath(); x.arc(T(S.ringPhone.x), T(S.ringPhone.y), 3.5, 0, TAU); x.fill(); }
+  if (S.ev && !S.ev.done && dist(S.ev.x, S.ev.y, S.player.x, S.player.y) < 1800 && blink) { x.fillStyle = '#ff5a46'; x.beginPath(); x.arc(T(S.ev.x), T(S.ev.y), 3.5, 0, TAU); x.fill(); }
   const g = (S.job || S.hit) && hitGoal();
   if (g && g.x != null) { x.strokeStyle = '#ffd066'; x.lineWidth = 2; x.beginPath(); x.arc(T(g.x), T(g.y), blink ? 6 : 4.5, 0, TAU); x.stroke(); }
 }

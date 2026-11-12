@@ -21,6 +21,7 @@ function streetInit() {
 }
 // 범행을 본 사람이 있나 (주민·경찰, 같은 층, 가까이, 시선이 닿음)
 function witnessed(x, y, r) {
+  if (STAGE.cityLife) r *= repWitnessMul(x, y);  // 구역 평판: 높으면 덜 신고한다
   return S.guards.some(g => (g.civ || g.police) && g.state !== 'DEAD' && !g.off && !g.child && !flOf(g) && dist(g.x, g.y, x, y) < r && los(g.x, g.y, x, y) && (g.state === 'PANIC' || Math.abs(angDiff(g.a, Math.atan2(y - g.y, x - g.x))) < 1.6));
 }
 function addWanted(n, why) {
@@ -129,6 +130,7 @@ function cityRespawn(why) {
 function cityAction() {
   const P = S.player;
   if (STAGE.cityLife) { const a = shopAction(); if (a) return a; }
+  { const e = eventAction(); if (e) return e; }  // 구역 이벤트 (차 안에서도: 드래그 레이스)
   if (P.car) return { k: 'carOut', v: P.car, label: P.car.fireT > 0 ? '뛰어내리기!' : '차에서 내리기' };
   if (P.z || flOf(P) || P.hide) return null;
   if (STAGE.hits) { const h = hitAction(); if (h) return h; }
