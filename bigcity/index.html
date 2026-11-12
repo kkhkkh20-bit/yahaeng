@@ -8557,8 +8557,8 @@ for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { if (on
 let radioNodes = null, radioOn = false;
 function musicRadio(on) {
   if (!AC || !musicGain || on === radioOn) return; radioOn = on;
-  if (!radioNodes) { const hp = AC.createBiquadFilter(), lp = AC.createBiquadFilter(), sh = AC.createWaveShaper(), g = AC.createGain(); hp.type = 'highpass'; hp.frequency.value = 380; lp.type = 'lowpass'; lp.frequency.value = 3400;
-    const c = new Float32Array(256); for (let i = 0; i < 256; i++) { const x = i / 128 - 1; c[i] = Math.tanh(x * 1.8); } sh.curve = c; g.gain.value = 0.9; hp.connect(lp); lp.connect(sh); sh.connect(g); g.connect(master); radioNodes = { hp }; }
+  if (!radioNodes) { const hp = AC.createBiquadFilter(), lp = AC.createBiquadFilter(), sh = AC.createWaveShaper(), g = AC.createGain(); hp.type = 'highpass'; hp.frequency.value = 60; lp.type = 'lowpass'; lp.frequency.value = 9000;  /* 차 오디오: 베이스·킥이 살게 */
+    const c = new Float32Array(256); for (let i = 0; i < 256; i++) { const x = i / 128 - 1; c[i] = Math.tanh(x * 1.2); } sh.curve = c; g.gain.value = 0.9; hp.connect(lp); lp.connect(sh); sh.connect(g); g.connect(master); radioNodes = { hp }; }
   try { musicGain.disconnect(); } catch (e) {}
   musicGain.connect(on ? radioNodes.hp : master);
   const n = AC.sampleRate * 0.18 | 0, b = AC.createBuffer(1, n, AC.sampleRate), d = b.getChannelData(0); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
@@ -8597,7 +8597,7 @@ function updateMusicMix() {
   }
 }
 function setMusic(k, force=false) {
-  if (!AC || !['n_calm','n_tense','n_fight','n_title'].includes(k)) return;
+  if (!AC || !['n_calm','n_tense','n_fight','n_title','n_drive'].includes(k)) return;
   wantedMusic = k;
   if (!SCORE[k] && !scoreFailed.has(k)) loadScore(k);
   if (!force && musicKey === k) return;
@@ -8611,14 +8611,14 @@ function setMusic(k, force=false) {
   if (musicSrc) { const old = musicSrc;old._g.gain.cancelScheduledValues(now);old._g.gain.setTargetAtTime(0,now,.28);setTimeout(()=>{try{old.stop();old.disconnect();old._g.disconnect();}catch(e){}},2200); }
   const src = AC.createBufferSource();src.buffer=buffer;src.loop=true;
   const g=AC.createGain();g.gain.value=0;
-  const level=recorded ? (k==='n_fight'?.6:.65) : (k==='n_calm'?.08:k==='n_tense'?.17:.2);
+  const level=recorded ? (k==='n_fight'?.6:.65) : (k==='n_calm'?.08:k==='n_tense'?.17:k==='n_drive'?.24:.2);
   g.gain.setTargetAtTime(level,now,k==='n_fight'?.22:.65);
   src.connect(g);g.connect(musicGain);src._g=g;src._recorded=recorded;src.start();musicSrc=src;musicKey=k;updateMusicMix();
 }
 // 도시 음악: 네온 신스 3단계 (평상시 · 의심 · 발각) — 직접 합성, 루프
 // 합성 본체: 순수 함수라 작업자(Web Worker)에서도 돈다 — 판 시작 때 0.6초 넘게 화면이 멈추던 원인
 function neonSynth(kind, sr) {
-  const TAU = Math.PI * 2, BPM = kind === 'n_calm' ? 72 : kind === 'n_tense' ? 96 : 132, beat = 60 / BPM, bars = 8, len = Math.floor(sr * beat * 4 * bars);
+  const TAU = Math.PI * 2, BPM = kind === 'n_calm' ? 72 : kind === 'n_tense' ? 96 : kind === 'n_drive' ? 118 : 132, beat = 60 / BPM, bars = 8, len = Math.floor(sr * beat * 4 * bars);
   const L = new Float32Array(len), R = new Float32Array(len);
   const hz = m => 440 * Math.pow(2, (m - 69) / 12), at = b => Math.floor(b * beat * sr);
   const add = (i, l, r) => { i %= len; L[i] += l; R[i] += r == null ? l : r; };
@@ -8657,6 +8657,19 @@ function neonSynth(kind, sr) {
     for (let b = 0; b < B; b += 4) { kick(b, 0.55); kick(b + 0.75, 0.35); }
     for (let c = 0; c < 4; c++) for (const m of [57, 60, 63]) note(c * 8 + 6, 2, m, { att: 0.6, rel: 0.6, cut: 1200, vol: 0.05, det: 0.008 });
     delay(beat * 0.5, 0.35, 0.4);
+  } else if (kind === 'n_drive') {
+    // 차 안 라디오: 신나는 신스웨이브 (118BPM) — 쿵쿵 네 박 · 엇박 하이햇 · 2·4 박수 · 8분 옥타브 베이스 · 톱니 화음 · 귀에 남는 리드
+    const prog = [[45, 57, 60, 64], [41, 53, 57, 60], [36, 55, 60, 64], [43, 55, 59, 62]];
+    for (let b = 0; b < B; b++) { kick(b, 0.8); noiseHit(b + 0.5, 0.07, 0.11, true, 0.25); if (b % 2) { noiseHit(b, 0.12, 0.22, false); noiseHit(b + 0.02, 0.1, 0.12, true, -0.2); } }
+    for (let k = 0; k < B * 4; k++) noiseHit(k / 4 + 0.25, 0.02, 0.03, true, 0.4);
+    for (let c = 0; c < 8; c++) { const ch = prog[c % 4], b0 = c * 4;
+      for (let k = 0; k < 8; k++) note(b0 + k / 2, 0.42, ch[0] - 12 + (k % 2 ? 12 : 0), { cut: 900, sweep: 1.5, vol: 0.2, det: 0.004 });  // 옥타브 베이스
+      for (const s of [0, 1.5, 3]) for (const m of ch.slice(1)) note(b0 + s, 0.9, m, { cut: 2200, dec: 2.5, vol: 0.05, det: 0.006, pan: (m % 3 - 1) * 0.45 });  // 톱니 화음 끊어 치기
+    }
+    const lead = [76, 74, 72, 74, 76, 79, 76, 74, 72, 71, 72, 74, 72, 69, 67, 69];
+    for (let k = 0; k < 16; k++) { const b0 = 16 + k; note(b0, 0.45, lead[k], { wave: 'sq', dec: 3, cut: 3000, vol: 0.075, pan: 0.2 }); note(b0 + 0.5, 0.3, lead[k] - 12, { wave: 'tri', dec: 6, cut: 2400, vol: 0.06, pan: -0.25 }); }
+    for (let k = 0; k < 32; k++) note(k / 2 + 0.25, 0.2, [69, 72, 76, 72][k % 4] + 12, { wave: 'tri', dec: 9, cut: 3600, vol: 0.05, pan: k % 2 ? 0.5 : -0.5 });  // 앞 4마디 아르페지오
+    delay(beat * 0.75, 0.35, 0.35);
   } else {
     for (let b = 0; b < B; b++) kick(b, 0.85);
     for (let b = 1; b < B; b += 2) { noiseHit(b, 0.16, 0.32, false); note(b, 0.1, 50, { wave: 'sin', dec: 30, vol: 0.25 }); }
@@ -8676,7 +8689,7 @@ function makeNeonLoop(kind) { return toBuf(neonSynth(kind, AC.sampleRate)); }
 let neonW = null; const neonPending = {};
 function prepNeonMusic() {
   if (!AC) return;
-  const ks = ['n_calm', 'n_tense', 'n_fight'].filter(k => !MB[k] && !neonPending[k]); if (!ks.length) return;
+  const ks = ['n_calm', 'n_tense', 'n_fight', ...(typeof STAGE !== 'undefined' && STAGE?.cityLife ? ['n_drive'] : [])].filter(k => !MB[k] && !neonPending[k]); if (!ks.length) return;
   try {
     if (!neonW) { neonW = new Worker(URL.createObjectURL(new Blob([neonSynth.toString() + '\nonmessage = e => { const r = neonSynth(e.data.k, e.data.sr); postMessage({ k: e.data.k, L: r.L, R: r.R }, [r.L.buffer, r.R.buffer]); };'], { type: 'text/javascript' })));
       neonW.onmessage = e => { const { k, L, R } = e.data; delete neonPending[k]; if (!MB[k]) MB[k] = toBuf({ L, R }); if (wantedMusic === k && !SCORE[k]) setMusic(k, true); }; }
@@ -8727,6 +8740,29 @@ function play(name, vol = 0.6, rate = 1) {
 }
 
 
+// 차 충돌음 (합성, 한 번 만들어 둔다): 쿵 하는 낮은 울림 + 찌그러지는 철판의 바스락·우지끈 + 짧은 쇳소리 울림
+function buildCrunch() {
+  const sr = AC.sampleRate, n = Math.floor(sr * 0.7), b = AC.createBuffer(1, n, sr), d = b.getChannelData(0); let lp = 0, lp2 = 0;
+  const parts = [[523, .35], [811, .25], [1277, .18], [1906, .1]];
+  for (let i = 0; i < n; i++) {
+    const t = i / sr, thump = Math.sin(2 * Math.PI * (38 * t + 40 * (1 - Math.exp(-t * 25)) / 25)) * Math.exp(-t * 14) * 0.9;
+    const crack = Math.random() < 0.004 * Math.exp(-t * 5) ? (Math.random() * 2 - 1) * 3 : 0;  // 우지끈: 드문드문 튀는 큰 알갱이
+    const nz = Math.random() * 2 - 1 + crack; lp += 0.32 * (nz - lp); lp2 += 0.12 * (lp - lp2);
+    const crumple = (lp - lp2 * 0.6) * Math.exp(-t * 6.5) * (0.75 + 0.25 * Math.sin(t * 90));
+    let ring = 0; for (const [f, a] of parts) ring += Math.sin(2 * Math.PI * f * t + f) * a; ring *= Math.exp(-t * 11) * 0.22;
+    d[i] = Math.max(-1, Math.min(1, thump + crumple * 0.9 + ring));
+  }
+  return b;
+}
+// 부딪힌 세기만큼: 살짝 = 낮게 찌그럭 / 세게 = 쾅 + 유리 / 아주 세게 = 쾅 + 유리 + 철판 끌림
+function crashSound(hit, near = 1) {
+  if (!AC || muted) return; if (!SB.crunch) SB.crunch = buildCrunch();
+  const k = Math.min(1, hit / 420) * near;
+  play('crunch', 0.35 + 0.6 * k, hit > 300 ? 0.82 : hit > 160 ? 0.95 : 1.15);
+  if (hit > 120) play('thud', 0.5 * k + 0.15 * near);
+  if (hit > 230) play('glass', 0.55 * k);
+  if (hit > 360) play('metal', 0.3 * k, 0.55);
+}
 // ---------------------------------------------------------------- 합성 효과음 (파일 없이 WebAudio로)
 // 히트맨식 '암살 스팅어'(조용한 처치에 붙는 짧고 추상적인 소리 — 플레이어만 듣는다), 은신 상태 신호음, 의심 상승음, 메뉴 딸깍
 function sfx(kind) {
@@ -17162,7 +17198,8 @@ function makeVehicle(o) {
   // 몸 크기: 그림(팩의 동쪽을 본 칸)에서 잰 길이·폭. 충돌은 앞뒤로 늘어선 원으로 덮는다
   const T = vType(v), f = A.cityVehicles?.frames?.[T.model || v.type], len = T.len || f?.len || CAR_LEN, wid = T.wid || f?.wid || CAR_W;
   v.len = len; v.r = T.r || Math.max(CAR_R, Math.round(wid / 2)); v.hl = Math.max(8, len / 2 - v.r + 4);
-  if (o.hp == null) v.hp = T.hp; v.hpMax = T.hp;
+  const hpK = STAGE.cityLife ? 2 : 1;  // 자유 모드: 차가 너무 쉽게 부서지지 않게 내구성 두 배
+  if (o.hp == null) v.hp = T.hp * hpK; v.hpMax = T.hp * hpK;
   return v;
 }
 function trafficInit() {
@@ -17466,7 +17503,7 @@ function carMove0(v, dt, turn=0) {
    }
    let o=carOverlap(v);
    // 내 차가 벽을 비스듬히 받으면 멈추지 않고 벽을 따라 미끄러진다 (운전 보조): x만, y만 가 보고 되는 쪽으로
-   if(o===true&&!v.ai&&STAGE.cityLife&&S.player.car===v){const nx=v.x,ny=v.y;for(const [tx,ty] of [[nx,oy],[ox,ny]]){v.x=tx;v.y=ty;if(!carOverlap(v)){const along=Math.hypot(tx-ox,ty-oy)/Math.max(.001,Math.hypot(nx-ox,ny-oy));if(along>.35){v.v*=1-(1-along)*.5;const wa=Math.atan2(ty-oy,tx-ox)+(v.v<0?Math.PI:0);v.a+=angDiff(v.a,wa)*.12;if(v.va!=null)v.va=v.a;o=null;break;}}}if(o){v.x=nx;v.y=ny;}}
+   if(o===true&&!v.ai&&STAGE.cityLife&&S.player.car===v){const nx=v.x,ny=v.y;for(const [tx,ty] of [[nx,oy],[ox,ny]]){v.x=tx;v.y=ty;if(!carOverlap(v)){const along=Math.hypot(tx-ox,ty-oy)/Math.max(.001,Math.hypot(nx-ox,ny-oy));if(along>.35){v.v*=1-(1-along)*.5;const wa=Math.atan2(ty-oy,tx-ox)+(v.v<0?Math.PI:0),pa=v.a;v.a+=angDiff(v.a,wa)*.12;if(carOverlap(v))v.a=pa;if(v.va!=null)v.va=v.a;o=null;break;}}}if(o){v.x=nx;v.y=ny;}}
    if(!o)continue;
    const speed=Math.abs(v.v),hit=o===true?speed:Math.max(0,(v.v*Math.cos(v.a)-(o.v||0)*Math.cos(o.a))*(o.x-v.x)/Math.max(1,dist(v.x,v.y,o.x,o.y))+(v.v*Math.sin(v.a)-(o.v||0)*Math.sin(o.a))*(o.y-v.y)/Math.max(1,dist(v.x,v.y,o.x,o.y)));
    v.x=ox;v.y=oy;v.a=oa;v.v=v.ai?0:-v.v*.2;if(v.va!=null)v.va=v.a;
@@ -17477,9 +17514,9 @@ function carMove0(v, dt, turn=0) {
     S.carImpact={x,y,t:S.t,hit};
     spawnEffect('impact',{x,y,fl:0,z:0},{scale:.55,alpha:.8});
     const near=clamp(1-dist(x,y,S.player.x,S.player.y)/600,0,1);
-    if(near){play('metal',Math.min(.7,hit/400)*near,.8);play('thud',.4*near);if(hit>140)S.shakeT=Math.max(S.shakeT||0,.08*near);}
+    if(near){crashSound(hit,near);if(hit>140)S.shakeT=Math.max(S.shakeT||0,.08*near);}
     // 무거운 차와 부딪히면 가벼운 차가 더 크게 망가진다 (버스·트럭에 받히면 승용차는 두세 칸)
-    if(hit>175){const mv=vType(v).mass,mo=o===true?3:vType(o).mass;v.hp-=Math.max(1,Math.round(mo/mv));v.smoke=1.5;if(o!==true){o.hp-=Math.max(1,Math.round(mv/mo));o.smoke=1.5;}const wreck=STAGE.cityLife?carExplode:carWreck;if(v.hp<=0)wreck(v);if(o!==true&&o.hp<=0)wreck(o);}
+    if(hit>(STAGE.cityLife?230:175)){const mv=vType(v).mass,mo=o===true?3:vType(o).mass;v.hp-=Math.max(1,Math.round(mo/mv));v.smoke=1.5;if(o!==true){o.hp-=Math.max(1,Math.round(mv/mo));o.smoke=1.5;}const wreck=STAGE.cityLife?carExplode:carWreck;if(v.hp<=0)wreck(v);if(o!==true&&o.hp<=0)wreck(o);}
    }
    return speed;
   }
@@ -17509,6 +17546,7 @@ function hitPeople(v, dt) {
 function updateDriving(P, mx, my, mag, dt) {
   const v = P.car; P.moving = false; P.mode = 'walk'; P.vx = 0; P.vy = 0; P.z = 0; P.fl = 0;
   if (v.jacking) { P.x = v.x; P.y = v.y; return; }  // 차고에 들어가는 중 등 스크립트로 움직이는 차
+  if (STAGE.cityLife && carOverlap(v) === true) unstickCar(v);  // 벽에 낀 채면 가장 가까운 빈자리로 빼낸다 (앞뒤로 못 움직이는 일 없게)
   if (v.dead) { carExit(STAGE.cityLife ? true : 'instant'); return; }
   if (v.revT > 0 && (v.revT -= dt) <= 0) v.revT = 0;
   // 운전은 차 기준: 위 = 가속(전진) · 아래 = 브레이크 후 후진 · 좌우 = 핸들. 화면 방향으로 걷듯이 몰지 않는다
@@ -17537,6 +17575,12 @@ function updateDriving(P, mx, my, mag, dt) {
   hitPeople(v, dt);
   P.x = v.x; P.y = v.y; P.a = v.a; P.light = lightAt(P.x, P.y, false);
   if (Math.abs(v.v) > 60 && (v.engT = (v.engT || 0) - dt) <= 0) { v.engT = 0.5; noise(v.x, v.y, 160, 'car', 0); }
+}
+function unstickCar(v) {
+  const x0 = v.x, y0 = v.y, a0 = v.a;
+  for (let r = 6; r <= 96; r += 6) for (let k = 0; k < 16; k++) { const a = k / 16 * TAU; v.x = x0 + Math.cos(a) * r; v.y = y0 + Math.sin(a) * r; if (carOverlap(v) !== true) { v.va = v.a; return true; } }
+  for (const da of [Math.PI / 2, -Math.PI / 2]) { v.x = x0; v.y = y0; v.a = a0 + da; if (carOverlap(v) !== true) { v.va = v.a; return true; } }  // 옆으로 돌려 세우면 빠지는 자리
+  v.x = x0; v.y = y0; v.a = a0; return false;
 }
 function carWreck(v) {
   v.dead = true; v.v = 0; v.burn = 6; play('glass', 0.8); play('thud', 0.9); S.shakeT = 0.4; noise(v.x, v.y, 420, 'car', 0);
@@ -17893,7 +17937,7 @@ function screechSound() {
   SCREECH.bp.frequency.setTargetAtTime(1300 + s * 600 + Math.sin(S.t * 31) * 120, now, 0.05);
 }
 // 라디오: 차마다 맞춰 둔 방송. 쫓기지 않을 때만 틀고, 음악을 좁은 대역(작은 스피커 소리)으로 거른다
-const RADIO_STATIONS = ['n_title', 'n_calm'];
+const RADIO_STATIONS = ['n_drive'];  // 차를 타면 신나는 곡
 const carStation = v => RADIO_STATIONS[(v.id || 0) % RADIO_STATIONS.length];
 function radioWanted() { const v = S?.player?.car; return !!(STAGE.cityLife && v && !v.dead && !S.wanted && (S.moodHi || 0) < 2); }
 
@@ -18037,7 +18081,7 @@ function deckStep(v, dt) {
 function deckLand(v, hit) {
   if (hit < 2) return;
   const near = clamp(1 - dist(v.x, v.y, S.player.x, S.player.y) / 800, 0, 1);
-  play('thud', 0.5 + 0.5 * near); play('metal', 0.6 * near, .7); S.shakeT = Math.max(S.shakeT || 0, 0.15 + 0.35 * near);
+  crashSound(260 + hit * 40, 0.5 + 0.5 * near); S.shakeT = Math.max(S.shakeT || 0, 0.15 + 0.35 * near);
   if (typeof fireEmit === 'function') { fireEmit(v, 'spark', 20, v); fireEmit(v, 'debris', 6, v); }
   // 건물·벽 위로 떨어졌으면 가장 가까운 빈 자리로
   if (carOverlap(v) === true) { const x0 = v.x, y0 = v.y; let ok = false;
