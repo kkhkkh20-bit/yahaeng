@@ -52,11 +52,11 @@ const STORY_SIDE = {
     { title: '야간 배달', kind: 'parcel', pay: 260, intro: ['이번 물건은 깨지는 거다. 조심해서, 빨리.'], outro: ['한 병도 안 깨졌군. 이제 큰일을 맡기지.'] },
     { title: '얼굴 없는 손님', kind: 'hit', fac: 'C', ctr: 'photo', pay: 540, intro: ['시장에서 매번 판을 털어 가는 놈이 있다. 사진 한 장뿐이야.', '그 블록을 돌며 얼굴을 찾아서 끝내.'], outro: ['밤 시장이 다시 열린다. 넌 이제 이 시장의 손님이 아니라 주인이다.'] }] },
 };
-function storyInit() { S.story = Object.assign({ ch: 0, side: {}, failed: false }, S.storySaved || {}); if (!S.story.side) S.story.side = {}; }
+function storyInit() { S.story = Object.assign({ ch: 0, side: {}, failed: false }, S.storySaved || {}); if (!S.story.side) S.story.side = {}; S.story.nextT = 0; }
 const storyMainLeft = () => STAGE.cityLife && S.story && S.story.ch < STORY_MAIN.length;
 // 전화 한 통: 메인 이야기가 남았으면 그 장 (앞 장 결과 보고 + 이번 지령). 없으면 null → 평소 일거리
 function storyCall() {
-  if (!storyMainLeft()) return null;
+  if (!storyMainLeft() || S.t < (S.story.nextT || 0)) return null;  /* 장과 장 사이엔 평소 일거리 전화가 온다 */
   const n = S.story.ch, C = STORY_MAIN[n], plan = planHit(); if (!plan) return null;
   Object.assign(plan, { kind: 'hit', name: C.target, fac: C.fac, escorts: C.escorts, ctr: C.ctr, pay: C.pay, story: n });
   const prev = n > 0 ? STORY_MAIN[n - 1].debrief : [], retry = S.story.failed ? [['master', '지난번 일은 틀어졌다. 한 번 더 기회를 주지.']] : [];
@@ -70,7 +70,7 @@ function storyMainDone(h, ok) {
   const C = STORY_MAIN[h.story];
   evBanner(`메인 이야기 ${h.story + 1}/${STORY_MAIN.length} 완료 — ${C.title}`, '#c9a2ff');
   if (S.story.ch >= STORY_MAIN.length) after(2.5, () => say(C.debrief, true));  // 마지막 장: 바로 결말 무전
-  S.ringNext = S.t + 18; saveFreeProgress(true);
+  S.story.nextT = S.t + 150; S.ringNext = S.t + 18; saveFreeProgress(true);
 }
 // 조직 이야기: 연락책 메뉴 맨 위 항목
 function storySideItem(f) {

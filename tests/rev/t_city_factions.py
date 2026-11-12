@@ -6,7 +6,7 @@ from pathlib import Path
 from playwright.async_api import async_playwright
 
 R = Path(__file__).resolve().parents[2]
-SETUP = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));while(G.DLG.modal)G.advanceDialog();
+SETUP = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));while(G.DLG.modal)G.advanceDialog();G.S.story=null;/* 이야기 없이 평소 일거리만 */
   window.tick=(s,f)=>{for(let t=0;t<s;t+=1/60){G.update(1/60);if(f&&f())break}};tick(.3);const S=G.S;S.cash=0;S.stand={};
   S.evNext={};for(const e of G.events.list)S.evNext[e.d]=1e9;  // no roaming events in this test
   window.GO=f=>{const c=S.contacts[f].g;S.player.car=null;S.player.trav=null;S.player.x=c.x+30;S.player.y=c.y+10;tick(.05);};

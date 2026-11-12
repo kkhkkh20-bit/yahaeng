@@ -6,7 +6,7 @@ from pathlib import Path
 from playwright.async_api import async_playwright
 
 R = Path(__file__).resolve().parents[2]
-SETUP = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));while(G.DLG.modal)G.advanceDialog();
+SETUP = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));while(G.DLG.modal)G.advanceDialog();G.S.story=null;/* 이야기 없이 평소 일거리만 */
   window.tick=(s,f)=>{for(let t=0;t<s;t+=1/60){G.update(1/60);if(f&&f())break}};tick(.3);const S=G.S;S.cash=0;
   for(const g of S.guards)if(g.fac&&!g.civ&&!g.police){g.x=-9000;g.route=[{x:-9000,y:-9000,pause:999}];g.path=null;}  // no gang fights during the test
   return true}'''

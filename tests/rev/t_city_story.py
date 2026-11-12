@@ -26,10 +26,11 @@ async def main():
         ok(r['ch'] == 0 and r['hit'] and r['hit']['story'] == 0 and r['hit']['name'] == '문태식' and any('메인 이야기 1/6' in t for t in r['lines']), 'first call is not chapter 1: %s' % r)
         r = await q.evaluate('''()=>{const S=__game.S;KILL();return{ch:S.story.ch,hit:!!S.hit,banner:(document.getElementById('evBanner')||{}).textContent||''}}''')
         print('done1', r); ok(r['ch'] == 1 and not r['hit'] and '메인 이야기 1/6 완료' in r['banner'], 'chapter 1 did not complete: %s' % r)
-        r = await q.evaluate('''()=>{const S=__game.S;while(__game.DLG.modal)__game.advanceDialog();const l=CALL(),h=S.hit;return{lines:l,hit:h&&{name:h.name,story:h.story,ctr:h.ctr}}}''')
+        r = await q.evaluate('''()=>{const S=__game.S;while(__game.DLG.modal)__game.advanceDialog();const t0=S.story.nextT>S.t,nr=CALL(),norm=!!(S.hit||S.job)&&!(S.hit&&S.hit.story!=null);if(S.hit)__game.events.contractFail(S.hit,'x');S.hit=null;S.job=null;while(__game.DLG.modal)__game.advanceDialog();S.story.nextT=0;const l=CALL(),h=S.hit;return{gap:t0&&norm,lines:l,hit:h&&{name:h.name,story:h.story,ctr:h.ctr}}}''')
         print('ch2', json.dumps(r, ensure_ascii=False)[:400])
+        ok(r['gap'], 'no ordinary call between chapters: %s' % r.get('gap'))
         ok(r['hit'] and r['hit']['story'] == 1 and r['hit']['ctr'] == 'roadkill' and any('검은 장미' in t for t in r['lines']), 'second call lacks debrief or roadkill: %s' % r)
-        r = await q.evaluate('''()=>{const G=__game,S=G.S;G.events.contractFail(S.hit,'실패');const l=CALL();return{failed:S.story.failed,ch:S.story.ch,retry:l.some(t=>t.includes('한 번 더')),story:S.hit&&S.hit.story}}''')
+        r = await q.evaluate('''()=>{const G=__game,S=G.S;G.events.contractFail(S.hit,'실패');S.story.nextT=0;const l=CALL();return{failed:S.story.failed,ch:S.story.ch,retry:l.some(t=>t.includes('한 번 더')),story:S.hit&&S.hit.story}}''')
         print('retry', r); ok(r['ch'] == 1 and r['retry'] and r['story'] == 1, 'failed chapter is not retried: %s' % r)
         # 조직 이야기
         r = await q.evaluate('''()=>{const G=__game,S=G.S,E=G.events;if(S.hit){E.contractFail(S.hit,'x');}S.hit=null;S.job=null;while(G.DLG.modal)G.advanceDialog();
