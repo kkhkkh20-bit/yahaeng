@@ -205,7 +205,7 @@ function cityRoadCost() {
   for (let i = 0; i < a.length; i++) if (G0[(i / MW) | 0]?.[i % MW] !== '.') a[i] = 0;
   ROAD_COST = { a, mw: MW, mh: MH, g: G0 }; return a;
 }
-const pathExtra = g => STAGE.cityLife && STAGE.roadsX && !flOf(g) && !g.z && ['PATROL', 'RETURN'].includes(g.state) && !g.hunter && !g.evt && (g.civ || g.police) ? cityRoadCost() : null;  // 조직원은 아무 데서나 건넌다
+const pathExtra = g => STAGE.cityLife && STAGE.roadsX && !flOf(g) && !g.z && ['PATROL', 'RETURN'].includes(g.state) && !g.hunter && !g.evt && !g.hit && !g.hitEscort && (g.civ || g.police) ? cityRoadCost() : null;  // 의뢰 표적·경호원의 짜인 움직임은 곧장  // 조직원은 아무 데서나 건넌다
 function pathTo(g, x, y) {
   const sol = npcRouteSolid(g), sx = Math.floor(g.x / TILE), sy = Math.floor(g.y / TILE), tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
   // A remembered sound/contact can fall inside a bin or wall. Keep that

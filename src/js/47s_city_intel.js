@@ -26,10 +26,10 @@ function intelUpdate() {
   if (!B.on && S.t >= B.at && !['PATROL', 'RETURN'].includes(g.state)) { B.done = true; evBanner(`${h.name}이(가) 경계 중이다 — 빈틈은 없다`, '#c8c0b0'); return; }  // 이미 들켰으면 담배는 없다
   if (!B.on && S.t >= B.at) {
     B.on = true; B.route = g.route; B.ri = g.ri;
-    { let bd = 1e9; for (const q of g.route || []) { const d = dist(q.x, q.y, g.x, g.y); if (d < bd) { bd = d; B.x = q.x; B.y = q.y; } } }  // 그때 가장 가까운 모퉁이
+    { let bd = 1e9; for (const q of g.route || []) { const d = dist(q.x, q.y, g.x, g.y); if (d < bd) { bd = d; B.x = q.x; B.y = q.y; } } if (bd > 260) { B.x = g.x; B.y = g.y; } }  // 그때 가장 가까운 모퉁이 (멀면 그 자리에서)
     g.route = [{ x: B.x, y: B.y, pause: 999 }]; g.ri = 0; g.wait = 0; g.path = null;
     B.esc = h.escorts.map(e => ({ e, follow: e.follow, route: e.route }));
-    h.escorts.forEach((e, i) => { if (!npcAlive(e)) return; const a = Math.atan2(e.y - B.y, e.x - B.x) + (i - 0.5) * 0.6; e.follow = null; e.route = [{ x: B.x + Math.cos(a) * 520, y: B.y + Math.sin(a) * 520, pause: 999 }]; e.ri = 0; e.wait = 0; e.path = null; });
+    h.escorts.forEach((e, i) => { if (!npcAlive(e)) return; const a = Math.atan2(e.y - B.y, e.x - B.x) + (i - 0.5) * 0.6; e.follow = null; const to = walkableNear(B.x + Math.cos(a) * 520, B.y + Math.sin(a) * 520, B); e.route = [{ x: to.x, y: to.y, pause: 999 }]; e.ri = 0; e.wait = 0; e.path = null; });
     gsay(g, '먼저 가 있어. 한 대 피우고 간다.', 2.4); evBanner(`빈틈 — ${h.name}이(가) 혼자 담배를 피운다 · ${B.dur}초`, '#ffd76a'); play('click', 0.5, 0.8);
   }
   if (B.on && S.t >= B.at + B.dur) {
@@ -37,6 +37,12 @@ function intelUpdate() {
     for (const o of B.esc || []) if (npcAlive(o.e) && o.e.state !== 'ALERT') { o.e.follow = o.follow; o.e.route = o.route; o.e.path = null; o.e.wait = 0; }
     if (!S.hit || S.hit === h) evBanner('빈틈이 닫혔다 — 경호원이 돌아온다', '#c8c0b0');
   }
+}
+// 경호원이 물러날 자리: 그 둘레에서 걸어 닿을 수 있는 길 칸 (건물 안이면 길을 못 찾아 제자리에 남는다). 표적에서 300px 넘게
+function walkableNear(x, y, B) {
+  for (let r = 0; r <= 300; r += 24) for (let k = 0; k < (r ? 12 : 1); k++) { const a = k / 12 * TAU, tx = Math.floor((x + Math.cos(a) * r) / TILE), ty = Math.floor((y + Math.sin(a) * r) / TILE);
+    if (inMap(tx, ty) && !solidAt(tx, ty) && bldAt(tx, ty) < 0 && dist(tc(tx), tc(ty), B.x, B.y) > 300) return { x: tc(tx), y: tc(ty) }; }
+  return { x, y };
 }
 // 담배 연기 (빈틈 동안 표적 머리 위)
 function drawIntel() {
