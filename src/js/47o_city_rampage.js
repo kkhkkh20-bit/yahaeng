@@ -59,7 +59,7 @@ function pickupsUpdate(dt) {
   const P = S.player;
   if ((S.dropScan -= dt) <= 0) { S.dropScan = 0.3;
     for (let i = Math.max(0, S.corpses.length - 40); i < S.corpses.length; i++) { const c = S.corpses[i]; if (c.dropped || c.fl || c.civ) continue; c.dropped = true;
-      const g = c.g; if (!g || dist(c.x, c.y, P.x, P.y) > 1000) continue;
+      const g = c.g; if (!g || g.evt && g.evt !== 'war' || dist(c.x, c.y, P.x, P.y) > 1000) continue;  // 구역 이벤트 사람은 이벤트가 따로 떨군다
       if (g.police) { if (S.wanted >= 2 || Math.random() < 0.3) dropPickup(c.x + rnd(-14, 14), c.y + rnd(8, 16), 'ammo', 'pistol', 6 + (Math.random() * 7 | 0)); }
       else if (c.fac && c.fac !== 'P') { const r = Math.random();
         if (r < 0.35) dropPickup(c.x + rnd(-14, 14), c.y + rnd(8, 16), 'ammo', Math.random() < 0.25 ? 'shotgun' : 'pistol', 4 + (Math.random() * 6 | 0));

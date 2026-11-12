@@ -362,6 +362,10 @@
       "group": "city"
     },
     {
+      "path": "47p_city_war.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },

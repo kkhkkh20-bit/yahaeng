@@ -33,19 +33,20 @@ function gunAttack() {
 }
 function gunAim() {
   const P = S.player; let best = null, bs = 1e9;
-  for (const g of actorsNearWide(P.x, P.y, 440)) { if (g === P || !npcAlive(g) || g.off || flOf(g) || g.z) continue; const d = dist(P.x, P.y, g.x, g.y); if (d > 420 || d < 8) continue;
-    const da = Math.abs(angDiff(P.a, Math.atan2(g.y - P.y, g.x - P.x))); if (da > 1.22) continue; if (!los(P.x, P.y, g.x, g.y)) continue;
-    const pri = (g.police || g.fac && !g.civ) ? 0.6 : 1, s = (d + da * 220) * pri; if (s < bs) { bs = s; best = g; } }
+  for (const g of actorsNearWide(P.x, P.y, 440)) { if (g === P || !npcAlive(g) || g.off || flOf(g) || g.z) continue; const d = dist(P.x, P.y, g.x, g.y); if (d > (S.driveAim ? 380 : 420) || d < 8) continue;
+    const da = Math.abs(angDiff(P.a, Math.atan2(g.y - P.y, g.x - P.x))); if (da > 1.22 && !S.driveAim) continue; if (!los(P.x, P.y, g.x, g.y)) continue;
+    const pri = (g.police || g.fac && !g.civ) ? 0.6 : 1, s = (d + (S.driveAim ? 0 : da * 220)) * pri; if (s < bs) { bs = s; best = g; } }
   return best;
 }
 function actorsNearWide(x, y, r) { return S.guards.filter(g => Math.abs(g.x - x) < r && Math.abs(g.y - y) < r); }
-function fireWeapon() {
+function fireWeapon(inCar) {
   const P = S.player, W = WEAPONS[S.wpn]; if (S.t < S.gunT) return; S.gunT = S.t + W.rate;
-  const tgt = gunAim(), a0 = tgt ? Math.atan2(tgt.y - 10 - P.y, tgt.x - P.x) : P.a; P.a = a0;
+  S.driveAim = !!inCar; const tgt = gunAim(); S.driveAim = false; const off = inCar ? 30 : 18;
+  const a0 = tgt ? Math.atan2(tgt.y - 10 - P.y, tgt.x - P.x) : P.a; P.a = a0;
   if (W.throw) { throwThing(S.wpn, a0, tgt); S.guns[S.wpn]--; gunChip(); return; }
   const shots = W.burst || 1;
   for (let b = 0; b < shots; b++) after(b * 0.07, () => { if ((S.guns[S.wpn] || 0) <= 0 || S.wpn == null) return; S.guns[S.wpn]--; gunChip();
-    const mx = P.x + Math.cos(a0) * 18, my = P.y - 14 + Math.sin(a0) * 18;
+    const mx = P.x + Math.cos(a0) * off, my = P.y - 14 + Math.sin(a0) * off;
     spawnEffect('muzzle', { x: mx, y: my, fl: 0, z: 0 }, { scale: 0.7, angle: a0, alpha: 1, startAt: 0 }); gunSound(W.sound);
     S.shakeT = Math.max(S.shakeT || 0, 0.06 * W.sound); (S.fireParts || (S.fireParts = [])).push({ kind: 'debris', x: P.x, y: P.y - 10, vx: Math.cos(a0 + Math.PI / 2) * 80, vy: -40, t: 0, life: 0.4, size: 1.5, rot: 0 });  // 탄피
     for (let k = 0; k < W.pellets; k++) shootRay(mx, my, a0 + rnd(-W.spread, W.spread), W.range, W.dmg);
@@ -67,7 +68,8 @@ function shootRay(x0, y0, a, range, dmg) {
   if (hit === 'wall') { const f = { x: ex, y: ey, a: 0, len: 4 }; fireEmit(f, 'spark', 4, f); return; }
   if (hit && S.guards.includes(hit)) {  // 사람
     const g = hit; bloodBurst(g.x, g.y - 12, a, 4); g.x += ca * 10; g.y += sa * 10;
-    npcDown(g, null, true); if (typeof cityVictim === 'function') cityVictim(g); gunStreak(g); return; }
+    if (g.warSide != null) warHitByPlayer(g); npcDown(g, null, true); const c = S.corpses[S.corpses.length - 1]; if (c && c.g === g) c.byNpc = false;  // 내가 쐈다: 조직 호감도에 잡힌다
+    if (typeof cityVictim === 'function') cityVictim(g); gunStreak(g); return; }
   if (hit) { const v = hit; v.hp -= dmg * 0.5; v.smoke = 1.5; const f = { x: ex, y: ey, a: 0, len: 4 }; fireEmit(f, 'spark', 6, f); play('metal', 0.3, 1.7);
     if (v.hp <= 0) carExplode(v); else if (v.driver && v.ai && Math.random() < 0.3) { v.ai = false; v.v = 0; pileupBehind(v); } }
 }

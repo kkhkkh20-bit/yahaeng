@@ -30,7 +30,7 @@ function attackAction() {
   const P = S.player; if (actionBusy(P)) {const next=followupCandidate(P);if(next)return{k:'kill',list:[next],label:P.followupAttack?'다음 기절 대기':'다음 기절',hold:'처치',busy:true};return canQueueGrabAttack(P) ? {k:'cap',g:P.grabIn.g,label:'기절',hold:'처치',queued:!!P.attackQueue} : { k: 'none', busy: true, label: P.skillHold ? ASSASSIN_SKILLS[P.skillHold.key].name+' 준비' : P.lethalHold ? '길게 누르는 중' : '공격' };}
   const down=nearFinish();if(down)return combatLabel({k:'finish',c:down,g:down.g});
   if(!concealedMeleeAllowed(P)){const near=concealedAttackCandidate(P);return near?{k:'none',label:'은신 기습 필요',skillLocked:'ambush'}:{k:'none',label:P.cover?'엄폐 중':'공격'};}
-  if (P.car) return { k: 'none', label: '경적', honk: true };
+  if (P.car) return STAGE.cityLife && wpnOn() ? { k: 'none', label: WEAPONS[S.wpn].throw ? '창밖으로 던지기' : '창밖으로 쏘기', driveBy: true } : { k: 'none', label: '경적', honk: true };
   if (P.captive) return combatLabel({ k: 'cap', g:P.captive, label: '기절', hold: '처치' });
   const a = rawChoices().find(isAtk); if (a) {
     const action=koLabel(Object.assign({},a)),choice=assassinPreview();
@@ -140,7 +140,7 @@ function actAttack() {if(S?.player?.cuffed)return;
   if (DLG.modal) { advanceDialog(); return; }
   const P = S.player;
   if (actionBusy(P)) { if(!queueFollowupAttack())queueGrabAttack(); return; }
-  if (P.car) { honk(); return; }
+  if (P.car) { if (STAGE.cityLife && driveBy()) return; honk(); return; }  // 자유 모드: 무기를 들었으면 창밖으로 쏜다
   if (P.captive) { actPrimary({ k: 'execute', viaZ: true, inputGroup: 'atk' }); return; }  // 기절 → 계속 누르면 처치 (updateKoHold)
   if (STAGE.cityLife && gunAttack()) return;  // 자유 모드: 손 닿는 처치가 없으면 든 무기로 쏜다
   const a = attackAction();
