@@ -35,7 +35,8 @@ async def main():
         # 2) police: arrest (knock out) a gang member
         await ev("()=>{__game.S.wanted=0}"); cash0 = s['cash']; o = await ev(OPEN, 'P'); await ev("()=>PICK(0)")
         h = await ev("()=>{const S=__game.S;return S.hit&&{ko:S.hit.ko,fac:S.hit.g.fac}}"); print('arrest', h)
-        await ev("()=>{const S=__game.S;__game.npcDown(S.hit.g,null,false);tick(.6)}"); s = await ev(ST); print('after arrest', s)
+        await ev("()=>{const G=__game,S=G.S,P=S.player,g=S.hit.g;G.npcDown(g,null,false);tick(.6);window.ARR={before:!!S.hit,label:null};P.car=null;P.trav=null;P.x=g.x+30;P.y=g.y;tick(.05);ARR.label=(G.envChoices()[0]||{}).label;G.actEnv();tick(2.2);ARR.cuffed=!!g.cuffed}"); s = await ev(ST); print('after arrest', s, await ev('()=>ARR'))
+        arr = await ev('()=>ARR'); ok(arr['before'] and arr['label'] == '수갑 채우기' and arr['cuffed'], 'arrest needs cuffing: %s' % arr)
         ok(h and h['ko'] and not s['hit'] and s['cash'] == cash0 + 250 and s['stand'].get('P') == 5, 'arrest pay/standing: %s %s' % (h, s))
         # 3) police: stolen car back to the police box
         cash0 = s['cash']; await ev(OPEN, 'P'); await ev("()=>PICK(1)")
@@ -44,7 +45,7 @@ async def main():
         await ev("()=>{const S=__game.S;S.player.car=null}")
         # 4) gang C: parcel from their office
         cash0 = s['cash']; c0 = s['stand'].get('C', 0); p0 = s['stand'].get('P', 0); await ev(OPEN, 'C'); await ev("()=>PICK(1)")
-        r = await ev("()=>{const S=__game.S,j=S.job,P=S.player;P.trav=null;P.x=j.from.x;P.y=j.from.y;tick(.2);P.x=j.to.x;P.y=j.to.y;tick(.2);return {done:!S.job}}"); s = await ev(ST); print('parcel', r, s)
+        r = await ev("()=>{const S=__game.S,j=S.job,P=S.player;P.trav=null;P.x=j.from.x;P.y=j.from.y;tick(1);P.trav=null;P.x=j.to.x;P.y=j.to.y;tick(1);return {done:!S.job}}"); s = await ev(ST); print('parcel', r, s)
         ok(r['done'] and s['cash'] >= cash0 + 180 and s['stand'].get('C') - c0 == 5 and s['stand'].get('P') - p0 == -2, 'gang parcel: %s %s' % (r, s))
         # 5) hostile gang attacks on sight, friendly gang calms down
         r = await ev("""()=>{const S=__game.S,P=S.player;S.stand.B=-50;S.stand.C=50;const g=S.guards.find(g=>g.fac==='B'&&!g.civ&&!g.contact&&!g.police&&g.state!=='DEAD'&&g.x>0);

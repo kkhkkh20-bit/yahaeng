@@ -130,7 +130,7 @@ function cityRespawn(why) {
 function cityAction() {
   const P = S.player;
   if (STAGE.cityLife) { const a = shopAction(); if (a) return a; }
-  { const e = eventAction() || factionAction(); if (e) return e; }  // 구역 이벤트 (차 안에서도: 드래그 레이스)
+  { const e = cuffAction() || eventAction() || factionAction(); if (e) return e; }  // 구역 이벤트 (차 안에서도: 드래그 레이스)
   if (P.car) return { k: 'carOut', v: P.car, label: P.car.fireT > 0 ? '뛰어내리기!' : '차에서 내리기' };
   if (P.z || flOf(P) || P.hide) return null;
   if (STAGE.hits) { const h = hitAction(); if (h) return h; }

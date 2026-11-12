@@ -17,16 +17,22 @@ function decksInit() {
   });
 }
 const inR = (R, x, y, m = 0) => x >= R.x0 - m && x <= R.x1 + m && y >= R.y0 - m && y <= R.y1 + m;
-// 이 점에서 받쳐 주는 높이 (고가 위 1 · 경사로 0~1 · 땅 0)
-function deckSupport(x, y) {
-  let z = 0;
+// 이 점에서 높이 z에 있는 것을 받쳐 주는 높이 (고가 위 1 · 경사로 0~1 · 땅 0).
+// 고가 판과 경사로 높은 쪽 밑은 빈 공간이라 땅 높이 차·사람이 그대로 지나간다. 경사로 낮은 끝(높이 0.6 아래) 옆구리만 벽이다
+const DECK_CLEAR = 0.6;
+function deckSupport(x, y, z = 9) {
+  let sup = 0;
   for (const d of S.decks || []) {
-    if (inR(d.top, x, y)) return 1;
     const u = d.axis === 'x' ? x : y;
-    if (inR(d.rampA, x, y)) z = Math.max(z, (u - d.a0) / d.r);
-    if (inR(d.rampB, x, y)) z = Math.max(z, (d.a1 - u) / d.r);
+    let s = null;
+    if (inR(d.top, x, y)) s = 1;
+    else if (inR(d.rampA, x, y)) s = (u - d.a0) / d.r;
+    else if (inR(d.rampB, x, y)) s = (d.a1 - u) / d.r;
+    if (s == null) continue;
+    if (z >= s - 0.35) sup = Math.max(sup, s);          // 그 면 위(또는 막 올라서는 중)
+    else if (s < DECK_CLEAR) sup = Math.max(sup, s);    // 밑으로 못 들어가는 낮은 경사로: 옆면 벽
   }
-  return clamp(z, 0, 1);
+  return clamp(sup, 0, 1);
 }
 // 이 점이 고가·경사로 옆 가장자리 밖이면, 그 가장자리에 난간이 있나 (끝 쪽은 경사로로 이어져 난간 없음)
 function deckRailAt(d, x, y) {
@@ -41,11 +47,11 @@ function deckBlocked(v) {
   if (!S.decks?.length) return false;
   const z = v.z || 0, R = v.r || CAR_R;
   for (const [px, py] of carPts(v)) {
-    const sup = deckSupport(px, py);
+    const sup = deckSupport(px, py, z);
     if (sup > z + 0.3) return true;  // 경사로를 옆이나 아래에서 들이받음
     if (z > 0.5) for (const d of S.decks) if (inR(d.top, px, py, R) || inR(d.rampA, px, py, R) || inR(d.rampB, px, py, R)) {
       // 난간: 차 몸 원이 가장자리를 넘으면 막는다
-      for (const [ox, oy] of [[px - R, py], [px + R, py], [px, py - R], [px, py + R]]) if (deckSupport(ox, oy) < z - 0.3 && deckRailAt(d, ox, oy)) return true;
+      for (const [ox, oy] of [[px - R, py], [px + R, py], [px, py - R], [px, py + R]]) if (deckSupport(ox, oy, z) < z - 0.3 && deckRailAt(d, ox, oy)) return true;
     }
   }
   return false;
@@ -53,7 +59,7 @@ function deckBlocked(v) {
 // 한 걸음: 받침을 따라 높이를 맞추고, 받침이 없으면 떨어진다
 function deckStep(v, dt) {
   if (!S.decks?.length) return;
-  const sup = deckSupport(v.x, v.y), z = v.z || 0;
+  const z = v.z || 0, sup = deckSupport(v.x, v.y, z);
   if (z > sup + 0.04) {  // 떠 있다: 떨어진다
     v.vz = (v.vz || 0) - DECK_G * dt; v.z = z + v.vz * dt;
     if (v.z <= sup) { const hit = -v.vz; v.z = sup; v.vz = 0; deckLand(v, hit); }
@@ -97,7 +103,6 @@ function deckBeam(u0, u1, c, h) {
   ctx.save(); ctx.imageSmoothingEnabled = false; ctx.translate(h ? u0 : c, h ? c : u0); if (h) ctx.rotate(-Math.PI / 2);
   const len = u1 - u0, dir = h ? -1 : 1;  // 돌린 좌표에서 길이 방향은 h 면 -y
   for (let t = 0; t < len; t += seg) { const n = Math.min(seg, len - t), sh = n / k; ctx.drawImage(deckAtlas, f[0], f[1], f[2], sh, -bw / 2, h ? -t - n : t, bw, n); }
-  if (L) for (let t = TILE * 2; t < len - TILE; t += TILE * 5) ctx.drawImage(deckAtlas, L[0], L[1], L[2], L[3], -L[2] * k / 2, (h ? -t : t) - L[3] * k / 2, L[2] * k, L[3] * k);
   ctx.restore();
 }
 // 땅에 지는 그림자: 차보다 먼저(drawVehicles 앞) 그린다. 빛은 북서쪽에서
@@ -120,10 +125,20 @@ function deckSlab(R, zs, top, side) {
   ctx.fillStyle = top; quad(T);
   return T;
 }
+// 고가 밑을 지날 때: 내 둘레만 둥글게 비쳐 보인다 (가장자리는 두 겹으로 부드럽게). 나머지 고가는 그대로 덮는다
 function drawDecks() {
   if (!S.decks?.length) return;
-  const P = S.player, pz = P.car ? P.car.z || 0 : 0, under = S.decks.some(d => (inR(d.top, P.x, P.y) || inR(d.rampA, P.x, P.y) || inR(d.rampB, P.x, P.y)) && pz < 0.5);
-  ctx.save(); if (under) ctx.globalAlpha = 0.45;  // 고가 밑에 있으면 비쳐 보이게
+  const P = S.player, pz = P.car ? P.car.z || 0 : 0, m = 70;
+  const under = pz < 0.5 && !flOf(P) && S.decks.some(d => inR(d.top, P.x, P.y, m) || inR(d.rampA, P.x, P.y, m) || inR(d.rampB, P.x, P.y, m));
+  if (!under) { drawDeckBodies(); drawDeckCars(); return; }
+  const r = P.car ? 150 : 95, cx = P.x, cy = P.y - (P.car ? 0 : 24), big = 1e5;
+  const pass = (r0, r1, a) => { ctx.save(); ctx.beginPath(); if (r1 == null) { ctx.rect(cx - big, cy - big, big * 2, big * 2); ctx.arc(cx, cy, r0, 0, TAU); ctx.clip('evenodd'); }
+    else { ctx.arc(cx, cy, r1, 0, TAU); if (r0) ctx.arc(cx, cy, r0, 0, TAU); ctx.clip('evenodd'); } ctx.globalAlpha = a; drawDeckBodies(); ctx.restore(); };
+  pass(r, null, 1); pass(0, r, 0.42);  // 두 번만 그린다 (휴대폰 부담)
+  drawDeckCars();
+}
+function drawDeckBodies() {
+  ctx.save();
   for (const d of S.decks) {
     const all = { x0: Math.min(d.rampA.x0, d.rampB.x0), y0: Math.min(d.rampA.y0, d.rampB.y0), x1: Math.max(d.rampA.x1, d.rampB.x1), y1: Math.max(d.rampA.y1, d.rampB.y1) };
     if (!inView((all.x0 + all.x1) / 2, (all.y0 + all.y1) / 2, Math.max(all.x1 - all.x0, all.y1 - all.y0) / 2 + 300)) continue;
@@ -161,17 +176,38 @@ function drawDecks() {
         else { ctx.fillStyle = '#e07a1f'; for (let k = u; k < nu; k += 40) { if (h) ctx.fillRect(k, c - 3, 16, 6); else ctx.fillRect(c - 3, k, 6, 16); } }
         u = nu; }
     }
-    // 고가 가로등 불빛
-    ctx.globalCompositeOperation = 'lighter';
-    for (let u = d.a0 + d.r + TILE; u < d.a1 - d.r; u += 5 * TILE) { const x = h ? u : mid, y = h ? mid : u, g = ctx.createRadialGradient(x, y, 0, x, y, 110); g.addColorStop(0, 'rgba(255,214,150,.16)'); g.addColorStop(1, 'rgba(255,214,150,0)'); ctx.fillStyle = g; ctx.fillRect(x - 110, y - 110, 220, 220); }
-    ctx.globalCompositeOperation = 'source-over'; ctx.restore();
+    ctx.restore();
     // 밤 어둠 (고가는 어둠 단계 뒤에 그려지므로 따로 어둡게)
     ctx.fillStyle = `rgba(4,8,22,${(STAGE.nightShade ?? 0.6) * 0.5})`; quad(T);
+    deckLamps(d);
   }
   ctx.restore();
+}
+function drawDeckCars() {
   // 고가·경사로 위 차 (높이만큼 크게)
   const ups = (S.vehicles || []).filter(v => (v.z || 0) > 0.01 && inView(v.x, v.y, 300)).sort((a, b) => (a.z || 0) - (b.z || 0));
   for (const v of ups) { const s = deckS(v.z); ctx.save(); ctx.translate(cam.x, cam.y); ctx.scale(s, s); ctx.translate(-cam.x, -cam.y);
     // 떨어지는 중이면 땅에 그림자
     drawOneVehicle(v); ctx.restore(); }
+}
+// 고가 가로등 (위에서 본 모습): 난간 위 기둥 밑동 → 고가 면보다 높이 솟은 기둥 → 도로 쪽으로 뻗은 팔 → 등갓.
+// 기둥·고가와 같은 원근(높이만큼 카메라 바깥으로)으로 그려서, 카메라가 비켜 가면 기둥이 기울어 보인다. 양쪽 난간에 엇갈려 6칸마다
+const LAMP_Z = 1.75;
+function deckLamps(d) {
+  const h = d.axis === 'x', night = (STAGE.nightShade ?? 0.6) > 0.2;
+  for (const [ci, c, inward] of [[0, d.c0 + 6, 1], [1, d.c1 - 6, -1]]) for (let u = d.a0 + d.r + TILE * (ci ? 5 : 2); u < d.a1 - d.r - TILE; u += 6 * TILE) {
+    const bx = h ? u : c, by = h ? c : u, ax = h ? u : c + inward * 30, ay = h ? c + inward * 30 : u;
+    const [b0x, b0y] = deckPt(bx, by, 1), [b1x, b1y] = deckPt(bx, by, LAMP_Z), [hx, hy] = deckPt(ax, ay, LAMP_Z), s = deckS(LAMP_Z);
+    if (night) {  // 노면의 불빛 웅덩이 (등 바로 밑, 고가 면 높이)
+      const [px, py] = deckPt(ax, ay, 1), g = ctx.createRadialGradient(px, py, 0, px, py, 70 * deckS(1)); g.addColorStop(0, 'rgba(255,214,150,.22)'); g.addColorStop(1, 'rgba(255,214,150,0)');
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(px, py, 70 * deckS(1), 54 * deckS(1), 0, 0, TAU); ctx.fill(); ctx.restore(); }
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#2a2e34'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(b0x, b0y); ctx.lineTo(b1x, b1y); ctx.stroke();  // 기둥
+    ctx.strokeStyle = '#7d848d'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(b0x - 1, b0y); ctx.lineTo(b1x - 1, b1y); ctx.stroke();
+    ctx.strokeStyle = '#3a3f46'; ctx.lineWidth = 3 * s; ctx.beginPath(); ctx.moveTo(b1x, b1y); ctx.lineTo(hx, hy); ctx.stroke();  // 팔
+    ctx.fillStyle = '#1f2328'; ctx.fillRect(b0x - 4, b0y - 4, 8, 8);  // 밑동
+    ctx.save(); ctx.translate(hx, hy); if (!h) ctx.rotate(Math.PI / 2); ctx.fillStyle = '#23272d'; ctx.fillRect(-9 * s, -5 * s, 18 * s, 10 * s);  // 등갓
+    ctx.fillStyle = night ? '#ffe6b0' : '#c9ced4'; ctx.fillRect(-7 * s, -3 * s, 14 * s, 6 * s); ctx.restore();
+    if (night) { const g = ctx.createRadialGradient(hx, hy, 0, hx, hy, 26 * s); g.addColorStop(0, 'rgba(255,226,170,.55)'); g.addColorStop(1, 'rgba(255,226,170,0)'); ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = g; ctx.fillRect(hx - 26 * s, hy - 26 * s, 52 * s, 52 * s); ctx.restore(); }
+  }
 }

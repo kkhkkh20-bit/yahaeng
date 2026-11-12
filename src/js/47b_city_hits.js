@@ -131,11 +131,12 @@ function hitsUpdate(dt) {
   const g = h.g;
   if (!S.guards.includes(g)) { S.hit = null; return; }
   const ko = g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko);
+  if (h.ko && ko && !h.cuffed) return;  // 검거: 기절시킨 뒤 수갑을 채워야 끝난다 (47h cuffAction)
   if (g.state === 'DEAD' && (!ko || h.ko)) {
     // 경찰 검거 미션(h.ko): 기절시키면 제값, 죽이면 3분의 1. 조직 미션: 보수와 호감도 변화가 따로 정해져 있다
     const quiet = !S.wanted, pay = h.ko ? (ko ? h.pay : Math.round(h.pay / 3)) : h.pay != null ? h.pay + (quiet ? 50 : 0) : HIT_PAY + (quiet ? HIT_QUIET_BONUS : 0);
     if (h.stand) applyStanding(h.ko && !ko ? Object.fromEntries(Object.entries(h.stand).map(([k, v]) => [k, v > 0 ? Math.round(v / 3) : v])) : h.stand);
-    if (h.ko && ko) { evGone(g); for (const e of h.escorts) if (npcAlive(e)) evFlee(e, S.player.x, S.player.y, 20); }  // 연행: 기절한 수배자는 경찰이 데려간다
+    if (h.ko && ko) for (const e of h.escorts) if (npcAlive(e)) evFlee(e, S.player.x, S.player.y, 20);  // 연행: 수갑 찬 수배자는 순찰차가 데려간다 (47h)
     S.cash = (S.cash || 0) + pay; S.hitN++; S.hit = null;
     play('bell', 0.6); if (!STAGE.noPrompts) toast(`의뢰 완료 · ${pay}만${quiet ? ' (조용히)' : ''}`, 2.6, 'good');
     if (typeof feedbackPulse === 'function') feedbackPulse(document.querySelector('#hud .obj'), 'loot');
@@ -150,7 +151,7 @@ function hitGoal() {
     return { text: `울리는 공중전화 받기 · ${money}`, where: '', x: p.x, y: p.y, fl: 0 };
   }
   const g = h.g;
-  return { text: (h.ko ? `${h.name} 검거 — 기절시키기` : g.unconscious ? `${h.name} 기절 — 숨통을 끊어라` : `${h.name} 처치`) + ` · ${money}`, where: '', x: g.x, y: g.y, fl: flOf(g), g };
+  return { text: (h.ko ? (g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko) ? `${h.name} 기절 — 수갑 채우기` : `${h.name} 검거 — 기절시키기`) : g.unconscious ? `${h.name} 기절 — 숨통을 끊어라` : `${h.name} 처치`) + ` · ${money}`, where: '', x: g.x, y: g.y, fl: flOf(g), g };
 }
 // 공중전화 부스 (위에서 비스듬히 본 유리 상자: 은색 기둥 · 유리벽 · 안쪽 벽의 파란 전화기 · 빨간 지붕 띠)와 표적 표시
 // layer 'world': 조명을 받는 부스 · 'ui': 어둠 위 — 안에 든 나를 덮는 앞 유리, 부스 안 불빛, 표적 고리
@@ -222,7 +223,7 @@ function drawHits(layer) {
     drawBooth(p, false);
   }
   if (layer !== 'ui') return;
-  drawEvents(); drawContacts(); drawJobs(); drawCarPickProgress();
+  drawEvents(); drawContacts(); drawJobs(); drawCarPickProgress(); drawCarriedParcel();
   const h = S.hit; if (!h || h.g.state === 'DEAD' && !h.g.unconscious) return;
   const g = h.g; if (flOf(g) !== flOf(S.player) || !inView(g.x, g.y, 60)) return;
   const pu = .55 + .35 * Math.sin(S.t * 5);

@@ -78,7 +78,8 @@ const EVENTS = [
     update(ev) { const v = ev.car, P = S.player;
       if (P.car === v) { const c = 150 + ((Math.random() * 11) | 0) * 10; cash(c); addRep(ev.d, -3); for (const g of [ev.vip, ...ev.guards]) if (npcAlive(g) && !g.off) copChase(g); evEnd(ev, `VIP 차를 빼앗았다 · 글러브박스 ${c}만`); return; }
       if (ev.phase === 'wait' && ev.engaged && S.t - ev.t > 12) { ev.phase = 'walk'; evGo(ev.vip, v.x, v.y - 30); gsay(ev.vip, '차 빼.', 2); }
-      if (ev.phase === 'walk' && npcAlive(ev.vip) && dist(ev.vip.x, ev.vip.y, v.x, v.y) < 60) { ev.phase = 'go'; ev.goT = S.t + 2; evGone(ev.vip); for (const g of ev.guards) evGone(g); v.doorT = S.t + 0.2; v.doorSide = -1; play('switch', 0.4); }
+      if (ev.phase === 'walk' && npcAlive(ev.vip) && dist(ev.vip.x, ev.vip.y, v.x, v.y) < 60) { ev.phase = 'go'; ev.goT = S.t + 2.4;  // 경호원이 문을 열고 VIP부터 차례로 탄다
+        [ev.vip, ...ev.guards].forEach((g, i) => after(i * 0.5, () => { if (!npcAlive(g) || g.off || v.dead) return; g.x = v.x - Math.sin(v.a) * 30; g.y = v.y + Math.cos(v.a) * 30; v.doorT = S.t + 0.2; v.doorSide = -1; play('switch', 0.4); after(0.25, () => evGone(g)); })); }
       if (ev.phase === 'go' && S.t > ev.goT) { ev.phase = 'gone'; v.ai = true; v.parked = false; v.v = 120; ev.leftT = S.t; }
       if (ev.phase === 'gone' && S.t - ev.leftT > 25) evEnd(ev, 'VIP 리무진이 떠났다', true); },
     goal: ev => ev.phase === 'gone' ? 'VIP 리무진 쫓아 빼앗기' : 'VIP 리무진 — 떠나기 전에 빼앗기' },
@@ -161,8 +162,12 @@ const EVENTS = [
     update(ev) { const v = ev.car, P = S.player;
       if (v.fireHold && dist(P.x, P.y, v.x, v.y) < 240) { v.fireHold = false; v.fireT = Math.min(v.fireT || 0, 0.5); }
       if (v.dead && !ev.done) evEnd(ev, '늦었다 — 차가 터졌다'); },
-    action(ev) { const v = ev.car, P = S.player; if (P.car || v.dead || dist(P.x, P.y, v.x, v.y) > 75) return null; return { label: '갇힌 사람 끌어내기', at: { x: v.x, y: v.y - 56 }, fn: () => {
-      v.doorT = S.t + 0.2; v.doorSide = -1; play('switch', 0.5); const g = evPerson(ev, v.x + 46, v.y + 20, {}); evFlee(g, v.x, v.y, 10); gsay(g, '살았다... 고맙습니다!', 2.5); cash(60); addRep(ev.d, 5); evEnd(ev, '갇힌 사람을 구했다 · 사례 60만', true); } }; },
+    action(ev) { const v = ev.car, P = S.player; if (P.car || v.dead || dist(P.x, P.y, v.x, v.y) > 75) return null; return { label: '갇힌 사람 끌어내기', at: { x: v.x, y: v.y - 56 }, fn: () => {  // 운전석 문으로 가서 열고 → 붙잡아 끌어낸다 → 바닥에 눕혔다가 일어나 달아난다
+      const door = carDoorSpot(v);
+      doMotion({ x: door.x, y: door.y, face: Math.atan2(v.y - door.y, v.x - door.x), pose: 'grab', dur: 1.0,
+        at: [[0.05, () => { v.doorT = S.t + 0.2; v.doorSide = -1; play('switch', 0.5); }], [0.45, () => { play('cloth', 0.6); play('thud', 0.3); }]],
+        end: () => { if (ev.done) return; const P = S.player, g = evPerson(ev, P.x + Math.cos(P.a + Math.PI) * 26, P.y + Math.sin(P.a + Math.PI) * 26, {}); gsay(g, '콜록... 살았다... 고맙습니다!', 2.5); after(0.8, () => evFlee(g, v.x, v.y, 10));
+          cash(60); addRep(ev.d, 5); evEnd(ev, '갇힌 사람을 구했다 · 사례 60만', true); } }); } }; },
     goal: () => '불붙은 차 — 터지기 전에 갇힌 사람 구하기' },
   // 중구 관청가 ① 현금 수송차: 들이받아 세우면 돈자루 둘. 수배 3
   { key: 'armored', d: '중구 관청가', name: '현금 수송차',
@@ -262,12 +267,16 @@ function cityEventsUpdate(dt) {
 // 걸어서 지나가면 줍는다
 function evItemsUpdate() {
   const P = S.player; if (P.car || !S.evItems?.length) return;
-  for (let i = S.evItems.length - 1; i >= 0; i--) { const it = S.evItems[i]; if (dist(P.x, P.y, it.x, it.y) < 34) { S.evItems.splice(i, 1); play('loot', 0.4); it.onPick && it.onPick(it); } }
+  if (P.trav) return;
+  const it = S.evItems.find(it => dist(P.x, P.y, it.x, it.y) < 34); if (!it) return;
+  // 쪼그려 앉아 줍는다 (붙어 있는 것들은 한 번에)
+  const all = S.evItems.filter(o => dist(o.x, o.y, it.x, it.y) < 48); S.evItems = S.evItems.filter(o => !all.includes(o));
+  doMotion({ x: it.x, y: it.y + 6, pose: 'crouch', dur: 0.45, at: [[0.25, () => { play('loot', 0.4); for (const o of all) o.onPick && o.onPick(o); }]] });
 }
 function eventAction() {
   const ev = S.ev; if (!ev || ev.done) return null; const P = S.player;
   const L = ev.loot; if (L && npcAlive(L.owner) && !P.car && dist(P.x, P.y, L.owner.x, L.owner.y) < 70) return { k: 'evAct', label: `${L.what} 돌려주기`, at: { x: L.owner.x, y: L.owner.y - 56 }, fn: () => shopPanel(`${L.what}`, [
-    { name: `주인에게 돌려주기 (평판 +4)`, price: null, tag: `사례 ${L.reward}만`, ok: true, buy: () => { closeShopPanel(); evGive(ev); } },
+    { name: `주인에게 돌려주기 (평판 +4)`, price: null, tag: `사례 ${L.reward}만`, ok: true, buy: () => { closeShopPanel(); const o = L.owner, s = standBy(S.player, o, 26); faceEachOther(o); doMotion({ x: s.x, y: s.y, face: s.face, pose: 'grab', dur: 0.55, at: [[0.2, () => play('cloth', 0.4)]], end: () => evGive(ev) }); } },
     { name: `챙기기 (평판 -3)`, price: null, tag: `+${L.val}만`, ok: true, buy: () => { closeShopPanel(); evKeep(ev); } }]) };
   const a = ev.def.action && ev.def.action(ev); return a ? Object.assign({ k: 'evAct' }, a) : null;
 }

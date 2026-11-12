@@ -19,9 +19,9 @@ CAR = '''()=>{const G=__game,S=G.S,P=S.player,T=G.traffic,j=S.job,v=j.v,D=S.deal
   const goal0=G.nextGoal?G.nextGoal():null;P.trav=null;P.car=v;v.ai=false;
   const cx=(D.lot[0]+D.lot[2])/2,cy=(D.lot[1]+D.lot[3])/2;v.x=cx;v.y=cy;v.v=0;v.hp=Math.max(1,(v.hpMax||6)-2);tick(.4);
   return {name:j.name,done:!S.job,cash:S.cash,carOut:!P.car}}'''
-PARCEL = '''()=>{const G=__game,S=G.S,P=S.player,j=S.job;P.trav=null;P.x=j.from.x;P.y=j.from.y;tick(.2);const got=j.got,left=j.deadline-S.t;
-  P.x=j.to.x;P.y=j.to.y;tick(.2);return {got,left:Math.round(left),done:!S.job,cash:S.cash}}'''
-PARCEL_LATE = '''()=>{const G=__game,S=G.S,P=S.player,j=S.job;P.trav=null;P.x=j.from.x;P.y=j.from.y;tick(.2);S.t=j.deadline+1;tick(.1);return {failed:!S.job,cash:S.cash}}'''
+PARCEL = '''()=>{const G=__game,S=G.S,P=S.player,j=S.job;P.trav=null;P.x=j.from.x;P.y=j.from.y;tick(1);const got=j.got,left=j.deadline-S.t;
+  P.x=j.to.x;P.y=j.to.y;tick(1);return {got,left:Math.round(left),done:!S.job,cash:S.cash}}'''
+PARCEL_LATE = '''()=>{const G=__game,S=G.S,P=S.player,j=S.job;P.trav=null;P.x=j.from.x;P.y=j.from.y;tick(1);S.t=j.deadline+1;tick(.1);return {failed:!S.job,cash:S.cash}}'''
 RACE = '''()=>{const G=__game,S=G.S,P=S.player,j=S.job,T=G.traffic;
   const v=S.vehicles.find(v=>!v.dead&&!v.police&&(v.z||0)<.01);P.trav=null;P.car=v;v.ai=false;
   const walkStart=(()=>{const c=P.car;P.car=null;P.x=j.pts[0].x;P.y=j.pts[0].y;tick(.1);const s=!!j.started;P.car=c;return s})();  // on foot the race does not start

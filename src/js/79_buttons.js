@@ -98,6 +98,8 @@ function envChoices() {
   if(!P.carrying&&P.outfit!=='crew'&&(STAGE.id==='tB'&&S.tutI===4||STAGE.starterContract==='disguise'||STAGE.apprenticeContract&&STAGE.id!=='e1'||STAGE.lessonIdentity)){const dress=list.find(a=>a.k==='dress'&&a.c.outfit==='crew');if(dress){list.splice(list.indexOf(dress),1);list.unshift(dress);}}
   // A wall switch beside a coded door must not replace opening that door.
   if(list[0]?.k==='lamp'){const keypad=list.find(a=>a.k==='keypad'&&!a.skillLocked);if(keypad){list.splice(list.indexOf(keypad),1);list.unshift(keypad);}}
+  // 자유 모드: 미션 행동(수갑 채우기·연락책·돌려주기 등)이 옷 갈아입기·시체 일보다 먼저
+  if(STAGE.cityLife){const m=list.find(a=>a.k==='evAct');if(m&&list[0]!==m){list.splice(list.indexOf(m),1);list.unshift(m);}}
   // Locked skill previews stay discoverable without hiding a usable door or object.
   return list.filter(a=>!a.skillLocked).concat(list.filter(a=>a.skillLocked));
 }

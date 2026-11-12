@@ -29,7 +29,7 @@ function cityFactionsInit() {
 function factionAction() {
   const P = S.player; if (!S.contacts || P.car) return null;
   for (const [f, c] of Object.entries(S.contacts)) { const g = c.g; if (!npcAlive(g) || dist(P.x, P.y, g.x, g.y) > 70) continue;
-    return { k: 'evAct', label: `${STAND_NAME[f]} 연락책`, at: { x: g.x, y: g.y - 56 }, fn: () => openContact(f) }; }
+    return { k: 'evAct', label: `${STAND_NAME[f]} 연락책`, at: { x: g.x, y: g.y - 56 }, fn: () => { faceEachOther(g); openContact(f); } }; }
   return null;
 }
 const RIVALS = f => ['A', 'B', 'C', 'D'].filter(o => o !== f);

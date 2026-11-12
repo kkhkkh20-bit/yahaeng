@@ -20,8 +20,8 @@ SPAWN = '''(key)=>{const G=__game,S=G.S,P=S.player,E=G.events;
     const [x,y]=sp[(tries*7+3)%sp.length];P.x=x;P.y=y;block();S.evNext[def.d]=0;S.evPick={};S.evPick[def.d]=defs.indexOf(def);tick(.05);ev=S.ev;}
   if(!ev)return {ok:false,tries};const far=Math.round(Math.hypot(ev.x-P.x,ev.y-P.y));
   P.x=ev.x+30;P.y=ev.y+40;tick(.2);return {ok:ev.def.key===key,far,engaged:ev.engaged,d:ev.d,tries}}'''
-PICK = '''()=>{const G=__game,S=G.S,P=S.player;let n=0;for(const it of (S.evItems||[]).slice()){P.x=it.x;P.y=it.y;tick(.05);n++;}return n}'''
-ACT = '''(i)=>{const G=__game,S=G.S,a=G.events.eventAction();if(!a)return null;a.fn();const b=[...document.querySelectorAll('#shopPanel button')];if(i!=null&&b[i])b[i].click();return a.label}'''
+PICK = '''()=>{const G=__game,S=G.S,P=S.player;let n=0;for(const it of (S.evItems||[]).slice()){P.trav=null;P.x=it.x;P.y=it.y;tick(1.2);n++;}tick(1.2);return n}'''
+ACT = '''(i)=>{const G=__game,S=G.S,a=G.events.eventAction();if(!a)return null;a.fn();const b=[...document.querySelectorAll('#shopPanel button')];if(i!=null&&b[i])b[i].click();tick(1.6);return a.label}'''
 ST = '''()=>{const G=__game,S=G.S;return {cash:S.cash,wanted:S.wanted,done:!S.ev||S.ev.done,rep:Object.assign({},S.rep||{})}}'''
 
 async def main():
