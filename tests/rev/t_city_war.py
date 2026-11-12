@@ -16,7 +16,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(); q = await b.new_page(viewport={'width': 1280, 'height': 800}); errs = []
         q.on('pageerror', lambda e: errs.append(str(e)[:300]))
-        await q.add_init_script('window.requestAnimationFrame=()=>0;try{localStorage.clear()}catch(e){}')
+        await q.add_init_script('window.__seed=11;window.requestAnimationFrame=()=>0;try{localStorage.clear()}catch(e){}')
         await q.goto((R / 'build/preview_city.html').as_uri() + '?nostats&study=city-xl'); await q.wait_for_function('!!window.__game')
         await q.evaluate('''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));while(G.DLG.modal)G.advanceDialog();
           window.tick=s=>{for(let t=0;t<s;t+=1/60)G.update(1/60)};tick(.3);const S=G.S;S.evNext={};for(const e of G.events.list)S.evNext[e.d]=1e9;S.copT=1e9;S.cash=1000;S.stand={};S.warNext=1e9;
