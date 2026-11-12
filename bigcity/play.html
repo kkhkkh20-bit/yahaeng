@@ -10261,6 +10261,7 @@ function refreshBodyLighting() {
 // ---------------------------------------------------------------- 메시지
 const toastEl = document.getElementById('toasts');
 function toast(text, sec = 2.6, kind = '') { if (kind === 'hint') return showHint(text, sec);
+  if (STAGE?.cityLife) text = String(text).replace(/자경대원/g, '조직원');  // 자유 모드의 칼 든 사람은 조직원이다 (잠입 의뢰판의 '자경대원' 말투를 쓰지 않는다)
   // 화면 글 최소: 이미 화면에서 보이는 일을 확인해 주는 알림은 띄우지 않고, 위험 알림('warn')은 요령을 뺀 사실만 남긴다.
   if (!guideFull()) { if (kind !== 'warn') return; text = String(text).split(' — ')[0].split(' · ')[0]; }
   S.toasts.push({ text, t: sec, kind }); if (S.toasts.length > 4) S.toasts.shift(); renderToasts(); }
@@ -12729,7 +12730,7 @@ function goAlert(g) {
   if (g.fac === 'B') { toast('건달파가 나를 노린다', 2, 'warn'); return; }
   if (g.fac === 'P' && STAGE.city) { copAlert(g); return; }  // 도시의 경찰: 수배로 (의뢰 판의 경찰은 자경대원처럼 경보를 올린다)  // 경찰: 조직 경보와 따로 — 수배로  // 건달파는 조직 무전망과 따로 — 전체 경보·증원 없음
   if (!radio && !g.target) {  // 무전기를 가진 자경대원이 없으면 경보가 근처에만 머문다 (증원·전체 경보 없음)
-    if (S.alevel < 2) toast('근처 경비에게 발각 · 무전기가 없어 전체 경보는 전달되지 않는다', 2.4);
+    if (S.alevel < 2 && !STAGE.cityLife) toast('근처 경비에게 발각 · 무전기가 없어 전체 경보는 전달되지 않는다', 2.4);
     setAlert(2, 30);
   } else if (!g.target) {  // 무전: 바로 퍼지지 않는다. 무전기 자경대원이 몇 초간 보고하는 사이 처치하면 끊긴다
     queueGuardRadio(reporters, observed, g.suspectLook, true);
@@ -26508,6 +26509,7 @@ function updateStealth(lv) {
   const passCamera=(S.cams||[]).some(c=>!c.search&&cameraAssessment(c).visible>0&&!cameraAssessment(c).detectable);
   box.dataset.camera=passCamera?'pass':'';if(passCamera&&s==='blend')why='CCTV 통행 허용 · 훔치면 녹화 대상';
   const cause=searchCauseReadout();if(cause)why=cause.text+(observer?.camera?' · CCTV 시야에서 벗어나기':s==='hide'&&(P.hide||P.hidden)?' · 은신 유지':'');
+  if (STAGE.cityLife) why = '';  // 자유 모드: 잠입판 요령(갈아입기·구역 권한·CCTV)은 쓰지 않는다 — 상태 낱말과 눈 표시만
   const k = s + '|' + word + '|' + why; if (hudCache.sth === k) return; hudCache.sth = k;
   if (hudCache.sthS && hudCache.sthS !== s && S.t - (hudCache.sthSfxT || -9) > 0.35) { hudCache.sthSfxT = S.t; sfx({ hide: 'toHide', blend: 'toBlend', risk: 'toRisk', seen: 'toSeen' }[s]); } hudCache.sthS = s;  // 상태가 바뀌면 작은 신호음
   box.dataset.s = s; const el = $('expoLbl'); el.textContent = word; el.dataset.e = s==='seen'?2:e; $('lightLbl').textContent = why;
