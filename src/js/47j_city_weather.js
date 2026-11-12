@@ -32,9 +32,9 @@ function drawRain() {
   ctx.fillStyle = `rgba(40,70,110,${0.1 * k})`; ctx.fillRect(vx, vy, vw, vh);  // 젖은 밤길의 푸른 기운
   const t = S.t, n = Math.round(400 * k * Math.min(1.6, vw * vh / 1.2e6)), seed = i => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
   // 튀는 빗방울: 자리마다 0.35초 주기로 작은 왕관
-  ctx.fillStyle = `rgba(205,225,245,${0.7 * k})`;
-  for (let i = 0; i < n * 0.5; i++) { const ph = (t * 2.8 + seed(i + 900)) % 1; if (ph > 0.35) continue; const x = vx + seed(i + 500) * vw | 0, y = vy + seed(i + 700) * vh | 0, r = ph < 0.15 ? 1 : 2;
-    ctx.fillRect(x - r, y, 1, 1); ctx.fillRect(x + r, y, 1, 1); if (ph < 0.12) ctx.fillRect(x, y - 1, 1, 1); }
+  // 튀는 빗방울: 바닥 곳곳에 도트 물결 고리 (PixelFX ripples, 자리마다 다른 위상)
+  for (let i = 0; i < n * 0.12; i++) { const x = vx + seed(i + 500) * vw | 0, y = vy + seed(i + 700) * vh | 0;
+    if (!fxFrame('drop', t + seed(i + 900) * 2, x, y, 1, k)) { ctx.fillStyle = `rgba(205,225,245,${0.7 * k})`; ctx.fillRect(x - 1, y, 1, 1); ctx.fillRect(x + 1, y, 1, 1); } }
   // 빗줄기: 화면 위에서 아래로, 바람에 살짝 기운다 (1px 폭 픽셀 선)
   ctx.fillStyle = `rgba(185,210,240,${0.6 * k})`;
   const fall = 1100, len = 16, lean = 0.22;

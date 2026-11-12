@@ -54,5 +54,5 @@ function hunterStep(g, dt) {
 function drawHunter() {
   const H = S.hunter; if (!H) return; const g = H.g, P = S.player; if (!npcAlive(g) || !inView(g.x, g.y, 40)) return;
   if (g.aimH > 0) { const k = g.aimH / HUNT_AIM; ctx.save(); ctx.strokeStyle = `rgba(255,40,30,${0.25 + 0.6 * k})`; ctx.lineWidth = 1 + k * 1.5; ctx.beginPath(); ctx.moveTo(g.x, g.y - 14); ctx.lineTo(P.x, P.y - 12); ctx.stroke(); ctx.restore(); }
-  else if (dist(g.x, g.y, P.x, P.y) < 300 && ((S.t * 0.8 + g.id * 0.37) % 1.5) < 0.12) { ctx.fillStyle = '#fff6d0'; ctx.fillRect(Math.round(g.x + 5), Math.round(g.y - 22), 2, 2); ctx.fillStyle = 'rgba(255,246,208,.5)'; ctx.fillRect(Math.round(g.x + 3), Math.round(g.y - 21), 6, 1); }
+  else if (dist(g.x, g.y, P.x, P.y) < 300 && ((S.t * 0.8 + g.id * 0.37) % 1.5) < 0.2) fxFrame('dart', ((S.t * 0.8 + g.id * 0.37) % 1.5) * 1.2, g.x + 5, g.y - 22, 0.45, 0.9);  // 품속 쇠붙이 번쩍임 (도트 섬광)
 }

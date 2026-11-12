@@ -7,6 +7,7 @@ import {encodePNG} from '../.agents/skills/pixelfx/vendor/pixelfx/tools/lib/png.
 import * as foliage from './pixelfx/foliage.mjs';
 import * as dust from './pixelfx/dust.mjs';
 import * as hack from './pixelfx/hack.mjs';
+import * as cig from './pixelfx/cig.mjs';
 const ROOT=join(dirname(fileURLToPath(import.meta.url)),'..'),round=Number(process.argv[2]||3),OUT=join(ROOT,'build/pixelfx-preview/integrated/round-'+round);
 mkdirSync(OUT,{recursive:true});mkdirSync(join(ROOT,'src/art/fx'),{recursive:true});
 const gray=['#252b2e','#4c5558','#737d7d','#9fa8a0','#c4cabb','#e1e1ce','#f1edd9'];
@@ -31,7 +32,11 @@ const defs=[
  ['tracer','projectiles/bullet-tracer',.5,{length:90},1,30],
  ['bulletHit','impacts/bullet-impact',.42,{height:0},.95],
  ['ricochet','impacts/ricochet',.4,{},.95],
- ['critHit','impacts/crit-hit',.36,{height:10},1]
+ ['critHit','impacts/crit-hit',.36,{height:10},1],
+ // 자유 모드 소품: 담배 연기(빈틈 표적) · 깨지는 차 유리 · 빗방울 고리 · 품속 쇠붙이 번쩍임(킬러)
+ ['cig',cig,1,{seed:3,count:7},1,12],
+ ['glass','impacts/hit-spark',.36,{palette:['#1c2a36','#3e5a70','#6f93ad','#a6c6dc','#d2e6f2','#eef7fc','#ffffff'],height:8,aim:-.6,seed:11},.95],
+ ['drop','water/ripples',.3,{palette:['#0b0f18','#151d2c','#223048','#33465f','#4a6079','#6c8399','#9cb0c0','#c9d6de']},.8,15]
 ];
 const all=[],manifest={version:1,upstream:'a84159688af3ca37a4be05a0d422b94451b2e24e',effects:{}};
 for(const [key,recipe,scale,options,opacity,fpsOpt,cut] of defs){
@@ -39,7 +44,7 @@ for(const [key,recipe,scale,options,opacity,fpsOpt,cut] of defs){
  const fps=fpsOpt||(key==='smoke'?10:20),r=renderFrames(fx,{fps,actor:false,options}),second=renderFrames(fx,{fps,actor:false,options});
  if(cut){r.frames=r.frames.slice(0,Math.round(cut*fps));second.frames=second.frames.slice(0,r.frames.length);}
  if(r.frames.some((f,i)=>!Buffer.from(f.clear).equals(Buffer.from(second.frames[i].clear))))throw Error('Non-deterministic '+key);
- if(typeof recipe!=='string'&&r.frames.at(-1).clear.some(v=>v))throw Error('Custom effect does not end empty '+key);
+ if(typeof recipe!=='string'&&!fx.meta.loop&&r.frames.at(-1).clear.some(v=>v))throw Error('Custom effect does not end empty '+key);
  writeFileSync(join(OUT,key+'.png'),contactSheet(fx,r,{max:12,zoom:2}));
  const w=Math.ceil(r.w*scale),h=Math.ceil(r.h*scale),frames=[];
  for(const frame of r.frames){

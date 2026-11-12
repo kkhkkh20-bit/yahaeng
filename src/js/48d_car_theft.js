@@ -39,6 +39,7 @@ function carBreakIn(v) {
 }
 // 유리 조각: 문 앞 바닥에 반짝이는 픽셀 몇 개 (1분 남는다)
 function carGlassBits(v, p) {
+  spawnEffect('glass', { x: p.x, y: p.y - 8, fl: 0, z: 0 }, { scale: 1, angle: rnd(-0.4, 0.4), alpha: 1 });  // 깨지는 순간: 도트 유리 파편
   const list = S.glassBits || (S.glassBits = []);
   for (let i = 0; i < 14; i++) list.push({ x: p.x + rnd(-14, 14), y: p.y + rnd(-12, 12), s: Math.random() < 0.3 ? 2 : 1, t: S.t });
   if (list.length > 300) list.splice(0, list.length - 300);
