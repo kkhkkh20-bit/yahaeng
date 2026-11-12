@@ -80,6 +80,20 @@ function lockedDoorAt(fl,tx,ty){
   if(!lockedDoorIdx||lockedDoorIdx.t!==S.t||lockedDoorIdx.S!==S){const m=new Map();for(const d of S.doors)if(d.locked)m.set(flOf(d)+':'+d.tx+','+d.ty,d);lockedDoorIdx={t:S.t,S,m};}
   return lockedDoorIdx.m.get(fl+':'+tx+','+ty)||null;
 }
+// 사람 위치 격자 (96px 칸): 갱신 한 번(S.t)마다 한 번 만들고, 비켜 걷기는 둘레 3×3 칸만 본다.
+// 큰 도시는 사람이 470명이라 한 사람마다 모두를 훑으면 한 프레임에 22만 번이 된다. 칸 소속은 프레임 처음 자리 기준이라
+// 프레임 안에서 조금 움직여도 둘레 칸(±96px)이 비켜 걷기 거리(58px)를 덮는다
+const AG_CELL = 96; let AG = null;
+function actorsNear(x, y) {
+  if (!AG || AG.t !== S.t || AG.s !== S) {
+    const cells = new Map(), add = o => { if (!(o.x > -1000)) return; const k = Math.floor(o.x / AG_CELL) * 65536 + Math.floor(o.y / AG_CELL); let c = cells.get(k); if (!c) cells.set(k, c = []); c.push(o); };
+    add(S.player); for (const o of S.guards) if (o.state !== 'DEAD' && !o.off) add(o);
+    AG = { t: S.t, s: S, cells, out: [] };
+  }
+  const cx = Math.floor(x / AG_CELL), cy = Math.floor(y / AG_CELL), out = AG.out; out.length = 0;
+  for (let i = cx - 1; i <= cx + 1; i++) for (let j = cy - 1; j <= cy + 1; j++) { const c = AG.cells.get(i * 65536 + j); if (c) for (const o of c) out.push(o); }
+  return out;
+}
 function moveAlong(g, speed, dt) {
   if(g.doorWork){g.moving=false;return false;}
   if(STAGE.signals&&g.civ&&pedWaits(g)){g.moving=false;return false;}  // 빨간불: 횡단보도 앞에서 기다린다
@@ -121,7 +135,7 @@ function moveAlong(g, speed, dt) {
     const p0 = g.path[0], dd = dist(g.x, g.y, p0.x, p0.y);
     if (dd > 1) {
       const ux = (p0.x - g.x) / dd, uy = (p0.y - g.y) / dd, rxv = -uy, ryv = ux; let sx = 0, sy = 0, slow = 1;
-      const P = S.player, others = [P].concat(S.guards);
+      const P = S.player, others = actorsNear(g.x, g.y);
       for (const o of others) {
         if (o === g || o.state === 'DEAD' || o.state === 'CAPTIVE' || o.climb || o.trav || o.hide || o.vent || o.under || flOf(o) !== flOf(g) || (o.z || 0) !== (g.z || 0)) continue;
         // 호위는 선두의 뒤를 따른다. 선두가 자기 호위를 피해 거꾸로 우회하지 않는다.

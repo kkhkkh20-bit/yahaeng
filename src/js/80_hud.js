@@ -329,7 +329,7 @@ const STH_ICO = {
 function updateStealth(lv) {
   const box = $('stealth'); if (!box || !S) return; const P = S.player, identity=disguiseKnowledge();
   syncSecurityReadout();
-  { const r = box.getBoundingClientRect(), sx = (P.x - cam.x) * SCALE + W / 2, sy = (P.y - cam.y) * SCALE + H / 2, u = sx > r.left - 24 && sx < r.right + 24 && sy > r.top - 30 && sy < r.bottom + 60;  // 주인공과 겹치면 흐리게
+  { if (!hudCache.sthR || S.t - hudCache.sthRt > 0.25 || S.t < hudCache.sthRt) { hudCache.sthR = box.getBoundingClientRect(); hudCache.sthRt = S.t; } const r = hudCache.sthR, sx = (P.x - cam.x) * SCALE + W / 2, sy = (P.y - cam.y) * SCALE + H / 2, u = sx > r.left - 24 && sx < r.right + 24 && sy > r.top - 30 && sy < r.bottom + 60;  // 주인공과 겹치면 흐리게
     if (hudCache.sthU !== u) { hudCache.sthU = u; box.classList.toggle('under', u); } }
   const e = P.hide || P.under || P.vent ? 0 : S.expo || 0;
   const observer=activeObserver(), eyeG=observer?.phase==='check'&&(observer.g.eyeT||0)>.05?observer.g:null,  // 눈썰미 있는 사람이 변장을 살피는 중

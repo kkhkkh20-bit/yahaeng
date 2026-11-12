@@ -91,10 +91,10 @@ function aheadBlocked(v) {
   const inBox = (x, y, len, half) => { const dx = x - v.x, dy = y - v.y, f = dx * ca + dy * sa, s = -dx * sa + dy * ca; return f > 30 && f < len && Math.abs(s) < half; };
   if (v.chase) return P.car && inBox(P.car.x, P.car.y, 130, 40) ? 'car' : null;  // 추격 경찰차는 내 차 말고는 서지 않는다 (사람은 밀치고 간다)
   const up = onDeckLevel(v);
-  for (const o of S.vehicles) if (o !== v && !o.dead && onDeckLevel(o) === up && inBox(o.x, o.y, 150, 34)) return 'car';
+  for (const o of S.vehicles) if (o !== v && Math.abs(o.x - v.x) < 160 && Math.abs(o.y - v.y) < 160 && !o.dead && inBox(o.x, o.y, 150, 34) && onDeckLevel(o) === up) return 'car';  // 먼 차는 바로 건너뛴다
   if (up) return null;  // 고가 위: 사람은 없다
   if (!P.car && !P.z && !flOf(P) && inBox(P.x, P.y, 120, 30)) return 'me';
-  for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && inBox(g.x, g.y, 110, 28)) return 'ped';
+  for (const g of actorsNear(v.x + ca * 70, v.y + sa * 70)) if (g !== P && g.state !== 'DEAD' && inBox(g.x, g.y, 110, 28) && !flOf(g) && !g.z) return 'ped';  // 앞 70px 둘레 칸의 사람만
   return null;
 }
 function updateVehicles(dt) {
@@ -311,7 +311,7 @@ function carOverlap(v) {
     for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) { if (v.ai&&!inMap(tx,ty)||!carBlocked(tx, ty)) continue;
       const nx = clamp(px, tx * TILE, tx * TILE + TILE), ny = clamp(py, ty * TILE, ty * TILE + TILE); if (dist(px, py, nx, ny) < R) return true; }
   }
-  for (const o of S.vehicles) { if (o === v || Math.abs((o.z || 0) - (v.z || 0)) > 0.5 || dist(o.x, o.y, v.x, v.y) > (v.hl ?? 25) + (o.hl ?? 25) + R + (o.r || CAR_R) + 8) continue;
+  for (const o of S.vehicles) { if (o === v || Math.abs(o.x - v.x) > 220 || Math.abs(o.y - v.y) > 220 || Math.abs((o.z || 0) - (v.z || 0)) > 0.5 || dist(o.x, o.y, v.x, v.y) > (v.hl ?? 25) + (o.hl ?? 25) + R + (o.r || CAR_R) + 8) continue;
     const RR = R + (o.r || CAR_R); for (const [px, py] of carPts(v)) for (const [qx, qy] of carPts(o)) if (dist(px, py, qx, qy) < RR) return o; }
   return false;
 }
