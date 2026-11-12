@@ -54,8 +54,8 @@ function evLoot(ev, owner, val, reward, what) {
   if (npcAlive(owner)) { owner.state = 'PATROL'; evGo(owner, owner.x, owner.y); gsay(owner, '제 ' + what + '이에요! 돌려주세요!', 3); }
   evBanner(`${what}을 주웠다 — 주인에게 돌려주거나 챙긴다`);
 }
-function evKeep(ev) { const L = ev.loot; if (!L) return; cash(L.val); addRep(ev.d, -3); evEnd(ev, `${L.what}을 챙겼다 · ${L.val}만`); }
-function evGive(ev) { const L = ev.loot; if (!L) return; cash(L.reward); addRep(ev.d, 4); if (npcAlive(L.owner)) gsay(L.owner, '고맙습니다! 정말 고마워요!', 3); evEnd(ev, `돌려줬다 · 사례 ${L.reward}만`, true); }
+function evKeep(ev) { const L = ev.loot; if (!L || ev.done) return; cash(L.val); addRep(ev.d, -3); evEnd(ev, `${L.what}을 챙겼다 · ${L.val}만`); }
+function evGive(ev) { const L = ev.loot; if (!L || ev.done) return; cash(L.reward); addRep(ev.d, 4); if (npcAlive(L.owner)) gsay(L.owner, '고맙습니다! 정말 고마워요!', 3); evEnd(ev, `돌려줬다 · 사례 ${L.reward}만`, true); }
 
 // ---------------------------------------------------------------- 이벤트 14개
 // start(ev): 자리를 잡고 사람·차를 세운다 (못 하면 false). update(ev,dt). goal(ev): 목표 줄. action(ev): [행동] 후보. x,y: 표시할 곳(ev.focus())
@@ -144,7 +144,7 @@ const EVENTS = [
       if ((ev.talkT = (ev.talkT || 0) - 1 / 60) <= 0) { ev.talkT = 3.5; const g = [ev.vendor, ...ev.enf][(S.t | 0) % 3]; if (npcAlive(g)) gsay(g, g === ev.vendor ? ['이거 뺏기면 우리 식구 굶어요!', '좀 봐줘요!'][(S.t | 0) % 2] : ['규정은 규정입니다.', '안 치우면 압수합니다.'][(S.t | 0) % 2], 2.4); } },
     action(ev) { const P = S.player; if (P.car || dist(P.x, P.y, ev.p.x, ev.p.y) > 80) return null; return { label: '노점 단속 끼어들기', at: { x: ev.p.x, y: ev.p.y - 50 }, fn: () => shopPanel('노점 단속', [
       { name: '상인 편 — 단속반 쫓아내기 (평판 +5)', price: null, tag: '+30만', ok: true, buy: () => { closeShopPanel(); evHelpVendor(ev); } },
-      { name: '단속반 편 — 노점 치우기 (평판 -4)', price: null, tag: '+50만', ok: true, buy: () => { closeShopPanel(); cash(50); addRep(ev.d, -4); evFlee(ev.vendor, S.player.x, S.player.y, 20); evEnd(ev, '단속반이 사례했다 · 50만'); } }]) }; },
+      { name: '단속반 편 — 노점 치우기 (평판 -4)', price: null, tag: '+50만', ok: true, buy: () => { closeShopPanel(); if (ev.done) return; cash(50); addRep(ev.d, -4); evFlee(ev.vendor, S.player.x, S.player.y, 20); evEnd(ev, '단속반이 사례했다 · 50만'); } }]) }; },
     goal: () => '노점 단속 — 상인 편 또는 단속반 편' },
   // 신당동 주택가 ① 빈집털이: 도둑을 제압하면 집주인 사례, 가방을 챙기면 돈
   { key: 'burglar', d: '신당동 주택가', name: '빈집털이',
@@ -174,7 +174,7 @@ const EVENTS = [
     start(ev) { const r = roadSpot(600, 1000); if (!r) return false; const v = ev.car = evCar(ev, 'van', r.x, r.y, rnd(0, TAU), { ai: true, driver: true }); v.hpMax = v.hp = 14; v.hue = 200; ev.hp0 = v.hp; return true; },
     focus: ev => ev.car,
     update(ev) { const v = ev.car, P = S.player;
-      if (!ev.hit && v.hp < ev.hp0) { ev.hit = true; addWanted(3, '현금 수송차를 습격했다'); }
+      if (!ev.hit && v.hp < ev.hp0 && P.car && dist(P.car.x, P.car.y, v.x, v.y) < 160) { ev.hit = true; addWanted(3, '현금 수송차를 습격했다'); }
       if (!ev.stopped && (v.dead || v.hp <= v.hpMax * 0.5)) { ev.stopped = true; v.ai = false; v.v = 0; v.driver = false; v.doorT = S.t + 0.2; v.doorSide = 1;
         for (const s of [-1, 1]) { const g = evPerson(ev, v.x + s * 44, v.y + 30, { kind: 'g1', police: true }); copChase(g); }
         const bx = v.x - Math.cos(v.a) * 60, by = v.y - Math.sin(v.a) * 60; let n = 0;
@@ -218,9 +218,9 @@ const EVENTS = [
 function evHelpVendor(ev) { if (ev.done) return; for (const g of ev.enf) evFlee(g, S.player.x, S.player.y, 20); if (npcAlive(ev.vendor)) gsay(ev.vendor, '고맙수! 다음에 오면 싸게 해 주지.', 3); cash(30); addRep(ev.d, 5); evEnd(ev, '상인 편을 들었다 · 30만', true); }
 function openDen(ev) {
   const show = () => shopPanel('폐공장 도박장', [
-    { name: '판돈 50만 걸기 (반반)', price: 50, ok: (S.cash || 0) >= 50, buy: () => { S.cash -= 50; const win = Math.random() < 0.48; if (win) cash(100); else play('click', 0.4); evBanner(win ? '땄다! +100만' : '잃었다'); show(); } },
-    { name: '경찰에 신고 (평판 +3)', price: null, tag: '사례 80만', ok: true, buy: () => { closeShopPanel(); cash(80); addRep(ev.d, 3); for (const g of ev.players) evFlee(g, ev.p.x, ev.p.y, 20); for (let k = 0; k < 2; k++) { const g = spawnCop(true); if (g) evGo(g, ev.p.x, ev.p.y); } evEnd(ev, '도박장을 신고했다 · 80만', true); } },
-    { name: '판 털기 (수배 2, 평판 -4)', price: null, tag: '+300만', ok: true, buy: () => { closeShopPanel(); cash(300); addWanted(2, '도박장을 털었다'); addRep(ev.d, -4); for (const g of [ev.bouncer, ...ev.players]) evFlee(g, S.player.x, S.player.y, 20); evEnd(ev, '도박장 판돈을 털었다 · 300만'); } }]);
+    { name: '판돈 50만 걸기 (반반)', price: 50, ok: (S.cash || 0) >= 50, buy: () => { if (ev.done) { closeShopPanel(); return; } S.cash -= 50; const win = Math.random() < 0.48; if (win) cash(100); else play('click', 0.4); evBanner(win ? '땄다! +100만' : '잃었다'); show(); } },
+    { name: '경찰에 신고 (평판 +3)', price: null, tag: '사례 80만', ok: true, buy: () => { closeShopPanel(); if (ev.done) return; cash(80); addRep(ev.d, 3); for (const g of ev.players) evFlee(g, ev.p.x, ev.p.y, 20); for (let k = 0; k < 2; k++) { const g = spawnCop(true); if (g) evGo(g, ev.p.x, ev.p.y); } evEnd(ev, '도박장을 신고했다 · 80만', true); } },
+    { name: '판 털기 (수배 2, 평판 -4)', price: null, tag: '+300만', ok: true, buy: () => { closeShopPanel(); if (ev.done) return; cash(300); addWanted(2, '도박장을 털었다'); addRep(ev.d, -4); for (const g of [ev.bouncer, ...ev.players]) evFlee(g, S.player.x, S.player.y, 20); evEnd(ev, '도박장 판돈을 털었다 · 300만'); } }]);
   show();
 }
 function closeShopPanel() { const el = document.getElementById('shopPanel'); if (el) { const c = [...el.querySelectorAll('button')].pop(); c && c.click(); } }
@@ -276,7 +276,7 @@ function evItemsUpdate() {
 function eventAction() {
   const ev = S.ev; if (!ev || ev.done) return null; const P = S.player;
   const L = ev.loot; if (L && npcAlive(L.owner) && !P.car && dist(P.x, P.y, L.owner.x, L.owner.y) < 70) return { k: 'evAct', label: `${L.what} 돌려주기`, at: { x: L.owner.x, y: L.owner.y - 56 }, fn: () => shopPanel(`${L.what}`, [
-    { name: `주인에게 돌려주기 (평판 +4)`, price: null, tag: `사례 ${L.reward}만`, ok: true, buy: () => { closeShopPanel(); const o = L.owner, s = standBy(S.player, o, 26); faceEachOther(o); doMotion({ x: s.x, y: s.y, face: s.face, pose: 'grab', dur: 0.55, at: [[0.2, () => play('cloth', 0.4)]], end: () => evGive(ev) }); } },
+    { name: `주인에게 돌려주기 (평판 +4)`, price: null, tag: `사례 ${L.reward}만`, ok: true, buy: () => { closeShopPanel(); if (ev.done) return; const o = L.owner, s = standBy(S.player, o, 26); faceEachOther(o); doMotion({ x: s.x, y: s.y, face: s.face, pose: 'grab', dur: 0.55, at: [[0.2, () => play('cloth', 0.4)]], end: () => evGive(ev) }); } },
     { name: `챙기기 (평판 -3)`, price: null, tag: `+${L.val}만`, ok: true, buy: () => { closeShopPanel(); evKeep(ev); } }]) };
   const a = ev.def.action && ev.def.action(ev); return a ? Object.assign({ k: 'evAct' }, a) : null;
 }

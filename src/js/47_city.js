@@ -44,7 +44,7 @@ function offscreenSpot(r0, r1) {
 }
 function spawnCop(calm) {  // calm: 사건 출동 (나를 쫓지 않는다)
   const p = offscreenSpot(650, 1100); if (!p) return null;
-  let g = S.guards.find(o => o.police && o.off);
+  let g = S.guards.find(o => o.police && o.off && !o.contact && !o.beat && !o.evt);  // 연락책·순찰 경찰 자리는 다시 쓰지 않는다
   if (!g) { g = makeGuard({ kind: 'g1', at: [Math.floor(p.x / TILE), Math.floor(p.y / TILE)], radio: false }, S.guards.length); S.guards.push(g); g.police = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; g.radio = false; if (PR) prWarm([charOf(g)], true); }
   g.off = false; g.state = 'PATROL'; g.x = p.x; g.y = p.y; g.fl = 0; g.z = 0; g.hp = null; g.fhp = null; g.brawl = null; g.hunt = null; g.route = [{ x: p.x, y: p.y, pause: 999 }]; g.routeLine = null;
   if (!calm) copChase(g); return g;
@@ -83,10 +83,10 @@ function cityUpdate(dt) {
     const need = WANT_COPS[S.wanted];
     if (cops.length < need && (S.copT -= dt) <= 0) { S.copT = 2.2; spawnCop(); }
     if (S.wantLost > 10 + S.wanted * 3) { S.wanted--; S.wantLost = 0; toast(S.wanted ? `수배 ${'★'.repeat(S.wanted)} — 경찰이 놓쳤다` : '수배가 풀렸다', 2.2);
-      if (!S.wanted) for (const g of cops) { g.state = 'RETURN'; g.icon = null; g.path = null; g.leaveT = 6; } }
+      if (!S.wanted) for (const g of cops) { if (g.contact) { g.state = 'RETURN'; g.path = null; g.icon = null; continue; } g.state = 'RETURN'; g.icon = null; g.path = null; g.leaveT = 6; } }
   } else for (const g of cops) {  // 수배가 풀린 경찰: 화면 밖으로 사라진다
     if (g.state === 'ALERT') { g.state = 'RETURN'; g.leaveT = 6; }
-    if (g.beat || g.incident || g.brawl) continue;  // 순찰 경찰·출동 중인 경찰은 남는다
+    if (g.beat || g.incident || g.brawl || g.contact) continue;  // 순찰 경찰·출동 중인 경찰·지구대 연락책은 남는다
     if ((g.leaveT = (g.leaveT || 6) - dt) <= 0 && (Math.abs(g.x - cam.x) > W / SCALE / 2 + 40 || Math.abs(g.y - cam.y) > H / SCALE / 2 + 40)) despawnCop(g);
   }
   // 멀리 떨어진 경찰은 화면 밖에서 다시 가까이 (따라잡기)
@@ -99,8 +99,9 @@ function cityVictim(g) { if (!STAGE.city || !g) return; if (g.police) addWanted(
 // 쓰러짐: 병원에서 깨어난다 (수배·경찰은 풀린다)
 // 쓰러짐: 그 자리에서 쓰러지는 모습과 '쓰러졌다' 화면을 2.6초 보여 준 뒤 병원에서 깨어난다 (바로 화면이 꺼지며 튕기지 않게)
 function cityDown(why) {
-  const P = S.player; if (S.downing) return;
+  const P = S.player; if (S.downing || S.cuffs) return;
   if (P.car) { const v = P.car; P.car = null; v.parked = true; }
+  clearCarScripts();
   P.trav = null; P.moving = false; P.vx = P.vy = 0;
   P.hurtT = 3.5; P.defeat = { x: P.x, y: P.y, a: P.a, t0: performance.now() }; S.downing = { t: S.t, why }; S.shakeT = Math.max(S.shakeT || 0, 0.3); play('kill', 0.6);
 }
@@ -122,7 +123,7 @@ function cityRespawn(why) {
   P.captive = null; P.carrying = null; P.hide = null; P.hp = P.hpMax; P.hurtT = 2.5; S.fade = 1.2; S.flash = 0.4;
   const h = STAGE.hospital || STAGE.start; P.x = tc(h[0]); P.y = tc(h[1]); P.z = 0; P.fl = 0; setLayer(0); cam.x = P.x; cam.y = P.y;
   S.wanted = 0; S.wantLost = 0; S.alevel = 0; S.alevelT = 0;
-  for (const g of S.guards) { if (g.police && !g.off) despawnCop(g); else if (['ALERT', 'SEARCH', 'SUSPICIOUS', 'CHECK'].includes(g.state)) { g.state = 'RETURN'; g.path = null; g.icon = null; g.meter = 0; } }
+  for (const g of S.guards) { if (g.police && !g.off && !g.contact && !g.beat) despawnCop(g); else if (['ALERT', 'SEARCH', 'SUSPICIOUS', 'CHECK'].includes(g.state)) { g.state = 'RETURN'; g.path = null; g.icon = null; g.meter = 0; } }
   S.stats.downs = (S.stats.downs || 0) + 1; play('lose', 0.4);
   toast((why ? why + ' ' : '') + '— 병원에서 깨어났다', 3, 'warn');
 }

@@ -65,3 +65,5 @@ function drawCarPickProgress() {
     const f = clamp((S.t - v.breakT) / (T.dur || 1), 0, 1), x = P.x - 16, y = P.y - 50;
     ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(x - 1, y - 1, 34, 6); ctx.fillStyle = '#e8d070'; ctx.fillRect(x, y, Math.round(32 * f), 4); }
 }
+// 하던 동작이 끊기면(쓰러짐·수갑) 차에 걸어 둔 표시를 지운다
+function clearCarScripts() { for (const v of S.vehicles || []) { if (v.breakT) v.breakT = 0; if (v.jacking) { v.jacking = false; v.parked = true; } } }

@@ -26,7 +26,7 @@ const jobOpen = (x, y) => !solidAt(Math.floor(x / TILE), Math.floor(y / TILE)) &
 // 차 가져오기: 나에게서 멀고(화면 밖) 너무 멀지 않은 곳에 세워 둔 차 하나를 비싼 차로 바꿔 둔다
 function planCarJob() {
   if (!S.dealer || !S.vehicles) return null;
-  const P = S.player, cand = S.vehicles.filter(v => !v.ai && !v.dead && !v.chase && !v.police && !v.gang && (v.z || 0) < 0.01 && v !== P.car && dist(v.x, v.y, P.x, P.y) > 1000 && dist(v.x, v.y, P.x, P.y) < 3200);
+  const P = S.player, cand = S.vehicles.filter(v => !v.ai && !v.dead && !v.chase && !v.police && !v.gang && v.forSale == null && !v.bought && !v.evt && !v.jobCar && !(S.dealer && v.x > S.dealer.lot[0] - 60 && v.x < S.dealer.lot[2] + 60 && v.y > S.dealer.lot[1] - 60 && v.y < S.dealer.lot[3] + 60) && (v.z || 0) < 0.01 && v !== P.car && dist(v.x, v.y, P.x, P.y) > 1000 && dist(v.x, v.y, P.x, P.y) < 3200);
   if (!cand.length) return null;
   const v = cand[(Math.random() * cand.length) | 0], type = JOB_CARS[(S.jobN || 0) % JOB_CARS.length];
   return { v, type, name: VTYPES[type].name, client: jobClient() };
@@ -95,6 +95,8 @@ function endJob(ok, msg, pay = 0) {
 const jobLeft = j => Math.max(0, Math.ceil(j.deadline - S.t));
 function jobsUpdate(dt) {
   const j = S.job, P = S.player; if (!j || S.downing) return;
+  // 받아만 두고 시작하지 않은 일(꾸러미를 안 받음·출발을 안 함)은 3분 뒤 취소된다 (전화·연락책이 계속 막히지 않게)
+  j.t0 = j.t0 || S.t; if ((j.kind === 'parcel' && !j.got || j.kind === 'race' && !j.started) && S.t - j.t0 > 180) { endJob(false, '일이 취소됐다 — 너무 오래 미뤘다'); return; }
   if (j.kind === 'car') {
     const v = j.v;
     if (!S.vehicles.includes(v) || v.dead) { endJob(false, '일 실패 — 차가 망가졌다'); return; }

@@ -114,7 +114,7 @@ function boothBlock() {
   const P = S.player;
   for (const p of S.phones || []) {
     const x0 = p.x - BOOTH_HW, x1 = p.x + BOOTH_HW, y0 = p.y - BOOTH_N, y1 = p.y + BOOTH_S;
-    for (const o of [P, ...S.guards]) {
+    for (const o of actorsNear(p.x, p.y)) {  // 부스 둘레 칸의 사람만 (전원을 매 프레임 복사하지 않는다)
       if (o === P ? P.booth || P.car || P.z || flOf(P) : o.state === 'DEAD' || o.x < 0 || flOf(o) || o.z) continue;
       if (o.x < x0 - BODY_R || o.x > x1 + BODY_R || o.y < y0 - BODY_R || o.y > y1 + BODY_R) continue;
       const push = [[x0 - BODY_R - o.x, 0], [x1 + BODY_R - o.x, 0], [0, y0 - BODY_R - o.y], [0, y1 + BODY_R - o.y]].sort((a, b) => Math.abs(a[0] + a[1]) - Math.abs(b[0] + b[1]))[0];

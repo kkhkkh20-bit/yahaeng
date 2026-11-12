@@ -91,12 +91,13 @@ function ignitePlayer() { const P = S.player; if (P.burnUntil > S.t) return; P.b
 function burnUpdate(dt) {
   if ((S.burnT0 = (S.burnT0 || 0) - dt) > 0) return; S.burnT0 = 0.25;
   const P = S.player;
+  // 불타는 차 바로 옆을 지나가면 옷에 불이 옮겨 붙는다 (타는 차 둘레 사람만 본다)
+  for (const v of S.vehicles || []) { if (!(v.dead && v.burn > 2 || v.fireT > 2.5)) continue;
+    for (const g of actorsNear(v.x, v.y)) if (g !== P && !g.burnT && !g.off && !flOf(g) && Math.abs(v.x - g.x) < 46 && Math.abs(v.y - g.y) < 46 && Math.random() < 0.3) igniteNpc(g); }
+  if (!(S.burnAny > S.t)) { if (!S.guards.some(g => g.burnT && g.burnUntil > S.t)) return; }
+  S.burnAny = S.t + 0.25;
   for (const g of S.guards) {
-    if (!g.burnT) {  // 불타는 차 바로 옆을 지나가면 옷에 불이 옮겨 붙는다
-      if (!npcAlive(g) || g.off || flOf(g)) continue;
-      for (const v of S.vehicles) if ((v.dead && v.burn > 2 || v.fireT > 2.5) && Math.abs(v.x - g.x) < 46 && Math.abs(v.y - g.y) < 46 && Math.random() < 0.3) { igniteNpc(g); break; }
-      continue;
-    }
+    if (!g.burnT || !(g.burnUntil > S.t)) continue;
     if (npcAlive(g)) {
       if (S.t >= g.burnDie) { npcDown(g, null, true); g.charred = true; play('thud', 0.3 * proxVol(g)); bloodBurst(g.x, g.y - 8, rnd(0, TAU), 2); continue; }
       if ((g.screamT -= 0.25) <= 0) { g.screamT = rnd(0.7, 1.2); gsay(g, BURN_SCREAM[(Math.random() * BURN_SCREAM.length) | 0], 0.9); play('kill2', 0.18 * proxVol(g), 1.3 + Math.random() * 0.4); }

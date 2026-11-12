@@ -21,6 +21,7 @@ function update(dt, present=true) {
   S.lodTick = (S.lodTick || 0) + 1;
   for (const g of S.guards) {
     let gdt = dt;
+    if (STAGE.cityLife && g.off) continue;  // 사라진(퇴장·연행) 사람은 갱신하지 않는다
     if (STAGE.city) { gdt = cityLodStep(g, dt, cityLodGuardCalm(g)); if (!gdt) continue; }  // 도시: 멀고 평온한 사람은 덜 자주
     setLayer(flOf(g)); updateGuard(g, gdt); setLayer(flOf(S.player)); if (S.over) return;
   }

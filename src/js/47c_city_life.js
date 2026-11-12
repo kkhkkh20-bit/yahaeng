@@ -5,7 +5,7 @@
 // 경찰에게 붙잡힘: 수배가 낮을 때(★1~2) 경찰이 내 옆에 1초 붙어 있으면 수갑. 총을 꺼낸 뒤(★3 이상)는 붙잡지 않고 쏜다
 const ARREST_T = 1.0;
 function updateArrest(dt) {
-  const P = S.player; if (!S.wanted || P.car || P.z || flOf(P) || P.trav || S.over) { S.arrestT = 0; return; }
+  const P = S.player; if (!S.wanted || P.car || P.z || flOf(P) || P.trav || S.over || S.downing) { S.arrestT = 0; return; }
   const cop = S.guards.find(g => g.police && !g.off && g.state === 'ALERT' && dist(g.x, g.y, P.x, P.y) < 34);
   if (!cop || S.wanted >= 3) { S.arrestT = Math.max(0, (S.arrestT || 0) - dt * 2); return; }
   S.arrestT = (S.arrestT || 0) + dt;
@@ -14,7 +14,8 @@ function updateArrest(dt) {
 // 수갑: 경찰이 등 뒤로 돌아와 손목에 채운다(철컥 두 번). 그동안 나는 움직일 수 없다. 끝나면 지구대로
 const CUFF_T = 1.6;
 function startCuffs(why, cop) {
-  const P = S.player; if (S.cuffs) return;
+  const P = S.player; if (S.cuffs || S.downing) return;
+  P.trav = null; clearCarScripts();  // 하던 동작(문 따기·차 타기)은 끊긴다
   if (P.car) { const v = P.car; P.car = null; v.parked = true; v.v = 0; }
   cop = cop || S.guards.filter(g => g.police && !g.off && g.state !== 'DEAD').sort((a, b) => dist(a.x, a.y, P.x, P.y) - dist(b.x, b.y, P.x, P.y))[0];
   S.cuffs = { t: 0, why, cop, clicks: 0 }; P.cuffed = true; P.moving = false; P.hurtT = 9; input.aiming = null;
@@ -43,7 +44,7 @@ function cityArrest(why) {
   P.captive = null; P.carrying = null; P.hide = null; P.hp = P.hpMax; P.hurtT = 2.5; S.fade = 1.2; S.flash = 0.2;
   const at = STAGE.police || STAGE.start; P.x = tc(at[0]); P.y = tc(at[1] + 1); P.z = 0; P.fl = 0; setLayer(0); cam.x = P.x; cam.y = P.y;
   S.cash = Math.max(0, (S.cash || 0) - fine); S.wanted = 0; S.wantLost = 0; S.alevel = 0; S.alevelT = 0;
-  for (const g of S.guards) { if (g.police && !g.off) despawnCop(g); else if (['ALERT', 'SEARCH', 'SUSPICIOUS', 'CHECK'].includes(g.state)) { g.state = 'RETURN'; g.path = null; g.icon = null; g.meter = 0; } }
+  for (const g of S.guards) { if (g.police && !g.off && !g.contact && !g.beat) despawnCop(g); else if (['ALERT', 'SEARCH', 'SUSPICIOUS', 'CHECK'].includes(g.state)) { g.state = 'RETURN'; g.path = null; g.icon = null; g.meter = 0; } }
   S.stats.arrests = (S.stats.arrests || 0) + 1; play('lose', 0.35);
   toast(why + ' — 지구대에서 풀려났다' + (fine ? ` (벌금 ${fine}만)` : ''), 3.2, 'warn');
 }

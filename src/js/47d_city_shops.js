@@ -44,7 +44,7 @@ function shopPanel(title, rows, onClose) {
   if (!el) { el = document.createElement('div'); el.id = 'shopPanel'; el.setAttribute('role', 'dialog');
     el.style.cssText = 'position:fixed;left:50%;bottom:9%;transform:translateX(-50%);z-index:70;min-width:min(420px,92vw);max-width:94vw;background:rgba(12,14,20,.94);border:2px solid #c9a24a;border-radius:6px;padding:14px 16px;color:#efe6cf;font-family:var(--f-body);box-shadow:0 8px 30px rgba(0,0,0,.6)';
     document.body.appendChild(el); }
-  el.replaceChildren();
+  el.replaceChildren(); if (el._esc) { document.removeEventListener('keydown', el._esc, true); el._esc = null; }  // 다시 그릴 때 예전 키 처리기를 뗀다
   const h = document.createElement('div'); h.style.cssText = 'display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;gap:16px';
   const t = document.createElement('b'); t.textContent = title; t.style.cssText = 'font-size:20px';
   const m = document.createElement('span'); m.textContent = `가진 돈 ${S.cash || 0}만`; m.style.cssText = 'color:#c9a24a;font-size:14px'; h.append(t, m); el.append(h);
@@ -57,7 +57,7 @@ function shopPanel(title, rows, onClose) {
   const c = document.createElement('button'); c.type = 'button'; c.textContent = '나가기'; c.style.cssText = 'margin-top:8px;width:100%;padding:9px;background:none;color:#b4bcb8;border:1px solid #3b4250;border-radius:4px;font:inherit;cursor:pointer';
   const close = () => { el.remove(); S.shopOpen = false; document.removeEventListener('keydown', esc, true); onClose && onClose(); };
   const esc = e => { if (e.code === 'Escape' || e.code === 'KeyX') { e.preventDefault(); e.stopPropagation(); close(); } };
-  c.onclick = close; el.append(c); S.shopOpen = true; document.addEventListener('keydown', esc, true);
+  c.onclick = close; el.append(c); S.shopOpen = true; el._esc = esc; document.addEventListener('keydown', esc, true);
   (el.querySelector('button:not(:disabled)') || c).focus({ preventScroll: true });
   return close;
 }

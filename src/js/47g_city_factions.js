@@ -60,15 +60,16 @@ function factionsUpdate(dt) {
   const P = S.player;
   if (S.stand && S.stand.P >= 30 && S.wanted > 0) S.wantLost = (S.wantLost || 0) + dt * 0.5;  // 경찰 우호: 수배가 빨리 풀린다
   if ((S.facT = (S.facT || 0) - dt) > 0) return; S.facT = 0.5;
-  for (const c of S.corpses || []) { if (c._st || c.byNpc || !c.fac || !c.g || c.g.evt) continue; c._st = true; const f = c.g.police ? 'P' : c.fac; if (!STAND_NAME[f]) continue;
-    S.facProvoked[f] = S.t; if (!(S.hit && S.hit.g === c.g)) applyStanding({ [f]: f === 'P' ? -15 : -10 }); }
-  for (const g of actorsNear(P.x, P.y)) {
-    if (!npcAlive(g) || g === P || g.civ || g.off) continue; const f = g.police ? 'P' : g.fac; if (!STAND_NAME[f]) continue;
+  for (const c of S.corpses || []) { if (c._st || c.byNpc) continue; const cg = c.g || S.guards.find(o => o.id === c.guardId); if (!cg || cg.evt || cg.burnT && !c.playerHandled) { c._st = true; continue; }  // 죽인 시체는 c.g가 없다 → guardId로
+    c._st = true; const f = cg.police ? 'P' : cg.fac || c.fac; if (!STAND_NAME[f] || cg.hit || cg.hitEscort) continue;
+    S.facProvoked[f] = S.t; if (!(S.hit && S.hit.g === cg)) applyStanding({ [f]: f === 'P' ? -15 : -10 }); }
+  for (const g of S.guards) {  // 0.5초마다 한 번: 260px 안을 본다 (actorsNear는 둘레 칸만이라 좁다)
+    if (Math.abs(g.x - P.x) > 270 || Math.abs(g.y - P.y) > 270 || !npcAlive(g) || g.civ || g.off) continue; const f = g.police ? 'P' : g.fac; if (!STAND_NAME[f]) continue;
     const v = standOf(f), d = dist(g.x, g.y, P.x, P.y), mine = S.hit && (S.hit.g === g || S.hit.escorts.includes(g));
     if (g.contact && g.state === 'ALERT' && !(S.facProvoked[f] > S.t - 20)) { g.state = 'RETURN'; g.meter = 0; g.path = null; g.icon = null; continue; }
     if (f !== 'P' && v >= 30 && (g.state === 'ALERT' || g.state === 'SUSPICIOUS') && !mine && !(S.facProvoked[f] > S.t - 30)) {  /* 우호: 의심도 풀린다 */ g.state = 'RETURN'; g.meter = 0; g.path = null; g.icon = null; g.lastSeen = null; if (d < 260) gsay(g, '아, 형님이셨군요. 실례했습니다.', 2); continue; }
     if (f !== 'P' && v >= 30 && g.state === 'PATROL' && d < 90 && (g.greetT || 0) < S.t) { g.greetT = S.t + 40; gsay(g, v >= 60 ? '형님, 오셨습니까!' : '어, 왔어?', 1.8); }
-    if (v <= -30 && (g.state === 'PATROL' || g.state === 'RETURN') && d < 260 && !P.car && los(g.x, g.y, P.x, P.y)) {
+    if (v <= -30 && ['PATROL', 'RETURN', 'SUSPICIOUS', 'NOTICE', 'CHECK'].includes(g.state) && !g.contact && d < 260 && !P.car && los(g.x, g.y, P.x, P.y)) {
       if (f === 'P') { if (!S.wanted) addWanted(1, '경찰이 나를 알아봤다'); } else { copChase(g); gsay(g, '저 새끼다!', 1.6); } }
   }
 }

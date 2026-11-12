@@ -72,7 +72,7 @@ async def main():
         await spawn('fire'); s0 = await st(); hold = await ev("()=>__game.S.ev.car.fireHold"); await ev("()=>{const S=__game.S,v=S.ev.car;S.player.x=v.x+50;S.player.y=v.y;tick(.05)}"); lab = await q.evaluate(ACT, None); s = await st(); print('fire', hold, lab, s)
         ok(hold is False and s['done'] and s['cash'] == s0['cash'] + 60, 'fire rescue: %s %s' % (hold, s))
         # 11 armored: ram until it stops, take two bags
-        await spawn('armored'); s0 = await st(); await ev("()=>{const v=__game.S.ev.car;v.hp=6;tick(.1)}"); w = (await st())['wanted']; await ev(PICK); s = await st(); print('armored', w, s)
+        await spawn('armored'); s0 = await st(); await ev("()=>{const S=__game.S,v=S.ev.car,c=S.vehicles.find(o=>o!==v&&!o.dead&&!o.evt&&(o.z||0)<.01);S.player.car=c;c.x=v.x+90;c.y=v.y;v.hp=6;tick(.1);S.player.car=null;S.player.x=c.x;S.player.y=c.y+60;}"); w = (await st())['wanted']; await ev(PICK); s = await st(); print('armored', w, s)
         ok(w >= 3 and s['done'] and s['cash'] == s0['cash'] + 500, 'armored truck: %s %s' % (w, s))
         await ev("()=>{const S=__game.S;S.wanted=0;for(const g of S.guards)if(g.police&&g.state==='ALERT'){g.state='RETURN';}}")
         # 12 protest: blend in while wanted
