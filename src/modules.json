@@ -386,6 +386,10 @@
       "group": "city"
     },
     {
+      "path": "47v_city_hunter.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },

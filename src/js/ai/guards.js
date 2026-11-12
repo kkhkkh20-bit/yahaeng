@@ -7,6 +7,7 @@ function updateGuard(g, dt) {
   if (g.yank) return;  // 숨은 곳으로 끌려가는 중 (updateAmbush가 움직인다)
   if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.doomed) { if (g.doomed) g.moving = false; return; }
   // 세력: 조직끼리 싸움·목격자 입막음·구역 단속이 평소 행동보다 먼저
+  if (g.hunter && STAGE.cityLife && g.state !== 'DEAD') { hunterStep(g, dt); return; }  // 자유 모드 킬러 (47v)
   if (g.warSide != null && S.war && !S.war.over && !g.burnT) { g.moving = false; return; }  // 자유 모드 총격전 (47p): 서서 쏘기만
   if (S.facOn && updateFaction(g, dt)) return;
   if (g.civ) { updateCiv(g, dt); return; }
