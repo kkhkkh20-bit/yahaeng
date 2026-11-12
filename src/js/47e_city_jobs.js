@@ -173,7 +173,7 @@ function drawMiniCity(x, T) {
   if (!STAGE.cityLife) return;
   const blink = Math.floor(S.t * 4) % 2 === 0;
   drawMiniContacts(x, T);
-  drawMiniSide(x, T); drawMiniWp(x, T); drawMiniWar(x, T);
+  drawMiniSide(x, T); drawMiniWp(x, T); drawMiniWar(x, T); drawMiniIntel(x, T);
   if (S.dealer) { const D = S.dealer; x.fillStyle = '#6aa8ff'; x.fillRect(T((D.lot[0] + D.lot[2]) / 2) - 3, T((D.lot[1] + D.lot[3]) / 2) - 3, 6, 6); }
   if (S.ringPhone && blink) { x.fillStyle = '#7fe0a8'; x.beginPath(); x.arc(T(S.ringPhone.x), T(S.ringPhone.y), 3.5, 0, TAU); x.fill(); }
   if (S.ev && !S.ev.done && dist(S.ev.x, S.ev.y, S.player.x, S.player.y) < 1800 && blink) { x.fillStyle = '#ff5a46'; x.beginPath(); x.arc(T(S.ev.x), T(S.ev.y), 3.5, 0, TAU); x.fill(); }

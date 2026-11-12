@@ -374,6 +374,10 @@
       "group": "city"
     },
     {
+      "path": "47s_city_intel.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },

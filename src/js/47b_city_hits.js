@@ -30,9 +30,10 @@ function enterBooth(p) {
     P.booth = p; P.x = inside.x; P.y = inside.y; P.a = -Math.PI / 2; P.moving = false;
     play('metal', 0.25, 1.9);  // 수화기 드는 소리
     const ringing = S.ringPhone === p; if (ringing) { S.ringPhone = null; S.ringNext = S.t + 25; }
-    const plan = !ringing || S.hit || S.job || S.wanted > 0 ? null : planJob(), lines = ringing ? (jobLines(plan) || phoneLines(null)) : [['hero', ['신호음뿐이다. 걸 데도 없다.', '...끊긴 전화다.'][(S.t | 0) % 2]]];  // 암살·차 가져오기·배달·경주 중 하나
+    const intelCall = !ringing && STAGE.cityLife && S.hit && !S.hit.ko && typeof intelLines === 'function';  // 의뢰 중엔 정보원이 받는다 (47s)
+    const plan = !ringing || S.hit || S.job || S.wanted > 0 ? null : planJob(), lines = intelCall ? intelLines(S.hit) : ringing ? (jobLines(plan) || phoneLines(null)) : [['hero', ['신호음뿐이다. 걸 데도 없다.', '...끊긴 전화다.'][(S.t | 0) % 2]]];  // 암살·차 가져오기·배달·경주 중 하나
     S.phoneCall = true;
-    say(lines, true, () => { S.phoneCall = false; play('click', 0.5); if (plan) startJob(plan); leaveBooth(); });
+    say(lines, true, () => { S.phoneCall = false; play('click', 0.5); if (intelCall && S.hit) intelBuy(S.hit); if (plan) startJob(plan); leaveBooth(); });
   };
 }
 function leaveBooth() {
@@ -129,7 +130,7 @@ function hitsUpdate(dt) {
   jobsUpdate(dt || 1 / 60); cityEventsUpdate(dt || 1 / 60); factionsUpdate(dt || 1 / 60); carTheftUpdate(dt || 1 / 60); sideUpdate(dt || 1 / 60); garageUpdate(dt || 1 / 60); weatherUpdate(dt || 1 / 60); wpUpdate(dt || 1 / 60); heatUpdate(dt || 1 / 60); havocUpdate(dt || 1 / 60); gunsUpdate(dt || 1 / 60); rampageUpdate(dt || 1 / 60); warUpdate(dt || 1 / 60); cityListsCleanup();
   saveFreeProgress();
   const h = S.hit; if (!h) return;
-  const g = h.g; hitGradeTrack(); if (STAGE.cityLife) { contractUpdate(); if (!S.hit) return; }
+  const g = h.g; hitGradeTrack(); if (STAGE.cityLife) { contractUpdate(); if (!S.hit) return; intelUpdate(); }
   if (!S.guards.includes(g)) { S.hit = null; return; }
   const ko = g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko);
   if (h.ko && ko && !h.cuffed) return;  // 검거: 기절시킨 뒤 수갑을 채워야 끝난다 (47h cuffAction)
@@ -226,7 +227,7 @@ function drawHits(layer) {
     drawBooth(p, false);
   }
   if (layer !== 'ui') return;
-  drawEvents(); drawContacts(); drawJobs(); drawCarPickProgress(); drawCarriedParcel(); drawWpRoute(); drawSide(); drawRampage(); drawGuns(); drawHeli(); drawRain();
+  drawEvents(); drawContacts(); drawJobs(); drawCarPickProgress(); drawCarriedParcel(); drawWpRoute(); drawSide(); drawRampage(); drawGuns(); drawIntel(); drawHeli(); drawRain();
   const h = S.hit; if (!h || h.g.state === 'DEAD' && !h.g.unconscious || contractHides(h)) return;
   const g = h.g; if (flOf(g) !== flOf(S.player) || !inView(g.x, g.y, 60)) return;
   const pu = .55 + .35 * Math.sin(S.t * 5);
