@@ -47,7 +47,8 @@ function makeVehicle(o) {
   // 몸 크기: 그림(팩의 동쪽을 본 칸)에서 잰 길이·폭. 충돌은 앞뒤로 늘어선 원으로 덮는다
   const T = vType(v), f = A.cityVehicles?.frames?.[T.model || v.type], len = T.len || f?.len || CAR_LEN, wid = T.wid || f?.wid || CAR_W;
   v.len = len; v.r = T.r || Math.max(CAR_R, Math.round(wid / 2)); v.hl = Math.max(8, len / 2 - v.r + 4);
-  if (o.hp == null) v.hp = T.hp; v.hpMax = T.hp;
+  const hpK = STAGE.cityLife ? 2 : 1;  // 자유 모드: 차가 너무 쉽게 부서지지 않게 내구성 두 배
+  if (o.hp == null) v.hp = T.hp * hpK; v.hpMax = T.hp * hpK;
   return v;
 }
 function trafficInit() {
@@ -351,7 +352,7 @@ function carMove0(v, dt, turn=0) {
    }
    let o=carOverlap(v);
    // 내 차가 벽을 비스듬히 받으면 멈추지 않고 벽을 따라 미끄러진다 (운전 보조): x만, y만 가 보고 되는 쪽으로
-   if(o===true&&!v.ai&&STAGE.cityLife&&S.player.car===v){const nx=v.x,ny=v.y;for(const [tx,ty] of [[nx,oy],[ox,ny]]){v.x=tx;v.y=ty;if(!carOverlap(v)){const along=Math.hypot(tx-ox,ty-oy)/Math.max(.001,Math.hypot(nx-ox,ny-oy));if(along>.35){v.v*=1-(1-along)*.5;const wa=Math.atan2(ty-oy,tx-ox)+(v.v<0?Math.PI:0);v.a+=angDiff(v.a,wa)*.12;if(v.va!=null)v.va=v.a;o=null;break;}}}if(o){v.x=nx;v.y=ny;}}
+   if(o===true&&!v.ai&&STAGE.cityLife&&S.player.car===v){const nx=v.x,ny=v.y;for(const [tx,ty] of [[nx,oy],[ox,ny]]){v.x=tx;v.y=ty;if(!carOverlap(v)){const along=Math.hypot(tx-ox,ty-oy)/Math.max(.001,Math.hypot(nx-ox,ny-oy));if(along>.35){v.v*=1-(1-along)*.5;const wa=Math.atan2(ty-oy,tx-ox)+(v.v<0?Math.PI:0),pa=v.a;v.a+=angDiff(v.a,wa)*.12;if(carOverlap(v))v.a=pa;if(v.va!=null)v.va=v.a;o=null;break;}}}if(o){v.x=nx;v.y=ny;}}
    if(!o)continue;
    const speed=Math.abs(v.v),hit=o===true?speed:Math.max(0,(v.v*Math.cos(v.a)-(o.v||0)*Math.cos(o.a))*(o.x-v.x)/Math.max(1,dist(v.x,v.y,o.x,o.y))+(v.v*Math.sin(v.a)-(o.v||0)*Math.sin(o.a))*(o.y-v.y)/Math.max(1,dist(v.x,v.y,o.x,o.y)));
    v.x=ox;v.y=oy;v.a=oa;v.v=v.ai?0:-v.v*.2;if(v.va!=null)v.va=v.a;
@@ -362,9 +363,9 @@ function carMove0(v, dt, turn=0) {
     S.carImpact={x,y,t:S.t,hit};
     spawnEffect('impact',{x,y,fl:0,z:0},{scale:.55,alpha:.8});
     const near=clamp(1-dist(x,y,S.player.x,S.player.y)/600,0,1);
-    if(near){play('metal',Math.min(.7,hit/400)*near,.8);play('thud',.4*near);if(hit>140)S.shakeT=Math.max(S.shakeT||0,.08*near);}
+    if(near){crashSound(hit,near);if(hit>140)S.shakeT=Math.max(S.shakeT||0,.08*near);}
     // 무거운 차와 부딪히면 가벼운 차가 더 크게 망가진다 (버스·트럭에 받히면 승용차는 두세 칸)
-    if(hit>175){const mv=vType(v).mass,mo=o===true?3:vType(o).mass;v.hp-=Math.max(1,Math.round(mo/mv));v.smoke=1.5;if(o!==true){o.hp-=Math.max(1,Math.round(mv/mo));o.smoke=1.5;}const wreck=STAGE.cityLife?carExplode:carWreck;if(v.hp<=0)wreck(v);if(o!==true&&o.hp<=0)wreck(o);}
+    if(hit>(STAGE.cityLife?230:175)){const mv=vType(v).mass,mo=o===true?3:vType(o).mass;v.hp-=Math.max(1,Math.round(mo/mv));v.smoke=1.5;if(o!==true){o.hp-=Math.max(1,Math.round(mv/mo));o.smoke=1.5;}const wreck=STAGE.cityLife?carExplode:carWreck;if(v.hp<=0)wreck(v);if(o!==true&&o.hp<=0)wreck(o);}
    }
    return speed;
   }
@@ -394,6 +395,7 @@ function hitPeople(v, dt) {
 function updateDriving(P, mx, my, mag, dt) {
   const v = P.car; P.moving = false; P.mode = 'walk'; P.vx = 0; P.vy = 0; P.z = 0; P.fl = 0;
   if (v.jacking) { P.x = v.x; P.y = v.y; return; }  // 차고에 들어가는 중 등 스크립트로 움직이는 차
+  if (STAGE.cityLife && carOverlap(v) === true) unstickCar(v);  // 벽에 낀 채면 가장 가까운 빈자리로 빼낸다 (앞뒤로 못 움직이는 일 없게)
   if (v.dead) { carExit(STAGE.cityLife ? true : 'instant'); return; }
   if (v.revT > 0 && (v.revT -= dt) <= 0) v.revT = 0;
   // 운전은 차 기준: 위 = 가속(전진) · 아래 = 브레이크 후 후진 · 좌우 = 핸들. 화면 방향으로 걷듯이 몰지 않는다
@@ -422,6 +424,12 @@ function updateDriving(P, mx, my, mag, dt) {
   hitPeople(v, dt);
   P.x = v.x; P.y = v.y; P.a = v.a; P.light = lightAt(P.x, P.y, false);
   if (Math.abs(v.v) > 60 && (v.engT = (v.engT || 0) - dt) <= 0) { v.engT = 0.5; noise(v.x, v.y, 160, 'car', 0); }
+}
+function unstickCar(v) {
+  const x0 = v.x, y0 = v.y, a0 = v.a;
+  for (let r = 6; r <= 96; r += 6) for (let k = 0; k < 16; k++) { const a = k / 16 * TAU; v.x = x0 + Math.cos(a) * r; v.y = y0 + Math.sin(a) * r; if (carOverlap(v) !== true) { v.va = v.a; return true; } }
+  for (const da of [Math.PI / 2, -Math.PI / 2]) { v.x = x0; v.y = y0; v.a = a0 + da; if (carOverlap(v) !== true) { v.va = v.a; return true; } }  // 옆으로 돌려 세우면 빠지는 자리
+  v.x = x0; v.y = y0; v.a = a0; return false;
 }
 function carWreck(v) {
   v.dead = true; v.v = 0; v.burn = 6; play('glass', 0.8); play('thud', 0.9); S.shakeT = 0.4; noise(v.x, v.y, 420, 'car', 0);

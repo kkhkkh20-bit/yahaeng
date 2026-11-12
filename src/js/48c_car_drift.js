@@ -45,6 +45,6 @@ function screechSound() {
   SCREECH.bp.frequency.setTargetAtTime(1300 + s * 600 + Math.sin(S.t * 31) * 120, now, 0.05);
 }
 // 라디오: 차마다 맞춰 둔 방송. 쫓기지 않을 때만 틀고, 음악을 좁은 대역(작은 스피커 소리)으로 거른다
-const RADIO_STATIONS = ['n_title', 'n_calm'];
+const RADIO_STATIONS = ['n_drive'];  // 차를 타면 신나는 곡
 const carStation = v => RADIO_STATIONS[(v.id || 0) % RADIO_STATIONS.length];
 function radioWanted() { const v = S?.player?.car; return !!(STAGE.cityLife && v && !v.dead && !S.wanted && (S.moodHi || 0) < 2); }

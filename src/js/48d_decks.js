@@ -68,7 +68,7 @@ function deckStep(v, dt) {
 function deckLand(v, hit) {
   if (hit < 2) return;
   const near = clamp(1 - dist(v.x, v.y, S.player.x, S.player.y) / 800, 0, 1);
-  play('thud', 0.5 + 0.5 * near); play('metal', 0.6 * near, .7); S.shakeT = Math.max(S.shakeT || 0, 0.15 + 0.35 * near);
+  crashSound(260 + hit * 40, 0.5 + 0.5 * near); S.shakeT = Math.max(S.shakeT || 0, 0.15 + 0.35 * near);
   if (typeof fireEmit === 'function') { fireEmit(v, 'spark', 20, v); fireEmit(v, 'debris', 6, v); }
   // 건물·벽 위로 떨어졌으면 가장 가까운 빈 자리로
   if (carOverlap(v) === true) { const x0 = v.x, y0 = v.y; let ok = false;
