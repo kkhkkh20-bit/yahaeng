@@ -75,7 +75,7 @@ function sideUpdate(dt) {
   if (sd.kind === 'amb' && left <= 0) { sideDropOut(f, true); G_kill(f.g); sd.fare = null; sd.nextT = S.t + 4; evBanner('환자가 숨졌다…', '#f2b0a0'); return; }
   if (dist(v.x, v.y, f.to.x, f.to.y) < 110 && Math.abs(v.v) < 25 && !f.leaving) {
     f.leaving = true; const pay = Math.round((sd.kind === 'amb' ? 90 : 30) + f.d / (sd.kind === 'amb' ? 30 : 40) + Math.max(0, left) * 2), tip = Math.max(0, left) > f.limit * 0.35 ? (sd.kind === 'amb' ? 30 : 20) : 0;
-    after(0.5, () => { sideDropOut(f, false); cash(pay + tip); sd.n++; sd.earned += pay + tip; sd.fare = null; sd.nextT = S.t + 2.5; play('loot', 0.5);
+    after(0.5, () => { sideDropOut(f, false); cash(pay + tip); sd.n++; fstat(sd.kind === 'amb' ? 'patients' : 'taxi'); sd.earned += pay + tip; sd.fare = null; sd.nextT = S.t + 2.5; play('loot', 0.5);
       gsay(f.g, sd.kind === 'amb' ? '고, 고맙습니다...' : tip ? '빠르네요! 잔돈은 넣어 두세요.' : '수고하세요.', 2);
       evBanner(`${sd.kind === 'amb' ? '환자 이송' : '운행 완료'} · ${pay}만${tip ? ` + 팁 ${tip}만` : ''}`, '#9fe0b0'); });
   }
@@ -203,7 +203,7 @@ function busUpdate(sd, dt) {
       g.x = x; g.y = y; g.route = [{ x: x + Math.cos(side) * 60, y: y + Math.sin(side) * 60, pause: 999 }]; g.evt = 'side'; placeGuard(g, gi); if (PR) prWarm([charOf(g)], true); });
     on.forEach((g, k) => { const side = v.a + Math.PI / 2; evGo(g, v.x + Math.cos(side) * 40, v.y + Math.sin(side) * 40); after(0.9 + k * 0.45, () => { if (S.side !== sd) return; g.off = true; g.x = -9000; g.y = -9000; }); });
     const t = Math.max(0.9 + on.length * 0.45, 0.3 + off * 0.4) + 0.3;
-    after(t, () => { if (S.side !== sd) return; sd.riders += on.length - off; const pay = on.length * 15; if (pay) { cash(pay); sd.earned += pay; } sd.n += on.length; st.wait = [];
+    after(t, () => { if (S.side !== sd) return; sd.riders += on.length - off; const pay = on.length * 15; if (pay) { cash(pay); sd.earned += pay; } sd.n += on.length; fstat('busRiders', on.length); st.wait = [];
       v.doorT = S.t + 0.2; play('switch', 0.4); sd.si++; sd.dwell = false;
       if (sd.si >= sd.stops.length) { const bonus = 50; cash(bonus); sd.earned += bonus; play('bell', 0.5); evBanner(`노선 완주 · 보너스 ${bonus}만`, '#9fe0b0'); sd.riders = 0; if (!busPlanRoute(sd)) sideEnd('운행을 마쳤다'); }
       else evBanner(`${st.name} · 탄 사람 ${on.length} · 내린 사람 ${off}${pay ? ` · ${pay}만` : ''} → 다음 ${sd.stops[sd.si].name}`, '#8fe0a8'); });
@@ -230,7 +230,7 @@ function copSideUpdate(sd, dt) {
     const gi = cityGuardSlot(), side = c.a - Math.PI / 2, g = makeGuard({ kind: 'g2', at: [Math.floor(c.x / TILE), Math.floor(c.y / TILE)], radio: false }, gi);
     g.x = c.x + Math.cos(side) * 46; g.y = c.y + Math.sin(side) * 46; g.fac = 'B'; g.outfit = FAC_OUTFIT.B || null; g.evt = 'side'; g.route = [{ x: g.x, y: g.y, pause: 999 }]; placeGuard(g, gi); if (PR) prWarm([charOf(g)], true);
     gsay(g, '아, 알았어! 쏘지 마!', 2.5); after(4, () => evGone(g));
-    const pay = 120 + Math.max(0, Math.round(sd.until - S.t)); cash(pay); sd.earned += pay; sd.n++; applyStanding({ P: 3, B: -2 });
+    const pay = 120 + Math.max(0, Math.round(sd.until - S.t)); cash(pay); sd.earned += pay; sd.n++; fstat('perps'); applyStanding({ P: 3, B: -2 });
     evBanner(`도주 차량 검거 · ${pay}만`, '#9fe0b0'); play('bell', 0.5); sd.target = null; sd.nextT = S.t + 6; return; }
   if (S.t > sd.until || dist(c.x, c.y, P.x, P.y) > 3200) { c.flee = false; evBanner('도주 차량을 놓쳤다', '#f2b0a0'); sd.target = null; sd.nextT = S.t + 8; }
   if ((sd.sirenT = (sd.sirenT || 0) - dt) <= 0) { sd.sirenT = 0.55; play('metal', 0.12, 2.9); }  // 사이렌 대용: 높은 쇳소리 깜빡

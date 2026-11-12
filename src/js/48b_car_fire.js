@@ -44,7 +44,7 @@ function carExplode(v) {
   const P = S.player, mine = P.car === v;
   v.fireT = 0; v.hp = 0;
   if (mine) P.car = null;  // 못 빠져나왔다: 차와 함께 터진다
-  carWreck(v); v.burn = 12;
+  carWreck(v); v.burn = 12; if (STAGE.cityLife && dist(v.x, v.y, P.x, P.y) < 900) fstat('explosions');
   (S.booms || (S.booms = [])).push({ x: v.x, y: v.y, t: S.t });
   (S.scorch || (S.scorch = [])).push({ x: v.x, y: v.y, r: rnd(46, 58), rot: rnd(0, TAU) }); if (S.scorch.length > 60) S.scorch.shift();
   fireEmit(v, 'spark', 30, v); fireEmit(v, 'debris', 18, v); fireEmit(v, 'smoke', 10, v);

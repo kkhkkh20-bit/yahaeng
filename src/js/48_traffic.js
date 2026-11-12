@@ -463,7 +463,7 @@ function carEnter(v) {
     if (witnessed(P.x, P.y, 380)) addWanted(1, '차를 빼앗는 걸 사람들이 봤다');
     v.driver = false;
   });
-  P.trav.end = () => { v.jacking = false; v.unlocked = true; P.car = v; P.x = v.x; P.y = v.y; play('switch', 0.4); play('click', 0.3);
+  P.trav.end = () => { v.jacking = false; v.unlocked = true; if (STAGE.cityLife && !v.bought && !v.stolen) { v.stolen = true; fstat('carsStolen'); } P.car = v; P.x = v.x; P.y = v.y; play('switch', 0.4); play('click', 0.3);
     hint('drive', isTouch ? (STAGE.cityLife ? '운전: 걸을 때처럼 가고 싶은 쪽으로 끌면 차가 그쪽으로 간다. 반대로 끌면 후진. [행동]으로 내리기' : '운전: 화면 왼쪽을 위로 끌면 가속, 아래로 끌면 제동·후진, 좌우로 핸들. [행동]으로 내리기') : '운전: ↑ 가속 · ↓ 제동·후진 · ←→ 핸들. ' + KK('env') + ' = 내리기, ' + KK('atk') + ' = 경적'); };
 }
 function carExit(force) {

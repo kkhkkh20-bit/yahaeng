@@ -386,6 +386,7 @@ $('btnResume').addEventListener('click', () => setPause(false));
 $('btnCheckpointPause').addEventListener('click',()=>{if(cpReady())loadCheckpoint();});
 $('btnRestart2').addEventListener('click', () => { setPause(false); start(STAGE_I, true); });
 $('btnMenu2').addEventListener('click', () => { setPause(false); toMenu(); });
+$('btnFreeStats').addEventListener('click', () => { setPause(false); if (STAGE.cityLife) freeStatsPanel(); });
 $('btnMenu').addEventListener('click', toMenu);
 $('btnRetry').addEventListener('click', retryContract);
 $('btnCity').addEventListener('click', () => { const ci = STAGES.findIndex(s => s.city); if (ci >= 0) start(ci, true); });  // 다시 하기는 브리핑 없이 바로
