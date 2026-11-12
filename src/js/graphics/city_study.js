@@ -129,7 +129,7 @@ function drawStudyFacade(b){
  for(let tx=b.x0;tx<=b.x1;tx++){const l=b.fl?.[tx-b.x0]??.2;ctx.fillStyle=`rgba(4,8,22,${.22*(1-clamp(l,0,1))})`;ctx.fillRect(tx*TILE,y,TILE,h);}
  for(let fl=1;fl<b.fh;fl+=3)studyDraw(ctx,'aircon',x+8,(b.y1-fl)*TILE+10,32,32);
  if(bi%3===0)studyDraw(ctx,'ivy',x+w-30,y,24,48);
- if(spec.ad)drawStudySign(b,spec.ad);
+ if(spec.ad&&!(STAGE.cityLife&&b.kind==='shop'&&(b.signs?.[0]||'').trim()&&spec.ad.fl<=1))drawStudySign(b,spec.ad);  // 가로 상호 간판 자리(2층 아랫단)와 겹치는 그림 간판은 뺀다
  drawStudyBoards(b,'face');
  if(STAGE.cityLife)drawStoreSigns(b,!DBG.neon);  // 간판은 여기서 한 번만: 정면은 어둠·네온 단계 뒤(지붕 단계)에 그려지므로 빛 번짐도 여기서 같이 그린다
  b.signRects=[];ctx.restore();

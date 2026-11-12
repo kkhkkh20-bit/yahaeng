@@ -219,9 +219,11 @@ function drawStoreSigns(b, lit) {
     if (lit) { ctx.globalCompositeOperation = 'lighter'; const c = hexRgb(st.ac); for (const [pad, a] of [[16, .08], [6, .14]]) { ctx.fillStyle = `rgba(${c},${a})`; ctx.fillRect(vx - pad, vy - pad, vw + pad * 2, vh + pad * 2); } ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = .9; }
     ctx.fillStyle = '#2a2e36'; ctx.fillRect(vx - 6, vy + 6, 6, 3); ctx.fillRect(vx - 6, vy + vh - 9, 6, 3);
     ctx.fillStyle = st.bg; ctx.fillRect(vx, vy, vw, vh); ctx.strokeStyle = st.ac; ctx.lineWidth = 2; ctx.strokeRect(vx + 1, vy + 1, vw - 2, vh - 2);
-    ctx.font = '700 16px ' + UI_FONT_FAMILY; ctx.fillStyle = st.fg; const step = Math.min(20, (vh - 22) / Math.max(1, chars.length));
-    chars.forEach((ch, k) => ctx.fillText(ch, vx + vw / 2, vy + 12 + k * step));
-    ctx.font = uiFont(9); ctx.fillStyle = st.ac; ctx.fillText((f + 1) + 'F', vx + vw / 2, vy + vh - 8);
+    // 글자는 간판 높이에 맞춰 크기를 줄인다 (낮은 건물에서 글자끼리, 층 표시와 겹치지 않게). 층 표시는 자리가 남을 때만
+    const n = Math.max(1, chars.length), roomF = vh - 10 >= n * 13 + 14, fs = Math.max(9, Math.min(16, Math.floor((vh - (roomF ? 26 : 12)) / n) - 2)), step = fs + 2;
+    ctx.font = '700 ' + fs + 'px ' + UI_FONT_FAMILY; ctx.fillStyle = st.fg; const y0 = vy + 6 + fs / 2;
+    chars.forEach((ch, k) => ctx.fillText(ch, vx + vw / 2, y0 + k * step));
+    if (roomF && y0 + n * step < vy + vh - 14) { ctx.font = uiFont(9); ctx.fillStyle = st.ac; ctx.fillText((f + 1) + 'F', vx + vw / 2, vy + vh - 8); }
     ctx.globalAlpha = 1;
   }
   ctx.restore();
