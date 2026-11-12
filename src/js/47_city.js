@@ -144,7 +144,9 @@ function cityUpdate(dt) {
   if (S.wanted > 0) for (const g of cops) if (g.state === 'ALERT' && dist(g.x, g.y, P.x, P.y) > 1500) { const p = offscreenSpot(650, 1000); if (p) { g.x = p.x; g.y = p.y; g.path = null; } }
 }
 // 경찰이 ALERT 가 되면 (내가 경찰 앞에서 범행): 수배
-function copAlert(g) { addWanted(S.wanted ? 0 : 1, '경찰이 범행을 봤다'); copChase(g); }
+function copAlert(g) {
+  if (STAGE.cityLife && !S.wanted && S.releasedT > S.t) { g.state = 'RETURN'; g.meter = 0; g.icon = null; g.path = null; return; }  // 막 풀려난 참: 지구대 안에서 눈에 띈 것만으로는 다시 잡지 않는다 (실제 범행은 따로 수배)
+  addWanted(S.wanted ? 0 : 1, '경찰이 범행을 봤다'); copChase(g); }
 // 쓰러뜨린 사람이 경찰이면 별 하나 더
 function cityVictim(g) { if (!STAGE.city || !g) return; if (g.police) addWanted(1, '경찰을 공격했다'); else if (witnessed(g.x, g.y, 360)) addWanted(1, g.civ ? '사람들이 폭행을 봤다' : '사람들이 싸움을 봤다'); }
 // 쓰러짐: 병원에서 깨어난다 (수배·경찰은 풀린다)

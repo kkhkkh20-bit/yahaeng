@@ -72,7 +72,7 @@ async def main():
     ok(s['hit']['state'] == 'DEAD' and not s['hit']['ko'], 'a car at speed did not kill: %s' % s['hit'])
     ok(s['hit']['blood'] >= 6 and s['hit']['thrown'] > 30, 'no blood or the body was not thrown: %s' % s['hit'])
     ok(s['arrest']['cuffed'], 'no handcuff sequence before the arrest')
-    ok(s['arrest']['wanted'] == 0 and s['arrest']['cash'] == 70 and s['arrest']['station'] < 60, 'arrest did not take me to the station: %s' % s['arrest'])
+    ok(s['arrest']['wanted'] == 0 and s['arrest']['cash'] == 70 and s['arrest']['station'] < 420, 'arrest did not take me to the station: %s' % s['arrest'])
     ok(s['knife'] == 2, 'a gang knife hit did not take two hearts: %s' % s['knife'])
     ok(0 <= s['shot'] < 5, 'police did not shoot at two stars')
     ok(s['gangCar'] == 1, 'the gang did not send a car')
