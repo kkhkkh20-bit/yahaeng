@@ -394,6 +394,10 @@
       "group": "city"
     },
     {
+      "path": "47x_city_carbomb.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },
