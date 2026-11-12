@@ -27,7 +27,7 @@ async def main():
         ev = lambda js, *a: q.evaluate(js, *a)
         c = await ev(SETUP); print('contacts', c); ok(sorted(c) == ['A', 'B', 'C', 'D', 'P'], 'contacts missing: %s' % c)
         # 1) gang D: hit a rival boss
-        o = await ev(OPEN, 'D'); print('open D', o); ok(o and len(o['rows']) == 4, 'D contact panel: %s' % o)
+        o = await ev(OPEN, 'D'); print('open D', o); ok(o and len(o['rows']) == 5 and any('무기' in r for r in o['rows']), 'D contact panel: %s' % o)
         await ev("()=>PICK(0)"); h = await ev("()=>{const S=__game.S;return S.hit&&{fac:S.hit.g.fac,by:S.hit.by}}"); print('hit', h)
         ok(h and h['fac'] != 'D' and h['by'] == 'D', 'D rival hit not started: %s' % h)
         await ev("()=>{const S=__game.S;__game.npcDown(S.hit.g,null,true);tick(.6)}"); s = await ev(ST); print('after hit', s)

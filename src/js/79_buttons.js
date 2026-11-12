@@ -142,6 +142,7 @@ function actAttack() {if(S?.player?.cuffed)return;
   if (actionBusy(P)) { if(!queueFollowupAttack())queueGrabAttack(); return; }
   if (P.car) { honk(); return; }
   if (P.captive) { actPrimary({ k: 'execute', viaZ: true, inputGroup: 'atk' }); return; }  // 기절 → 계속 누르면 처치 (updateKoHold)
+  if (STAGE.cityLife && gunAttack()) return;  // 자유 모드: 손 닿는 처치가 없으면 든 무기로 쏜다
   const a = attackAction();
   if (a.k === 'none') {
     if(a.skillLocked)toast(abilityLockText(a.skillLocked),2);

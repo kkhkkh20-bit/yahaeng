@@ -52,7 +52,7 @@ function openContact(f) {
   if (v <= -30) { gsay(g, f === 'P' ? '당신한테 맡길 일은 없소.' : '네놈하고는 말 안 한다.', 2.5); shopPanel(title, [{ name: '상대해 주지 않는다 (호감도 -30 이하)', price: null, tag: '', ok: false, buy: () => {} }]); return; }
   if (f === 'P' && S.wanted > 0) { shopPanel(title, [{ name: '수배 중에는 일을 줄 수 없다', price: null, tag: '', ok: false, buy: () => {} }]); return; }
   gsay(g, f === 'P' ? '마침 잘 왔소. 일손이 모자라서.' : '왔냐. 할 일 있다.', 2.5);
-  shopPanel(title, contactMissions(f).map(m => ({ name: m.name, price: null, tag: m.tag, ok: true, buy: () => { closeShopPanel(); if (m.go()) { S.job && (S.job.by = f); if (S.hit) S.hit.by = f; evBanner(`${STAND_NAME[f]} 일 · ${m.name.split(' — ')[0]}`, STAND_COL[f]); } else evBanner('지금은 맡길 일이 없다'); } })));
+  shopPanel(title, [...contactMissions(f).map(m => ({ name: m.name, price: null, tag: m.tag, ok: true, buy: () => { closeShopPanel(); if (m.go()) { S.job && (S.job.by = f); if (S.hit) S.hit.by = f; evBanner(`${STAND_NAME[f]} 일 · ${m.name.split(' — ')[0]}`, STAND_COL[f]); } else evBanner('지금은 맡길 일이 없다'); } })), ...(f !== 'P' && v >= 0 ? [{ name: '무기 거래', price: null, tag: '권총·기관단총·산탄총·수류탄·화염병', ok: true, buy: () => weaponShop(f) }] : [])]);
 }
 // 매 0.5초: 내가 해친 조직원·경찰 → 호감도 하락, 우호 조직은 덤비지 않고 적대 조직은 덤빈다, 경찰 호감도 효과
 function factionsUpdate(dt) {

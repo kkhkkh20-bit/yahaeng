@@ -76,6 +76,7 @@ window.addEventListener('keydown', e => {
   if (e.code === 'Digit3') selectTool('coin');
   if (e.code === 'ControlLeft' || e.code === 'ControlRight') toggleSneak();
   if (e.code === 'KeyN') toggleMute();
+  if (e.code === 'KeyL' && STAGE?.cityLife && running) { cycleWeapon(); return; }  // 자유 모드: 무기 바꾸기
   if (e.code === 'KeyM') { if (STAGE?.cityLife && running) cityMapOpen(); else toggleTactical(); }  // 자유 모드: 큰 지도
   if (e.code === 'KeyG') whistle();
   if (e.code === 'Tab') { if(e.shiftKey)toggleEnvPicker();else cycleEnv(); }  // 겹친 대상 중 다른 것 고르기

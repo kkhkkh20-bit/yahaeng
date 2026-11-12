@@ -354,6 +354,10 @@
       "group": "city"
     },
     {
+      "path": "47n_city_guns.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },
