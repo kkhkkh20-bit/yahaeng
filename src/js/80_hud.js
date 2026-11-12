@@ -364,7 +364,7 @@ function updateStealth(lv) {
   const passCamera=(S.cams||[]).some(c=>!c.search&&cameraAssessment(c).visible>0&&!cameraAssessment(c).detectable);
   box.dataset.camera=passCamera?'pass':'';if(passCamera&&s==='blend')why='CCTV 통행 허용 · 훔치면 녹화 대상';
   const cause=searchCauseReadout();if(cause)why=cause.text+(observer?.camera?' · CCTV 시야에서 벗어나기':s==='hide'&&(P.hide||P.hidden)?' · 은신 유지':'');
-  if (STAGE.cityLife) why = '';  // 자유 모드: 잠입판 요령(갈아입기·구역 권한·CCTV)은 쓰지 않는다 — 상태 낱말과 눈 표시만
+  if (!modeRule('stealthHudTips')) why = '';  // 자유 모드: 잠입판 요령(갈아입기·구역 권한·CCTV)은 쓰지 않는다 — 상태 낱말과 눈 표시만
   const k = s + '|' + word + '|' + why; if (hudCache.sth === k) return; hudCache.sth = k;
   if (hudCache.sthS && hudCache.sthS !== s && S.t - (hudCache.sthSfxT || -9) > 0.35) { hudCache.sthSfxT = S.t; sfx({ hide: 'toHide', blend: 'toBlend', risk: 'toRisk', seen: 'toSeen' }[s]); } hudCache.sthS = s;  // 상태가 바뀌면 작은 신호음
   box.dataset.s = s; const el = $('expoLbl'); el.textContent = word; el.dataset.e = s==='seen'?2:e; $('lightLbl').textContent = why;

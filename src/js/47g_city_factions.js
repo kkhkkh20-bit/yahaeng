@@ -40,8 +40,8 @@ function contactMissions(f) {
     { name: '수배자 검거 — 조직원을 기절시켜라', tag: '250만', go: () => { const R = RIVALS('P')[(Math.random() * 4) | 0], p = planHit(); if (!p) return false; Object.assign(p, { kind: 'hit', fac: R, ko: true, pay: 250, stand: { P: 8, [R]: -10 }, name: `수배자 ${p.name}` }); startJob(p); return true; } },
     { name: '도난차 회수 — 지구대로 몰고 와라', tag: '220만', go: () => { const p = planCarJob(); if (!p) return false; p.kind = 'car'; startJob(p); Object.assign(S.job, { drop: here, pay: 220, stand: { P: 6 } }); return true; } },
     { name: '순찰 동행 — 차로 순찰 지점을 돌아라', tag: '160만', go: () => { const p = planRace(); if (!p) return false; p.kind = 'race'; startJob(p); Object.assign(S.job, { patrol: true, pay: 160, stand: { P: 4 } }); return true; } }];
-  const R = RIVALS(f)[(S.jobN || 0) % 3];
-  return [
+  const R = RIVALS(f)[(S.jobN || 0) % 3], si = STAGE.cityLife && typeof storySideItem === 'function' ? storySideItem(f) : null;
+  return [...(si ? [si] : []),
     { name: `${STAND_NAME[R]} 간부 처리`, tag: '250만', go: () => { const p = planHit(); if (!p) return false; Object.assign(p, { kind: 'hit', fac: R, pay: 250, stand: { [f]: 8, [R]: -12, P: -3 }, name: `${STAND_NAME[R]} ${p.name}` }); startJob(p); return true; } },
     { name: '물건 운반 — 늦지 마라', tag: '180만+', go: () => { const p = planParcel(); if (!p) return false; Object.assign(p, { kind: 'parcel', from: { x: c.x + 30, y: c.y + 20 }, fromSign: CONTACT_BLD[f] }); startJob(p); Object.assign(S.job, { pay: 180, stand: { [f]: 5, P: -2 } }); return true; } },
     { name: `차 가져오기 — ${CONTACT_BLD[f]} 앞으로`, tag: '320만', go: () => { const p = planCarJob(); if (!p) return false; p.kind = 'car'; startJob(p); Object.assign(S.job, { drop: here, pay: 320, stand: { [f]: 6, P: -2 } }); return true; } }];
@@ -52,7 +52,7 @@ function openContact(f) {
   if (v <= -30) { gsay(g, f === 'P' ? '당신한테 맡길 일은 없소.' : '네놈하고는 말 안 한다.', 2.5); shopPanel(title, [{ name: '상대해 주지 않는다 (호감도 -30 이하)', price: null, tag: '', ok: false, buy: () => {} }]); return; }
   if (f === 'P' && S.wanted > 0) { shopPanel(title, [{ name: '수배 중에는 일을 줄 수 없다', price: null, tag: '', ok: false, buy: () => {} }]); return; }
   gsay(g, f === 'P' ? '마침 잘 왔소. 일손이 모자라서.' : '왔냐. 할 일 있다.', 2.5);
-  shopPanel(title, [...contactMissions(f).map(m => ({ name: m.name, price: null, tag: m.tag, ok: true, buy: () => { closeShopPanel(); if (m.go()) { S.job && (S.job.by = f); if (S.hit) S.hit.by = f; evBanner(`${STAND_NAME[f]} 일 · ${m.name.split(' — ')[0]}`, STAND_COL[f]); } else evBanner('지금은 맡길 일이 없다'); } })), ...(f !== 'P' && v >= 0 ? [{ name: '무기 거래', price: null, tag: '권총·기관단총·산탄총·수류탄·화염병', ok: true, buy: () => weaponShop(f) }] : [])]);
+  shopPanel(title, [...contactMissions(f).map(m => ({ name: m.name, price: null, tag: m.tag, ok: !m.done, buy: () => { if (m.done) return; closeShopPanel(); if (m.go()) { S.job && (S.job.by = f); if (S.hit) S.hit.by = f; evBanner(`${STAND_NAME[f]} 일 · ${m.name.split(' — ')[0]}`, STAND_COL[f]); } else evBanner('지금은 맡길 일이 없다'); } })), ...(f !== 'P' && v >= 0 ? [{ name: '무기 거래', price: null, tag: '권총·기관단총·산탄총·수류탄·화염병', ok: true, buy: () => weaponShop(f) }] : [])]);
 }
 // 매 0.5초: 내가 해친 조직원·경찰 → 호감도 하락, 우호 조직은 덤비지 않고 적대 조직은 덤빈다, 경찰 호감도 효과
 function factionsUpdate(dt) {

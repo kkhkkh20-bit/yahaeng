@@ -400,6 +400,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) softP
 
 document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));
 function start(i, noBrief) {
+  seedRandom(gameSeed());  // 무작위 고정 (00_core)
   if($('briefInfo').open)$('briefInfo').close();
   clearResultTransition();
   resetCaseBoard();

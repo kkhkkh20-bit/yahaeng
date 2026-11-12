@@ -23,16 +23,21 @@ function intelBuy(h) {
 function intelUpdate() {
   const h = S.hit, B = h && h.brk; if (!B || B.done) return; const g = h.g;
   if (!npcAlive(g)) { B.done = true; return; }
-  if (!B.on && S.t >= B.at && !['PATROL', 'RETURN'].includes(g.state)) { B.done = true; evBanner(`${h.name}이(가) 경계 중이다 — 빈틈은 없다`, '#c8c0b0'); return; }  // 이미 들켰으면 담배는 없다
+  if (!B.on && S.t >= B.at && !['PATROL', 'RETURN'].includes(g.state) && g.state !== 'ALERT') { g.state = 'RETURN'; g.meter = 0; g.icon = null; g.poi = null; }  /* 거리 소음에 잠깐 두리번거린 정도면 담배는 그대로 */
+  if (!B.on && S.t >= B.at && g.state === 'ALERT') { B.done = true; evBanner(`${h.name}이(가) 경계 중이다 — 빈틈은 없다`, '#c8c0b0'); return; }  // 이미 들켰으면 담배는 없다
   if (!B.on && S.t >= B.at) {
     B.on = true; B.route = g.route; B.ri = g.ri;
     { let bd = 1e9; for (const q of g.route || []) { const d = dist(q.x, q.y, g.x, g.y); if (d < bd) { bd = d; B.x = q.x; B.y = q.y; } } if (bd > 260) { B.x = g.x; B.y = g.y; } }  // 그때 가장 가까운 모퉁이 (멀면 그 자리에서)
     g.route = [{ x: B.x, y: B.y, pause: 999 }]; g.ri = 0; g.wait = 0; g.path = null;
     B.esc = h.escorts.map(e => ({ e, follow: e.follow, route: e.route }));
-    h.escorts.forEach((e, i) => { if (!npcAlive(e)) return; const a = Math.atan2(e.y - B.y, e.x - B.x) + (i - 0.5) * 0.6; e.follow = null; const to = walkableNear(B.x + Math.cos(a) * 520, B.y + Math.sin(a) * 520, B); e.route = [{ x: to.x, y: to.y, pause: 999 }]; e.ri = 0; e.wait = 0; e.path = null; });
-    gsay(g, '먼저 가 있어. 한 대 피우고 간다.', 2.4); evBanner(`빈틈 — ${h.name}이(가) 혼자 담배를 피운다 · ${B.dur}초`, '#ffd76a'); play('click', 0.5, 0.8);
+    h.escorts.forEach((e, i) => { if (!npcAlive(e)) return; if (e.state !== 'ALERT') { e.state = 'PATROL'; e.meter = 0; e.poi = null; e.icon = null; } const a = Math.atan2(e.y - B.y, e.x - B.x) + i * Math.PI;  /* 둘은 서로 반대쪽으로 (한 보도에서 앞사람에게 막히지 않게) */ e.follow = null; const to = walkableNear(B.x + Math.cos(a) * 520, B.y + Math.sin(a) * 520, B); e.route = [{ x: to.x, y: to.y, pause: 999 }]; e.ri = 0; e.wait = 0; e.path = null; });
+    B.t0 = S.t; gsay(g, '먼저 가 있어. 한 대 피우고 간다.', 2.4); evBanner(`빈틈 — ${h.name}이(가) 혼자 담배를 피운다 · ${B.dur}초`, '#ffd76a'); play('click', 0.5, 0.8);
   }
+  // 차 가지러 간 경호원: 떠난 지 4초가 지나 내 눈에 안 보이면 차가 있는 곳(물러날 자리)에서 기다린다 — 길에 걸려 어정쩡하게 남지 않게
+  if (B.on && !B.done && S.t - (B.t0 ?? S.t) > 4) for (const o of B.esc || []) { const e = o.e, to = e.route && e.route[0];
+    if (npcAlive(e) && !e.off && e.state !== 'ALERT' && to && !inView(e.x, e.y, 60) && dist(e.x, e.y, B.x, B.y) < dist(to.x, to.y, B.x, B.y) - 40) { e.x = to.x; e.y = to.y; e.path = null; e.off = true; o.away = true; } }
   if (B.on && S.t >= B.at + B.dur) {
+    for (const o of B.esc || []) if (o.away) { o.e.off = false; o.away = false; }  // 차를 몰고 돌아온다 (그 자리에서 다시 걸어 붙는다)
     B.done = true; if (npcAlive(g) && g.state !== 'ALERT') { g.route = B.route; g.ri = B.ri || 0; g.wait = 0; g.path = null; gsay(g, '가자.', 1.4); }
     for (const o of B.esc || []) if (npcAlive(o.e) && o.e.state !== 'ALERT') { o.e.follow = o.follow; o.e.route = o.route; o.e.path = null; o.e.wait = 0; }
     if (!S.hit || S.hit === h) evBanner('빈틈이 닫혔다 — 경호원이 돌아온다', '#c8c0b0');

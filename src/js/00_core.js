@@ -1,3 +1,12 @@
+// 무작위 고정: 주소에 ?seed=숫자 가 있거나 window.__seed 가 정해져 있으면, 판을 시작할 때마다 Math.random 을 그 수로 시작하는 같은 수열로 바꾼다
+// (같은 장면을 똑같이 다시 볼 수 있다 — 버그 재현 · 테스트). 없으면 브라우저 기본 무작위 그대로.
+const NATIVE_RANDOM = Math.random;
+function seedRandom(seed) {
+  if (seed == null || seed === '') { Math.random = NATIVE_RANDOM; return; }
+  let a = (Number(seed) >>> 0) || 1;
+  Math.random = function () { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };  // mulberry32
+}
+function gameSeed() { try { const q = new URLSearchParams(location.search).get('seed'); if (q != null) return q; } catch (e) {} return window.__seed ?? null; }
 const A = window.__ASSETS__;
 const NEONY = () => !!(STAGE && STAGE.neon);  // 네온 동네(강남 등): 건물 윤곽·간판·조명이 네온
 const hexRgb = h => { const n = parseInt(h.slice(1), 16); return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`; };

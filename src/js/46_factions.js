@@ -111,7 +111,7 @@ function drawGangFlags(P) {
 }
 const aFits = o => !!o && o !== 'rival' && S.guards.some(g => g.fac === 'A' && outfitOf(g) === o);  // 이 옷이 의뢰 조직 옷인가
 function startBrawl(a, b, why) {
-  if (!npcAlive(a) || !npcAlive(b) || !sameNpcLevel(a, b) || a.brawl || a.target || b.target) return;
+  if (!npcAlive(a) || !npcAlive(b) || !sameNpcLevel(a, b) || a.brawl || a.target || b.target || a.hit || b.hit || a.hitEscort || b.hitEscort) return;  // 의뢰 표적·경호원은 길거리 싸움에 끼지 않는다 (남이 먼저 죽이면 의뢰가 흐트러진다)
   a.facBlocked = 0; a.brawl = { o: b, cd: rnd(0.2, 0.6) }; if (!b.brawl && !b.civ) { b.facBlocked = 0; b.brawl = { o: a, cd: rnd(0.5, 0.9) }; }
   a.state = a.state === 'ALERT' ? a.state : 'PATROL'; a.path = null; a.chat = null; a.say = null;
   S.stats.fights = (S.stats.fights || 0) + 1; noise(a.x, a.y, 220, 'fight', flOf(a));

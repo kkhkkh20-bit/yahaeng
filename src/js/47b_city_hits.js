@@ -31,7 +31,8 @@ function enterBooth(p) {
     play('metal', 0.25, 1.9);  // 수화기 드는 소리
     const ringing = S.ringPhone === p; if (ringing) { S.ringPhone = null; S.ringNext = S.t + 25; }
     const intelCall = !ringing && STAGE.cityLife && S.hit && !S.hit.ko && typeof intelLines === 'function';  // 의뢰 중엔 정보원이 받는다 (47s)
-    const plan = !ringing || S.hit || S.job || S.wanted > 0 ? null : planJob(), lines = intelCall ? intelLines(S.hit) : ringing ? (jobLines(plan) || phoneLines(null)) : [['hero', ['신호음뿐이다. 걸 데도 없다.', '...끊긴 전화다.'][(S.t | 0) % 2]]];  // 암살·차 가져오기·배달·경주 중 하나
+    const sc = ringing && !S.hit && !S.job && !(S.wanted > 0) && typeof storyCall === 'function' ? storyCall() : null;  // 메인 이야기 지령이 먼저 (47zz)
+    const plan = sc ? sc.plan : !ringing || S.hit || S.job || S.wanted > 0 ? null : planJob(), lines = intelCall ? intelLines(S.hit) : sc ? sc.lines : ringing ? (jobLines(plan) || phoneLines(null)) : [['hero', ['신호음뿐이다. 걸 데도 없다.', '...끊긴 전화다.'][(S.t | 0) % 2]]];  // 암살·차 가져오기·배달·경주 중 하나
     S.phoneCall = true;
     say(lines, true, () => { S.phoneCall = false; play('click', 0.5); if (intelCall && S.hit) intelBuy(S.hit); if (plan) startJob(plan); leaveBooth(); });
   };
@@ -108,7 +109,7 @@ function startHit(plan) {
   }
   setLayer(0); for (const g of [t, ...escorts]) buildRouteLine(g); setLayer(flOf(P));
   if (PR) prWarm([t, ...escorts].map(charOf), true);
-  S.hit = { g: t, escorts, name, t0: S.t, wantedAtStart: S.wanted, ko: !!plan.ko, pay: plan.pay, stand: plan.stand, by: plan.by }; if (STAGE.cityLife) { hitGradeStart(S.hit); const k = plan.pay == null && !plan.ko ? plan.ctr || 'plain' : 'plain'; Object.assign(S.hit, { ctr: k, cx: plan.cx, cy: plan.cy, deadline: S.t + (CONTRACTS[k].time || 1e9) }); if (k === 'carbomb') carbombStart(S.hit, plan); }
+  S.hit = { g: t, escorts, name, t0: S.t, wantedAtStart: S.wanted, ko: !!plan.ko, pay: plan.pay, stand: plan.stand, by: plan.by }; if (STAGE.cityLife) { hitGradeStart(S.hit); const k = (plan.pay == null || plan.story != null || plan.chain) && !plan.ko ? plan.ctr || 'plain' : 'plain'; if (plan.story != null) S.hit.story = plan.story; if (plan.chain) S.hit.chain = plan.chain; Object.assign(S.hit, { ctr: k, cx: plan.cx, cy: plan.cy, deadline: S.t + (CONTRACTS[k].time || 1e9) }); if (k === 'carbomb') carbombStart(S.hit, plan); if (k === 'sign' && !signStart(S.hit)) { S.hit.ctr = 'accident'; } }  // 간판 자리가 없으면 사고 위장으로
   if (!STAGE.noPrompts) toast(`의뢰: ${name} 처치`, 2.4, 'good');
 }
 // 부스는 사람이 지나가지 못한다 (안에 든 나만 예외)
@@ -141,6 +142,7 @@ function hitsUpdate(dt) {
     if (h.ko && ko) for (const e of h.escorts) if (npcAlive(e)) evFlee(e, S.player.x, S.player.y, 20);  // 연행: 수갑 찬 수배자는 순찰차가 데려간다 (47h)
     const paid = STAGE.cityLife ? hitFinish(h, pay) : pay;
     S.cash = (S.cash || 0) + paid; S.hitN++; S.hit = null;
+    if (STAGE.cityLife) { if (h.story != null) storyMainDone(h, true); if (h.chain) storySideDone(h.chain, true); }  // 이야기 다음 장 (47zz)
     play('bell', 0.6); if (!STAGE.noPrompts) toast(`의뢰 완료 · ${paid}만${quiet ? ' (조용히)' : ''}`, 2.6, 'good');
     if (typeof feedbackPulse === 'function') feedbackPulse(document.querySelector('#hud .obj'), 'loot');
   }

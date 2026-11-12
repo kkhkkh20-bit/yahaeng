@@ -18,7 +18,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(); q = await b.new_page(viewport={'width': 1280, 'height': 720}); errs = []
         q.on('pageerror', lambda e: errs.append(str(e)[:300]))
-        await q.add_init_script('window.requestAnimationFrame=()=>0;try{localStorage.clear()}catch(e){}')
+        await q.add_init_script('window.__seed=11;window.requestAnimationFrame=()=>0;try{localStorage.clear()}catch(e){}')
         await q.goto((R / 'build/preview_city.html').as_uri() + '?nostats&study=city-xl'); await q.wait_for_function('!!window.__game')
         env = await q.evaluate(SETUP)
         def ok(v, m):

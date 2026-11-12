@@ -13,8 +13,10 @@ const CONTRACTS = {
   photo: { name: '사진만', mul: 1.3, brief: '얼굴 사진 한 장뿐이다. 그 블록 어딘가를 돈다. 직접 찾아서 얼굴을 확인해.', rule: '사진만 — 블록을 돌며 얼굴 찾기' },
   snipe: { name: '저격', mul: 1.4, fail: 0.6, brief: '멀리서 한 발로 끝내라. 500px 밖에서 총으로. 저격총은 조직 연락책이 판다. 가까이서 끝내면 값을 깎는다.', rule: '저격 (500px 밖에서 총으로)' },
   carbomb: { name: '차량 폭탄', mul: 1.6, fail: 0.6, brief: '그놈 차가 그 블록 길가에 서 있다. 100초 뒤에 타고 떠난다. 폭약 하나 줄 테니 차에 심어 둬. 타는 순간 끝이다. 놓치면 차째 터뜨려도 된다.', rule: '차량 폭탄 (차에 폭약)' },
+  roadkill: { name: '뺑소니', mul: 1.5, fail: 0.6, brief: '차로 쳐라. 총도 칼도 안 된다. 치고 나서 그 자리에 서 있지 마라 — 목격자가 번호판을 외우기 전에.', rule: '차로 치고 도주' },
+  sign: { name: '간판 사고', mul: 1.7, fail: 0.6, brief: '그놈이 도는 길 위에 낡은 간판이 매달려 있다. 건물 정면 가스 배관을 타고 옥상에 올라가, 그놈이 밑을 지날 때 고정줄을 풀어라. 철거 안 한 간판이 떨어진 사고다.', rule: '간판 사고 (옥상에서 고정줄 풀기)' },
   timed: { name: '시간 제한', mul: 1.3, time: 180, brief: '3분 뒤에 그놈이 서울을 뜬다. 그 전에 끝내. 놓치면 없던 일이다.', rule: '3분 안에' } };
-const CONTRACT_KINDS = ['accident', 'blade', 'photo', 'timed', 'snipe', 'carbomb', 'plain'];
+const CONTRACT_KINDS = ['accident', 'blade', 'photo', 'timed', 'snipe', 'carbomb', 'sign', 'plain'];
 function pickContract() {
   if (!S.hitN) return 'plain';
   const pool = CONTRACT_KINDS.filter(k => k !== S.lastContract); return pool[(Math.random() * pool.length) | 0];
@@ -22,6 +24,7 @@ function pickContract() {
 // 표적이 어떻게 죽었나: car · fire · blast · gun · blade
 function deathCause(g) {
   const c = (S.corpses || []).find(c => c.g === g || c.guardId === g.id && !c.g);
+  if (c && c.accident === 'fall') return 'sign';  // 떨어진 간판에 깔림 (47z)
   if (c && c.byCar) return 'car';
   if (g.poisonT || c && c.poisoned) return 'poison';
   if (g.burnT || c && c.charred) return 'fire';
@@ -32,7 +35,9 @@ function deathCause(g) {
 function contractMul(h, g) {
   const C = CONTRACTS[h.ctr || 'plain'], cause = deathCause(g);
   let ok = true;
-  if (h.ctr === 'accident') ok = ['car', 'fire', 'blast', 'poison'].includes(cause);
+  if (h.ctr === 'accident') ok = ['car', 'fire', 'blast', 'poison', 'sign'].includes(cause);
+  else if (h.ctr === 'sign') ok = cause === 'sign';
+  else if (h.ctr === 'roadkill') ok = cause === 'car';
   else if (h.ctr === 'blade') ok = cause === 'blade';
   else if (h.ctr === 'carbomb') ok = cause === 'blast';
   else if (h.ctr === 'snipe') ok = cause === 'gun' && (g.shotD || 0) >= 500;
@@ -49,13 +54,15 @@ function contractUpdate() {
 }
 function contractFail(h, msg) {
   for (const o of [h.g, ...h.escorts]) if (npcAlive(o)) { if (inView(o.x, o.y, 80)) { const a = rnd(0, TAU); evGo(o, o.x + Math.cos(a) * 1200, o.y + Math.sin(a) * 1200); after(15, () => { if (npcAlive(o) && !inView(o.x, o.y, 80)) evGone(o); }); } else evGone(o); }
-  S.hit = null; S.lastContract = h.ctr; fstat('hitFail'); play('thud', 0.5); evBanner(msg, '#c8c0b0');
+  S.hit = null; S.lastContract = h.ctr; fstat('hitFail'); if (h.story != null) storyMainDone(h, false); play('thud', 0.5); evBanner(msg, '#c8c0b0');
 }
 // 사진 의뢰는 얼굴을 보기 전엔 표적 위치를 안 준다 (블록 가운데만)
 function contractHides(h) { return h && h.ctr === 'photo' && !h.spotted && npcAlive(h.g); }
+const P_ON_ROOF = () => (S.player.z || 0) > 0;
 function contractGoal(h) {
   const C = CONTRACTS[h.ctr || 'plain']; if (!C || h.ctr === 'plain' || !h.ctr) return '';
   if (h.ctr === 'timed') return ` · 남은 ${Math.max(0, Math.ceil(h.deadline - S.t))}초`;
   if (h.ctr === 'carbomb' && h.car && !h.car.dead) return h.car.bombed ? ' · 폭약 설치됨 — 차에 탈 때까지 기다려라' : h.cbIn ? ' · 차를 몰고 떠난다 — 차를 터뜨려라' : ` · 차에 폭약 심기 · 출발까지 ${Math.max(0, Math.ceil(h.leaveAt - S.t))}초`;
+  if (h.ctr === 'sign' && h.sign && !h.sign.used) return P_ON_ROOF() ? ' · 간판 옆에서 [간판 고정 풀기] — 그놈이 밑을 지날 때' : ' · 노란 점 배관으로 옥상에 올라가 간판 고정줄 풀기';
   return ` · ${C.rule}`;
 }

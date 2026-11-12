@@ -18,6 +18,10 @@
       "group": "copy"
     },
     {
+      "path": "03_mode_rules.js",
+      "group": "core"
+    },
+    {
       "path": "05_map.js",
       "group": "map"
     },
@@ -399,6 +403,14 @@
     },
     {
       "path": "47y_city_poison.js",
+      "group": "city"
+    },
+    {
+      "path": "47z_city_sign.js",
+      "group": "city"
+    },
+    {
+      "path": "47zz_city_story.js",
       "group": "city"
     },
     {

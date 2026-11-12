@@ -16,7 +16,7 @@ function goAlert(g) {
   if (g.fac === 'B') { toast('건달파가 나를 노린다', 2, 'warn'); return; }
   if (g.fac === 'P' && STAGE.city) { copAlert(g); return; }  // 도시의 경찰: 수배로 (의뢰 판의 경찰은 자경대원처럼 경보를 올린다)  // 경찰: 조직 경보와 따로 — 수배로  // 건달파는 조직 무전망과 따로 — 전체 경보·증원 없음
   if (!radio && !g.target) {  // 무전기를 가진 자경대원이 없으면 경보가 근처에만 머문다 (증원·전체 경보 없음)
-    if (S.alevel < 2 && !STAGE.cityLife) toast('근처 경비에게 발각 · 무전기가 없어 전체 경보는 전달되지 않는다', 2.4);
+    if (S.alevel < 2 && modeRule('nearbyGuardToast')) toast('근처 경비에게 발각 · 무전기가 없어 전체 경보는 전달되지 않는다', 2.4);
     setAlert(2, 30);
   } else if (!g.target) {  // 무전: 바로 퍼지지 않는다. 무전기 자경대원이 몇 초간 보고하는 사이 처치하면 끊긴다
     queueGuardRadio(reporters, observed, g.suspectLook, true);
