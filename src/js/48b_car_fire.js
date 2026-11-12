@@ -14,7 +14,7 @@ function carFireUpdate(dt) {
     }
     const k = v.hp / (v.hpMax || 6);
     if (k <= 0.25) {
-      if (!v.fireT) { v.fireT = 0.001; if (near) play('kill2', 0.25); }
+      if (!v.fireT) { v.fireT = 0.001; if (near) play('kill2', 0.25); if (P.car === v) { toast('차에 불이 붙었다! 터지기 전에 [행동]으로 뛰어내려라', 3, 'warn big'); S.flash = Math.max(S.flash || 0, 0.25); } }
       v.fireT += dt; if (near && Math.random() < dt * (30 + v.fireT * 14)) fireEmit(v, 'fire', 1);  // 터질 때가 가까울수록 더 크게 탄다
       if (v.fireT >= CAR_FIRE_T) carExplode(v);
     } else v.fireT = 0;
@@ -41,6 +41,7 @@ function carExplode(v) {
   if (v.dead) return;
   const P = S.player, mine = P.car === v;
   v.fireT = 0; v.hp = 0;
+  if (mine) P.car = null;  // 못 빠져나왔다: 차와 함께 터진다
   carWreck(v); v.burn = 12;
   (S.booms || (S.booms = [])).push({ x: v.x, y: v.y, t: S.t });
   (S.scorch || (S.scorch = [])).push({ x: v.x, y: v.y, r: rnd(46, 58), rot: rnd(0, TAU) }); if (S.scorch.length > 60) S.scorch.shift();
@@ -55,7 +56,8 @@ function carExplode(v) {
     const r = dist(g.x, g.y, v.x, v.y); if (r > CAR_BLAST_R) continue;
     npcDown(g, null, r < CAR_BLAST_R * 0.7); if (typeof bloodBurst === 'function') bloodBurst(g.x, g.y - 10, Math.atan2(g.y - v.y, g.x - v.x), 3);
   }
-  if (!P.car && !flOf(P) && !P.z && d < CAR_BLAST_R) { P.hurtT = 0; hurtPlayer(null, '폭발에 휘말렸다.'); if (d < CAR_BLAST_R * 0.6) { P.hurtT = 0; hurtPlayer(null, '폭발에 휘말렸다.'); } }
+  if (mine) { P.x = v.x; P.y = v.y; P.hurtT = 0; P.hp = 1; hurtPlayer(null, '차 안에서 폭발에 휘말렸다.'); }
+  else if (!P.car && !flOf(P) && !P.z && d < CAR_BLAST_R) { P.hurtT = 0; hurtPlayer(null, '폭발에 휘말렸다.'); if (d < CAR_BLAST_R * 0.6) { P.hurtT = 0; hurtPlayer(null, '폭발에 휘말렸다.'); } }
   // 둘레 차: 크게 망가지고, 가까우면 불이 옮겨 붙는다 (연쇄 폭발)
   for (const o of S.vehicles) {
     if (o === v || o.dead) continue; const r = dist(o.x, o.y, v.x, v.y); if (r > CAR_BLAST_R + 30) continue;

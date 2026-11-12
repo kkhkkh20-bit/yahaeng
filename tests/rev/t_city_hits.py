@@ -24,9 +24,9 @@ async def main():
         def ok(v, m):
             if not v: bad.append(m)
         ok(env == 'hitPhone', 'phone does not offer a contract: %s' % env)
-        await q.keyboard.press('x'); await q.evaluate('tick(.3)')
+        await q.keyboard.press('x'); await q.evaluate('tick(1.3)')
         call = await q.evaluate('''()=>{const G=__game,S=G.S,lines=[];const inBooth=!!S.player.booth,ctx=document.getElementById('dlgContext').textContent;
-          while(G.DLG.modal){lines.push(document.getElementById('dlgText')?.textContent||'');G.advanceDialog();}tick(.3);return {inBooth,ctx,lines:lines.length,out:!S.player.booth}}''')
+          while(G.DLG.modal){lines.push(document.getElementById('dlgText')?.textContent||'');G.advanceDialog();}tick(.9);return {inBooth,ctx,lines:lines.length,out:!S.player.booth&&!S.player.trav}}''')
         print('call', json.dumps(call, ensure_ascii=False))
         ok(call['inBooth'] and call['ctx'].startswith('공중전화') and call['lines'] >= 3 and call['out'], 'the phone booth call did not play: %s' % call)
         s = await q.evaluate(STATE); print('taken', json.dumps(s, ensure_ascii=False))

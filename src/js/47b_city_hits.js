@@ -13,23 +13,35 @@ function hitsInit() {
 const BOOTH_EDGE = 6, BOOTH_HW = 16, BOOTH_N = 14, BOOTH_S = 12;
 // 지금 맡은 의뢰가 없을 때, 가까운 공중전화에서 [행동]
 function hitAction() {
-  const P = S.player; if (P.car || P.booth) return null;
+  const P = S.player; if (P.car || P.booth || P.trav) return null;
   for (const p of S.phones || []) if (dist(P.x, P.y, p.x, p.y) < 60) return { k: 'hitPhone', p, at: { x: p.x, y: p.y - 40 }, label: '공중전화' };
   return null;
 }
 // 부스에 들어가 수화기를 든다 → 까마귀와 통화(대사) → 끊으면 의뢰가 시작되고 부스에서 나온다
 function enterBooth(p) {
-  const P = S.player; if (P.booth || P.car) return;
-  P.booth = p; P.boothOut = { x: P.x, y: P.y }; P.x = p.x; P.y = p.y + 2; P.a = -Math.PI / 2; P.moving = false; P.vx = P.vy = 0;
-  play('click', 0.6); setTimeout(() => play('metal', 0.25, 1.9), 250);
-  const ringing = S.ringPhone === p; if (ringing) { S.ringPhone = null; S.ringNext = S.t + 25; }
-  const plan = !ringing || S.hit || S.wanted > 0 ? null : planHit(), lines = ringing ? phoneLines(plan) : [['hero', ['신호음뿐이다. 걸 데도 없다.', '...끊긴 전화다.'][(S.t | 0) % 2]]];
-  S.phoneCall = true;
-  say(lines, true, () => { S.phoneCall = false; play('click', 0.5); if (plan) startHit(plan); leaveBooth(); });
+  const P = S.player; if (P.booth || P.car || P.trav) return;
+  // 보도 쪽(서쪽) 문 앞까지 걸어가 → 문을 밀고 → 안으로 들어서 전화기를 본다
+  const door = { x: p.x - BOOTH_HW - 12, y: p.y + 4 }, inside = { x: p.x, y: p.y + 2 }, tWalk = Math.min(0.5, dist(P.x, P.y, door.x, door.y) / 200), dur = tWalk + 0.5;
+  P.moving = false; P.vx = P.vy = 0; P.boothOut = door; p.doorT = S.t + tWalk;
+  startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: door.x, y: door.y, f: tWalk / dur }, { x: door.x + 4, y: door.y, f: (tWalk + 0.15) / dur }, { x: inside.x, y: inside.y, f: 1 }], dur,
+    phases: [{ to: 1, pose: 'walk' }], face: -Math.PI / 2 });
+  after(tWalk, () => play('click', 0.6));  // 문 미는 소리
+  P.trav.end = () => {
+    P.booth = p; P.x = inside.x; P.y = inside.y; P.a = -Math.PI / 2; P.moving = false;
+    play('metal', 0.25, 1.9);  // 수화기 드는 소리
+    const ringing = S.ringPhone === p; if (ringing) { S.ringPhone = null; S.ringNext = S.t + 25; }
+    const plan = !ringing || S.hit || S.wanted > 0 ? null : planHit(), lines = ringing ? phoneLines(plan) : [['hero', ['신호음뿐이다. 걸 데도 없다.', '...끊긴 전화다.'][(S.t | 0) % 2]]];
+    S.phoneCall = true;
+    say(lines, true, () => { S.phoneCall = false; play('click', 0.5); if (plan) startHit(plan); leaveBooth(); });
+  };
 }
 function leaveBooth() {
   const P = S.player, p = P.booth; if (!p) return;
-  P.booth = null; P.x = p.x - BOOTH_HW - 22; P.y = p.y + 4; P.a = Math.PI;  // 보도 쪽으로 나온다
+  // 수화기를 걸고 → 돌아서 문을 밀고 → 보도로 걸어 나온다
+  const out = { x: p.x - BOOTH_HW - 22, y: p.y + 4 }; p.doorT = S.t + 0.2;
+  P.booth = null; P.x = p.x; P.y = p.y + 2;
+  startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: p.x - 4, y: p.y + 4, f: 0.35 }, { x: out.x, y: out.y, f: 1 }], dur: 0.55, phases: [{ to: 1, pose: 'walk' }], face: Math.PI });
+  after(0.2, () => play('click', 0.5));
 }
 const DIR8 = ['동쪽', '남동쪽', '남쪽', '남서쪽', '서쪽', '북서쪽', '북쪽', '북동쪽'];
 // 울리는 공중전화: 일이 없을 때 가끔 내 둘레(멀지 않은) 부스 하나가 운다. 받으면 까마귀다. 40초 동안 안 받으면 끊긴다
@@ -135,6 +147,8 @@ function hitGoal() {
 // layer 'world': 조명을 받는 부스 · 'ui': 어둠 위 — 안에 든 나를 덮는 앞 유리, 부스 안 불빛, 표적 고리
 function drawBooth(p, front) {
   const x = p.x, y = p.y, H = 56, top = y - H, inUse = S.player.booth === p;
+  const dOpen = p.doorT ? Math.max(0, 1 - Math.abs(S.t - p.doorT) / 0.35) : 0;  // 문 열고 닫힘 (0~1)
+  if (dOpen > 0 && !front) { ctx.fillStyle = 'rgba(160,205,232,.4)'; ctx.fillRect(x - BOOTH_HW - 10 * dOpen, top + 10, 4 + 10 * dOpen, H - 2); ctx.fillStyle = '#c3cbd2'; ctx.fillRect(x - BOOTH_HW - 10 * dOpen, top + 10, 2, H - 2); }  // 서쪽 문이 바깥으로 열린다
   if (front) {  // 앞 유리와 앞 기둥만 (안에 든 사람 위로)
     ctx.fillStyle = 'rgba(160,205,232,.22)'; ctx.fillRect(x - 13, top + 6, 26, H + 4);
     ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(x - 10, top + 9, 3, H - 6);
@@ -160,7 +174,7 @@ function drawHits(layer) {
       const ring = S.ringPhone === p && Math.floor((S.t - S.ringT0) * 8) % 2 === 0 && (S.t - S.ringT0) % 3 < 1;
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = ring ? 'rgba(255,236,190,.28)' : 'rgba(255,236,190,.10)'; ctx.fillRect(p.x - 13, p.y - 50, 26, 58);
       if (ring) { ctx.fillStyle = 'rgba(255,90,70,.5)'; ctx.fillRect(p.x - BOOTH_HW - 2, p.y - 60, BOOTH_HW * 2 + 4, 9); } ctx.restore();  // 부스 안 형광등 · 울릴 때 지붕 띠가 깜빡인다
-      if (S.player.booth === p) drawBooth(p, true);
+      const P = S.player; if (P.booth === p || (P.trav && Math.abs(P.x - p.x) < BOOTH_HW && Math.abs(P.y - p.y) < 14)) drawBooth(p, true);
       if (!STAGE.noPrompts && !S.hit) { const pu = .5 + .4 * Math.sin(S.t * 4); ctx.strokeStyle = `rgba(80,220,170,${pu})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y - 4, 24, 0, TAU); ctx.stroke(); infoTag(p.x, p.y + 22, '공중전화', '#8fe0c4', .9); }
       continue;
     }

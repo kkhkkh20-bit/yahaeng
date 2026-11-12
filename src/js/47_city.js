@@ -96,7 +96,27 @@ function copAlert(g) { addWanted(S.wanted ? 0 : 1, '경찰이 범행을 봤다')
 // 쓰러뜨린 사람이 경찰이면 별 하나 더
 function cityVictim(g) { if (!STAGE.city || !g) return; if (g.police) addWanted(1, '경찰을 공격했다'); else if (witnessed(g.x, g.y, 360)) addWanted(1, g.civ ? '사람들이 폭행을 봤다' : '사람들이 싸움을 봤다'); }
 // 쓰러짐: 병원에서 깨어난다 (수배·경찰은 풀린다)
+// 쓰러짐: 그 자리에서 쓰러지는 모습과 '쓰러졌다' 화면을 2.6초 보여 준 뒤 병원에서 깨어난다 (바로 화면이 꺼지며 튕기지 않게)
 function cityDown(why) {
+  const P = S.player; if (S.downing) return;
+  if (P.car) { const v = P.car; P.car = null; v.parked = true; }
+  P.trav = null; P.moving = false; P.vx = P.vy = 0;
+  P.hurtT = 3.5; P.defeat = { x: P.x, y: P.y, a: P.a, t0: performance.now() }; S.downing = { t: S.t, why }; S.shakeT = Math.max(S.shakeT || 0, 0.3); play('kill', 0.6);
+}
+function updateDowning() {
+  if (!S.downing) return false;
+  if (S.t - S.downing.t < 2.6) return true;
+  const why = S.downing.why; S.downing = null; S.player.defeat = null; cityRespawn(why); return false;
+}
+function drawDowning() {
+  if (!S.downing) return; const f = clamp((S.t - S.downing.t) / 2.6, 0, 1);
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = `rgba(40,0,0,${Math.min(0.55, f * 1.2)})`; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  if (f > 0.2) { const a = Math.min(1, (f - 0.2) * 3); ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.fillStyle = '#e0453a'; ctx.font = uiFont(42 * DPR).replace('400 ', '700 '); ctx.fillText('쓰러졌다', canvas.width / 2, canvas.height * 0.42);
+    ctx.fillStyle = '#f0e6dc'; ctx.font = uiFont(16 * DPR); ctx.fillText(S.downing.why || '', canvas.width / 2, canvas.height * 0.42 + 34 * DPR); }
+  if (f > 0.8) { ctx.globalAlpha = (f - 0.8) * 5; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+  ctx.restore();
+}
+function cityRespawn(why) {
   const P = S.player; if (P.car) { const v = P.car; P.car = null; v.parked = true; }
   P.captive = null; P.carrying = null; P.hide = null; P.hp = P.hpMax; P.hurtT = 2.5; S.fade = 1.2; S.flash = 0.4;
   const h = STAGE.hospital || STAGE.start; P.x = tc(h[0]); P.y = tc(h[1]); P.z = 0; P.fl = 0; setLayer(0); cam.x = P.x; cam.y = P.y;
@@ -109,7 +129,7 @@ function cityDown(why) {
 function cityAction() {
   const P = S.player;
   if (STAGE.cityLife) { const a = shopAction(); if (a) return a; }
-  if (P.car) return { k: 'carOut', v: P.car, label: '차에서 내리기' };
+  if (P.car) return { k: 'carOut', v: P.car, label: P.car.fireT > 0 ? '뛰어내리기!' : '차에서 내리기' };
   if (P.z || flOf(P) || P.hide) return null;
   if (STAGE.hits) { const h = hitAction(); if (h) return h; }
   for (const c of S.contracts || []) if (dist(P.x, P.y, c.x, c.y) < 64) return { k: 'contract', c, at: { x: c.x, y: c.y - 40 }, label: '의뢰 받기 — ' + (STAGES[c.si].name) };

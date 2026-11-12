@@ -85,6 +85,7 @@ function drawPlayerBody(P) {
       if(pc||pg)drawPR(pc?carryKey(P.carrying):charOf(P.captive),P.x,P.y,P.a,pc?'carried':'held',heroMotionClock(P,pc?'carry':pg?'grab':'walk'),al,s1);
       return;
     }
+    if (tp.pose === 'roll') { drawPR(PK, P.x, P.y, P.a, 'crouch', 0, al, s1, 0, 0); return; }  // 달리는 차에서 뛰어내려 몸을 웅크리고 구른다
 
     if (tp.pose === 'sink' || tp.pose === 'sinkBush' || tp.pose === 'climbDown' || tp.pose === 'climbUp') {  // 숨는 곳 안으로 들어가고 나오는 몸: 테두리(rim) 아래는 잘라 낸다
       const bush = tp.pose === 'sinkBush', cl = tp.pose === 'climbDown' || tp.pose === 'climbUp', g = tp.pose === 'climbUp' ? 1 - tp.g : tp.g, rim = T.rim != null ? T.rim : P.y + 10;

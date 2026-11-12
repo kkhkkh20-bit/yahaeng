@@ -435,6 +435,7 @@ function updateTrav(P, dt) {
 }
 function updatePlayer(dt) {
   const P = S.player, k = S.keys;
+  if (S.downing && typeof updateDowning === 'function' && updateDowning()) return;  // 쓰러지는 중에는 움직이지 않는다
   updateApproachAttack(P);
   updateRecoveryInput(P);
   updateFollowupAttack(P);
