@@ -50,6 +50,29 @@ function cityArrest(why) {
 
 // 조직원의 칼: 손에 든 칼날. 나를 쫓을 때는 앞으로 내민다
 const cityGang = g => !!(STAGE.city && g && !g.civ && !g.dog && !g.police && g.fac && g.fac !== 'P' && g.state !== 'DEAD' && g.state !== 'CAPTIVE');
+// 경찰: 경찰모(남색 모자 · 검은 챙 · 금색 모장)와 경광봉(손에 든 빨간 빛 막대). 쫓을 때는 경광봉을 앞으로 들고 더 밝게 빛난다
+// 머리 위치는 경찰 그림을 8방향으로 재어 둔 값(발에서 머리 꼭대기까지 약 24px)
+const COP_HEAD = { idle: [[-24, 2], [-23, 2], [-23, 0], [-24, -3], [-25, -3], [-26, -1], [-27, 0], [-26, 1]], walk: [[-24, 0], [-24, 1], [-24, 0], [-24, -2], [-24, -3], [-25, -3], [-25, 1], [-25, -1]], run: [[-23, 4], [-22, 3], [-21, -2], [-22, -4], [-24, -2], [-27, -2], [-27, -1], [-26, 2]] };
+function drawCopGear(g) {
+  if (!g.police || g.x < 0 || g.state === 'DEAD' || g.state === 'CAPTIVE' || g.climb || g.z || !inView(g.x, g.y, 60)) return;
+  const an = guardAnim(g), d = prDir(g.a), hd = (COP_HEAD[an] || COP_HEAD.idle)[d] || [-24, 0], bob = an === 'walk' || an === 'run' ? Math.abs(Math.sin((S.t + g.id * 0.37) * (an === 'run' ? 12.7 : 9) * Math.PI / 2)) * 0.8 : 0;
+  const hx = g.x + hd[1], hy = g.y + hd[0] + 3.5 - bob, ca = Math.cos(g.a), sa = Math.sin(g.a);
+  const chase = g.state === 'ALERT' || g.state === 'SEARCH', ba = g.a + (chase ? 0.25 : 1.1), bx = g.x + Math.cos(ba) * (chase ? 12 : 8), by = g.y - 13 + Math.sin(ba) * (chase ? 8 : 5), bl = chase ? 16 : 13;
+  ctx.save(); ctx.lineCap = 'round';
+  // 경광봉: 뒤쪽에 있으면 몸보다 먼저(가려지게) 그리는 대신, 빛은 늘 보이게 한다
+  const glow = chase ? 0.75 + 0.25 * Math.sin(S.t * 14 + g.id) : 0.55;
+  ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(255,80,40,${0.22 * glow})`; ctx.beginPath(); ctx.arc(bx + Math.cos(ba) * bl * 0.5, by + Math.sin(ba) * bl * 0.5, 13, 0, TAU); ctx.fill(); ctx.globalCompositeOperation = 'source-over';
+  ctx.strokeStyle = '#1a1a1e'; ctx.lineWidth = 3.4; ctx.beginPath(); ctx.moveTo(bx - Math.cos(ba) * 2, by - Math.sin(ba) * 2); ctx.lineTo(bx + Math.cos(ba) * 2, by + Math.sin(ba) * 2); ctx.stroke();
+  ctx.strokeStyle = `rgba(255,${90 + 60 * glow | 0},50,1)`; ctx.lineWidth = 3.6; ctx.beginPath(); ctx.moveTo(bx + Math.cos(ba) * 2, by + Math.sin(ba) * 2); ctx.lineTo(bx + Math.cos(ba) * bl, by + Math.sin(ba) * bl); ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,230,190,.9)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(bx + Math.cos(ba) * 4, by + Math.sin(ba) * 4 - .5); ctx.lineTo(bx + Math.cos(ba) * (bl - 2), by + Math.sin(ba) * (bl - 2) - .5); ctx.stroke();
+  // 경찰모: 머리를 덮는 남색 모자 + 얼굴 쪽 검은 챙 + 금색 모장
+  ctx.fillStyle = '#16213d'; ctx.beginPath(); ctx.ellipse(hx + ca * 2.2, hy + sa * 1.4 + 1.2, 5.6, 2.6, 0, 0, TAU); ctx.fill();   // 챙
+  ctx.fillStyle = '#24366a'; ctx.beginPath(); ctx.ellipse(hx, hy, 5.4, 4.3, 0, 0, TAU); ctx.fill();                                  // 모자 윗면
+  ctx.fillStyle = '#1b2850'; ctx.fillRect(hx - 5.2, hy + 1.6, 10.4, 2.2);                                                              // 모자 띠
+  ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.beginPath(); ctx.ellipse(hx - 1.2, hy - 1.5, 2.6, 1.3, 0, 0, TAU); ctx.fill();
+  if (sa > -0.5) { ctx.fillStyle = '#e8c45a'; ctx.fillRect(hx + ca * 2.6 - 1.2, hy + 0.6, 2.4, 2.4); }                                // 모장 (앞을 볼 때)
+  ctx.restore();
+}
 function drawGangKnife(g) {
   if (!cityGang(g) || g.x < 0 || !inView(g.x, g.y, 60)) return;
   const ready = g.state === 'ALERT' || !!g.brawl, a = g.a + (ready ? 0 : 0.9), hx = g.x + Math.cos(a) * (ready ? 13 : 9), hy = g.y - 14 + Math.sin(a) * (ready ? 9 : 6), len = ready ? 13 : 10;

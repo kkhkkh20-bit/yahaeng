@@ -445,6 +445,20 @@ function carExit(force) {
   startTrav({ pts: [{ x: v.x, y: v.y, f: 0 }, { x: door.x, y: door.y, f: 0.45 }, { x: ok.x, y: ok.y, f: 1 }], dur, phases: fast ? [{ to: 0.4, pose: 'walk' }, { to: 1, pose: 'roll' }] : [{ to: 1, pose: 'walk' }], face: ok.a });
   P.trav.end = () => { collide(P, 13, groundSolidP); if (fast) { play('thud', 0.6); S.shakeT = Math.max(S.shakeT || 0, 0.15); if (!P.hurtT) { P.hurtT = 0; hurtPlayer(null, '달리는 차에서 뛰어내렸다.'); } } };
 }
+// 경찰차 표시: 지붕 경광등이 빨강·파랑으로 번갈아 번쩍이고(쫓을 때 · 서 있을 때도 약하게), 지붕에 '경찰' 글씨.
+// 차 좌표(차머리가 위)에서 그린다. 경광등 자리는 그림에서 잰 값(차 길이의 앞에서 32%)
+// 경찰차 그림(48방향)마다 잰 지붕 경광등의 빨강·파랑 불 자리 (차 중심에서 화면 기준 px) — tools 없이 그림에서 잰 값
+const POLICE_LB = [[-4,-25,-4,-13],[-3,-25,-4,-13],[-2,-26,-5,-13],[0,-26,-6,-14],[2,-25,-7,-15],[3,-24,-8,-16],[4,-24,-9,-17],[6,-23,-9,-18],[6,-22,-9,-19],[7,-22,-9,-19],[7,-21,-9,-20],[8,-21,-9,-20],[8,-20,-8,-20],[8,-20,-8,-21],[8,-19,-7,-21],[8,-19,-8,-22],[8,-18,-7,-23],[7,-18,-7,-23],[7,-17,-6,-24],[6,-17,-5,-24],[6,-16,-4,-25],[6,-15,-3,-25],[5,-14,-1,-26],[4,-13,1,-26],[3,-13,3,-25],[1,-13,4,-25],[0,-13,6,-24],[-1,-13,7,-23],[-2,-13,8,-22],[-3,-14,8,-21],[-5,-14,8,-20],[-6,-14,8,-19],[-6,-14,9,-19],[-7,-15,9,-17],[-8,-15,8,-17],[-8,-16,8,-17],[-9,-16,8,-16],[-9,-17,8,-15],[-9,-17,7,-15],[-9,-18,7,-15],[-10,-18,6,-14],[-9,-19,5,-14],[-9,-20,4,-13],[-9,-21,3,-13],[-8,-22,1,-12],[-7,-24,-1,-13],[-5,-25,-2,-13],[-4,-25,-3,-13]];
+function drawPoliceLights(v) {
+  // 차 그림은 방향마다 3/4로 찍힌 그림이라 차와 함께 돌리지 않는다: 그 방향 그림의 경광등 자리에 빛을 얹는다
+  const on = v.chase || v.siren || (S.wanted > 0 && v.ai), ph = Math.floor(S.t * (on ? 8 : 2) + v.id) % 2, k = on ? 1 : 0.4;
+  const L = POLICE_LB[Math.round(((v.a % TAU + TAU) % TAU) / TAU * 48) % 48];
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (const [x, y, col, lit] of [[v.x + L[0], v.y + L[1], '255,40,40', !ph], [v.x + L[2], v.y + L[3], '60,110,255', !!ph]]) { const a = (lit ? 0.95 : 0.15) * k;
+    ctx.fillStyle = `rgba(${col},${a})`; ctx.beginPath(); ctx.arc(x, y, 3.4, 0, TAU); ctx.fill();
+    if (lit && on) { const g = ctx.createRadialGradient(x, y, 0, x, y, 80); g.addColorStop(0, `rgba(${col},.4)`); g.addColorStop(1, `rgba(${col},0)`); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 80, 0, TAU); ctx.fill(); } }
+  ctx.restore();
+}
 function honk() { const v = S.player.car; if (!v || (v.honkT || 0) > S.t) return; v.honkT = S.t + 0.6; play('metal', 0.5, 2.4); noise(v.x, v.y, 240, 'car', 0);
   for (const g of S.guards) if (g.civ && g.state !== 'DEAD' && !g.child && dist(g.x, g.y, v.x, v.y) < 140 && (g.state === 'PATROL' || g.state === 'RETURN')) { g.want = Math.atan2(g.y - v.y, g.x - v.x); setIcon(g, '!'); } }
 // 차 그리기: 위에서 본 차 그림을 차머리 쪽으로 돌려서 (그림은 위쪽이 차머리)
@@ -469,6 +483,7 @@ function drawOneVehicle(v) {
       if(!cityVehicleAtlas.complete||!cityVehicleAtlas.naturalWidth){ctx.fillStyle = 'rgba(255,60,50,.9)'; ctx.fillRect(-17, 44, 7, 3); ctx.fillRect(10, 44, 7, 3);} }
     if (S.player.car === v) { ctx.strokeStyle = 'rgba(120,210,255,.8)'; ctx.lineWidth = 2; ctx.strokeRect(-25, -49, 50, 98); }
     ctx.restore();
+    if (v.type === 'police' && !v.dead && STAGE.cityLife) drawPoliceLights(v);
     if (!STAGE.cityLife && v.dead && v.burn > 0) { ctx.fillStyle = `rgba(255,${120 + Math.random() * 80 | 0},40,${0.5 * v.burn / 6})`; ctx.beginPath(); ctx.arc(v.x + rnd(-6, 6), v.y + rnd(-10, 10), 14 + Math.random() * 10, 0, TAU); ctx.fill(); }
     if (!STAGE.cityLife && (v.smoke > 0 || (v.hp <= 2 && !v.dead))) { ctx.fillStyle = 'rgba(160,160,170,.35)'; ctx.beginPath(); ctx.arc(v.x + Math.cos(v.a) * 30 + Math.sin(S.t * 7) * 4, v.y + Math.sin(v.a) * 30 - 10, 10, 0, TAU); ctx.fill(); }
 }

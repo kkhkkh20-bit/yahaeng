@@ -88,7 +88,7 @@ function drawLastSeen() {
     ctx.fillStyle = q.hot ? 'rgba(232,90,70,.9)' : 'rgba(242,196,107,.9)'; ctx.font = uiFont(14); ctx.textAlign = 'center'; ctx.fillText(q.hot ? '!' : '?', q.x, q.y - 40);
   }
 }
-function drawGuard(g) {const r=withFurnitureOcclusion(g,()=>drawGuardSprite(g));if(STAGE.cityLife)drawGangKnife(g);return r;}
+function drawGuard(g) {const r=withFurnitureOcclusion(g,()=>drawGuardSprite(g));if(STAGE.cityLife){drawGangKnife(g);drawCopGear(g);}return r;}
 function drawGuardSprite(g) {
   if(assassinOwnsActor(g))return;
   if(S.player.killAnim?.g===g)return; // the paired pose draws this victim once

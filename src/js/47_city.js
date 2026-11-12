@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------- 도시 판 (GTA2식 시제품): 수배 · 경찰 · 의뢰 장소 · 병원
 // 수배 별(0~5): 사람들이 내 범행을 보면 오른다. 별만큼 경찰이 화면 밖에서 나타나 쫓는다. 경찰 눈을 피해 버티면 하나씩 내려간다
 OUTFITS.police = '경찰 제복';
-OUTFIT_PAL.police = ['#dba57e', '#1c2a4a', '#2e4a86', '#121826', '#d8dce6']; PR_PAL.police = OUTFIT_PAL.police;  // 남색 제복
+OUTFIT_PAL.police = ['#dba57e', '#1c2a4a', '#4a6aa8', '#1c2640', '#111318']; PR_PAL.police = OUTFIT_PAL.police;  // 남색 제복
 const WANT_COPS = [0, 2, 4, 6, 7, 8];
 let CITY_RET = null;  // 의뢰를 마치면 돌아올 자리 { id, x, y }
 const cityDone = () => { try { return JSON.parse(localStorage.getItem('yahaeng.cityDone') || '{}'); } catch (e) { return {}; } };
