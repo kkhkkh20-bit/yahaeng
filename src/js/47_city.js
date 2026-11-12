@@ -157,7 +157,7 @@ function drawDowning() {
 function cityRespawn(why) {
   const P = S.player; if (P.car) { const v = P.car; P.car = null; v.parked = true; }
   if (STAGE.cityLife) fstat('downs');
-  P.captive = null; P.carrying = null; P.hide = null; P.hp = P.hpMax; P.hurtT = 2.5; S.fade = 1.2; S.flash = 0.4;
+  P.captive = null; P.carrying = null; P.hide = null; P.hp = P.hpMax; P.hurtT = 2.5; S.fade = 1.2; S.flash = 0.4; if (STAGE.cityLife) cityDisguiseOff();
   const h = STAGE.hospital || STAGE.start; P.x = tc(h[0]); P.y = tc(h[1]); P.z = 0; P.fl = 0; setLayer(0); cam.x = P.x; cam.y = P.y;
   S.wanted = 0; S.wantLost = 0; S.alevel = 0; S.alevelT = 0;
   for (const g of S.guards) { if (g.police && !g.off && !g.contact && !g.beat) despawnCop(g); else if (['ALERT', 'SEARCH', 'SUSPICIOUS', 'CHECK'].includes(g.state)) { g.state = 'RETURN'; g.path = null; g.icon = null; g.meter = 0; } }

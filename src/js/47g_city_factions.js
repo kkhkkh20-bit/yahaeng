@@ -69,7 +69,7 @@ function factionsUpdate(dt) {
     if (g.contact && g.state === 'ALERT' && !(S.facProvoked[f] > S.t - 20)) { g.state = 'RETURN'; g.meter = 0; g.path = null; g.icon = null; continue; }
     if (f !== 'P' && v >= 30 && (g.state === 'ALERT' || g.state === 'SUSPICIOUS') && !mine && !(S.facProvoked[f] > S.t - 30)) {  /* 우호: 의심도 풀린다 */ g.state = 'RETURN'; g.meter = 0; g.path = null; g.icon = null; g.lastSeen = null; if (d < 260) gsay(g, '아, 형님이셨군요. 실례했습니다.', 2); continue; }
     if (f !== 'P' && v >= 30 && g.state === 'PATROL' && d < 90 && (g.greetT || 0) < S.t) { g.greetT = S.t + 40; gsay(g, v >= 60 ? '형님, 오셨습니까!' : '어, 왔어?', 1.8); }
-    if (v <= -30 && ['PATROL', 'RETURN', 'SUSPICIOUS', 'NOTICE', 'CHECK'].includes(g.state) && !g.contact && d < 260 && !P.car && los(g.x, g.y, P.x, P.y)) {
+    if (v <= -30 && ['PATROL', 'RETURN', 'SUSPICIOUS', 'NOTICE', 'CHECK'].includes(g.state) && !g.contact && d < 260 && !P.car && los(g.x, g.y, P.x, P.y) && !cityDisguisedAs(f, g)) {
       if (f === 'P') { if (!S.wanted) addWanted(1, '경찰이 나를 알아봤다'); } else { copChase(g); gsay(g, '저 새끼다!', 1.6); } }
   }
 }

@@ -378,6 +378,10 @@
       "group": "city"
     },
     {
+      "path": "47t_city_disguise.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },

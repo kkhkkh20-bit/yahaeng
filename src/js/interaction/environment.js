@@ -74,7 +74,8 @@ function updateIntel(dt) {
   });
 }
 function disguiseMul(g) {
-  const P = S.player; if (!P.disguise || P.disguiseBlown || g.dog || STAGE.zones) return 1;  // 구역이 있는 판은 허가 옷·눈썰미 규칙으로 따진다
+  const P = S.player; if (STAGE.cityLife) return cityDisguiseMul(g);  // 자유 모드 변장 (47t)
+  if (!P.disguise || P.disguiseBlown || g.dog || STAGE.zones) return 1;  // 구역이 있는 판은 허가 옷·눈썰미 규칙으로 따진다
   const d = dist(g.x, g.y, P.x, P.y);
   if (g.elite || g.target) return d < 220 ? 1.25 : 0.4;      // 얼굴을 아는 사람
   if (P.mode === 'run' || P.carrying || P.captive || P.z || P.strikeT > 0 || P.wire) return 1;  // 수상한 짓
