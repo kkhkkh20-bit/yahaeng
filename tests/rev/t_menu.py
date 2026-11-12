@@ -12,7 +12,8 @@ async def main():
   # v256 title redesign keeps one short genre kicker above the logo; it must stay a label, not a briefing.
   assert all(len(t.strip())<=8 for t in await q.locator('#intro .title-kicker').all_inner_texts())
   assert await q.locator('#btnLedger').is_hidden()
-  for selector in ['#btnQuick','#intro [data-case-open]','#btnSkillsIntro','#btnHelp','#btnQuick','#intro [data-case-open]','#btnSkillsIntro']:
+  # 메인 화면에 자유 모드 버튼이 스토리 모드 다음에 있다
+  for selector in ['#btnQuick','#btnFree','#intro [data-case-open]','#btnSkillsIntro','#btnHelp','#btnQuick','#btnFree','#intro [data-case-open]','#btnSkillsIntro']:
    await q.keyboard.press('ArrowDown');assert await q.locator(selector).evaluate('e=>e===document.activeElement'),selector
   await q.keyboard.press('Enter');assert await q.locator('#skillScreen').is_visible()
   await q.keyboard.press('Escape');assert await q.locator('#intro').is_visible() and await q.locator('#ledger').is_hidden()
