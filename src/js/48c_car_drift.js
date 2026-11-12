@@ -7,7 +7,7 @@ function carDrift(v, steer, fwd, dt) {
   if (!STAGE.cityLife) return;
   if (v.va == null) v.va = v.a;
   const spd = Math.abs(v.v), hard = Math.abs(steer) > 0.55 && spd > 230, brake = fwd < -0.2 && v.v > 240;
-  const grip = hard ? 2.4 : brake ? 3.2 : 10;  // 1초에 맞춰 도는 정도
+  const grip = hard ? 4.2 : brake ? 4.5 : 12;  // 너무 쉽게 돌지 않게: 자유 모드 운전 보조  // 1초에 맞춰 도는 정도
   v.va += angDiff(v.va, v.a) * Math.min(1, grip * dt);
   const slip = Math.abs(angDiff(v.a, v.va));
   if (slip > 0.05) v.v *= 1 - Math.min(0.5, slip * 0.55) * dt;  // 옆으로 미끄러지면 속도가 깎인다

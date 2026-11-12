@@ -88,7 +88,7 @@ function drawSkillDevices(P,openB){
   const fade=clamp((s.until-S.t)/.8,0,1)*clamp((S.t-s.t0)/.25,0,1),meta=FX_META?.effects.smoke;ctx.globalAlpha=.66*fade;
   for(let i=0;i<3;i++){
    const a=i*TAU/3,dx=Math.cos(a)*s.r*.18,dy=Math.sin(a)*s.r*.12;
-   if(meta&&fxAtlas?.complete&&fxAtlas.naturalWidth){const phase=1.7+clamp((S.t-s.t0)/(s.until-s.t0),0,1)*1.25+i*.08,rect=meta.frames[Math.min(meta.frames.length-1,Math.floor(phase*meta.fps))];ctx.drawImage(fxAtlas,...rect,s.x-s.r*1.3+dx,s.y-s.r*1.2+dy,s.r*2.6,s.r*2.6);}
+   if(meta&&fxAtlas?.complete&&fxAtlas.naturalWidth){const phase=1.7+clamp((S.t-s.t0)/(s.until-s.t0),0,1)*1.25+i*.08,rect=meta.frames[Math.min(meta.frames.length-1,Math.floor(phase*meta.fps))],fw=meta.size?.[0]||rect[2],fh=meta.size?.[1]||rect[3],kx=s.r*2.6/fw,ky=s.r*2.6/fh;if(rect[2])ctx.drawImage(fxAtlas,rect[0],rect[1],rect[2],rect[3],s.x-s.r*1.3+dx+(rect[4]||0)*kx,s.y-s.r*1.2+dy+(rect[5]||0)*ky,rect[2]*kx,rect[3]*ky);}
    else blit(ctx,'fx_smoke',s.x-s.r+dx,s.y-s.r+dy,s.r*2,s.r*2,Math.floor((S.t-s.t0)*8)%6*32,0,32,32);
   }ctx.restore();
   if(smokeContains(s,P.x,P.y))drawPlayerLocator(P);

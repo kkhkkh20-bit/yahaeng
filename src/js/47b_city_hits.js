@@ -125,7 +125,7 @@ function boothBlock() {
 function hitsUpdate(dt) {
   boothBlock(); updatePhoneRing(dt || 1 / 60);
   const P = S.player; if (P.booth) { P.x = P.booth.x; P.y = P.booth.y + 2; P.moving = false; }
-  jobsUpdate(dt || 1 / 60); cityEventsUpdate(dt || 1 / 60); factionsUpdate(dt || 1 / 60);
+  jobsUpdate(dt || 1 / 60); cityEventsUpdate(dt || 1 / 60); factionsUpdate(dt || 1 / 60); carTheftUpdate(dt || 1 / 60);
   saveFreeProgress();
   const h = S.hit; if (!h) return;
   const g = h.g;
@@ -154,26 +154,58 @@ function hitGoal() {
 }
 // 공중전화 부스 (위에서 비스듬히 본 유리 상자: 은색 기둥 · 유리벽 · 안쪽 벽의 파란 전화기 · 빨간 지붕 띠)와 표적 표시
 // layer 'world': 조명을 받는 부스 · 'ui': 어둠 위 — 안에 든 나를 덮는 앞 유리, 부스 안 불빛, 표적 고리
+// 픽셀 부스 그림 (한 번만 굽는다): back = 그림자 빼고 안쪽 벽·전화기·뒤 기둥, front = 앞 유리·기둥·지붕·발판 (안에 든 나를 덮는다)
+// 좌표: 부스 가운데 x, 지붕 위 top(= p.y - 56) 기준으로 왼쪽 위가 (-20, -10)
+let BOOTH_ART = null;
+function boothArt() {
+  if (BOOTH_ART) return BOOTH_ART;
+  const mk = () => { const c = document.createElement('canvas'); c.width = 40; c.height = 82; return c; };
+  const back = mk(), front = mk(), b = back.getContext('2d'), f = front.getContext('2d');
+  const R = (c, col, x, y, w, h) => { c.fillStyle = col; c.fillRect(x + 20, y + 10, w, h); };  // x: 가운데 기준, y: top 기준
+  const OL = '#15181d', FL = '#e6eaee', FM = '#b6bec7', FD = '#7a848e';
+  // 안쪽 벽: 위가 어둡고 아래로 갈수록 살짝 밝다, 세로 이음매
+  R(b, OL, -16, 3, 32, 66); for (let y = 4; y < 68; y++) R(b, y < 20 ? '#222b35' : y < 44 ? '#27313c' : '#2c3743', -15, y, 30, 1);
+  R(b, '#1d252e', -1, 4, 1, 64);
+  // 전화기 (KT 공중전화: 파란 몸통 · 초록 액정 · 흰 버튼 · 동전/카드 넣는 곳)
+  R(b, OL, -9, 14, 18, 26); R(b, '#3a5e8e', -8, 15, 16, 24); R(b, '#5b84b6', -8, 15, 16, 2); R(b, '#5b84b6', -8, 15, 1, 24); R(b, '#24395a', 7, 16, 1, 23); R(b, '#24395a', -8, 38, 16, 1);
+  R(b, OL, -6, 18, 12, 6); R(b, '#8fd9a8', -5, 19, 10, 4); R(b, '#c8f2d4', -5, 19, 10, 1); R(b, '#2f6b45', -4, 21, 6, 1);
+  for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++) { R(b, '#dfe6ee', -5 + c * 3, 26 + r * 3, 2, 2); R(b, '#9aa6b3', -5 + c * 3, 27 + r * 3, 2, 1); }
+  R(b, '#e0a63a', 4, 26, 2, 4); R(b, '#141a22', 4, 32, 2, 1); R(b, '#141a22', 4, 35, 2, 1);  // 카드·동전 구멍
+  R(b, '#5e6b78', -2, 40, 4, 10); R(b, '#3e4955', -1, 40, 1, 10);  // 수화기 줄
+  R(b, OL, -12, 54, 24, 2); R(b, '#505c68', -11, 52, 22, 2);  // 선반
+  // 뒤 기둥(양옆, 위가 보인다)
+  for (const x of [-16, 13]) { R(b, OL, x, 2, 3, 70); R(b, FM, x, 3, 2, 68); R(b, FL, x, 3, 1, 68); }
+  // ---- 앞
+  // 유리: 옅은 하늘빛 · 대각선 반사 두 줄 · 왼쪽 아래 전단지
+  f.fillStyle = 'rgba(150,200,232,.22)'; f.fillRect(7, 14, 26, 62);
+  f.fillStyle = 'rgba(255,255,255,.28)'; for (let k = 0; k < 18; k++) { f.fillRect(10 + k, 40 - k * 1.5 | 0, 2, 1); if (k < 10) f.fillRect(18 + k, 66 - k * 1.5 | 0, 1, 1); }
+  f.fillStyle = 'rgba(255,255,255,.18)'; f.fillRect(9, 16, 1, 58);
+  R(f, '#e7d9c9', -11, 52, 7, 9); R(f, '#d6505e', -10, 53, 5, 2); R(f, '#6b6b70', -10, 56, 5, 1); R(f, '#6b6b70', -10, 58, 4, 1);
+  // 앞 기둥 · 가운데 가로대 · 아래 판
+  for (const x of [-17, 14]) { R(f, OL, x, 3, 3, 71); R(f, FM, x + 1, 4, 1, 69); R(f, FL, x, 4, 1, 69); R(f, FD, x + 2, 4, 1, 69); }
+  R(f, OL, -15, 46, 30, 3); R(f, FM, -15, 47, 30, 1);
+  R(f, OL, -17, 66, 34, 8); R(f, FD, -16, 67, 32, 6); R(f, FM, -16, 67, 32, 1); R(f, '#5c656e', -16, 72, 32, 1);
+  R(f, OL, -18, 73, 36, 4); R(f, '#8a8e92', -17, 73, 34, 2); R(f, '#6b6f74', -17, 75, 34, 1);  // 콘크리트 발판
+  // 지붕: 윗면(밝음) · 빨간 앞띠 · 흰 수화기 그림
+  R(f, OL, -19, -8, 38, 14); R(f, '#eceff2', -18, -7, 36, 5); R(f, '#c9cfd5', -18, -3, 36, 1);
+  R(f, '#d23a2c', -18, -2, 36, 7); R(f, '#ef5a40', -18, -2, 36, 1); R(f, '#8f251c', -18, 4, 36, 1);
+  R(f, '#f6f1e6', -5, 0, 10, 2); R(f, '#f6f1e6', -6, 1, 3, 3); R(f, '#f6f1e6', 3, 1, 3, 3);
+  R(f, '#f6f1e6', -15, 0, 6, 1); R(f, '#f6f1e6', -15, 2, 6, 1); R(f, '#f6f1e6', 9, 0, 6, 1); R(f, '#f6f1e6', 9, 2, 6, 1);
+  R(f, 'rgba(0,0,0,.35)', -16, 6, 32, 2);  // 지붕 밑 그늘
+  return (BOOTH_ART = { back, front });
+}
 function drawBooth(p, front) {
-  const x = p.x, y = p.y, H = 56, top = y - H, inUse = S.player.booth === p;
+  const x = p.x, y = p.y, H = 56, top = y - H, inUse = S.player.booth === p, A = boothArt();
   const dOpen = p.doorT ? Math.max(0, 1 - Math.abs(S.t - p.doorT) / 0.35) : 0;  // 문 열고 닫힘 (0~1)
-  if (dOpen > 0 && !front) { ctx.fillStyle = 'rgba(160,205,232,.4)'; ctx.fillRect(x - BOOTH_HW - 10 * dOpen, top + 10, 4 + 10 * dOpen, H - 2); ctx.fillStyle = '#c3cbd2'; ctx.fillRect(x - BOOTH_HW - 10 * dOpen, top + 10, 2, H - 2); }  // 서쪽 문이 바깥으로 열린다
-  if (front) {  // 앞 유리와 앞 기둥만 (안에 든 사람 위로)
-    ctx.fillStyle = 'rgba(160,205,232,.22)'; ctx.fillRect(x - 13, top + 6, 26, H + 4);
-    ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(x - 10, top + 9, 3, H - 6);
-    ctx.fillStyle = '#c3cbd2'; ctx.fillRect(x - BOOTH_HW, top + 4, 3, H + 8); ctx.fillRect(x + BOOTH_HW - 3, top + 4, 3, H + 8); ctx.fillRect(x - BOOTH_HW, y + 8, BOOTH_HW * 2, 4);
-    return;
-  }
-  ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(x + 5, y + 11, 20, 7, 0, 0, TAU); ctx.fill();
-  ctx.fillStyle = '#2e3742'; ctx.fillRect(x - BOOTH_HW, top + 4, BOOTH_HW * 2, H + 8);          // 안쪽 벽
-  ctx.fillStyle = '#1f5fae'; ctx.fillRect(x - 8, top + 16, 16, 20);                               // 전화기
-  ctx.fillStyle = '#9fc4ea'; ctx.fillRect(x - 6, top + 18, 12, 5);                                // 화면
-  ctx.fillStyle = '#d7e3ef'; for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) ctx.fillRect(x - 5 + c * 4, top + 25 + r * 3, 2, 2);
-  if (!inUse) { const j = S.ringPhone === p && (S.t - S.ringT0) % 3 < 1 ? Math.sin(S.t * 60) * 1.5 : 0; ctx.fillStyle = '#121519'; ctx.fillRect(x + 5 + j, top + 17, 3, 15); }  // 걸려 있는 수화기 (울리면 떨린다)
-  ctx.fillStyle = 'rgba(160,205,232,.28)'; ctx.fillRect(x - 13, top + 6, 26, H + 4);              // 유리
-  ctx.fillStyle = '#c3cbd2'; ctx.fillRect(x - BOOTH_HW, top + 4, 3, H + 8); ctx.fillRect(x + BOOTH_HW - 3, top + 4, 3, H + 8); ctx.fillRect(x - BOOTH_HW, y + 8, BOOTH_HW * 2, 4);
-  ctx.fillStyle = '#d23a2e'; ctx.fillRect(x - BOOTH_HW - 2, top - 4, BOOTH_HW * 2 + 4, 9);         // 지붕 띠
-  ctx.fillStyle = '#f4efe6'; ctx.beginPath(); ctx.arc(x - 4, top + 1, 2, 0, TAU); ctx.arc(x + 4, top + 1, 2, 0, TAU); ctx.fill(); ctx.fillRect(x - 4, top - 1, 8, 2);  // 수화기 무늬
+  ctx.save(); ctx.imageSmoothingEnabled = false;
+  if (front) { ctx.drawImage(A.front, x - 20 | 0, top - 10 | 0); ctx.restore(); return; }
+  ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(x + 5, y + 12, 21, 7, 0, 0, TAU); ctx.fill();
+  ctx.drawImage(A.back, x - 20 | 0, top - 10 | 0);
+  if (!inUse) { const j = S.ringPhone === p && (S.t - S.ringT0) % 3 < 1 ? Math.round(Math.sin(S.t * 60) * 1.5) : 0;  // 걸려 있는 수화기 (울리면 떨린다)
+    ctx.fillStyle = '#15181d'; ctx.fillRect(x - 13 + j | 0, top + 16, 5, 19); ctx.fillStyle = '#2b3138'; ctx.fillRect(x - 12 + j | 0, top + 17, 3, 17); ctx.fillStyle = '#454d57'; ctx.fillRect(x - 12 + j | 0, top + 17, 1, 17); }
+  if (dOpen > 0) { const w = 4 + 10 * dOpen; ctx.fillStyle = 'rgba(160,205,232,.4)'; ctx.fillRect(x - BOOTH_HW - 10 * dOpen | 0, top + 10, w, H - 2); ctx.fillStyle = '#b6bec7'; ctx.fillRect(x - BOOTH_HW - 10 * dOpen | 0, top + 10, 2, H - 2); }  // 서쪽 문이 바깥으로 열린다
+  ctx.drawImage(A.front, x - 20 | 0, top - 10 | 0);
+  ctx.restore();
 }
 function drawHits(layer) {
   if (flOf(S.player) || S.player.z > 0 || S.player.wire) return;
@@ -182,7 +214,7 @@ function drawHits(layer) {
     if (layer === 'ui') {
       const ring = S.ringPhone === p && Math.floor((S.t - S.ringT0) * 8) % 2 === 0 && (S.t - S.ringT0) % 3 < 1;
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = ring ? 'rgba(255,236,190,.28)' : 'rgba(255,236,190,.10)'; ctx.fillRect(p.x - 13, p.y - 50, 26, 58);
-      if (ring) { ctx.fillStyle = 'rgba(255,90,70,.5)'; ctx.fillRect(p.x - BOOTH_HW - 2, p.y - 60, BOOTH_HW * 2 + 4, 9); } ctx.restore();  // 부스 안 형광등 · 울릴 때 지붕 띠가 깜빡인다
+      if (ring) { ctx.fillStyle = 'rgba(255,90,70,.5)'; ctx.fillRect(p.x - 18, p.y - 58, 36, 7); } ctx.restore();  // 부스 안 형광등 · 울릴 때 지붕 띠가 깜빡인다
       const P = S.player; if (P.booth === p || (P.trav && Math.abs(P.x - p.x) < BOOTH_HW && Math.abs(P.y - p.y) < 14)) drawBooth(p, true);
       if (!STAGE.noPrompts && !S.hit && !S.job) { const pu = .5 + .4 * Math.sin(S.t * 4); ctx.strokeStyle = `rgba(80,220,170,${pu})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y - 4, 24, 0, TAU); ctx.stroke(); infoTag(p.x, p.y + 22, '공중전화', '#8fe0c4', .9); }
       continue;
@@ -190,7 +222,7 @@ function drawHits(layer) {
     drawBooth(p, false);
   }
   if (layer !== 'ui') return;
-  drawEvents(); drawContacts(); drawJobs();
+  drawEvents(); drawContacts(); drawJobs(); drawCarPickProgress();
   const h = S.hit; if (!h || h.g.state === 'DEAD' && !h.g.unconscious) return;
   const g = h.g; if (flOf(g) !== flOf(S.player) || !inView(g.x, g.y, 60)) return;
   const pu = .55 + .35 * Math.sin(S.t * 5);

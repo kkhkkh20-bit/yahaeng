@@ -342,6 +342,10 @@
       "group": "traffic"
     },
     {
+      "path": "48d_car_theft.js",
+      "group": "traffic"
+    },
+    {
       "path": "48d_decks.js",
       "group": "traffic"
     },

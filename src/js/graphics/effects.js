@@ -27,7 +27,7 @@ function drawEffects(P,openB) {
     const fade=clamp((f.duration-t)/.12,0,1),physical=['leaf','dust','strike','impact'].includes(f.kind);
     ctx.save();ctx.translate(f.x,f.y);ctx.rotate(f.angle);ctx.scale(f.scale,f.scale);ctx.imageSmoothingEnabled=false;
     ctx.globalAlpha=f.alpha*fade*(physical?(.3+.7*ambientLightAt(f.x,f.y,!!f.z)):1);
-    ctx.drawImage(fxAtlas,...rect,-m.origin[0],-m.origin[1],rect[2],rect[3]);ctx.restore();
+    if(rect[2])ctx.drawImage(fxAtlas,rect[0],rect[1],rect[2],rect[3],-m.origin[0]+(rect[4]||0),-m.origin[1]+(rect[5]||0),rect[2],rect[3]);ctx.restore();
   }
   setLayer(L0);
 }

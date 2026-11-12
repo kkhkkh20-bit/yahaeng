@@ -135,7 +135,7 @@ function cityAction() {
   if (P.z || flOf(P) || P.hide) return null;
   if (STAGE.hits) { const h = hitAction(); if (h) return h; }
   for (const c of S.contracts || []) if (dist(P.x, P.y, c.x, c.y) < 64) return { k: 'contract', c, at: { x: c.x, y: c.y - 40 }, label: '의뢰 받기 — ' + (STAGES[c.si].name) };
-  const v = nearVehicle(); if (v) return { k: 'carIn', v, at: { x: v.x, y: v.y - 56 }, label: v.driver ? '운전자 끌어내고 타기' : '차 타기' };
+  const v = nearVehicle(); if (v && carLocked(v)) return carLockAction(v); if (v) return { k: 'carIn', v, at: { x: v.x, y: v.y - 56 }, label: v.driver ? '운전자 끌어내고 타기' : '차 타기' };
   return null;
 }
 function cityContract(c) {

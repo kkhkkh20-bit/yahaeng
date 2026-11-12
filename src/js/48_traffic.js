@@ -330,7 +330,10 @@ function carMove0(v, dt, turn=0) {
    if(!v.ai&&carPts(v).some(([x,y])=>x<v.r||y<v.r||x>MW*TILE-v.r||y>MH*TILE-v.r)){
     v.x=ox;v.y=oy;v.a=oa;v.v=0;if(S.player.car===v)missionBoundaryHint();return 0;
    }
-   const o=carOverlap(v);if(!o)continue;
+   let o=carOverlap(v);
+   // 내 차가 벽을 비스듬히 받으면 멈추지 않고 벽을 따라 미끄러진다 (운전 보조): x만, y만 가 보고 되는 쪽으로
+   if(o===true&&!v.ai&&STAGE.cityLife&&S.player.car===v){const nx=v.x,ny=v.y;for(const [tx,ty] of [[nx,oy],[ox,ny]]){v.x=tx;v.y=ty;if(!carOverlap(v)){const along=Math.hypot(tx-ox,ty-oy)/Math.max(.001,Math.hypot(nx-ox,ny-oy));if(along>.35){v.v*=1-(1-along)*.5;const wa=Math.atan2(ty-oy,tx-ox)+(v.v<0?Math.PI:0);v.a+=angDiff(v.a,wa)*.12;if(v.va!=null)v.va=v.a;o=null;break;}}}if(o){v.x=nx;v.y=ny;}}
+   if(!o)continue;
    const speed=Math.abs(v.v),hit=o===true?speed:Math.max(0,(v.v*Math.cos(v.a)-(o.v||0)*Math.cos(o.a))*(o.x-v.x)/Math.max(1,dist(v.x,v.y,o.x,o.y))+(v.v*Math.sin(v.a)-(o.v||0)*Math.sin(o.a))*(o.y-v.y)/Math.max(1,dist(v.x,v.y,o.x,o.y)));
    v.x=ox;v.y=oy;v.a=oa;v.v=v.ai?0:-v.v*.2;if(v.va!=null)v.va=v.a;
    if(o!==true){o.v=0;o.stopT=0;v.crashUntil=o.crashUntil=S.t+.8;}
@@ -388,7 +391,12 @@ function updateDriving(P, mx, my, mag, dt) {
   else if (fwd < -0.2) v.v = v.v > 4 ? Math.max(0, v.v - CAR_BRAKE * dt) : Math.max(-150, v.v - T.acc * 0.8 * Math.min(1, -fwd) * dt);
   else { const f = CAR_FRIC * dt; v.v = Math.abs(v.v) <= f ? 0 : v.v - Math.sign(v.v) * f; }
   // 핸들은 바퀴가 굴러야 돈다. 후진 중에는 실제 차처럼 반대로 돈다
-  if (Math.abs(steer) > 0.15) { const a0 = v.a; v.a += clamp(steer, -1, 1) * T.turn * clamp(v.v / 90, -1, 1) * dt; if (carOverlap(v)) v.a = a0; }
+  // 핸들은 바퀴가 굴러야 돈다(자유 모드는 느려도 잘 돈다). 후진 중에는 실제 차처럼 반대로 돈다
+  const roll = STAGE.cityLife ? clamp(v.v / 45, -1, 1) : clamp(v.v / 90, -1, 1);
+  if (Math.abs(steer) > 0.15) { const a0 = v.a; v.a += clamp(steer, -1, 1) * T.turn * roll * dt; if (carOverlap(v)) v.a = a0; }
+  else if (STAGE.cityLife && Math.abs(v.v) > 40 && (!isTouch || mag <= 0.15)) {  // 운전 보조: 핸들을 놓으면 가까운 도로 방향(가로·세로)으로 차머리를 바로잡는다
+    const q = Math.round(v.a / (Math.PI / 2)) * (Math.PI / 2), d = angDiff(v.a, q);
+    if (Math.abs(d) < 0.35) { const a0 = v.a; v.a += d * Math.min(1, 4 * dt); if (carOverlap(v)) v.a = a0; } }
   carDrift(v, steer, fwd, dt);
   carMove(v, dt);
   hitPeople(v, dt);
@@ -426,7 +434,7 @@ function carEnter(v) {
     if (witnessed(P.x, P.y, 380)) addWanted(1, '차를 빼앗는 걸 사람들이 봤다');
     v.driver = false;
   });
-  P.trav.end = () => { v.jacking = false; P.car = v; P.x = v.x; P.y = v.y; play('switch', 0.4); play('click', 0.3);
+  P.trav.end = () => { v.jacking = false; v.unlocked = true; P.car = v; P.x = v.x; P.y = v.y; play('switch', 0.4); play('click', 0.3);
     hint('drive', isTouch ? (STAGE.cityLife ? '운전: 걸을 때처럼 가고 싶은 쪽으로 끌면 차가 그쪽으로 간다. 반대로 끌면 후진. [행동]으로 내리기' : '운전: 화면 왼쪽을 위로 끌면 가속, 아래로 끌면 제동·후진, 좌우로 핸들. [행동]으로 내리기') : '운전: ↑ 가속 · ↓ 제동·후진 · ←→ 핸들. ' + KK('env') + ' = 내리기, ' + KK('atk') + ' = 경적'); };
 }
 function carExit(force) {
@@ -466,7 +474,7 @@ function honk() { const v = S.player.car; if (!v || (v.honkT || 0) > S.t) return
 function drawVehicles() {
   if (!S.vehicles) return;
   const vx0 = cam.x - W / SCALE / 2 - 120, vx1 = cam.x + W / SCALE / 2 + 120, vy0 = cam.y - H / SCALE / 2 - 120, vy1 = cam.y + H / SCALE / 2 + 120;
-  if (STAGE.cityLife) { drawSkids(); drawCarScorch(); }
+  if (STAGE.cityLife) { drawSkids(); drawCarScorch(); drawGlassBits(); }
   if (S.decks?.length) drawDeckShadows();
   for (const v of S.vehicles) {
     if (v.x < vx0 || v.x > vx1 || v.y < vy0 || v.y > vy1 || (v.z || 0) > 0.01) continue;  // 고가 위 차는 drawDecks에서
@@ -476,13 +484,13 @@ function drawVehicles() {
 function drawOneVehicle(v) {
     ctx.save(); ctx.translate(v.x, v.y); ctx.rotate(v.a + Math.PI / 2);
     drawCarBody(v);
+    if (STAGE.cityLife) drawCarTheft(v);
     // 문: 타고 내릴 때 앞 기둥을 축으로 바깥으로 열렸다가 닫힌다
     if (v.doorT && Math.abs(S.t - v.doorT) < 0.4) { const open = 1 - Math.abs(S.t - v.doorT) / 0.4, sd = v.doorSide || -1, hw = (v.r || 21) + 1;
       ctx.save(); ctx.translate(sd * hw, -16); ctx.rotate(-sd * open * 1.1); ctx.fillStyle = 'rgba(20,24,30,.95)'; ctx.fillRect(-2.5, 0, 5, 30); ctx.fillStyle = 'rgba(150,190,220,.6)'; ctx.fillRect(-1.5, 3, 3, 12); ctx.restore(); }
     // 전조등 (밤): 달리는 차는 앞을 비춘다
     if (!v.dead && (v.ai || S.player.car === v)) { const g = ctx.createLinearGradient(0, -46, 0, -150); g.addColorStop(0, 'rgba(255,240,200,.32)'); g.addColorStop(1, 'rgba(255,240,200,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-16, -46); ctx.lineTo(-40, -150); ctx.lineTo(40, -150); ctx.lineTo(16, -46); ctx.fill();
       if(!cityVehicleAtlas.complete||!cityVehicleAtlas.naturalWidth){ctx.fillStyle = 'rgba(255,60,50,.9)'; ctx.fillRect(-17, 44, 7, 3); ctx.fillRect(10, 44, 7, 3);} }
-    if (S.player.car === v) { ctx.strokeStyle = 'rgba(120,210,255,.8)'; ctx.lineWidth = 2; ctx.strokeRect(-25, -49, 50, 98); }
     ctx.restore();
     if (v.type === 'police' && !v.dead && STAGE.cityLife) drawPoliceLights(v);
     if (!STAGE.cityLife && v.dead && v.burn > 0) { ctx.fillStyle = `rgba(255,${120 + Math.random() * 80 | 0},40,${0.5 * v.burn / 6})`; ctx.beginPath(); ctx.arc(v.x + rnd(-6, 6), v.y + rnd(-10, 10), 14 + Math.random() * 10, 0, TAU); ctx.fill(); }
