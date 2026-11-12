@@ -34,12 +34,12 @@ async def main():
         print('war', r); ok(r.get('start') and r['n'] == [3, 3] and r['over'] and min(r['alive']) == 0, 'gang shootout: %s' % r)
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;for(let k=0;k<200&&S.war;k++)tick(1);const cleared=!S.war;S.stand={};S.wanted=0;S.alevel=0;for(const g of S.guards)if(g.police&&!g.contact&&g.state!=='DEAD'){g.x=-9000;g.y=-9000;g.route=[{x:-9000,y:-9000,pause:999}];g.path=null;g.state='PATROL';}const ST=G.STAGE;P.x=(ST.roadsX[2]+4)*48+300;P.y=(ST.roadsY[2]+2)*48;const c0=S.cash;G.events.warStart();const W=S.war;
           // 내가 1편을 다 쓰러뜨린다: 0편과 떼어 놓고 (서로 못 쏘게) 내 앞에
-          W.t0=S.t+60;W.sides[0].forEach((g,i)=>{g.x=P.x-900;g.y=P.y+i*30;});W.sides[1].forEach((g,i)=>{g.x=P.x+120+i*25;g.y=P.y+(i-1)*12;g.route=[{x:g.x,y:g.y,pause:999}];});
+          W.t0=S.t+60;/* 0편은 제자리(화면 밖 560px 이상) — 1편만 내 앞으로 */W.sides[1].forEach((g,i)=>{g.x=P.x+120+i*25;g.y=P.y+(i-1)*12;g.route=[{x:g.x,y:g.y,pause:999}];});
           S.guns={smg:60};S.wpn='smg';P.a=0;for(let k=0;k<16&&W.sides[1].some(g=>g.state!=='DEAD');k++){S.gunT=0;G.actAttack();tick(.3);}
           tick(1.5);return {tr:S.fst.gunKills,ws:W.sides[1].map(g=>[g.state,(g.x-P.x)|0,(g.y-P.y)|0]),cleared,over:!!W.over,pk:W.pk,stand:S.stand,paid:S.cash-c0,F:W.F}}''')
         print('help', r); F = r['F']; ok(r['cleared'] and r['over'] and r['pk'][1] == 3 and r['stand'].get(F[0], 0) > 0 and r['stand'].get(F[1], 0) < 0 and r['paid'] >= 150, 'helping a side: %s' % r)
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;for(let k=0;k<60&&S.war;k++)tick(1);S.stand={};S.wanted=0;S.alevel=0;for(const g of S.guards)if(g.police&&!g.contact&&g.state!=='DEAD'){g.x=-9000;g.y=-9000;g.route=[{x:-9000,y:-9000,pause:999}];g.path=null;g.state='PATROL';}const ST=G.STAGE;P.x=(ST.roadsX[2]+4)*48+300;P.y=(ST.roadsY[2]+2)*48;tick(.1);const g=S.guards.find(g=>g.fac==='B'&&!g.civ&&!g.contact&&g.state!=='DEAD'&&!g.evt);if(!g)return {g:false};
-          g.x=P.x+120;g.y=P.y;g.route=[{x:g.x,y:g.y,pause:999}];S.guns={smg:30};S.wpn='smg';P.a=0;for(let k=0;k<6&&g.state!=='DEAD';k++){S.gunT=0;G.actAttack();tick(.3);}tick(1.2);return {g:true,dead:g.state,B:S.stand.B||0,st:JSON.stringify(S.stand)}}''')
+          g.x=P.x+120;g.y=P.y;g.route=[{x:g.x,y:g.y,pause:999}];for(const o of S.guards)if(o!==g&&Math.abs(o.x-P.x)<600&&Math.abs(o.y-P.y)<600&&o.state!=='DEAD'){o.x+=4000;o.route=[{x:o.x,y:o.y,pause:999}];o.path=null;}S.guns={smg:30};S.wpn='smg';P.a=0;for(let k=0;k<6&&g.state!=='DEAD';k++){S.gunT=0;G.actAttack();tick(.3);}tick(1.2);return {g:true,dead:g.state,B:S.stand.B||0,st:JSON.stringify(S.stand)}}''')
         print('stand', r); ok(r.get('g') and r['dead'] == 'DEAD' and r['B'] < 0, 'gun kill standing: %s' % r)
         ok(not errs, 'page errors: %s' % errs)
         await b.close()
