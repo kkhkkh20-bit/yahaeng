@@ -101,8 +101,8 @@ function deckBeam(u0, u1, c, h) {
   if (!f || !deckAtlas.complete || !deckAtlas.naturalWidth) { ctx.fillStyle = '#b9bec4'; if (h) ctx.fillRect(u0, c - 5, u1 - u0, 10); else ctx.fillRect(c - 5, u0, 10, u1 - u0); return; }
   const k = 1.5, bw = f[2] * k, seg = f[3] * k;
   ctx.save(); ctx.imageSmoothingEnabled = false; ctx.translate(h ? u0 : c, h ? c : u0); if (h) ctx.rotate(-Math.PI / 2);
-  const len = u1 - u0, dir = h ? -1 : 1;  // 돌린 좌표에서 길이 방향은 h 면 -y
-  for (let t = 0; t < len; t += seg) { const n = Math.min(seg, len - t), sh = n / k; ctx.drawImage(deckAtlas, f[0], f[1], f[2], sh, -bw / 2, h ? -t - n : t, bw, n); }
+  const len = u1 - u0;  // rotate(-90°)는 (x, y) → (y, -x): 돌린 좌표의 +y 가 세상의 +x (예전엔 -y로 그려 난간이 고가 시작점에서 왼쪽, 고가가 없는 길 위로 뻗었다)
+  for (let t = 0; t < len; t += seg) { const n = Math.min(seg, len - t), sh = n / k; ctx.drawImage(deckAtlas, f[0], f[1], f[2], sh, -bw / 2, t, bw, n); }
   ctx.restore();
 }
 // 땅에 지는 그림자: 차보다 먼저(drawVehicles 앞) 그린다. 빛은 북서쪽에서

@@ -9,7 +9,7 @@ const RAMPS = [
 const RAMP_RETRY = 120, ARMOR_MAX = 3, ARMOR_PRICE = 400;
 function rampageInit() {
   S.ramp = null; S.pickups = []; S.rampCd = {}; S.rampDone = Object.assign({}, S.rampDoneSaved || {}); S.dropScan = 0;
-  S.player.armor = Math.min(ARMOR_MAX, S.armorSaved | 0);
+  S.player.armor = Math.min(ARMOR_MAX, S.armorSaved | 0); S.player.poison = S.poisonSaved | 0;
   // 표식 자리: 서로 1100px 넘게 떨어진 건물 앞 보도, 문에서 90px 비켜 (드나들다 밟지 않게) (도시가 같으면 늘 같은 자리)
   const fronts = []; for (let i = 0; i < BLD.length; i++) { const b = BLD[(i * 37 + 11) % BLD.length]; if (b.vacant) continue; const p = shopFront(b); if (p) fronts.push(p); }
   S.rampSpots = []; for (const p of fronts) { if (S.rampSpots.length >= RAMPS.length) break; const o = [[90, 30], [-90, 30], [90, 0], [-90, 0]].map(([dx, dy]) => ({ x: p.x + dx, y: p.y + dy })).find(q => jobOpen(q.x, q.y)); if (o && S.rampSpots.every(q => dist(q.x, q.y, o.x, o.y) > 1100)) S.rampSpots.push(o); }
