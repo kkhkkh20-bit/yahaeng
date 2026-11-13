@@ -315,7 +315,7 @@ function updatePull(dt) {
 function drawCoverFx() { const F = S.coverFx; if (!F) return; const f = (S.t - F.t) / 0.45; if (f >= 1 || f < 0) { if (f >= 1) S.coverFx = null; return; }
   const L = 18 + 40 * f; ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = `rgba(170,230,255,${(1 - f) * 0.9})`; ctx.lineWidth = 5 * (1 - f) + 1; ctx.beginPath(); ctx.moveTo(F.x - F.ny * L, F.y + F.nx * L); ctx.lineTo(F.x + F.ny * L, F.y - F.nx * L); ctx.stroke(); ctx.restore(); }
 // 벽 쪽으로 미는 동안: 발밑에 차오르는 반원 (다 차면 붙는다)
-function drawCoverPush(P) { drawCoverFx(); const f = (P.coverPush || 0) / COVER_PUSH; if (P.cover || f < 0.12) return; const k = Math.max(1, 0.9 / SCALE);
+function drawCoverPush(P) { drawCoverFx(); const f = (P.coverPush || 0) / COVER_PUSH; if (P.cover || f < 0.12 || STAGE.cityLife) return;   /* 자유 모드: 발밑 원은 그리지 않는다 */ const k = Math.max(1, 0.9 / SCALE);
   ctx.save(); ctx.lineCap = 'round'; ctx.lineWidth = 3 * k; ctx.strokeStyle = 'rgba(150,220,255,.25)'; ctx.beginPath(); ctx.arc(P.x, P.y, 26 * k, -Math.PI / 2, -Math.PI / 2 + TAU); ctx.stroke();
   ctx.strokeStyle = 'rgba(150,220,255,.9)'; ctx.beginPath(); ctx.arc(P.x, P.y, 26 * k, -Math.PI / 2, -Math.PI / 2 + TAU * Math.min(1, f)); ctx.stroke(); ctx.restore(); }
 const COVER_PUSH = 0.5;

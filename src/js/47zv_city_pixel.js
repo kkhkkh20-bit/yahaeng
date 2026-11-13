@@ -23,6 +23,7 @@ drawCarriedParcel = pixWrap(drawCarriedParcel, () => { const P = S.player; retur
 drawCuffs = pixWrap(drawCuffs, () => { const P = S.player; return [P.x - 24, P.y - 34, 48, 36]; });
 drawElevDoors = pixWrap(drawElevDoors, () => { const P = S.player, inB = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)), E = S.elevs?.get(inB), D = E?.door; return D && !D.stairs ? [D.x - 32, D.y - TILE - 34, 64, 64] : null; });
 drawScene = pixWrap(drawScene, () => { const T = S.scene?.tape; return T ? [T.x0 - 40, T.y0 - 60, T.x1 - T.x0 + 80, T.y1 - T.y0 + 100] : null; });
+if (typeof drawDamageDirection === 'function') drawDamageDirection = pixWrap(drawDamageDirection, P => [P.x - 44, P.y - 62, 88, 88]);   // 맞은 방향 표시도 도트로
 drawNuisance = pixWrap(drawNuisance, () => { const B = S.ev?.bikes; if (!B?.length) return null; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const b of B) { x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x); y1 = Math.max(y1, b.y); } return x1 - x0 < 300 && y1 - y0 < 300 ? [x0 - 30, y0 - 30, x1 - x0 + 60, y1 - y0 + 60] : null; });
 // 바닥 핏자국 (도트): 1.5px 격자에 맞춘 덩어리 몇 개 — 크기·모양은 자국마다 정해진 씨앗으로 (매 프레임 같은 모양)
 function drawPixelBlood(d) {
