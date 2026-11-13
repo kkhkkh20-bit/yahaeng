@@ -9,6 +9,7 @@ const KILL_HOW = { gun: ['총', 0], melee: ['맨손', 20], car: ['차로 들이�
 // 쓰러지는 순간의 정황으로 방식을 정한다 (npcDown 을 감싼다)
 function killHowNow(o) {
   if (o.basementKill) return 'basement';
+  if (o.envKill) return 'env_' + o.envKill;
   if (o.shotT && S.t - o.shotT < 0.3) return 'gun';
   if ((S.nades || []).some(n => n.kind === 'molotov' && dist(n.x1, n.y1, o.x, o.y) < 90) || (S.fires || []).some(f => dist(f.x, f.y, o.x, o.y) < 60)) return 'fire';
   if ((S.booms || []).some(b => S.t - (b.t0 ?? b.t ?? S.t) < 0.6 && dist(b.x, b.y, o.x, o.y) < 160)) return 'boom';
@@ -25,7 +26,7 @@ function killHowOf(g) {
 }
 // 처리 보너스 (justiceMoment 에서): 가까이 쓰러진 악당 하나를 골라 방식을 읽는다
 function killMethodBonus(x, y) {
-  let g = null, bd = 140; for (const o of S.guards) { if (o.state !== 'DEAD' || o.methodPaid || !(o.evt || o.skReal || o.assailant || o.knifeman || o.hit || o.basementKill)) continue; const d = dist(o.x, o.y, x, y); if (d < bd) { bd = d; g = o; } }
+  let g = null, bd = 140; for (const o of S.guards) { if (o.state !== 'DEAD' || o.methodPaid || !(o.evt || o.skReal || o.assailant || o.knifeman || o.hit || o.basementKill || (o.fac && o.envKill))) continue; const d = dist(o.x, o.y, x, y); if (d < bd) { bd = d; g = o; } }
   if (!g) return null; g.methodPaid = true; const k = killHowOf(g), [name, bonus] = KILL_HOW[k];
   const seen = S.methods || (S.methods = {}); const first = !seen[k]; seen[k] = (seen[k] || 0) + 1; fstat('method_' + k);
   if (bonus) cash(bonus);
