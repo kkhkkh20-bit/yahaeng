@@ -48,7 +48,7 @@ async def main():
         # 3 snatch: ram the car, pick the bag, give it back
         await spawn('snatch'); s0 = await st(); await ev("()=>{const v=__game.S.ev.car;v.hp-=1;tick(.1)}"); await ev(PICK)
         await ev("()=>{const S=__game.S,o=S.ev.loot.owner;S.player.x=o.x+20;S.player.y=o.y;tick(.05)}"); lab = await q.evaluate(ACT, 0); s = await st(); print('snatch', lab, s)
-        ok(s['done'] and s['cash'] == s0['cash'] + 40 and s['rep'].get('을지로 인쇄골목', 0) == s0['rep'].get('을지로 인쇄골목', 0), 'snatch return: %s' % s)
+        ok(s['done'] and s['cash'] == s0['cash'] + 40 and s['rep'].get('을지로 인쇄골목', 0) == s0['rep'].get('을지로 인쇄골목', 0) + 2, 'snatch return (+2 rep): %s' % s)
         # 4 counterfeit: three boxes, then get away
         await spawn('counterfeit'); s0 = await st(); await ev(PICK); await ev("()=>{const S=__game.S,f=S.ev.f;S.player.x=f.x+700;S.player.y=f.y;tick(.1)}"); s = await st(); print('counterfeit', s)
         ok(s['done'] and s['cash'] == s0['cash'] + 300, 'counterfeit: %s' % s)
@@ -63,7 +63,7 @@ async def main():
         ok(s['done'] and s['cash'] == s0['cash'] + 400 and al >= 2, 'bridge deal: %s %s' % (al, s))
         # 8 stall: take the vendor's side
         await spawn('stall'); s0 = await st(); await ev("()=>{const S=__game.S,p=S.ev.p;S.player.x=p.x;S.player.y=p.y+10;tick(.05)}"); lab = await q.evaluate(ACT, 0); s = await st(); print('stall', lab, s)
-        ok(s['done'] and s['cash'] == s0['cash'] + 30 and s['rep'].get('청계천 상가', 0) == s0['rep'].get('청계천 상가', 0), 'stall vendor side: %s' % s)
+        ok(s['done'] and s['cash'] == s0['cash'] + 30 and s['rep'].get('청계천 상가', 0) == s0['rep'].get('청계천 상가', 0) + 5, 'stall vendor side (+5 rep): %s' % s)
         # 9 burglar: knock out, return the bundle
         await spawn('burglar'); s0 = await st(); await ev("()=>{const S=__game.S;__game.npcDown(S.ev.thief,null,false);tick(.1)}"); await ev(PICK)
         await ev("()=>{const S=__game.S,o=S.ev.loot.owner;S.player.x=o.x+20;S.player.y=o.y;tick(.05)}"); await q.evaluate(ACT, 0); s = await st(); print('burglar', s)
