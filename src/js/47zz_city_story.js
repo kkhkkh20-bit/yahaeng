@@ -10,7 +10,7 @@
 // 메인 이야기 — 배지 뒤의 놈들 (장마다 짧게: 지령 두세 줄, 결과 한 줄)
 const STORY_MAIN = [
   { title: '불법 추심', ctr: 'plain', fac: 'A', target: '문태식', escorts: 1, pay: 400,
-    brief: [['master', '은퇴했다며. 하나만 보자. 사채업자 문태식 — 이자를 열 배로 뜯고, 못 갚으면 애 학교로 찾아간다.'], ['master', '신고가 열두 건인데 다 흐지부지. 방법은 네가 고른다.'], ['hero', '은퇴는 다음 주부터 하지.']],
+    brief: [['master', '은퇴했다며. 하나만 보자. 사채업자 문태식 — 이자를 열 배로 뜯고, 못 갚으면 애 학교로 찾아간다.'], ['master', '신고가 열두 건인데 다 흐지부지. 방법은 네가 고른다.'], ['master', '총이 필요하면 뒷골목 박씨를 찾아. 경찰 권총이 거기서 돈다. 지도에 찍어 둔다 — 비밀이다.'], ['hero', '은퇴는 다음 주부터 하지.']],
     debrief: [['master', '문태식 장부에 매달 "노 계장 몫"이라는 줄이 있더라. 일단 넘어가자.']] },
   { title: '상습 뺑소니', ctr: 'roadkill', fac: 'B', target: '오정길', escorts: 1, pay: 500,
     brief: [['master', '오정길. 음주 뺑소니만 세 번, 매번 합의금이랑 "아는 형님"으로 빠져나왔다.'], ['master', '같은 방식으로 돌려줘. 차로. 치고 바로 빠져.'], ['hero', '교통사고는 흔하지.']],
@@ -25,7 +25,7 @@ const STORY_MAIN = [
     brief: [['master', '유창배는 업자 돈 받아서 경찰 쪽에 사건을 꺼 주는 놈이다. 기록이 없어.'], ['master', '그 블록 어딘가를 돈다. 얼굴 확인하기 전엔 아무도 건드리지 마.'], ['hero', '얼굴은 한 번 보면 안 잊는다.']],
     debrief: [['master', '유창배 수첩. 돈은 결국 한 사람한테 간다. 우리 서 강력계장, 노기석.'], ['master', '…이번 건 나도 같이 묻히는 거다.']] },
   { title: '배지 단 놈', ctr: 'snipe', fac: 'B', target: '노기석', escorts: 2, pay: 1200,
-    brief: [['master', '노기석 계장. 지금까지 네가 치운 놈들 전부 이 사람이 덮어 줬다.'], ['master', '사람 많은 데서만 다니고 조직 애들이 붙어 다닌다. 500픽셀 밖에서 한 발로. 저격총은 조직 연락책이 판다.'], ['hero', '배지는 방탄이 아니지.']],
+    brief: [['master', '노기석 계장. 지금까지 네가 치운 놈들 전부 이 사람이 덮어 줬다.'], ['master', '사람 많은 데서만 다니고 조직 애들이 붙어 다닌다. 500픽셀 밖에서 한 발로. 압수품 저격총을 하나 빼 놨다.'], ['hero', '배지는 방탄이 아니지.']],
     debrief: [['master', '감찰이 움직이기 시작했다. 덮였던 사건들이 다시 열린다.'], ['master', '…고맙다. 이 번호는 당분간 꺼 둔다.'], ['hero', '은퇴는 다음 주에 다시 하지.']] },
 ];
 // 조직 이야기 (연락책): 조직마다 세 걸음
@@ -56,6 +56,7 @@ function storyCall() {
   let plan = planHit(); if (!plan) return null;
   if (C.ctr === 'stage') for (let k = 0; k < 12 && !signCands(plan.route).length; k++) plan = planHit() || plan;  /* 무대: 간판을 걸 수 있는 블록을 고른다 */
   Object.assign(plan, { kind: 'hit', name: C.target, fac: C.fac, escorts: C.escorts, ctr: C.ctr, pay: C.pay, story: n });
+  if (n === 0) S.gunTip = true;  /* 첫 통화에서 밀매상 귀띔 → 미니맵에 뜬다 (47zg) */
   const prev = n > 0 ? STORY_MAIN[n - 1].debrief : [], retry = S.story.failed ? [['master', '지난번 일은 틀어졌다. 한 번 더 기회를 주지.']] : [];
   const head = [[{ note: '제보' }, `메인 이야기 ${n + 1}/${STORY_MAIN.length} · ${C.title}`]];
   return { plan, lines: [...head, ...(S.story.failed ? retry : prev), ...C.brief] };

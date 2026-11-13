@@ -13,6 +13,7 @@ function rampageInit() {
   // 표식 자리: 서로 1100px 넘게 떨어진 건물 앞 보도, 문에서 90px 비켜 (드나들다 밟지 않게) (도시가 같으면 늘 같은 자리)
   const fronts = []; for (let i = 0; i < BLD.length; i++) { const b = BLD[(i * 37 + 11) % BLD.length]; if (b.vacant) continue; const p = shopFront(b); if (p) fronts.push(p); }
   S.rampSpots = []; for (const p of fronts) { if (S.rampSpots.length >= RAMPS.length) break; const o = [[90, 30], [-90, 30], [90, 0], [-90, 0]].map(([dx, dy]) => ({ x: p.x + dx, y: p.y + dy })).find(q => jobOpen(q.x, q.y)); if (o && S.rampSpots.every(q => dist(q.x, q.y, o.x, o.y) > 1100)) S.rampSpots.push(o); }
+  S.rampSpots = [];  /* 광란 도전은 끈다: 이 도시에서 총을 들고 날뛰는 놀이는 하지 않는다 (총은 귀하다) */
   rampHud();
 }
 const rampLive = i => S.rampSpots[i] && !S.rampDone[i] && !(S.rampCd[i] > S.t) && !S.ramp;
@@ -62,7 +63,7 @@ function pickupsUpdate(dt) {
       const g = c.g; if (!g || g.evt && g.evt !== 'war' || dist(c.x, c.y, P.x, P.y) > 1000) continue;  // 구역 이벤트 사람은 이벤트가 따로 떨군다
       if (g.police) { if (S.wanted >= 2 || Math.random() < 0.3) dropPickup(c.x + rnd(-14, 14), c.y + rnd(8, 16), 'ammo', 'pistol', 6 + (Math.random() * 7 | 0)); }
       else if (c.fac && c.fac !== 'P') { const r = Math.random();
-        if (r < 0.35) dropPickup(c.x + rnd(-14, 14), c.y + rnd(8, 16), 'ammo', Math.random() < 0.25 ? 'shotgun' : 'pistol', 4 + (Math.random() * 6 | 0));
+        if (r < 0.1) dropPickup(c.x + rnd(-14, 14), c.y + rnd(8, 16), 'ammo', 'pistol', 3 + (Math.random() * 4 | 0));  /* 조직원도 총은 드물다 */
         else if (r < 0.75) dropPickup(c.x + rnd(-14, 14), c.y + rnd(8, 16), 'cash', null, 10 + (Math.random() * 40 | 0)); } } }
   for (let i = S.pickups.length - 1; i >= 0; i--) { const k = S.pickups[i];
     if (S.t - k.t > 60) { S.pickups.splice(i, 1); continue; }

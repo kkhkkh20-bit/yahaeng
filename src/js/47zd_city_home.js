@@ -14,7 +14,7 @@ const HOME_ITEMS = [
   { k: 'safe', name: '벽 금고', price: 400, note: '잡혀가도 뺏기는 돈이 절반' },
 ];
 const homeHas = k => !!(S.home && S.home[k]);
-function homeInit() { S.home = Object.assign({}, S.homeSaved || {}); homeApply(); }
+function homeInit() { S.home = Object.assign({}, S.homeSaved || {}); S.gunTip = !!S.gunTipSaved; homeApply(); }
 function homeApply() { const P = S.player; if (!P) return; const base = P.hpMaxBase || (P.hpMaxBase = P.hpMax); P.hpMax = base + (homeHas('bed') ? 1 : 0); P.hp = Math.min(P.hp, P.hpMax); }
 function homeAction() {
   const P = S.player, s = S.safes && S.safes[0]; if (!STAGE.cityLife || !s || P.car || P.trav || S.safeIn) return null;
