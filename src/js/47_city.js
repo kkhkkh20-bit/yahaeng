@@ -149,7 +149,7 @@ function cityLodStep(o, dt, calm) {
   const d = Math.min(o.lodDt, cap); o.lodDt = 0; return d;
 }
 function cityUpdate(dt) {
-  updateVehicles(dt); updateCopCars(dt); if (STAGE.hits) hitsUpdate(dt); if (STAGE.cityLife) { cityLifeUpdate(dt); crewsUpdate(); dealerUpdate(); trunkUpdate(dt); killerUpdate(dt); brawlUpdate(dt); ambientUpdate(dt); }
+  updateVehicles(dt); updateCopCars(dt); if (STAGE.hits) hitsUpdate(dt); if (STAGE.cityLife) { cityLifeUpdate(dt); crewsUpdate(); dealerUpdate(dt); trunkUpdate(dt); killerUpdate(dt); brawlUpdate(dt); ambientUpdate(dt); }
   const P = S.player, cops = S.guards.filter(g => g.police && !g.off && g.state !== 'DEAD');
   if (S.wanted > 0) {
     // 경찰끼리 무전: 하나라도 나를 보면 모두 그 자리로

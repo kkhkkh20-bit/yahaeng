@@ -32,7 +32,7 @@ function trunkUnload(v) {
 }
 // ---- 사람 태우기
 const RIDE_MAX = 3;
-function rideOk(g) { return g && npcAlive(g) && !g.off && g.civ && !g.police && !g.fac && !g.crew && !g.dog && !g.child && !['PANIC', 'FLEE', 'TERROR', 'REPORT'].includes(g.state) && !g.assailant && !g.knifeman && !g.evt && !g.rideTo && !g.rideIn && !g.dealer && g.skBi == null && !g.criminal && !g.cfight && !g.fist; }  /* 사건 인물·용의자·싸우는 사람은 안 탄다 */
+function rideOk(g) { return g && npcAlive(g) && !g.off && g.civ && !g.police && !g.fac && !g.crew && !g.dog && !g.child && !['PANIC', 'FLEE', 'TERROR', 'REPORT'].includes(g.state) && !g.assailant && !g.knifeman && !g.evt && !g.rideTo && !g.rideIn && g.skBi == null && !g.criminal && !g.cfight && !g.fist; }  /* 사건 인물·용의자·싸우는 사람은 안 탄다 */
 function rideAction() {
   if (!STAGE.cityLife) return null; const P = S.player; if (P.car || P.carrying || P.captive || actionBusy(P)) return null;
   const v = P.lastCar && !P.lastCar.dead && dist(P.x, P.y, P.lastCar.x, P.lastCar.y) < 160 ? P.lastCar : null; if (!v) return null;

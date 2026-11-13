@@ -24,15 +24,34 @@ function dealerSpawn() {
   const D = S.dealer2; if (!D) return; const gi = cityGuardSlot(), g = makeGuard({ kind: 'civ', at: [Math.floor(D.x / TILE), Math.floor(D.y / TILE)], radio: false, body: 'big' }, gi);
   g.x = D.x; g.y = D.y; g.route = [{ x: D.x, y: D.y, pause: 999 }]; g.wait = 999; g.dealer = true; g.smoker = true; placeGuard(g, gi); D.g = g;
 }
-function dealerUpdate() {
+function dealerUpdate(dt = 1 / 60) {
   const D = S.dealer2; if (!D) return;
   if (D.g && !npcAlive(D.g) && !D.respawn) D.respawn = S.t + 180;
   if (D.respawn && S.t > D.respawn && !inView(D.x, D.y, 80)) { D.respawn = 0; dealerSpawn(); }
-  if (D.g && npcAlive(D.g) && D.g.state === 'PATROL') { D.g.x = D.x; D.g.y = D.y; }
+  // 제자리로: 태워 갔다 내려 주면 걸어서 골목으로 돌아온다 (타는 중엔 건드리지 않는다)
+  const g = D.g; if (g && npcAlive(g) && g.state === 'PATROL' && !g.off && !g.rideTo && !g.rideIn && !g.fist) { let d = dist(g.x, g.y, D.x, D.y);
+    if (d > 8) { const moved = dist(g.x, g.y, g.lastX ?? 0, g.lastY ?? 0) > 0.5; g.lastX = g.x; g.lastY = g.y; g.stuckT = moved ? 0 : (g.stuckT || 0) + dt;
+      if (g.stuckT > 4 || (!inView(g.x, g.y, 80) && !inView(D.x, D.y, 80))) d = 0; else evRun(g, D.x, D.y, 90, dt); }  /* 막혔거나 아무도 안 보면 제자리로 */
+    if (d <= 8) { g.x = D.x; g.y = D.y; g.route = [{ x: D.x, y: D.y, pause: 999 }]; g.path = null; g.stuckT = 0; } }
 }
 function dealerAction() {
-  const D = S.dealer2, P = S.player; if (!D || !D.g || !npcAlive(D.g) || P.car || dist(P.x, P.y, D.x, D.y) > 54) return null;
+  const D = S.dealer2, P = S.player, g = D && D.g; if (!g || !npcAlive(g) || g.off || g.fist || P.car || dist(g.x, g.y, D.x, D.y) > 30 || dist(P.x, P.y, D.x, D.y) > 54) return null;  /* 골목 제자리에 있을 때만 장사 */
+  if ((D.sulkUntil || 0) > S.t) return { k: 'evAct', label: '박씨 — 눈도 안 마주친다', at: { x: D.x, y: D.y - 50 }, fn: () => gsay(g, ['꺼져.', '너한텐 안 팔아.', '총 들이댄 거 안 잊었다.'][(S.t | 0) % 3], 2) };
+  if (typeof wpnOn === 'function' && wpnOn()) return { k: 'evAct', label: `박씨 협박하기 (${WEAPONS[S.wpn].name})`, at: { x: D.x, y: D.y - 50 }, fn: () => dealerThreat(D) };
   return { k: 'evAct', label: '박씨와 거래', at: { x: D.x, y: D.y - 50 }, fn: openDealer2 };
+}
+// 협박: 무기를 들고 다가가면 [협박] — 권총 한 자루(있으면 탄 12발)를 빼앗는다. 대신 박씨는 10분 동안 안 판다.
+// 덩치라 셋 중 하나는 맞선다 (난타전). 누가 보면 수배.
+function dealerThreat(D) {
+  const P = S.player, g = D.g; P.a = Math.atan2(g.y - P.y, g.x - P.x); g.a = P.a + Math.PI; fstat('dealerThreat');
+  gsay(g, '...이봐, 진정해.', 1.4);
+  doMotion({ dur: 1.2, pose: 'idle', at: [[0.3, () => play('click', 0.5)]], end: () => {
+    if (!npcAlive(g)) return; D.sulkUntil = S.t + 600;
+    if ((D.threats = (D.threats || 0) + 1) % 3 === 0) { g.fist = true; g.fistT = 0; gsay(g, '두 번은 안 당해!', 1.8); evBanner('(...덤비네.)', '#ff9a86'); return; }
+    const had = S.guns.pistol != null; S.guns.pistol = (S.guns.pistol || 0) + 12; if (!S.wpn) S.wpn = 'pistol'; if (typeof gunChip === 'function') gunChip(); play('loot', 0.5); saveFreeProgress(true);
+    gsay(g, ['가져가. 가져가라고.', '...얼굴 기억해 둔다.'][D.threats % 2], 2.2);
+    evBanner(had ? '권총 탄 +12 · (빌린 거야. 갚을 생각은 없지만.)' : '경찰 권총 +12발 · (공짜가 제일 비싸다던데.)', '#e8d8a8');
+    if (witnessed(P.x, P.y, 260)) addWanted(1, '골목에서 사람을 협박하는 걸 봤다'); } });
 }
 function openDealer2() {
   const D = S.dealer2; S.gunTip = true; if (D && D.g) gsay(D.g, ['조용히 골라.', '현금만.', '어디서 났는지는 묻지 말고.'][(S.t | 0) % 3], 2);

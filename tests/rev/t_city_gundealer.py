@@ -1,6 +1,7 @@
 """Free mode guns are scarce: the gang contact only sells molotovs and armor; the police pistol comes from one back-alley
 dealer (secret route) who is marked on the minimap once the detective tips you off; rampage challenges are off;
-sniper rifles are only lent for story sniping jobs."""
+sniper rifles are only lent for story sniping jobs. The dealer can be threatened (with any weapon drawn) or driven
+around like anyone else, and walks back to his alley."""
 import asyncio, json
 from pathlib import Path
 from playwright.async_api import async_playwright
@@ -16,6 +17,14 @@ CHECK = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));w
   out.ramps=(S.rampSpots||[]).length;
   return out}'''
 
+FREE = '''()=>{const G=__game;const S = G.S, P = S.player, E = G.events; const tick = s => { for (let t = 0; t < s; t += 1/60) G.update(1/60); }; tick(.3); S.copT = 1e9;
+    const D = E.dealer2, g = D.g, out = {}; S.guns = { knife: 1 }; S.wpn = 'knife'; P.x = D.x + 30; P.y = D.y; P.car = null; tick(.05);
+    let a = E.dealerAction(); out.label = a && a.label; a.fn(); tick(1.6); out.pistol = S.guns.pistol; out.sulk = (E.dealerAction() || {}).label;
+    // 태우기: 차를 옆에 두고
+    D.sulkUntil = 0; const v = S.vehicles.find(v => !v.dead && !v.police && !v.ai); v.x = D.x + 60; v.y = D.y + 40; P.lastCar = v; S.wpn = null; P.x = D.x + 20; P.y = D.y + 10; tick(.05);
+    a = E.rideAction(); out.ride = a && a.label; if (a) a.fn(); tick(3.5); out.riding = !!g.rideIn; out.shopWhileRiding = !!E.dealerAction();
+    P.x = v.x; P.y = v.y + 30; tick(.05); const d2 = E.rideAction(); out.drop = d2 && d2.label; d2 && d2.fn(); const away = Math.round(Math.hypot(g.x - D.x, g.y - D.y)); tick(12); out.away = away; out.back = Math.round(Math.hypot(g.x - D.x, g.y - D.y)); return out;}'''
+
 async def main():
     bad = []
     async with async_playwright() as p:
@@ -29,6 +38,12 @@ async def main():
         ok(not any(k in ' '.join(r['contact']) for k in ['기관단총', '산탄총', '수류탄', '권총', '저격총']), 'contact still sells guns: %s' % r['contact'])
         ok(r['label'] == '박씨와 거래' and r['pistol'] == 12 and r['cash'] == 1400 and r['tip'], 'buying the pistol from the dealer: %s' % r)
         ok(r['ramps'] == 0, 'rampage challenges still placed: %s' % r['ramps'])
+        await q.goto((R / 'build/preview_city.html').as_uri() + '?nostats&study=city-xl'); await q.wait_for_function('!!window.__game')
+        await q.evaluate("()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));while(G.DLG.modal)G.advanceDialog();}")
+        f = await q.evaluate(FREE); print('free', json.dumps(f, ensure_ascii=False))
+        # 박씨: 무기를 들면 협박(권총을 뺏고 10분 안 판다) · 차에 태워 가도 되고, 내려 주면 골목으로 돌아온다
+        ok(f['label'].startswith('박씨 협박하기') and f['pistol'] == 12 and '눈도 안' in f['sulk'], 'threatening the dealer: %s' % f)
+        ok(f['ride'] == '차에 태우기' and f['riding'] and not f['shopWhileRiding'] and f['drop'] and f['back'] <= 8, 'giving the dealer a ride: %s' % f)
         ok(not errs, errs); await b.close()
     print('통과' if not bad else '문제', bad)
     if bad: raise SystemExit(1)
