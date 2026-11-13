@@ -135,9 +135,10 @@ const PHISH = [
   { title: '국내 관리자', ctr: 'carbomb', target: '염태수', escorts: 1, pay: 600,
     brief: [['master', '염태수는 수거책들한테 지시를 내리고 매일 같은 차로 돈을 걷는다.'], ['master', '차에 폭약을 심어. 그 돈이 다시 누군가의 전 재산이었다.'], ['hero', '돈 걷는 길이 마지막 길이군.']],
     debrief: [['master', '관리자 차 트렁크에서 환전 영수증이 나왔다. 돈을 해외로 빼는 세탁책 곽도윤이 오늘 밤 출국한다.']] },
-  { title: '세탁책', ctr: 'timed', target: '곽도윤', escorts: 1, pay: 700,
-    brief: [['master', '곽도윤이 공항버스를 타기 전에 끝내야 한다. 3분.'], ['master', '그놈이 떠나면 피해자 돈은 영영 못 찾는다.'], ['hero', '3분이면 충분해.']],
-    debrief: [['master', '세탁책 노트북에 국내 거점 주소와 해외 콜센터 운영자 이름이 있다. "사장" 진석호. 먼저 거점부터 치운다.']] },
+  { title: '세탁책 납치·심문', ctr: 'capture', target: '곽도윤', escorts: 1, pay: 800,
+    brief: [['master', '세탁책 곽도윤. 피해자 돈을 해외로 빼돌리는 놈이다. 이번엔 죽이지 마.'], ['master', '총책이 어디 숨었는지, 거점이 어딘지 아는 건 이놈뿐이다. 기절시켜서 근처 차 트렁크에 싣고 네 집 지하실로 데려와.'],
+      ['master', '입을 열게 만드는 건 네 몫이다. 경찰은 우리를 모른다 — 다 끝나면 경찰서 앞에 묶어 두고 와.'], ['hero', '오늘 밤은 대화가 길어지겠군.']],
+    debrief: [['master', '녹음 잘 들었다. 국내 거점 주소, 그리고 "사장" 진석호. 먼저 거점부터 치운다.']] },
   { title: '콜센터 거점', ctr: 'demolish', target: '왕재필', escorts: 2, pay: 900,
     brief: [['master', '작은 건물 한 채를 통째로 "상황실"로 쓴다. 대포폰 수백 대, 피해자 명단이 다 거기 있다.'],
       ['master', '밤엔 현장 관리자 왕재필과 상담원 둘만 남는다. 건물 벽에 폭약을 붙여 무너뜨려. 증거째로.'], ['master', '폭약 하나 넣어 뒀다. 모자라면 철물점. 붙이고 나면 5초 — 멀리 뛰어.'], ['hero', '전화 걸 데가 없어지겠군.']],
@@ -150,7 +151,7 @@ const PHISH_NEWS = [
   '[속보] 노인 상대 현금 수거책, 돈 받으러 나왔다 숨진 채 발견… 할머니 삼천만 원 그대로',
   '[속보] 대포통장 모집책 "사고사"… 장부에서 명의 대여자 수백 명 드러나',
   '[속보] 보이스피싱 국내 관리자 차량 폭발… 트렁크에서 현금 다발·환전 영수증',
-  '[속보] 출국 직전 자금 세탁책 사망… 해외 송금 수십억 원 동결',
+  '[속보] 보이스피싱 자금 세탁책, 손발 묶인 채 경찰서 앞에서 발견… 품속에 자백 녹음 파일·해외 계좌 목록',
   '[속보] 보이스피싱 국내 거점 건물 폭발·붕괴… 잔해서 대포폰 수백 대·피해자 명단 발견',
   '[속보] 해외 콜센터 총책 서울서 피격… "상황실" 사기단 와해, 피해금 환수 시작',
 ];
@@ -188,4 +189,59 @@ function demolishStart(h, plan) { h.bld = BLD[plan.bld]; S.player.bombs = (S.pla
 function drawMiniDemolish(x, T) {
   const h = S.hit; if (!h || h.ctr !== 'demolish' || !h.bld || h.bld.collapsed) return; const b = h.bld;
   x.strokeStyle = '#ff7a3a'; x.lineWidth = 2; x.strokeRect(T(b.x0 * TILE), T(b.y0 * TILE), T((b.x1 + 1) * TILE) - T(b.x0 * TILE), T((b.y1 + 1) * TILE) - T(b.y0 * TILE));
+}
+
+// ---------------------------------------------------------------- 납치·심문 ('capture')
+// 표적을 죽이지 않고 기절시킨다 → 140px 안의 차 트렁크에 싣는다 → 그 차로 내 집(첫 은신처)까지 → 지하실 심문.
+// 심문: 방법을 하나씩 골라 압박을 100까지 채우면 자백. 같은 방법은 한 번만(주먹은 두 번까지, 세 번째엔 기절해서 시간만 간다).
+// 표적이 죽으면(총·차·폭발) 입을 못 연다 → 의뢰 실패(다시 받는다). 자백하면 경찰서 앞에 묶어 두고 끝 — 참교육 속보.
+const ASK = [
+  { k: 'evidence', name: '증거를 들이민다 — 장부 사본·계좌 내역', p: 30, say: ['...그, 그걸 어떻게.', '내 이름이 다 적혀 있네. 그래서 뭐.'] },
+  { k: 'gun', name: '겁을 준다 — 빈 총을 관자놀이에, 방아쇠', p: 35, say: ['찰칵—! 히, 히익... 미쳤어?!', '...다음 칸엔 들어 있을지도 모르지.'] },
+  { k: 'deal', name: '거래를 건다 — 진술하면 살려 준다', p: 20, say: ['...살려 준다는 보장 있어?', '내가 불면 그쪽이 나를 죽여.'] },
+  { k: 'fist', name: '주먹', p: 25, max: 2, say: ['퍽. 의자째 넘어간다.', '퍽. "그, 그만... 그만해..."'] },
+  { k: 'victim', name: '피해자 녹취를 틀어 준다 — 삼천만 원 할머니 목소리', p: 25, say: ['...꺼. 꺼 달라고.', '(한참 말이 없다)'] },
+];
+function captureUpdate(h, ko) {
+  const g = h.g, P = S.player;
+  if (g.state === 'DEAD' && !ko && !h.done) { contractFail(h, `${h.name}이(가) 죽었다 — 입을 열 사람이 없다. 의뢰 실패`); return true; }
+  if (h.trunk) { const v = h.trunk; if (v.dead) { contractFail(h, `트렁크째 터졌다 — ${h.name}도 끝. 의뢰 실패`); return true; }
+    g.x = v.x; g.y = v.y; const home = S.safes && S.safes[0];
+    if (home && !h.asking && P.car === v && dist(v.x, v.y, home.x, home.y) < 200 && Math.abs(v.v) < 40) { h.asking = true; h.press = 0; h.used = {}; askOpen(h); } }
+  return true;
+}
+function captureAction() {
+  const h = S.hit, P = S.player; if (!h || h.ctr !== 'capture' || h.trunk || P.car) return null; const g = h.g;
+  const ko = g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko); if (!ko || dist(P.x, P.y, g.x, g.y) > 70) return null;
+  const v = S.vehicles.filter(o => !o.dead && !o.ai && !o.police && dist(o.x, o.y, g.x, g.y) < 140).sort((a, b) => dist(a.x, a.y, g.x, g.y) - dist(b.x, b.y, g.x, g.y))[0];
+  if (!v) return { k: 'evAct', label: '트렁크에 실을 차가 없다 — 차를 140px 안에 세워라', fn: () => evBanner('기절한 놈 곁에 차를 세워라', '#ffb070') };
+  return { k: 'evAct', label: `${h.name} 트렁크에 싣기`, at: { x: g.x, y: g.y - 50 }, fn: () => { const s = standBy(P, g, 22);
+    doMotion({ x: s.x, y: s.y, face: s.face, pose: 'grab', dur: 1.6, at: [[0.5, () => play('cloth', 0.6)], [1.2, () => play('thud', 0.5)]],
+      end: () => { if (S.hit !== h) return; h.trunk = v; v.unlocked = true; v.locked = false; g.off = true; for (const c of S.corpses || []) if (c.g === g) c.hidden = true;
+        evBanner(`${h.name}을(를) 트렁크에 실었다 — 그 차로 내 집 지하실까지`, '#9fc4ff'); if (witnessed(g.x, g.y, 300)) addWanted(1, '사람을 트렁크에 싣는 걸 봤다'); } }); } };
+}
+function captureGoal(h) {
+  const g = h.g, home = S.safes && S.safes[0];
+  if (h.asking) return { text: `지하실 심문 — ${h.name} · 압박 ${h.press | 0}%`, x: home.x, y: home.y, fl: 0 };
+  if (h.trunk) return { text: `트렁크에 ${h.name} — 그 차로 내 집(초록 집)까지`, x: home.x, y: home.y, fl: 0 };
+  const ko = g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko);
+  return { text: ko ? `${h.name} 기절 — 곁에 차를 세우고 트렁크에 싣기` : `${h.name} 납치 — 죽이지 말고 기절시켜라`, x: g.x, y: g.y, fl: flOf(g), g };
+}
+function askOpen(h) {
+  if (S.hit !== h) return; const used = h.used;
+  shopPanel(`지하실 · ${h.name} 심문 — 압박 ${h.press | 0}%`, ASK.map(a => { const n = used[a.k] | 0, max = a.max || 1;
+    return { name: a.name, price: null, tag: n >= max ? '했다' : `+${a.p}`, ok: n < max + (a.k === 'fist' ? 1 : 0), buy: () => askPick(h, a) }; }), () => {});
+}
+function askPick(h, a) {
+  closeShopPanel(); const n = h.used[a.k] | 0; h.used[a.k] = n + 1; play(a.k === 'fist' ? 'thud' : a.k === 'gun' ? 'click' : 'cloth', 0.5);
+  if (a.k === 'fist' && n >= 2) { say([[{ note: h.name }, '(축 늘어진다. 기절했다 — 깨어날 때까지 기다린다)']], true, () => after(1.5, () => askOpen(h))); return; }
+  h.press = Math.min(100, (h.press || 0) + a.p);
+  const line = a.say[Math.min(n, a.say.length - 1)];
+  if (h.press >= 100) { say([[{ note: h.name }, line], [{ note: h.name }, '...알았어, 말할게! 거점은 작은 건물 하나야. 대포폰이랑 명단 다 거기 있어.'], [{ note: h.name }, '사장... 진석호. 서울에 들어와 있어. 거래 끝나면 바로 나간대.'], ['hero', '녹음 끝. 이제 경찰서 앞으로 간다.']], true, () => captureDone(h)); return; }
+  say([[{ note: h.name }, line]], true, () => askOpen(h));
+}
+function captureDone(h) {
+  if (S.hit !== h) return; h.done = true; const g = h.g; evGone(g); fstat('confessions');
+  S.cash = (S.cash || 0) + h.pay; S.hitN++; S.hit = null; evBanner(`자백을 받아 냈다 · ${h.pay}만 — 세탁책은 경찰서 앞에 묶어 뒀다`, '#9fe0b0');
+  if (h.phish != null) phishDone(h, true); saveFreeProgress(true);
 }

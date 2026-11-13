@@ -16,6 +16,7 @@ const CONTRACTS = {
   roadkill: { name: '뺑소니', mul: 1.5, fail: 0.6, brief: '차로 쳐라. 총도 칼도 안 된다. 치고 나서 그 자리에 서 있지 마라 — 목격자가 번호판을 외우기 전에.', rule: '차로 치고 도주' },
   sign: { name: '간판 사고', mul: 1.7, fail: 0.6, brief: '그놈이 도는 길 위에 낡은 간판이 매달려 있다. 건물 정면 가스 배관을 타고 옥상에 올라가, 그놈이 밑을 지날 때 고정줄을 풀어라. 철거 안 한 간판이 떨어진 사고다.', rule: '간판 사고 (옥상에서 고정줄 풀기)' },
   stage: { name: '무대', mul: 1.6, fail: 0.8, brief: '', rule: '놈의 습관에서 틈을 찾아 사고로 (차·간판·독)' },
+  capture: { name: '납치·심문', mul: 1, brief: '', rule: '죽이지 말고 기절 → 트렁크 → 지하실 심문' },
   demolish: { name: '거점 폭파', mul: 1.8, fail: 0.6, brief: '', rule: '건물 벽에 폭약 — 무너뜨려라' },
   timed: { name: '시간 제한', mul: 1.3, time: 180, brief: '3분 뒤에 그놈이 서울을 뜬다. 그 전에 끝내. 놓치면 없던 일이다.', rule: '3분 안에' } };
 const CONTRACT_KINDS = ['accident', 'blade', 'photo', 'timed', 'snipe', 'carbomb', 'sign', 'plain'];
@@ -67,6 +68,7 @@ const P_ON_ROOF = () => (S.player.z || 0) > 0;
 function contractGoal(h) {
   const C = CONTRACTS[h.ctr || 'plain']; if (!C || h.ctr === 'plain' || !h.ctr) return '';
   if (h.ctr === 'timed') return ` · 남은 ${Math.max(0, Math.ceil(h.deadline - S.t))}초`;
+  if (h.ctr === 'capture') return '';
   if (h.ctr === 'stage') return stageGoal(h);
   if (h.ctr === 'demolish' && h.bld && !h.bld.collapsed) return S.bombs && S.bombs.some(b => b.target && b.target.b === h.bld) ? ' · 폭약 설치됨 — 멀리 피해라!' : ` · 주황 테두리 건물 벽에 붙어 [건물 벽에 폭약 설치] (폭약 ${S.player.bombs || 0})`;
   if (h.ctr === 'carbomb' && h.car && !h.car.dead) return h.car.bombed ? ' · 폭약 설치됨 — 차에 탈 때까지 기다려라' : h.cbIn ? ' · 차를 몰고 떠난다 — 차를 터뜨려라' : ` · 차에 폭약 심기 · 출발까지 ${Math.max(0, Math.ceil(h.leaveAt - S.t))}초`;

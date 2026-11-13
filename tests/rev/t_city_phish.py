@@ -35,6 +35,19 @@ async def main():
         r = await q.evaluate('''()=>{const G=__game,S=G.S;G.events.contractFail(S.hit,'x');S.story.phNextT=0;const l=CALL();const out={failed:S.story.phFailed,retry:l.some(t=>t.includes('다시 가')),phish:S.hit&&S.hit.phish};
           G.events.saveFreeProgress(true);const key=Object.keys(localStorage).find(k=>/free/i.test(k));out.saved=(JSON.parse(localStorage.getItem(key)||'{}').story||{}).ph;return out}''')
         print('retry', r); ok(r['failed'] and r['retry'] and r['phish'] == 1 and r['saved'] == 1, 'retry or save: %s' % r)
+        # 세탁책 납치·심문: 기절 → 트렁크 → 내 집 지하실 → 압박 100% → 자백
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,E=G.events,T=G.traffic,P=S.player;if(S.hit)E.contractFail(S.hit,'x');S.hit=null;S.job=null;while(G.DLG.modal)G.advanceDialog();S.story.ph=3;S.story.phFailed=false;S.story.phNextT=0;
+          CALL();const h=S.hit;if(!h||h.ctr!=='capture')return{ctr:h&&h.ctr};const g=h.g;for(const e of h.escorts){e.x=-9000;e.route=[{x:-9000,y:-9000,pause:999}];}
+          G.npcDown(g,null,false);tick(.3);const v=T.makeVehicle({type:'sedan',x:g.x+80,y:g.y,a:0,parked:true});v.unlocked=true;S.vehicles.push(v);P.x=g.x+30;P.y=g.y;P.car=null;tick(.05);
+          const a=E.captureAction();const label=a&&a.label;if(a)a.fn();tick(2.2);const loaded=h.trunk===v;
+          const home=S.safes[0];P.car=v;v.ai=false;v.x=home.x+60;v.y=home.y+60;v.v=0;P.x=v.x;P.y=v.y;tick(.3);const asking=!!h.asking;
+          const c0=S.cash;let k=0;while(S.hit===h&&k<20){const b=[...document.querySelectorAll('#shopPanel button')].find(b=>!b.disabled&&b.textContent!=='나가기');if(b)b.click();let j=0;while(G.DLG.modal&&j<20){G.advanceDialog();tick(.05);j++;}tick(1.6);k++;}
+          return{ctr:'capture',label,loaded,asking,done:!S.hit,ph:S.story.ph,paid:S.cash-c0,rounds:k}}''')
+        print('capture', r)
+        ok(r.get('ctr') == 'capture' and r.get('loaded') and r.get('asking') and r.get('done') and r.get('ph') == 4 and r.get('paid', 0) >= 800, 'capture and interrogation: %s' % r)
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,E=G.events;S.story.ph=3;S.story.phFailed=false;S.story.phNextT=0;CALL();const h=S.hit;if(!h)return{};h.g.shotT=S.t;G.killGuard(h.g);tick(.5);return{failed:S.story.phFailed,ph:S.story.ph,hit:!!S.hit}}''')
+        print('capture-dead', r)
+        ok(r.get('failed') and r.get('ph') == 3 and not r.get('hit'), 'killing the launderer should fail the step: %s' % r)
         # 콜센터 거점 폭파
         r = await q.evaluate('''()=>{const G=__game,S=G.S,E=G.events,P=S.player;if(S.hit)E.contractFail(S.hit,'x');S.hit=null;S.job=null;while(G.DLG.modal)G.advanceDialog();S.story.ph=4;S.story.phFailed=false;S.story.phNextT=0;
           const l=CALL(),h=S.hit;if(!h||h.ctr!=='demolish')return{ctr:h&&h.ctr,lines:l};const b=h.bld,inside=h.g.x>b.x0*48&&h.g.x<(b.x1+1)*48;

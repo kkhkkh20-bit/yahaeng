@@ -134,6 +134,7 @@ function hitsUpdate(dt) {
   const g = h.g; hitGradeTrack(); if (STAGE.cityLife) { contractUpdate(); if (!S.hit) return; intelUpdate(); }
   if (!S.guards.includes(g)) { S.hit = null; return; }
   const ko = g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko);
+  if (h.ctr === 'capture' && captureUpdate(h, ko)) return;  // 납치·심문 (47zz)
   if (h.ko && ko && !h.cuffed) return;  // 검거: 기절시킨 뒤 수갑을 채워야 끝난다 (47h cuffAction)
   if (g.state === 'DEAD' && (!ko || h.ko)) {
     // 경찰 검거 미션(h.ko): 기절시키면 제값, 죽이면 3분의 1. 조직 미션: 보수와 호감도 변화가 따로 정해져 있다
@@ -156,6 +157,7 @@ function hitGoal() {
     return { text: `울리는 공중전화 받기 · ${money}`, where: '', x: p.x, y: p.y, fl: 0 };
   }
   const g = h.g;
+  if (h.ctr === 'capture') { const c = captureGoal(h); c.text += ` · ${money}`; return c; }
   if (STAGE.cityLife && contractHides(h)) return { text: `사진 속 ${h.name} 찾기 — 표시된 블록을 돌며 얼굴 확인 · ${money}`, where: '', x: h.cx, y: h.cy, fl: 0 };
   return { text: (h.ko ? (g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko) ? `${h.name} 기절 — 수갑 채우기` : `${h.name} 검거 — 기절시키기`) : g.unconscious ? `${h.name} 기절 — 숨통을 끊어라` : `${h.name} 처치`) + (STAGE.cityLife ? contractGoal(h) : '') + ` · ${money}`, where: '', x: g.x, y: g.y, fl: flOf(g), g };
 }
