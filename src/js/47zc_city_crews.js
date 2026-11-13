@@ -69,7 +69,9 @@ function crewsUpdate() {
     {
       const L = crew.members[0], v = S.player.car; if (!CREW_KINDS[crew.kind].event) crew.slow = v && Math.abs(v.v) < 40 && dist(v.x, v.y, L.x, L.y) < 90 ? 0.3 : 1; }  /* 길을 막고 선 차 앞에선 속도를 줄인다 */
   }
-  S.crews = S.crews.filter(c => { if (!CREW_KINDS[c.kind].event || (S.ev && S.ev.crew === c && !S.ev.done)) return true; for (const m of c.members) { m.crew = null; if (npcAlive(m) && !m.off) { m.route = [{ x: m.x, y: m.y, pause: 999 }]; m.path = null; } } return false; });  /* 끝난 킥보드 사건의 무리는 내린다 */
+  S.crews = S.crews.filter(c => { if (!CREW_KINDS[c.kind].event || (S.ev && S.ev.crew === c && !S.ev.done)) return true; for (const m of c.members) { m.crew = null; m.exCrew = true; if (npcAlive(m) && !m.off) { m.route = [{ x: m.x, y: m.y, pause: 999 }]; m.path = null; } } return false; });  /* 끝난 킥보드 사건의 무리는 내린다 */
+  // 흩어진 크루원: 멀리·화면 밖이면 거리에서 뺀다 (자리는 다음 인물이 다시 쓴다 — 새 크루가 생길 때마다 사람이 쌓이지 않게)
+  const P = S.player; for (const g of S.guards) if (g.exCrew && !g.off && !g.keep && npcAlive(g) && dist(g.x, g.y, P.x, P.y) > 1400 && !inView(g.x, g.y, 200)) evGone(g);
   for (const k of Object.keys(CREW_KINDS)) { if (CREW_KINDS[k].event) continue;
     const live = S.crews.some(c => c.kind === k && !c.broken);
     if (!live && S.t > (S.crewNext[k] || 0)) { S.crews = S.crews.filter(c => !(c.kind === k && c.broken && c.members.every(m => !npcAlive(m) || m.off || !inView(m.x, m.y, 200)))); if (crewSpawn(k, true)) S.crewNext[k] = 0; else S.crewNext[k] = S.t + 10; }
@@ -78,7 +80,7 @@ function crewsUpdate() {
 function crewBreak(crew, why) {
   crew.broken = true; S.crewNext[crew.kind] = S.t + 90; fstat('crewBroken');
   if (!CREW_KINDS[crew.kind].event && S.player.car && crew.members.some(m => !npcAlive(m)) && dist(S.player.car.x, S.player.car.y, why.x, why.y) < 200) justiceMoment(`도로 점령 ${CREW_KINDS[crew.kind].name} 해산`, `[속보] 차도 점령하고 달리던 ${CREW_KINDS[crew.kind].name}, 차량과 충돌… 누리꾼 "언젠가 날 일이었다"`, why.x, why.y, { thank: false });
-  for (const m of crew.members) { if (!npcAlive(m)) continue; m.crew = null; civPanic(m, why.x, why.y, 6); }
+  for (const m of crew.members) { m.exCrew = true; if (!npcAlive(m)) continue; m.crew = null; civPanic(m, why.x, why.y, 6); }
   if (inView(why.x, why.y, 80)) { const L = crew.members.find(npcAlive); if (L) gsay(L, crew.kind === 'run' ? '흩어져!' : '피해!', 1.6); }  /* 위쪽 띠는 의뢰 결과에 양보한다 */
 }
 // 자전거: 사람 밑에 깔리는 바퀴 두 개와 몸체 (사람 그리기 바로 전)

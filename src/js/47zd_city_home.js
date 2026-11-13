@@ -9,7 +9,7 @@ const HOME_ITEMS = [
   { k: 'pots', name: '화분 두 개', price: 30, note: '문 앞이 조금 사람 사는 집 같아진다' },
   { k: 'neon', name: '네온 문패', price: 80, note: '밤에 문 위가 은은하게 빛난다' },
   { k: 'bed', name: '새 침대', price: 150, note: '최대 체력 +1' },
-  { k: 'locker', name: '무기 보관함', price: 250, note: '집에서 쉬면 권총 한 탄창(12발)' },
+  { k: 'locker', name: '무기 보관함', price: 250, note: '권총이 있으면 집에서 쉴 때 한 탄창(12발)' },
   { k: 'cctv', name: '보안 카메라', price: 300, note: '경찰이 보고 있어도 집엔 뒷문으로 들어간다' },
   { k: 'safe', name: '벽 금고', price: 400, note: '잡혀가도 뺏기는 돈이 절반' },
 ];
@@ -30,7 +30,7 @@ function openHome() {
 // 집에서 쉴 때 (47u safeLeave)
 function homeRest(s) {
   if (s.i !== 0 || !homeHas('locker') || !S.guns) return '';
-  let n = 0; if ((S.guns.pistol || 0) < 12) { S.guns.pistol = 12; n++; }  /* 경찰 권총 한 탄창만 (총은 귀하다) */
+  let n = 0; if (S.guns.pistol != null && S.guns.pistol < 12) { S.guns.pistol = 12; n++; }  /* 경찰 권총 한 탄창만 (총은 귀하다) */
   return n ? ' · 탄약 보충' : '';
 }
 // 문 앞 꾸밈 (땅 위, 사람보다 먼저)

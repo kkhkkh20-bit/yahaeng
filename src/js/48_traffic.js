@@ -431,7 +431,7 @@ function hitPeople(v, dt) {
     if (mine) { if (!STAGE.cityLife) { play('thud', 0.8); S.shakeT = 0.2; } S.stats.runOver = (S.stats.runOver || 0) + 1; npcDown(g, null, lethal); const c = S.corpses[S.corpses.length - 1]; if (c && c.g === g) { c.byNpc = false; c.byCar = true; }
       if (STAGE.cityLife) carImpact(v, g, lethal);
       if (g.police) addWanted(2, '경찰을 차로 쳤다'); else addWanted(1, g.civ ? '사람을 차로 쳤다' : '조직원을 차로 쳤다'); v.v *= 0.8; }
-    else if (v.chase) { npcDown(g, null, STAGE.cityLife && lethal); if (STAGE.cityLife) carImpact(v, g, lethal); v.v *= 0.7; }  // 추격 차에 치인 행인
+    else if (v.chase) { g.downNpc = true; npcDown(g, null, STAGE.cityLife && lethal); if (STAGE.cityLife) carImpact(v, g, lethal); v.v *= 0.7; }  // 추격 차에 치인 행인
     else if (v.ai) { v.v = 0; }  // 다른 차는 사람 앞에서 선다 (그래도 닿았으면 멈춤)
   }
   // 내가 걷다가 달려오는 차에 치임

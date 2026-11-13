@@ -26,7 +26,7 @@ function brawlStrike() {
   return true;
 }
 function brawlHit(g, knife, heavy) {
-  const P = S.player, a = Math.atan2(g.y - P.y, g.x - P.x); if (g.bhp == null) g.bhp = BRAWL_HP(g);
+  const P = S.player, a = Math.atan2(g.y - P.y, g.x - P.x); if (g.bhp == null || g.bhp <= 0) g.bhp = BRAWL_HP(g);  /* 기절했다 깨어난 사람은 다시 처음부터 */
   g.bhp -= knife ? 2 : heavy ? 2 : 1; g.stunT = S.t + (heavy ? 0.7 : 0.42); g.hitT = S.t; fstat(knife ? 'slashes' : 'punches');
   const kb = heavy ? 24 : knife ? 8 : 13, nx = g.x + Math.cos(a) * kb, ny = g.y + Math.sin(a) * kb; if (!solidAt(Math.floor(nx / TILE), Math.floor(ny / TILE))) { g.x = nx; g.y = ny; }
   g.a = a + Math.PI; g.path = null;

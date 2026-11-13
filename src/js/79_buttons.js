@@ -146,7 +146,7 @@ function actAttack() {if(S?.player?.cuffed)return;
   if (STAGE.cityLife && gunAttack()) return;  // 자유 모드: 손 닿는 처치가 없으면 든 무기로 쏜다
   const a = attackAction();
   if (a.k === 'none') {
-    if (STAGE.cityLife && brawlStrike()) return;  // 자유 모드: 정면·들킴 → 주먹질·칼질 (47zp)
+    if (STAGE.cityLife && ((a.stalk && queueApproachAttack(a.stalk)) || brawlStrike())) return;  // 등 뒤로 다가가는 중이면 처치 예약이 먼저. 아니면: 정면·들킴 → 주먹질·칼질 (47zp)
     if(a.skillLocked)toast(abilityLockText(a.skillLocked),2);
     else if(a.stalk){if(!queueApproachAttack(a.stalk))toast('아직 손이 닿지 않는다 · 등 뒤로 더 가까이',1.5,'warn');}  // 입력 실패 반응: 최소 모드에서도 사실만 남는다
     else toast('공격할 사람의 등 뒤 가까이 접근하기',1.5);

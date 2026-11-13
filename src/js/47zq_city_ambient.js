@@ -15,7 +15,7 @@ function copTookDown(o, cop) {
   after(3.5, () => { if (o.state === 'DEAD' && !o.off) { const c = (S.corpses || []).find(k => k.g === o); if (c && c.ko && !c.carried && !c.inTrunk) { S.corpses = S.corpses.filter(k => k !== c); evGone(o); } } });
 }
 // npcDown 을 한 겹 더: 범죄자가 사람을 해치면 신고 / 경찰이 범죄자를 쓰러뜨리면 연행
-if (typeof npcDown === 'function') { const _nd = npcDown; npcDown = function (o, by, lethal) { const r = _nd(o, by, lethal);
+if (typeof npcDown === 'function') { const _nd = npcDown; npcDown = function (o, by, lethal) { const r = _nd(o, by, lethal); if (o) o.downBy = by && by !== S.player ? (by.police ? 'police' : 'npc') : (o.downNpc ? 'npc' : 'me'); if (o) o.downNpc = false;
   if (STAGE.cityLife && by && by !== S.player && o) {
     if (by.police && (o.criminal || o.cfight)) copTookDown(o, by);
     else if (!by.police && !by.fac && o.civ) { by.criminal = true; policeCall(o.x, o.y, by); } }
@@ -25,7 +25,7 @@ function quarrelStart() {
   const P = S.player, cand = S.guards.filter(g => g.civ && npcAlive(g) && !g.off && !g.evt && !g.crew && !g.child && !g.dog && !g.student && !g.cfight && !g.fist && g.state === 'PATROL' && !flOf(g) && !g.z && dist(g.x, g.y, P.x, P.y) < 650 && dist(g.x, g.y, P.x, P.y) > 120);
   for (let k = 0; k < 6 && cand.length; k++) { const a = cand[(ambRnd() * cand.length) | 0]; const b = cand.filter(o => o !== a && dist(o.x, o.y, a.x, a.y) < 240).sort((p, q) => dist(p.x, p.y, a.x, a.y) - dist(q.x, q.y, a.x, a.y))[0];
     if (!b) continue; const L = QUARREL[(ambRnd() * QUARREL.length) | 0];
-    a.cfight = { o: b, hp: 3, cd: 0.6, t0: S.t, starter: true }; b.cfight = { o: a, hp: 3, cd: 1.0, t0: S.t };
+    a.routeQ = a.route; b.routeQ = b.route; a.cfight = { o: b, hp: 3, cd: 0.6, t0: S.t, starter: true }; b.cfight = { o: a, hp: 3, cd: 1.0, t0: S.t };
     gsay(a, L[0], 2.2); after(1.2, () => npcAlive(b) && gsay(b, L[1], 2.2)); fstat('quarrels');
     after(2.5, () => { if (a.cfight && npcAlive(a)) { a.criminal = true; policeCall(a.x, a.y, a); } });  // 지나가던 사람이 신고
     return true; }
@@ -43,7 +43,7 @@ function quarrelStep(g, dt) {
     play('thud', 0.5 * proxVol(o)); o.stunT = S.t + 0.35; const a = Math.atan2(o.y - g.y, o.x - g.x), nx = o.x + Math.cos(a) * 10, ny = o.y + Math.sin(a) * 10; if (!solidAt(Math.floor(nx / TILE), Math.floor(ny / TILE))) { o.x = nx; o.y = ny; }
     if ((o.cfight.hp -= 1) <= 0) { const w = g; quarrelEnd(o); quarrelEnd(w); civPanic(o, w.x, w.y, 10); gsay(o, ['살려 주세요!', '아이고...', '경찰 불러!'][o.id % 3], 1.6); after(0.8, () => npcAlive(w) && gsay(w, '다음에 또 까불어 봐.', 2)); } });
 }
-function quarrelEnd(g) { if (!g) return; g.cfight = null; g.route = [{ x: g.x, y: g.y, pause: 1 }, { x: g.x + 1, y: g.y, pause: 2 }]; g.ri = 0; g.path = null; }
+function quarrelEnd(g) { if (!g) return; g.cfight = null; g.route = g.routeQ || [{ x: g.x, y: g.y, pause: 1 }, { x: g.x + 1, y: g.y, pause: 2 }]; g.routeQ = null; g.ri = 0; g.path = null; }  /* 원래 다니던 길로 돌아간다 */
 function ambientUpdate(dt) {
   if (!STAGE.cityLife) return;
   for (const g of S.guards) if (g.cfight) quarrelStep(g, dt);

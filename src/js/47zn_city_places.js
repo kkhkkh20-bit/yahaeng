@@ -11,14 +11,15 @@ function placesInit() {
   if (!STAGE.cityLife) return; const shops = BLD.map((b, i) => ({ b, i })).filter(o => o.b.kind === 'shop' && !o.b.vacant);
   const area = b => (b.x1 - b.x0 + 1) * (b.y1 - b.y0 + 1);
   // 학교·병원: 가장 넓은 상가 둘 (특별한 곳은 빼고)
-  const big = shops.filter(o => !KEEP_SIGNS.test(signOf(o.b))).sort((p, q) => area(q.b) - area(p.b) || p.i - q.i);
+  const shopBld = new Set((S.shops || []).map(o => o.b));  /* 물건 파는 가게(철물·약국 …)는 이름을 바꾸지 않는다 — 문을 열면 그 가게 메뉴다 */
+  const big = shops.filter(o => !KEEP_SIGNS.test(signOf(o.b)) && !shopBld.has(o.i)).sort((p, q) => area(q.b) - area(p.b) || p.i - q.i);
   if (big[0]) { setSign(big[0].b, '을지초등학교'); big[0].b.school = true; big[0].b.plate = big[0].b.plateName = '교무실 · 행정실'; }
   if (big[1]) { setSign(big[1].b, '을지 중앙병원'); big[1].b.hospital = true; big[1].b.plate = big[1].b.plateName = '응급실 24시'; }
   // 빈 간판 채우기
   let f = 0; for (const { b } of shops) if (!signOf(b) && !b.school && !b.hospital) setSign(b, FILL_SHOPS[(f++) % FILL_SHOPS.length]);
   // 같은 이름 여럿: 둘째부터 상호를 붙인다 (편의점·PC방 같은 체인은 '○○점'). 이미 쓴 이름은 피한다
   const used = new Set(), seen = {};
-  for (const { b, i } of shops) { const t = signOf(b); if (!t) continue; const n = seen[t] = (seen[t] || 0) + 1; if (n === 1 && !used.has(t)) { used.add(t); continue; }
+  for (const { b, i } of shops) { const t = signOf(b); if (!t || shopBld.has(i) || /CLUB/.test(t)) continue;  /* CLUB 은 사건이 그 이름으로 찾는다 */ const n = seen[t] = (seen[t] || 0) + 1; if (n === 1 && !used.has(t)) { used.add(t); continue; }
     const chain = /편의점|PC방|CLUB|약국/.test(t), base = t.replace(/^\S+\s/, '');
     for (let k = 0; k < SHOP_PREFIX.length * 2; k++) { const pf = SHOP_PREFIX[(i + n + k) % SHOP_PREFIX.length], nm = chain ? `${t} ${pf.replace('네', '')}점` : `${pf}${k >= SHOP_PREFIX.length ? ' 2호' : ''} ${base}`; if (!used.has(nm)) { setSign(b, nm); used.add(nm); break; } } }
   // 문패

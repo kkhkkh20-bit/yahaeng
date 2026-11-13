@@ -67,7 +67,7 @@ function spawnCop(calm) {  // calm: 사건 출동 (나를 쫓지 않는다)
 // ---- 자유 모드 목록 정리: 사건·의뢰·추격으로 새로 만든 사람·차가 끝없이 쌓이지 않게
 // 사람(S.guards)은 순번으로 서로를 가리키므로(호위 → 표적, 시체 → guardId) 지우지 않고, 사라진 임시 인물의 자리를 새 인물이 물려받는다.
 // 차(S.vehicles)는 순번으로 가리키는 곳이 없어, 처음부터 있던 차가 아닌 것만 멀어지면 목록에서 뺀다.
-const TEMP_ACTOR = g => !!(g.evt || g.driverOut || g.carCrew || g.hit || g.hitEscort);
+const TEMP_ACTOR = g => !!(g.evt || g.exCrew || g.driverOut || g.carCrew || g.hit || g.hitEscort);
 function cityGuardRefs() {
   const s = new Set();
   for (const c of S.corpses || []) { if (c.g) s.add(c.g); if (c.guardId != null) s.add(c.guardId); }
@@ -108,7 +108,7 @@ function cityListsCleanup() {
     if (!far(g)) { g._deadAt = null; continue; } g._deadAt = g._deadAt || S.t;
     if (S.t - g._deadAt > 45) { S.corpses = (S.corpses || []).filter(c => c.g !== g && c.guardId !== g.id); evGone(g); } }
   // 새로 생긴 차(사건·추격·조직 차): 멀리 있고 아무도 쓰지 않으면 뺀다
-  const busy = new Set([P.car, S.job?.v, ...(S.ev && !S.ev.done ? S.ev.cars || [] : [])]);
+  const busy = new Set([P.car, P.lastCar, ...S.vehicles.filter(v => v.trunk?.length || v.riders?.length), S.job?.v, ...(S.ev && !S.ev.done ? S.ev.cars || [] : [])]);
   // 오래 켜 둬도 쌓이지 않게 (10분 실험: 터진 차·시체가 계속 늘었다):
   //  · 원래 있던 차가 부서져 멀리 60초 → 치우고, 화면 밖 길 차로에 새 차를 한 대 넣는다 (교통량 유지)
   //  · 원래 있던 행인이 죽어 멀리 90초 → 시체를 치우고, 같은 길을 도는 새 행인을 화면 밖에 세운다 (인구 유지). 조직원은 시체만 치운다
@@ -215,7 +215,7 @@ function cityAction() {
 function cityActionList() {
   const P = S.player, out = [];
   if (STAGE.cityLife) { const a = shopAction(); if (a) out.push(a); }
-  for (const f of [envKillAction, hospitalAction, cuffAction, captureAction, basementAction, killerAction, trunkAction, rideAction, homeAction, dealerAction, carbombAction, poisonAction, havocAction, sideAction, eventAction, factionAction]) { const e = f(); if (e) out.push(e); }  // 구역 이벤트·부업 (차 안에서도: 드래그 레이스·택시)
+  for (const f of [envKillAction, hospitalAction, cuffAction, captureAction, basementAction, killerAction, trunkAction, homeAction, dealerAction, carbombAction, poisonAction, havocAction, sideAction, eventAction, factionAction, rideAction]) { const e = f(); if (e) out.push(e); }  // 구역 이벤트·부업 (차 안에서도: 드래그 레이스·택시)
   const one = a => { if (a) out.push(a); return out; };
   if (P.car) return one({ k: 'carOut', v: P.car, label: P.car.fireT > 0 ? '뛰어내리기!' : Math.abs(P.car.v) >= 60 ? '뛰어내리기' : '차에서 내리기' });
   if (P.z || flOf(P) || P.hide) return out;
