@@ -21,7 +21,8 @@ function brawlStrike() {
   const knife = knifeOn(), g = brawlTarget(); if (g) P.a = Math.atan2(g.y - P.y, g.x - P.x);
   if (S.t - (P.comboT || -9) > 0.8) P.combo = 0; P.combo = (P.combo || 0) + 1; P.comboT = S.t; const heavy = !knife && P.combo % 3 === 0;
   P.strikeT = knife ? 0.26 : heavy ? 0.42 : 0.3; P.killAnim = null; P.brawling = true; P.brawlQueued = false; play(knife ? 'cloth' : 'cloth', 0.35, knife ? 1.6 : 1.1);
-  if (knife) (S.slashes || (S.slashes = [])).push({ x: P.x, y: P.y - 14, a: P.a, t0: S.t, side: P.combo % 2 ? 1 : -1 });
+  if (knife) (S.slashes || (S.slashes = [])).push({ x: P.x, y: P.y - 14, a: P.a, t0: S.t, side: P.combo % 2 ? 1 : -1, fx: true });
+  if (knife) spawnEffect('strike', { x: P.x + Math.cos(P.a) * 20, y: P.y - 14 + Math.sin(P.a) * 12, fl: flOf(P), z: 0 }, { angle: P.a, scale: 0.7 });   // 칼 궤적: PixelFX 베기 (예전엔 흰 원호를 선으로 그렸다)
   after(knife ? 0.08 : heavy ? 0.16 : 0.1, () => { if (!g || !npcAlive(g) || dist(P.x, P.y, g.x, g.y) > 64) return; brawlHit(g, knife, heavy); });
   return true;
 }
@@ -54,7 +55,7 @@ function brawlUpdate(dt) {
 }
 // 칼 궤적: 휘두른 방향으로 흰 호가 잠깐 남는다
 function drawSlashes() {
-  if (!S.slashes?.length) return; ctx.save(); ctx.lineCap = 'round';
+  if (!S.slashes?.length || STAGE.cityLife) return;   // 자유 모드: PixelFX 베기 효과로 그린다 ctx.save(); ctx.lineCap = 'round';
   for (const s of S.slashes) { const u = (S.t - s.t0) / 0.22, a0 = s.a - 1.1 * s.side, a1 = s.a + 1.1 * s.side * (u * 2 - 1);
     ctx.strokeStyle = `rgba(235,245,255,${0.85 * (1 - u)})`; ctx.lineWidth = 4 * (1 - u) + 1; ctx.beginPath(); ctx.arc(s.x, s.y, 26, Math.min(a0, a1), Math.max(a0, a1)); ctx.stroke(); }
   ctx.restore();

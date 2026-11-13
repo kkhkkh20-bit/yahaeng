@@ -173,7 +173,7 @@ function drawDeckBodies() {
       let u = d.a0 + d.r; const end = d.a1 - d.r;
       while (u < end) { const g = d.gaps.find(g => g.side === side && u >= g.u0 && u < g.u1), nu = g ? Math.min(end, g.u1) : Math.min(end, ...d.gaps.filter(g => g.side === side && g.u0 > u).map(g => g.u0), end);
         if (!g) deckBeam(u, nu, c, h);
-        else { ctx.fillStyle = '#e07a1f'; for (let k = u; k < nu; k += 40) { if (h) ctx.fillRect(k, c - 3, 16, 6); else ctx.fillRect(c - 3, k, 6, 16); } }
+        else deckGapBarriers(u, nu, c, h);
         u = nu; }
     }
     ctx.restore();
@@ -182,6 +182,19 @@ function drawDeckBodies() {
     deckLamps(d);
   }
   ctx.restore();
+}
+// 공사 구간 방호벽 (도트): 3px 한 칸으로 테두리 · 주황 몸통 · 흰 사선 줄무늬 · 아래 그늘, 블록 사이 라바콘
+function deckGapBarriers(u0, u1, c, h) {
+  const R = (a, b, w, l, col) => { ctx.fillStyle = col; if (h) ctx.fillRect(a, c + b, w, l); else ctx.fillRect(c + b, a, l, w); };   // a: 길 방향 위치 · b: 난간에서 가로 위치
+  for (let k = u0, i = 0; k + 24 <= u1; k += 48, i++) {
+    R(k - 3, -9, 48, 18, '#24180f');                 // 테두리
+    R(k, -6, 42, 12, '#e07a1f');                      // 몸통
+    R(k, 3, 42, 3, '#a4511a');                        // 아래 그늘
+    R(k, -6, 42, 3, '#f39a45');                       // 위 밝은 면
+    for (let j = 0; j < 3; j++) for (let r = 0; r < 4; r++) R(k + 3 + j * 14 + r * 3, -6 + r * 3, 6, 3, '#f1ede2');   // 흰 사선 줄무늬 (계단처럼)
+    if (i % 2 === 1 && k + 48 < u1) {                 // 라바콘: 주황 삼각 + 흰 띠 + 검은 받침
+      const m = k + 45; R(m - 6, -3, 12, 9, '#1c1c1f'); R(m - 3, -12, 6, 3, '#ff8a2a'); R(m - 4, -9, 9, 3, '#f1ede2'); R(m - 4, -6, 9, 3, '#ff8a2a'); R(m - 6, -3, 12, 3, '#e07a1f'); }
+  }
 }
 function drawDeckCars() {
   // 고가·경사로 위 차 (높이만큼 크게)

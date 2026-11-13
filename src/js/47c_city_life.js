@@ -198,7 +198,7 @@ function updateBlood(dt) {
 function drawBloodParts() {
   const B = S.bloodParts; if (!B || !B.length) return;
   ctx.save(); ctx.fillStyle = '#9a1016';
-  for (const p of B) { if (!inView(p.x, p.y, 40)) continue; ctx.beginPath(); ctx.ellipse(p.x, p.y - p.z, p.r, p.r * 1.3, 0, 0, TAU); ctx.fill(); }
+  for (const p of B) { if (!inView(p.x, p.y, 40)) continue; const q = 1.5, s = Math.max(q, Math.round(p.r * 1.4 / q) * q); ctx.fillRect(Math.round((p.x - s / 2) / q) * q, Math.round((p.y - p.z - s / 2) / q) * q, s, s); }   // 도트 핏방울 (1.5px 격자)
   ctx.restore();
 }
 // 사람이 죽는 순간(칼·주먹·총·차): 피가 터지고 몸 밑에 웅덩이가 번진다

@@ -24,3 +24,11 @@ drawCuffs = pixWrap(drawCuffs, () => { const P = S.player; return [P.x - 24, P.y
 drawElevDoors = pixWrap(drawElevDoors, () => { const P = S.player, inB = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)), E = S.elevs?.get(inB), D = E?.door; return D && !D.stairs ? [D.x - 32, D.y - TILE - 34, 64, 64] : null; });
 drawScene = pixWrap(drawScene, () => { const T = S.scene?.tape; return T ? [T.x0 - 40, T.y0 - 60, T.x1 - T.x0 + 80, T.y1 - T.y0 + 100] : null; });
 drawNuisance = pixWrap(drawNuisance, () => { const B = S.ev?.bikes; if (!B?.length) return null; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const b of B) { x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x); y1 = Math.max(y1, b.y); } return x1 - x0 < 300 && y1 - y0 < 300 ? [x0 - 30, y0 - 30, x1 - x0 + 60, y1 - y0 + 60] : null; });
+// 바닥 핏자국 (도트): 1.5px 격자에 맞춘 덩어리 몇 개 — 크기·모양은 자국마다 정해진 씨앗으로 (매 프레임 같은 모양)
+function drawPixelBlood(d) {
+  const q = 1.5, r = Math.max(q, d.r), seed = (d.rot || 0) * 1000, n = r > 6 ? 4 : 2; ctx.fillStyle = d.spray ? 'rgba(130,16,20,.85)' : 'rgba(110,14,18,.85)';
+  const cx = Math.round(d.x / q) * q, cy = Math.round(d.y / q) * q;
+  ctx.fillRect(cx - Math.round(r / q) * q, cy - Math.round(r * 0.6 / q) * q, Math.round(r * 2 / q) * q, Math.round(r * 1.2 / q) * q);
+  for (let k = 0; k < n; k++) { const a = seed + k * 2.3, rr = r * (0.5 + 0.4 * Math.abs(Math.sin(a * 1.7))), ox = Math.round(Math.cos(a) * r * 0.8 / q) * q, oy = Math.round(Math.sin(a) * r * 0.5 / q) * q;
+    ctx.fillRect(cx + ox - Math.round(rr / q) * q, cy + oy - Math.round(rr * 0.6 / q) * q, Math.round(rr * 2 / q) * q, Math.round(rr * 1.2 / q) * q); }
+}

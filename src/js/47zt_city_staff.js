@@ -20,8 +20,23 @@ function staffSpawn(bi) {
     const gi = cityGuardSlot(), g = makeGuard({ kind: 'civ', at: t, fl: f, radio: false }, gi);
     g.evt = '__staff'; g.staff = o; g.shopA = A; g.shopB = bi; g.shopF = f; g.outfit = o; g.fl = f; g.homeFl = f; g.x = tc(t[0]); g.y = tc(t[1]); g.route = t[2] ? [{ x: g.x, y: g.y, pause: 999 }] : [{ x: g.x, y: g.y, pause: 6 }, { x: g.x + (t[0] > A.x0 ? -TILE : TILE), y: g.y, pause: 4 }]; g.ri = 0; g.a = Math.PI / 2;
     placeGuard(g, gi); out.push(g); });
+  // 손님: 매장 크기에 맞춰 1~3명. 진열대·냉장고·식탁·PC 같은 가구 바로 앞 칸을 몇 군데 돌며 구경한다 (무작위 없이 칸 순서로 고른다)
+  plans.forEach((p, f) => { const A = p && p.store; if (!A || !['store', 'food', 'pc', 'karaoke', 'billiards', 'gym'].includes(A.use)) return;
+    const spots = shopperSpots(f, A, p.counter); if (spots.length < 2) return; const n = Math.min(3, Math.max(1, Math.floor((A.x1 - A.x0 + 1) * (A.y1 - A.y0 + 1) / 14)));
+    for (let k = 0; k < n; k++) { const pts = [spots[(k * 5) % spots.length], spots[(k * 5 + 3) % spots.length], spots[(k * 5 + 7) % spots.length]];
+      const gi = cityGuardSlot(), g = makeGuard({ kind: 'civ', at: pts[0], fl: f, radio: false }, gi);
+      g.evt = '__staff'; g.shopper = true; g.shopA = A; g.shopB = bi; g.shopF = f; g.fl = f; g.homeFl = f; g.x = tc(pts[0][0]); g.y = tc(pts[0][1]);
+      g.route = pts.map((t, i) => ({ x: tc(t[0]), y: tc(t[1]), pause: 4 + ((k + i) % 3) * 2 })); g.ri = 0; placeGuard(g, gi); out.push(g); } });
   if (PR && out.length) prWarm(out.map(charOf), true);
   return out;
+}
+// 손님이 설 자리: 가구 바로 아래(앞) 칸 중 걸을 수 있는 곳 (계산대 뒤·엘리베이터 문 앞은 빼고)
+function shopperSpots(f, A, C) {
+  const old = CUR_F; setLayer(f); const out = [];
+  for (let ty = A.y0 + 1; ty <= A.y1; ty++) for (let tx = A.x0; tx <= A.x1; tx++) {
+    if (solidAt(tx, ty) || furnAt(f, tx, ty) || !furnAt(f, tx, ty - 1)) continue; if (C && ty === C.y - 1 && tx >= C.x - 1 && tx <= C.x + 2) continue;
+    if (tx === A.x0 && ty <= A.y0 + 1) continue; out.push([tx, ty]); }
+  setLayer(old); return out;
 }
 function staffUpdate(dt) {
   if (!STAGE.cityLife || !S.staffB || (S.staffT -= dt) > 0) return; S.staffT = 0.5; const P = S.player; staffTalk(dt); civTalkUpdate();   // 나가며 인사가 일꾼을 들여보내기 전에
@@ -44,7 +59,7 @@ function staffInShop(g) {
 function staffTalk(dt) {
   const P = S.player, armed = (typeof wpnOn === 'function' && wpnOn()) || (typeof knifeOn === 'function' && knifeOn());
   for (const list of S.staffB.values()) for (const g of list) {
-    if (!npcAlive(g) || g.off || g.state !== 'PATROL') continue; const inn = staffInShop(g), d = dist(g.x, g.y, P.x, P.y);
+    if (!g.staff || !npcAlive(g) || g.off || g.state !== 'PATROL') continue; const inn = staffInShop(g), d = dist(g.x, g.y, P.x, P.y);
     if (inn && !g.custIn) { g.custIn = S.t; g.stillT = 0; if (!g.greetT || S.t - g.greetT > 25) { g.greetT = S.t; saysLine(g, g.staff, 'greet'); } }
     else if (!inn && g.custIn) { if (S.t - g.custIn > 2 && !g.scared && (!g.byeT || S.t - g.byeT > 25)) { g.byeT = S.t; saysLine(g, g.staff, 'bye'); } g.custIn = 0; }
     if (!inn) continue;
