@@ -76,6 +76,7 @@ function crewsUpdate() {
 }
 function crewBreak(crew, why) {
   crew.broken = true; S.crewNext[crew.kind] = S.t + 90; fstat('crewBroken');
+  if (!CREW_KINDS[crew.kind].event && S.player.car && crew.members.some(m => !npcAlive(m)) && dist(S.player.car.x, S.player.car.y, why.x, why.y) < 200) justiceMoment(`도로 점령 ${CREW_KINDS[crew.kind].name} 해산`, `[속보] 차도 점령하고 달리던 ${CREW_KINDS[crew.kind].name}, 차량과 충돌… 누리꾼 "언젠가 날 일이었다"`, why.x, why.y, { thank: false });
   for (const m of crew.members) { if (!npcAlive(m)) continue; m.crew = null; civPanic(m, why.x, why.y, 6); }
   if (inView(why.x, why.y, 80)) { const L = crew.members.find(npcAlive); if (L) gsay(L, crew.kind === 'run' ? '흩어져!' : '피해!', 1.6); }  /* 위쪽 띠는 의뢰 결과에 양보한다 */
 }

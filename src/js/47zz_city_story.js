@@ -142,6 +142,13 @@ const PHISH = [
     brief: [['master', '진석호. 해외에 콜센터를 차려 놓고 수천 명의 노후를 털었다. 서울엔 거래를 정리하러 들어왔다.'], ['master', '경호원이 둘이다. 멀리서 한 발로.'], ['hero', '전화는 내가 끊는다.']],
     debrief: [['master', '상황실은 끝났다. 압수된 장부로 피해금 일부가 돌아간다 — 그 할머니 돈도.'], ['hero', '...그거면 됐다.']] },
 ];
+const PHISH_NEWS = [
+  '[속보] 노인 상대 현금 수거책, 돈 받으러 나왔다 숨진 채 발견… 할머니 삼천만 원 그대로',
+  '[속보] 대포통장 모집책 "사고사"… 장부에서 명의 대여자 수백 명 드러나',
+  '[속보] 보이스피싱 국내 관리자 차량 폭발… 트렁크에서 현금 다발·환전 영수증',
+  '[속보] 출국 직전 자금 세탁책 사망… 해외 송금 수십억 원 동결',
+  '[속보] 해외 콜센터 총책 서울서 피격… "상황실" 사기단 와해, 피해금 환수 시작',
+];
 function phishCall() {
   const st = S.story; if (!STAGE.cityLife || !st || st.ch < 1) return null;
   const n = st.ph || 0; if (n >= PHISH.length || S.t < (st.phNextT || 0)) return null;
@@ -156,6 +163,7 @@ function phishDone(h, ok) {
   if (!ok) { st.phFailed = true; return; }
   st.phFailed = false; st.ph = Math.max(st.ph || 0, h.phish + 1); st.phNextT = S.t + 120; fstat('phishCh');
   const C = PHISH[h.phish]; evBanner(`보이스피싱 사기단 ${h.phish + 1}/${PHISH.length} 처치 — ${C.title}`, '#ffcf8a');
-  if (st.ph >= PHISH.length) after(2.5, () => say(C.debrief, true));
+  const g = h.g || S.player; justiceMoment(`보이스피싱 ${C.title} 처치`, PHISH_NEWS[h.phish], g.x, g.y, { thank: false });
+  if (st.ph >= PHISH.length) after(2.5, () => say([...C.debrief, [{ note: '문자 메시지 · 모르는 번호' }, '"돈이 돌아왔어요. 누군지 모르지만, 고맙습니다. 손주 대학 등록금이었어요."']], true));
   S.ringNext = S.t + 18; saveFreeProgress(true);
 }
