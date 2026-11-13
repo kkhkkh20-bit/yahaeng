@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------- 상태
 const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+let ctx = canvas.getContext('2d');  // let: 자유 모드 도트화(47zv)가 작은 캔버스로 잠시 바꿔 그린다
 const darkC = document.createElement('canvas'); const dctx = darkC.getContext('2d', {willReadFrequently:true});
 let mapC = null, ugC = null, ventC = null, S_ugC = null, stripePat = {};
 // 큰 지도 그림(가로 4000px 넘는 것도 있다)은 휴대폰 그래픽 칩이 한 장으로 못 다뤄 매 프레임 느린 길로 그려졌다.
