@@ -109,7 +109,7 @@ function startHit(plan) {
   }
   setLayer(0); for (const g of [t, ...escorts]) buildRouteLine(g); setLayer(flOf(P));
   if (PR) prWarm([t, ...escorts].map(charOf), true);
-  S.hit = { g: t, escorts, name, t0: S.t, wantedAtStart: S.wanted, ko: !!plan.ko, pay: plan.pay, stand: plan.stand, by: plan.by }; if (STAGE.cityLife) { hitGradeStart(S.hit); const k = (plan.pay == null || plan.story != null || plan.chain) && !plan.ko ? plan.ctr || 'plain' : 'plain'; if (plan.story != null) S.hit.story = plan.story; if (plan.chain) S.hit.chain = plan.chain; Object.assign(S.hit, { ctr: k, cx: plan.cx, cy: plan.cy, deadline: S.t + (CONTRACTS[k].time || 1e9) }); if (k === 'carbomb') carbombStart(S.hit, plan); if (k === 'stage') stageStart(S.hit, plan); if (k === 'sign' && !signStart(S.hit)) { S.hit.ctr = 'accident'; } if (plan.story != null) storyCard(plan.story); }  // 간판 자리가 없으면 사고 위장으로
+  S.hit = { g: t, escorts, name, t0: S.t, wantedAtStart: S.wanted, ko: !!plan.ko, pay: plan.pay, stand: plan.stand, by: plan.by }; if (STAGE.cityLife) { hitGradeStart(S.hit); const k = (plan.pay == null || plan.story != null || plan.phish != null || plan.chain) && !plan.ko ? plan.ctr || 'plain' : 'plain'; if (plan.story != null) S.hit.story = plan.story; if (plan.phish != null) S.hit.phish = plan.phish; if (plan.chain) S.hit.chain = plan.chain; Object.assign(S.hit, { ctr: k, cx: plan.cx, cy: plan.cy, deadline: S.t + (CONTRACTS[k].time || 1e9) }); if (k === 'carbomb') carbombStart(S.hit, plan); if (k === 'stage') stageStart(S.hit, plan); if (k === 'sign' && !signStart(S.hit)) { S.hit.ctr = 'accident'; } if (plan.story != null) storyCard(plan.story); }  // 간판 자리가 없으면 사고 위장으로
   if (!STAGE.noPrompts) toast(`의뢰: ${name} 처치`, 2.4, 'good');
 }
 // 부스는 사람이 지나가지 못한다 (안에 든 나만 예외)
@@ -142,7 +142,7 @@ function hitsUpdate(dt) {
     if (h.ko && ko) for (const e of h.escorts) if (npcAlive(e)) evFlee(e, S.player.x, S.player.y, 20);  // 연행: 수갑 찬 수배자는 순찰차가 데려간다 (47h)
     const paid = STAGE.cityLife ? hitFinish(h, pay) : pay;
     S.cash = (S.cash || 0) + paid; S.hitN++; S.hit = null;
-    if (STAGE.cityLife) { if (h.story != null) storyMainDone(h, true); if (h.chain) storySideDone(h.chain, true); }  // 이야기 다음 장 (47zz)
+    if (STAGE.cityLife) { if (h.story != null) storyMainDone(h, true); if (h.phish != null) phishDone(h, true); if (h.chain) storySideDone(h.chain, true); }  // 이야기 다음 장 (47zz)
     play('bell', 0.6); if (!STAGE.noPrompts) toast(`의뢰 완료 · ${paid}만${quiet ? ' (조용히)' : ''}`, 2.6, 'good');
     if (typeof feedbackPulse === 'function') feedbackPulse(document.querySelector('#hud .obj'), 'loot');
   }

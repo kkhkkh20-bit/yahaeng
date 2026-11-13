@@ -56,7 +56,7 @@ function storyInit() { S.story = Object.assign({ ch: 0, side: {}, failed: false 
 const storyMainLeft = () => STAGE.cityLife && S.story && S.story.ch < STORY_MAIN.length;
 // 전화 한 통: 메인 이야기가 남았으면 그 장 (앞 장 결과 보고 + 이번 지령). 없으면 null → 평소 일거리
 function storyCall() {
-  if (!storyMainLeft() || S.t < (S.story.nextT || 0)) return null;  /* 장과 장 사이엔 평소 일거리 전화가 온다 */
+  if (!storyMainLeft() || S.t < (S.story.nextT || 0)) return phishCall();  /* 장과 장 사이엔 보이스피싱 추적이나 평소 일거리 전화가 온다 */
   const n = S.story.ch, C = STORY_MAIN[n];
   let plan = planHit(); if (!plan) return null;
   if (C.ctr === 'stage') for (let k = 0; k < 12 && !signCands(plan.route).length; k++) plan = planHit() || plan;  /* 무대: 간판을 걸 수 있는 블록을 고른다 */
@@ -119,3 +119,43 @@ function storyCard(n, done) {
 }
 const STORY_WAY = { blast: '차량 폭탄', sign: '간판 사고', poison: '독침', car: '차로 침', fire: '불', gun: '총', blade: '칼' };
 function storyWayName(c) { return STORY_WAY[c] || c; }
+
+// ---------------------------------------------------------------- 보이스피싱 사기단 추적 (전화 이야기 5장)
+// 메인 1장을 끝낸 뒤부터, 메인 장과 장 사이에 들어온다(각 장 뒤 2분 쉬고). 조직은 범죄로 정의된다: '상황실'이라 부르는
+// 사기단 — 해외 콜센터가 '검찰·금융감독원'을 사칭해 전화를 걸고, 국내에선 수거책·모집책·관리자·세탁책이 움직인다.
+// 아래에서 위로 거슬러 올라가 끝에 총책을 처치한다. 피해자 사연이 각 장의 이유다.
+const PHISH = [
+  { title: '수거책', ctr: 'photo', target: '문광호', escorts: 0, pay: 400,
+    brief: [[{ note: '야행 지령 · 부업' }, '보이스피싱 사기단 "상황실" 1/5 · 수거책'], ['master', '오늘 오후, 일흔여섯 할머니가 "검찰 수사관"에게 현금 삼천만 원을 건넨다. 평생 모은 돈이다.'],
+      ['master', '받으러 나오는 놈은 수거책. 얼굴 사진뿐이다. 그 블록에서 찾아.'], ['hero', '심부름꾼부터 시작이군.']],
+    debrief: [['master', '수거책 휴대폰에 "통장 삽니다" 연락처가 남아 있었다. 대포통장 모집책, 석재민.']] },
+  { title: '모집책', ctr: 'accident', target: '석재민', escorts: 1, pay: 500,
+    brief: [['master', '석재민은 대학생·노인 명의로 통장과 유심을 사 모은다. 명의를 판 사람들까지 공범이 된다.'], ['master', '사고처럼 보여야 한다. 사기단이 눈치채면 다 숨는다.'], ['hero', '사고는 늘 갑자기 나지.']],
+    debrief: [['master', '모집책 장부에 통장 묶음을 받아 간 차 번호가 있다. 국내 관리자, 염태수.']] },
+  { title: '국내 관리자', ctr: 'carbomb', target: '염태수', escorts: 1, pay: 600,
+    brief: [['master', '염태수는 수거책들한테 지시를 내리고 매일 같은 차로 돈을 걷는다.'], ['master', '차에 폭약을 심어. 그 돈이 다시 누군가의 전 재산이었다.'], ['hero', '돈 걷는 길이 마지막 길이군.']],
+    debrief: [['master', '관리자 차 트렁크에서 환전 영수증이 나왔다. 돈을 해외로 빼는 세탁책 곽도윤이 오늘 밤 출국한다.']] },
+  { title: '세탁책', ctr: 'timed', target: '곽도윤', escorts: 1, pay: 700,
+    brief: [['master', '곽도윤이 공항버스를 타기 전에 끝내야 한다. 3분.'], ['master', '그놈이 떠나면 피해자 돈은 영영 못 찾는다.'], ['hero', '3분이면 충분해.']],
+    debrief: [['master', '세탁책 노트북에 해외 콜센터 운영자 이름이 있다. "사장" 진석호 — 지금 서울에 들어와 있다.']] },
+  { title: '총책', ctr: 'snipe', target: '진석호', escorts: 2, pay: 1500,
+    brief: [['master', '진석호. 해외에 콜센터를 차려 놓고 수천 명의 노후를 털었다. 서울엔 거래를 정리하러 들어왔다.'], ['master', '경호원이 둘이다. 멀리서 한 발로.'], ['hero', '전화는 내가 끊는다.']],
+    debrief: [['master', '상황실은 끝났다. 압수된 장부로 피해금 일부가 돌아간다 — 그 할머니 돈도.'], ['hero', '...그거면 됐다.']] },
+];
+function phishCall() {
+  const st = S.story; if (!STAGE.cityLife || !st || st.ch < 1) return null;
+  const n = st.ph || 0; if (n >= PHISH.length || S.t < (st.phNextT || 0)) return null;
+  const C = PHISH[n]; const plan = planHit(); if (!plan) return null;
+  Object.assign(plan, { kind: 'hit', name: C.target, fac: 'X', escorts: C.escorts, ctr: C.ctr, pay: C.pay, phish: n });
+  const prev = n > 0 ? PHISH[n - 1].debrief : [], retry = st.phFailed ? [['master', '상황실 일이 틀어졌다. 놈들이 더 숨기 전에 다시 가.']] : [];
+  const brief = n === 0 ? C.brief : [[{ note: '야행 지령 · 부업' }, `보이스피싱 사기단 "상황실" ${n + 1}/${PHISH.length} · ${C.title}`], ...C.brief];
+  return { plan, lines: [...(st.phFailed ? retry : prev), ...brief] };
+}
+function phishDone(h, ok) {
+  const st = S.story; if (h.phish == null || !st) return;
+  if (!ok) { st.phFailed = true; return; }
+  st.phFailed = false; st.ph = Math.max(st.ph || 0, h.phish + 1); st.phNextT = S.t + 120; fstat('phishCh');
+  const C = PHISH[h.phish]; evBanner(`보이스피싱 사기단 ${h.phish + 1}/${PHISH.length} 처치 — ${C.title}`, '#ffcf8a');
+  if (st.ph >= PHISH.length) after(2.5, () => say(C.debrief, true));
+  S.ringNext = S.t + 18; saveFreeProgress(true);
+}
