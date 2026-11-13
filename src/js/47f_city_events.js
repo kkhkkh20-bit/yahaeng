@@ -127,7 +127,7 @@ const EVENTS = [
   // 청계천 상가 ① 다리 위 거래: 가방을 든 쪽을 쓰러뜨리면 큰돈. 양쪽 모두 덤빈다
   { key: 'deal', d: '청계천 상가', name: '다리 위 거래',
     start(ev) { const R = STAGE.river, P = S.player; if (!R) return false; const ys = (R.y + R.rows / 2) * TILE;
-      const cand = (STAGE.roadsX || []).map(rx => ({ x: (rx + 2) * TILE, y: ys })).filter(p => { const d = dist(p.x, p.y, P.x, P.y); return d > 550 && d < 2100; }); if (!cand.length) return false;
+      const cand = (STAGE.roadsX || []).map(rx => ({ x: (rx + 2) * TILE, y: ys })).filter(p => { const d = dist(p.x, p.y, P.x, P.y); return d > 550 && d < 2600; }); if (!cand.length) return false;   // 블록 34칸 주기: 구역 북쪽 끝에서도 강 다리가 닿게
       const p = cand[(Math.random() * cand.length) | 0]; ev.p = p; ev.side = [];
       for (const [s, o] of [[-1, null], [1, 'gangD']]) for (let k = 0; k < 2; k++) { const g = evPerson(ev, p.x + s * (40 + k * 26), p.y + (k ? 26 : -10), { kind: k ? 'g1' : 'g2', fac: 'C' }); if (o) g.outfit = o; g.a = s < 0 ? 0 : Math.PI; ev.side.push(g); }
       ev.holder = ev.side[0]; return true; },
@@ -211,7 +211,7 @@ const EVENTS = [
     goal: ev => ev.race ? '결승선까지 먼저' : '드래그 레이스 · 차를 몰고 와서 판돈 걸기' },
   // 성수 공장지대 ② 폐공장 도박장: 걸기 · 신고 · 털기
   { key: 'den', d: '성수 공장지대', name: '폐공장 도박장',
-    start(ev) { const f = districtFront(ev.d, b => b.kind !== 'shop'); if (!f) return false; ev.p = f.p; ev.bouncer = evPerson(ev, f.p.x, f.p.y + 16, { body: 'big' }); ev.players = [0, 1, 2].map(k => evPerson(ev, f.p.x + (k - 1) * 30, f.p.y - 14, {})); gsay(ev.bouncer, '판 벌어졌다. 낄 거면 들어와.', 3); return true; },
+    start(ev) { const f = districtFront(ev.d, b => b.kind !== 'shop' || /창고|공장/.test(b.plate || b.name || '')); if (!f) return false; ev.p = f.p; ev.bouncer = evPerson(ev, f.p.x, f.p.y + 16, { body: 'big' }); ev.players = [0, 1, 2].map(k => evPerson(ev, f.p.x + (k - 1) * 30, f.p.y - 14, {})); gsay(ev.bouncer, '판 벌어졌다. 낄 거면 들어와.', 3); return true; },
     focus: ev => ev.p,
     update() {},
     action(ev) { const P = S.player; if (P.car || dist(P.x, P.y, ev.p.x, ev.p.y) > 90) return null; return { label: '폐공장 도박장', at: { x: ev.p.x, y: ev.p.y - 56 }, fn: () => openDen(ev) }; },

@@ -238,12 +238,19 @@ function planInterior(g, b, bi, f) {
       furn(sx0, iy0, 1, 1, 'locker'); furn(sx0 + 1, iy0, 1, 1, 'locker');
       for (let x = sx0 + 3; x + 1 <= sx1; x += 3) furn(x, iy0, 2, 1, 'mirror', false);
       for (let x = sx0; x + 1 <= sx1; x += 3) furn(x, iy1 - 1, 2, 1, 'tread', true, 0);
-      for (let y = iy0 + 2; y + 1 < iy1 - 1; y += 3) for (let x = sx0 + 1; x <= sx1 - 1; x += 3) furn(x, y, 1, 1, 'rack', true, 0);
+      let racks = 0; for (let y = iy0 + 2; y + 1 < iy1 - 1; y += 3) for (let x = sx0 + 1; x <= sx1 - 1; x += 3) if (furn(x, y, 1, 1, 'rack', true, 0)) racks++;
+      if (open && !racks) for (let x = sx0 + 1; x <= sx1 - 1; x += 2) furn(x, iy0 + 1, 1, 1, 'rack', true, 0);   // 낮은 층: 앞줄 러닝머신 뒤 한 줄에 랙
+      if (open) furn(sx1, iy0 + 1, 1, 1, 'locker');
     }
     else if (use === 'karaoke') {  // 노래방: 방마다 소파·탁자·노래 화면 (넓으면 칸막이로 방 여럿), 앞줄은 복도
       const yb = iy1 - 2, W = sx1 - sx0 + 1, step = W >= 7 ? 4 : 99;
       if (W >= 7) for (let x = sx0 + 3; x < sx1; x += 4) for (let y = iy0; y <= yb; y++) g[y][x] = '#';
-      for (let x = sx0; x + 1 <= sx1; x += step) { furn(x, iy0, 2, 1, 'sofa', true, 0); furn(x, iy0 + 1, 1, 1, 'tableS', true, 0); furn(x + 1, Math.max(iy0 + 2, yb), 1, 1, 'kscreen', true, 0); }
+      for (let x = sx0; x + 1 <= sx1; x += step) {
+        if (open) {   // 자유 모드: 왼쪽 위는 엘리베이터 문 앞이라 소파를 한 칸 옆이나 한 줄 아래로
+          const at = [[x, iy0], [x + 1, iy0], [x, iy0 + 2], [x + 1, iy0 + 2]].find(([a, b]) => a + 1 <= Math.min(sx1, x + step - 2 >= x + 1 ? x + step - 2 : sx1) && furn(a, b, 2, 1, 'sofa', true, 0));
+          if (at) furn(at[0], at[1] + 1, 1, 1, 'tableS', true, 0) || furn(at[0] + 1, at[1] + 1, 1, 1, 'tableS', true, 0);
+        } else { furn(x, iy0, 2, 1, 'sofa', true, 0); furn(x, iy0 + 1, 1, 1, 'tableS', true, 0); }
+        furn(x + 1, Math.max(iy0 + 2, yb), 1, 1, 'kscreen', true, 0); }
     }
     else if (use === 'billiards' && open) {  // 자유 모드 당구장: 벽에 큐 걸이, 당구대 줄(사이 통로), 앞쪽 카운터, 옆벽 구경꾼 의자, 구석 화분
       for (let x = sx0 + 2; x <= sx1 - 1; x += 3) furn(x, iy0, 1, 1, 'cues', false);
