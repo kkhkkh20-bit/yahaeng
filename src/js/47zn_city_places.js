@@ -6,6 +6,8 @@ const FILL_SHOPS = ['세탁소', '미용실', '부동산', '안경점', '꽃집'
 const SHOP_PREFIX = ['을지', '청계', '삼정', '대성', '우리', '동원', '한일', '제일', '신진', '금성', '영미네', '할매', '종로', '왕', '원조', '서울', '중앙', '새마을', '현대', '명동'];
 const VILLA_NAMES = ['을지', '청계', '은행나무', '해오름', '대명', '삼성', '진주', '목련', '한빛', '소망', '우정', '태평', '장미', '수정', '동아', '그린', '로얄', '하나', '보람', '금호'];
 const HOUSE_NAMES = ['김', '이', '박', '최', '정', '강', '조', '윤', '장', '임', '한', '오', '서', '신', '권', '황', '안', '송', '류', '홍'];
+const FILL_BY_USE = { store: ['세탁소', '미용실', '안경점', '꽃집', '빵집', '정육점', '반찬가게', '수선집', '열쇠', '복권방', '문구점', '사진관', '떡집', '휴대폰', '전당포'],
+  office: ['부동산', '세무사', '법무사', '한의원', '인력사무소'], food: ['치킨', '중국집'], karaoke: ['노래방'], billiards: ['당구장'], gym: ['헬스', '태권도'], academy: ['학원'], pc: ['오락실'] };
 const KEEP_SIGNS = /PC방|119|지구대|편의점|CLUB|중고차/;  // 이미 의미가 정해진 곳 (사건·장소에서 찾는 이름)
 function placesInit() {
   if (!STAGE.cityLife) return; const shops = BLD.map((b, i) => ({ b, i })).filter(o => o.b.kind === 'shop' && !o.b.vacant);
@@ -16,7 +18,8 @@ function placesInit() {
   if (big[0]) { setSign(big[0].b, '을지초등학교'); big[0].b.school = true; big[0].b.plate = big[0].b.plateName = '교무실 · 행정실'; }
   if (big[1]) { setSign(big[1].b, '을지 중앙병원'); big[1].b.hospital = true; big[1].b.plate = big[1].b.plateName = '응급실 24시'; }
   // 빈 간판 채우기
-  let f = 0; for (const { b } of shops) if (!signOf(b) && !b.school && !b.hospital) setSign(b, FILL_SHOPS[(f++) % FILL_SHOPS.length]);
+  // 1층 실내가 이미 지어져 있으니 그 실내에 맞는 업종 이름만 고른다 (사무실 책상이 놓인 층에 '꽃집' 간판이 붙던 것)
+  const fillN = {}; for (const { b } of shops) if (!signOf(b) && !b.school && !b.hospital) { const u = (b.floorsUse || [])[0] || 'store', L = FILL_BY_USE[u] || FILL_BY_USE.store; fillN[u] = (fillN[u] || 0) + 1; setSign(b, L[(fillN[u] - 1) % L.length]); }
   // 같은 이름 여럿: 둘째부터 상호를 붙인다 (편의점·PC방 같은 체인은 '○○점'). 이미 쓴 이름은 피한다
   const used = new Set(), seen = {};
   for (const { b, i } of shops) { const t = signOf(b); if (!t) continue;  /* CLUB 둘째부터는 'CLUB ○○점' (사건은 /^CLUB/ 로 찾는다). 물건 파는 가게는 상호만 붙는다 (메뉴는 S.shops 의 업종 이름으로 연다) */ const n = seen[t] = (seen[t] || 0) + 1; if (n === 1 && !used.has(t)) { used.add(t); continue; }

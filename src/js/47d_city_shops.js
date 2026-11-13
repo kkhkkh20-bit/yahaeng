@@ -35,6 +35,10 @@ function shopAction() {
   }
   if (P.z || flOf(P) || P.hide) return null;
   for (const s of S.shops || []) if (dist(P.x, P.y, s.x, s.y) < 56) return { k: 'shop', s, at: { x: s.x, y: s.y - 40 }, label: s.name };
+  // 가게 안 계산대 앞에서도 산다 (예전엔 문 앞에서만 열려, 들어가서 [행동]을 누르면 '더 가까이' 안내만 떴다)
+  const pb = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE));
+  for (const s of S.shops || []) { if (s.b !== pb) continue; const C = PLANS[s.b]?.[0]?.counter; if (!C) continue; const cx = tc(C.x) + TILE / 2, cy = tc(C.y);
+    if (dist(P.x, P.y, cx, cy) < 78) return { k: 'shop', s, at: { x: cx, y: cy - 40 }, label: s.name + ' 계산대' }; }
   if (S.dealer && dist(P.x, P.y, S.dealer.office.x, S.dealer.office.y) < 70) return { k: 'dealer', at: { x: S.dealer.office.x, y: S.dealer.office.y - 40 }, label: '중고차 매매' };
   return null;
 }

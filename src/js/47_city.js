@@ -36,6 +36,7 @@ function addWanted(n, why) {
   if (!STAGE.city || S.over) return;
   const was = S.wanted; S.wanted = Math.min(5, Math.max(S.wanted, 0) + n); S.wantLost = 0;
   if (S.wanted > was) { toast(`수배 ${'★'.repeat(S.wanted)} · ${why || '경찰이 쫓는다'}`, 2.4, 'warn'); play('alarm', 0.35); S.copT = [0, 12, 7, 4, 2, 1][S.wanted] ?? 2;  /* 출동까지 걸리는 시간: 별 하나면 한참 뒤에 온다 */ hint('wanted', '수배 별만큼 경찰이 쫓아온다. 경찰 눈에서 벗어나 버티면 별이 하나씩 내려간다'); }
+  S.wantSpot = pSpot();   // 신고된 곳 = 지금 범행 자리. 경찰은 여기서부터 찾는다 (이후 내 위치는 누가 봐야 갱신된다)
   for (const g of wantedCops()) copChase(g);
 }
 // 차로 사람을 쳤을 때: 경찰이 봤으면 바로 수배. 아니면 살짝 친 건 넘어가고, 죽였으면 본 사람이 10초 뒤 신고(뺑소니).
@@ -56,7 +57,9 @@ function wantedCops() {
   const R = S.wanted <= 2 ? 750 : 1e9;  // 별 한두 개: 근처에 있던 경찰만 바로 온다 (나머지는 출동해서 온다)
   return near.filter((g, i) => (i < n && dist(g.x, g.y, P.x, P.y) < R) || g.state === 'ALERT' && g.seen);
 }
-function copChase(g) { if (g.state === 'ALERT') { g.lastSeen = pSpot(); return; } g.state = 'ALERT'; g.icon = '!'; g.iconT = 99; g.lastSeen = pSpot(); g.lostT = 0; g.path = null; g.repath = 0; g.meter = 1; g.shootT = 0; g.aim = 0; }
+// 경찰이 아는 내 위치: 직접 본 경찰은 지금 자리, 아니면 무전으로 받은 마지막 목격·신고 자리 (예전엔 모두 내 실제 위치를 알아 귀신같이 쫓았다)
+const copKnows = g => (!STAGE.cityLife || g.seen || !S.wantSpot) ? pSpot() : { ...S.wantSpot };
+function copChase(g) { if (g.state === 'ALERT') { g.lastSeen = copKnows(g); return; } g.state = 'ALERT'; g.icon = '!'; g.iconT = 99; g.lastSeen = copKnows(g); g.lostT = 0; g.path = null; g.repath = 0; g.meter = 1; g.shootT = 0; g.aim = 0; }
 // 화면 밖 길(도로·보도) 칸 하나: 나에게서 r0~r1 떨어진 곳
 function offscreenSpot(r0, r1) {
   const P = S.player, vw = W / SCALE / 2 + 60, vh = H / SCALE / 2 + 60;
@@ -171,8 +174,8 @@ function cityUpdate(dt) {
   if (S.wanted > 0) {
     // 경찰끼리 무전: 하나라도 나를 보면 모두 그 자리로
     const seen = !(S.crowdT > S.t) && cops.some(g => g.state === 'ALERT' && g.seen);  // 시위대 속에 섞이면 눈에 안 띈다
-    if (seen) { S.wantLost = 0; for (const g of wantedCops()) copChase(g); }
-    else { S.wantLost += dt; for (const g of cops) if (g.state !== 'ALERT' && g.state !== 'DEAD' && !P.hide && !P.under && !P.vent && canSee(g, P.x, P.y, Math.max(0.4, P.light || 0), P.hidden, P.mode === 'sneak', P.z, flOf(P)) > 0) copChase(g); }
+    if (seen) { S.wantLost = 0; S.wantSpot = pSpot(); for (const g of wantedCops()) copChase(g); }   // 누가 봤다: 무전으로 그 자리를 알린다
+    else { S.wantLost += dt; for (const g of cops) if (g.state !== 'ALERT' && g.state !== 'DEAD' && !P.hide && !P.under && !P.vent && canSee(g, P.x, P.y, Math.max(0.4, P.light || 0), P.hidden, P.mode === 'sneak', P.z, flOf(P)) > 0) { S.wantSpot = pSpot(); g.seen = true; copChase(g); } }   // 직접 본 경찰
     const need = WANT_COPS[S.wanted];
     if (cops.length < need && (S.copT -= dt) <= 0) { S.copT = S.wanted <= 2 ? 6 : 3; spawnCop(); }
     if (S.wantLost > 10 + S.wanted * 3) { S.wanted--; S.wantLost = 0; toast(S.wanted ? `수배 ${'★'.repeat(S.wanted)} · 경찰이 놓쳤다` : '수배가 풀렸다', 2.2);
@@ -204,12 +207,12 @@ function cityDown(why) {
 function updateDowning() {
   if (!S.downing) return false;
   if (S.t - S.downing.t < 2.6) return true;
-  const why = S.downing.why; S.downing = null; S.player.defeat = null; cityRespawn(why); return false;
+  const why = S.downing.why, arrest = S.downing.arrest; S.downing = null; S.player.defeat = null; if (arrest) cityArrest(why); else cityRespawn(why); return false;
 }
 function drawDowning() {
   if (!S.downing) return; const f = clamp((S.t - S.downing.t) / 2.6, 0, 1);
   ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = `rgba(40,0,0,${Math.min(0.55, f * 1.2)})`; ctx.fillRect(0, 0, canvas.width, canvas.height);
-  if (f > 0.2) { const a = Math.min(1, (f - 0.2) * 3); ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.fillStyle = '#e0453a'; ctx.font = uiFont(42 * DPR).replace('400 ', '700 '); ctx.fillText('쓰러졌다', canvas.width / 2, canvas.height * 0.42);
+  if (f > 0.2) { const a = Math.min(1, (f - 0.2) * 3); ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.fillStyle = '#e0453a'; ctx.font = uiFont(42 * DPR).replace('400 ', '700 '); ctx.fillText(S.downing.arrest ? '제압됐다' : '쓰러졌다', canvas.width / 2, canvas.height * 0.42);
     ctx.fillStyle = '#f0e6dc'; ctx.font = uiFont(16 * DPR); ctx.fillText(S.downing.why || '', canvas.width / 2, canvas.height * 0.42 + 34 * DPR); }
   if (f > 0.8) { ctx.globalAlpha = (f - 0.8) * 5; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
   ctx.restore();
@@ -317,8 +320,9 @@ function spawnCopCar() {
 // 가까이 왔으면 세우고 경찰을 내린다. true = 이번 프레임 끝
 function copCarArrive(v, dt) {
   if (v.rage) { const P = S.player; return dist(v.x, v.y, P.x, P.y) < 220 && (!P.car || Math.abs(P.car.v) < 60) ? rageArrive(v, dt) : false; }  // 보복운전 (47ze)
-  const P = S.player, d = dist(v.x, v.y, P.x, P.y), slowMe = !P.car || Math.abs(P.car.v) < 80;
-  if (!(d < 300 && slowMe)) return false;
+  const P = S.player, d = dist(v.x, v.y, P.x, P.y), slowMe = !P.car || Math.abs(P.car.v) < 80, W = STAGE.cityLife && S.wantSpot;
+  if (STAGE.cityLife && d < 380 && los(v.x, v.y, P.x, P.y) && !P.hide && !P.hidden) S.wantSpot = pSpot();   // 경찰차가 나를 봤다
+  if (!((d < 300 && slowMe) || (W && dist(v.x, v.y, W.x, W.y) < 170))) return false;   /* 내 곁이거나, 신고·목격 자리에 닿으면 내려서 찾는다 */
   v.v = Math.max(0, v.v - CAR_BRAKE * dt); if (v.v > 5) { v.x += Math.cos(v.a) * v.v * dt; v.y += Math.sin(v.a) * v.v * dt; return true; }
   v.chase = false; v.ai = false; v.parked = true; v.driver = false; v.deployed = true; play('switch', 0.5);
   if (STAGE.cityLife) deployFromCar(v);  // 경찰차는 경찰, 조직 차는 그 조직원 둘

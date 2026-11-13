@@ -140,7 +140,11 @@ function planInterior(g, b, bi, f) {
     // 자유 모드: 계단 복도 벽을 없애고 한 층을 통째로 가게로 (계단은 오른쪽 위 구석 한 칸)
     const open = !!STAGE.cityLife, cx0 = ix1 - 1; if (!open) for (let y = iy0; y <= iy1; y++) g[y][cx0 - 1] = '#'; fill(open ? ix1 : cx0, iy0, ix1, iy1, 'h'); g[iy0][ix1] = 'Y'; rec.stair = [ix1, iy0]; K(ix1, iy0 + 1); K(ix1 - 1, iy0); if (!open) K(cx0, iy0);
     if (!open) gap(cx0 - 1, iy1 - 1, 'h'); if (f === 0) { g[b.y1][cx0] = 'h'; K(cx0, iy1); if (b.backDoor) { g[b.y0][cx0] = 'h'; K(cx0, iy0); } }
-    const use = (b.floorsUse || [])[f] || (f === 0 ? 'store' : 'office');
+    const use0 = (b.floorsUse || [])[f] || (f === 0 ? 'store' : 'office');
+    // 자유 모드 빈 1층 간판: 실내를 짓기 전에 그 층 쓰임새에 맞는 업종 이름을 정한다 (그래야 꽃집엔 화분, 세탁소엔 옷걸이가 놓인다)
+    if (STAGE.cityLife && f === 0 && b.signs && !(b.signs[0] || '').trim() && typeof FILL_BY_USE !== 'undefined') { const L = FILL_BY_USE[use0] || FILL_BY_USE.store; b.signs[0] = L[BLD.indexOf(b) % L.length]; }
+    // 자유 모드: 간판 글자대로 실내를 고른다 (꽃집이 사무실 책상, 치킨집이 잡화 진열대로 나오던 것)
+    const use = STAGE.cityLife && ['store', 'food', 'office', 'pc', 'billiards', 'karaoke', 'gym', 'academy'].includes(use0) ? (signUseOf((b.signs || [])[f]) || use0) : use0;
     const sx0 = ix0, sx1 = open ? ix1 - 1 : cx0 - 2; fill(sx0, iy0, sx1, iy1, use === 'store' || use === 'food' ? 't' : use === 'pc' ? 'h' : 'w');
     rec.store = { x0: sx0, y0: iy0, x1: sx1, y1: iy1, use };
     if (f === 0) { const dx = sx0 + 2; g[b.y1][dx] = 't'; K(dx, iy1); K(dx, iy1 - 1); }
@@ -161,15 +165,32 @@ function planInterior(g, b, bi, f) {
       for (let x = sx0 + 1; x + 2 <= sx1 - 1; x += 4) furn(x, vy + 2, 3, 1, 'disp');
       furn(sx1 - 2, vy + 2, 2, 1, 'disp');
     }
-    else if (use === 'store' && open) {  // 자유 모드 가게(넓힌 층): 안쪽 벽(편의점 냉장고 · 약국·철물 벽 선반), 계산대, 폭에 맞춘 진열대
-      const sign = (b.signs || [])[f] || '', cs = /편의점|마트|슈퍼|시장|상회/.test(sign), ph = /약국/.test(sign), W = sx1 - sx0 + 1;
-      for (let x = sx0 + 1, n = 0; x <= sx1 && n < 5; x++) if (furn(x, iy0, 1, 1, cs ? 'fridge' : 'shelfS', true, 0)) n++;
-      // 계산대: 편의점은 앞쪽 오른편, 약국은 안쪽(약사 뒤로 약 선반). 문 앞 칸에 걸리면 다음 자리
+    else if (use === 'store' && open) {  // 자유 모드 가게(넓힌 층): 업종대로 꽉 채운다 — 안쪽 벽 · 옆벽 선반 · 진열대 줄 · 계산대 · 업종 소품
+      const sign = (b.signs || [])[f] || '', cs = /편의점|마트|슈퍼|시장|상회/.test(sign), ph = /약국/.test(sign), hw = /철물|공구|타일|조명|전파|지물|자재|열쇠/.test(sign), W = sx1 - sx0 + 1;
+      const flower = /꽃집/.test(sign), cold = /정육|반찬/.test(sign), laundry = /세탁|수선/.test(sign), salon = /미용|헤어/.test(sign);
+      if (salon) {   // 미용실: 안쪽 벽 거울·선반, 그 앞 의자 줄, 앞쪽 계산대
+        for (let x = sx0 + 1; x <= sx1; x++) furn(x, iy0, 1, 1, 'shelfS', true, 0);
+        for (let x = sx0 + 1; x <= sx1 - 1; x += 2) furn(x, iy0 + 1, 1, 1, 'chairD', true, 0);
+        if (furn(sx1 - 1, iy1 - 1, 2, 1, 'counter', true, 0)) rec.counter = { x: sx1 - 1, y: iy1 - 1 }; else if (furn(sx1 - 1, iy1 - 2, 2, 1, 'counter', true, 0)) rec.counter = { x: sx1 - 1, y: iy1 - 2 };
+        for (let y = iy0 + 3; y <= iy1 - 2; y += 2) furn(sx0, y, 1, 1, 'plant');
+      } else {
+      for (let x = sx0 + 1; x <= sx1; x++) furn(x, iy0, 1, 1, cs || cold ? 'fridge' : laundry ? 'wardrobe' : flower ? 'plant' : 'shelfS', true, 0);   // 안쪽 벽 전체: 편의점 음료 냉장고 · 약국 약장 · 철물점 공구 벽
+      // 계산대: 편의점·철물은 앞쪽 오른편(입구 보며), 약국은 안쪽(약사 뒤로 약장). 문 앞 칸에 걸리면 다음 자리
       const ctr = ph ? [[sx1 - 1, iy0 + 2], [sx1 - 1, iy0 + 3], [sx1 - 1, iy1 - 2], [sx1 - 1, iy1 - 1]] : [[sx1 - 1, iy1 - 1], [sx1 - 1, iy1 - 2], [sx1 - 1, iy0 + 2]];
       let cy = -1; for (const [x, y] of ctr) if (y > iy0 && y < iy1 && furn(x, y, 2, 1, 'counter', true, 0)) { cy = y; rec.counter = { x, y }; break; }
-      const sw = W >= 7 ? 3 : W >= 5 ? 2 : 1;   // 좁은 가게는 한 칸짜리 진열대
-      for (let y = iy0 + 2; y <= iy1 - 1; y += 2) { if (y === cy) continue; for (let x = sx0 + 1; x + sw - 1 <= sx1 - (cy >= 0 ? 2 : 1); x += sw + 1) furn(x, y, sw, 1, 'shelf'); }
-      if (cs) { if (iy0 + 4 < iy1 - 1) furn(sx0 + 1, iy0 + 4, 2, 1, 'csfood', true, 0); furn(sx0, iy1 - 1, 1, 1, 'plant'); }  // 편의점: 반찬·도시락 진열대, 입구 화분 (47zu 그림)
+      // 옆벽(왼쪽) 낮은 선반 줄: 엘리베이터 문 앞 두 칸과 앞쪽 창가 칸은 비운다
+      const side = W >= 3; if (side) for (let y = iy0 + 2; y <= iy1 - 2; y++) furn(sx0, y, 1, 1, flower ? 'plant' : laundry ? 'wardrobe' : hw && (y % 2) ? 'boxes' : 'shelf');
+      // 가운데 진열대 줄: 두 줄마다 통로 한 줄
+      const x0 = side ? sx0 + 2 : sx0 + 1, sw = W >= 8 ? 3 : W >= 5 ? 2 : 1;
+      for (let y = iy0 + 2; y <= iy1 - 1; y += 2) { if (y === cy) continue; const xEnd = sx1 - (cy >= 0 && Math.abs(y - cy) <= 1 ? 2 : 1); for (let x = x0; x + sw - 1 <= xEnd;) x += furn(x, y, sw, 1, hw && ((x + y) % 3 === 0) ? 'boxes' : flower ? 'plant' : laundry ? 'wardrobe' : cold ? 'fridge' : 'shelf') ? sw + 1 : 1; }   /* 문 앞 통로 칸에 걸리면 한 칸 옆에서 다시 */
+      // 업종 소품
+      if (cs) {   // 편의점: 도시락·반찬 냉장 진열대, 입구 ATM, 화분
+        for (const [x, y] of [[x0, iy0 + 2], [x0, iy0 + 4], [x0 + 1, iy1 - 2]]) if (furn(x, y, 2, 1, 'csfood', true, 0)) break;
+        for (const [x, y] of [[sx0 + 1, iy1 - 1], [sx1, iy1 - 2], [sx0 + 1, iy1 - 2]]) if (furn(x, y, 1, 1, 'atm', true, 0)) break;
+        for (const [x, y] of [[sx1, iy1 - 1], [sx1, iy0 + 2], [sx0 + 1, iy1 - 1]]) if (furn(x, y, 1, 1, 'plant')) break;
+      }
+      if (ph) for (const [x, y] of [[sx1, iy1 - 1], [sx0 + 1, iy1 - 1]]) if (furn(x, y, 1, 1, 'plant')) break;   // 약국 입구 화분
+      }
     }
     else if (use === 'store') { furn(sx0, iy0, 1, 1, 'fridge'); furn(sx0 + 1, iy0, 1, 1, 'fridge'); for (let y = iy0 + 2; y < iy1 - 1; y += 2) for (let x = sx0 + 1; x + 2 <= sx1 - 1; x += 4) furn(x, y, 3, 1, 'shelf'); if (furn(sx1 - 1, iy1 - 1, 2, 1, 'counter', true, 0)) furn(sx1, iy1 - 2, 1, 1, 'chairD', true, 0); }  // 가게: 안쪽 벽 음료 냉장고, 진열대 줄, 계산대와 점원 의자
     else if (use === 'pc') { for (let y = iy0; y + 1 < iy1; y += 3) for (let x = sx0; x <= sx1; x++) if ((x - sx0) % 4 !== 3 && furn(x, y, 1, 1, 'pc', true, 0)) furn(x, y + 1, 1, 1, 'chairD', true, 2); }  // 줄마다 컴퓨터 + 의자, 그 아래 통로
@@ -271,6 +292,12 @@ function planInterior(g, b, bi, f) {
     if (floorCh(g[sy][ix1])) { g[sy][b.x1] = 'N'; K(ix1, sy); }
   }
 }
+// 간판 글자 → 실내 종류 (자유 모드)
+const SIGN_USE = [[/PC방|피시방|오락실/, 'pc'], [/당구/, 'billiards'], [/노래/, 'karaoke'], [/헬스|휘트니스|태권도/, 'gym'], [/학원|교습/, 'academy'],
+  [/호프|포차|곱창|골뱅이|노가리|국밥|백반|분식|순댓국|치킨|식당|반점|중국집|족발|횟집|주점/, 'food'],
+  [/편의점|마트|슈퍼|시장|상회|약국|철물|공구|자재|타일|조명|지물|인쇄|문구|복권|반찬|빵집|꽃집|정육|안경|사진|수선|세탁|열쇠|전파|미용|헤어|떡집|휴대폰|전당포/, 'store'],
+  [/부동산|법무|세무|회계|한의원|의원|인력/, 'office']];
+function signUseOf(sign) { if (!sign) return null; for (const [re, u] of SIGN_USE) if (re.test(sign)) return u; return null; }
 const USE_NAME = { store: '가게', food: '식당', pc: 'PC방', academy: '학원', office: '사무실' };
 function drawRoomLabels(x, f, rx0, ry0, rx1, ry1) {
   x.font = uiFont(13); x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = 'rgba(232,227,214,.3)';

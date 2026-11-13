@@ -81,7 +81,7 @@ function planTurn(v) {
   for (const nd of [right, left]) { const s2 = DV[nd][0] + DV[nd][1]; if (myRoad == null || deckBlocksTurn(!hor, r, myRoad)) continue;  // 고가 아래 교차로에서 고가 도로로는 못 꺾는다
     if (s2 > 0 ? myRoad + 4 < rLim : myRoad > 0) opts.push(nd); }
   let nd = opts.length ? opts[(v.id * 7 + r * 3 + Math.floor(S.t)) % opts.length] : (v.d + 2) % 4;
-  if (v.chase && opts.length) { const P = S.player, ix = hor ? (r + 2) * TILE : v.x, iy = hor ? v.y : (r + 2) * TILE;  // 경찰차: 나에게 가까워지는 쪽
+  if (v.chase && opts.length) { const P = !v.rage && STAGE.cityLife && S.wantSpot ? S.wantSpot : S.player, ix = hor ? (r + 2) * TILE : v.x, iy = hor ? v.y : (r + 2) * TILE;  // 경찰차: 나에게 가까워지는 쪽
     nd = opts.slice().sort((a, b) => ((P.x - ix) * DV[b][0] + (P.y - iy) * DV[b][1]) - ((P.x - ix) * DV[a][0] + (P.y - iy) * DV[a][1]))[0]; }
   v.turn = nd === v.d ? null : { nd, at: laneOf(r, nd) };
   v.crossEnd = sgn > 0 ? (r + 4) * TILE + 4 : r * TILE - 4;  // 직진이면 이 지점을 지나서 다음 교차로를 고른다

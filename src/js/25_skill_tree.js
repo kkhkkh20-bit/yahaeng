@@ -110,7 +110,7 @@ const skillDetection=(g,light,sneak,d)=>!g.dog&&sneak&&light<.45&&d>=48&&skillOn
 const projectileRange=()=>skillOn('precision')?325:250;
 
 // Concealment remains a basic movement state; attacking from it is learned separately.
-const abilityOn=id=>!!STAGE.artSlice||skillOn(id);
+const abilityOn=id=>!!STAGE.artSlice||!!STAGE.cityLife||skillOn(id);  // 자유 모드: 은퇴한 요원은 기술을 다 안다 (풀숲·은신처 기습 암살 등)
 function concealedAttackSource(P=S.player){
  return !!(P.hide||P.vent||P.under||P.ledge||P.cover||P.hidden||!P.z&&P.mode==='sneak'&&tileAt(P.x,P.y)==='B');
 }

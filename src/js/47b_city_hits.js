@@ -136,7 +136,7 @@ function hitsUpdate(dt) {
   if (!S.guards.includes(g)) { S.hit = null; return; }
   const ko = g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko);
   if (h.ctr === 'capture' && captureUpdate(h, ko)) return;  // 납치·심문 (47zz)
-  if (h.ko && ko && !h.cuffed) return;  // 검거: 기절시킨 뒤 수갑을 채워야 끝난다 (47h cuffAction)
+  if (h.ko && ko && !h.cuffed) { h.cuffed = true; g.cuffed = true; evBanner('제압했다. 순찰차가 데려간다', '#9fc4ff'); after(6, () => { if (S.guards.includes(g)) evGone(g); }); }  // 검거: 쓰러뜨리면 끝 (수갑 채우는 단계는 뺐다)
   if (g.state === 'DEAD' && (!ko || h.ko)) {
     // 경찰 검거 미션(h.ko): 기절시키면 제값, 죽이면 3분의 1. 조직 미션: 보수와 호감도 변화가 따로 정해져 있다
     const quiet = !S.wanted, pay = h.ko ? (ko ? h.pay : Math.round(h.pay / 3)) : h.pay != null ? h.pay + (quiet ? 50 : 0) : HIT_PAY + (quiet ? HIT_QUIET_BONUS : 0);

@@ -15,6 +15,7 @@ function updateArrest(dt) {
 const CUFF_T = 1.6;
 function startCuffs(why, cop) {
   const P = S.player; if (S.cuffs || S.downing) return;
+  if (STAGE.cityLife && typeof cityDown === 'function') { cityDown(why || '경찰에게 제압됐다'); if (S.downing) S.downing.arrest = true; return; }   // 자유 모드: 수갑 장면 없이 제압돼 쓰러진다 → 지구대
   P.trav = null; clearCarScripts();  // 하던 동작(문 따기·차 타기)은 끊긴다
   if (P.car) { const v = P.car; P.car = null; v.parked = true; v.v = 0; }
   cop = cop || S.guards.filter(g => g.police && !g.off && g.state !== 'DEAD').sort((a, b) => dist(a.x, a.y, P.x, P.y) - dist(b.x, b.y, P.x, P.y))[0];
