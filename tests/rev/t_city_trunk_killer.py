@@ -46,10 +46,10 @@ async def main():
         print('killer clues', json.dumps(r, ensure_ascii=False))
         ok(len(r.get('clues', [])) == 3 and r['stage'] == 'hunt' and r['n'] == 4 and r['real'] == 1 and r['match'] == 1, 'killer clues: %s' % r)
         # 엉뚱한 사람 → 수배 2 / 놈은 혼자 걷는 여자를 노린다 → 진범 처리 → 500만
-        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player,E=G.events,K=E.sk;S.wanted=0;const wrong=K.suspects.find(g=>!g.skReal);G.killGuard(wrong);tick(.3);const wanted=S.wanted;S.wanted=0;
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player,E=G.events,K=E.sk;S.wanted=0;const wrong=K.suspects.find(g=>!g.skReal);S.lethalNext=true;G.killGuard(wrong);tick(.3);const wanted=S.wanted;S.wanted=0;
           const k=K.killer;const f=S.guards.find(o=>o.civ&&!o.evt&&!o.off&&o.state==='PATROL'&&['fLong','fBob','fTail','femaleCoat'].includes(o.body));k.x=k.route[0].x;k.y=k.route[0].y;f.x=k.route[1].x;f.y=k.route[1].y;f.route=[{x:f.x,y:f.y,pause:999}];f.path=null;
           K.stalkT=S.t;P.x=k.x+2000;P.y=k.y;const v0=K.victims;for(let i=0;i<60*80&&K.victims===v0;i++){P.x=k.x+2000;P.y=k.y;G.update(1/60);}const again=K.victims-v0;
-          const KD=[!!K.prey,K.prey&&Math.round(Math.hypot(K.prey.x-k.x,K.prey.y-k.y)),k.state,k.off,Math.round(K.killT-S.t),k.route.length];const c0=S.cash;G.killGuard(K.killer);tick(1.6);return{KD,wanted,again,done:!!K.done,paid:S.cash-c0,stamp:(document.getElementById('justiceStamp')||{}).textContent||''}}''')
+          const KD=[!!K.prey,K.prey&&Math.round(Math.hypot(K.prey.x-k.x,K.prey.y-k.y)),k.state,k.off,Math.round(K.killT-S.t),k.route.length];const c0=S.cash;S.lethalNext=true;G.killGuard(K.killer);tick(1.6);return{KD,wanted,again,done:!!K.done,paid:S.cash-c0,stamp:(document.getElementById('justiceStamp')||{}).textContent||''}}''')
         print('killer end', json.dumps(r, ensure_ascii=False))
         ok(r['wanted'] >= 2 and r['again'] == 1 and r['done'] and r['paid'] >= 500 and '처리' in r['stamp'], 'killer end: %s' % r)
         ok(not errs, 'page errors: %s' % errs)

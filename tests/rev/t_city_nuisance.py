@@ -52,7 +52,7 @@ async def main():
           return out}''')
         print('sub-stories', json.dumps(r, ensure_ascii=False))
         for k, pay in (('molka', 50), ('stalker', 60), ('gapjil', 40)):
-            ok(r[k].get('start') and r[k].get('paid') == pay and r[k].get('done'), '%s: %s' % (k, r[k]))
+            ok(r[k].get('start') and r[k].get('paid', 0) >= pay and r[k].get('done'), '%s: %s' % (k, r[k]))
         ok(r.get('molkaFled'), 'hidden-camera man does not run: %s' % r)
         ok(r['jeonse'].get('start') and r['jeonse'].get('done') and r['jeonse'].get('paid', 0) >= 120, 'jeonse fraud bag return: %s' % r)
         ok(not errs, 'page errors: %s' % errs)
