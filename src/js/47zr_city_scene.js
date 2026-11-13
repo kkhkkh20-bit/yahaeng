@@ -67,10 +67,11 @@ function sceneUpdate(dt) {
   if (sc.st === 'walk') {
     if (!S.corpses.includes(c) || c.carried || c.stashed) { sc.st = 'back'; saysLine(sc.medics[0], 'medic', 'lost', 1.8); return; }   // 내가 들고 갔다
     let near = 0; sc.medics.forEach((m, i) => { const tx = c.x + (i ? 18 : -18), ty = c.y + 4; if (dist(m.x, m.y, tx, ty) > 14) evRun(m, tx, ty, 95, dt); else { near++; m.a = Math.atan2(c.y - m.y, c.x - m.x); } });
+    sc.tw = sc.tw || S.t; if (near < 2 && S.t - sc.tw > 15) { sc.medics.forEach((m, i) => { m.x = c.x + (i ? 18 : -18); m.y = c.y + 4; m.path = null; }); near = 2; }   // 벽에 붙은 시신: 15초 넘게 못 닿으면 곁으로 (현장이 영영 멈추지 않게)
     if (near === 2) { sc.st = 'lift'; sc.t1 = S.t; saysLine(sc.medics[0], 'medic', 'lift', 1.8); }
     return;
   }
-  if (sc.st === 'lift') { if (S.t - sc.t1 > 2.4) { sceneLift(sc); sc.st = 'back'; sc.t3 = S.t; } return; }
+  if (sc.st === 'lift') { if (!S.corpses.includes(c) || c.carried || c.stashed) { sc.st = 'back'; sc.t3 = S.t; saysLine(sc.medics[0], 'medic', 'lost', 1.8); return; } if (S.t - sc.t1 > 2.4) { sceneLift(sc); sc.st = 'back'; sc.t3 = S.t; } return; }
   if (sc.st === 'back') {
     let near = 0; sc.medics.forEach((m, i) => { const tx = home.x + Math.cos(v.a + Math.PI / 2) * (i ? 10 : -10), ty = home.y + Math.sin(v.a + Math.PI / 2) * (i ? 10 : -10); if (dist(m.x, m.y, tx, ty) > 20) evRun(m, tx, ty, 80, dt); else near++; });
     if (near === 2 || (S.t - (sc.t3 || S.t) > 10 && sc.medics.every(m => !inView(m.x, m.y, 40) || dist(m.x, m.y, home.x, home.y) < 60))) { for (const m of sc.medics) { m.keep = false; evGone(m); } sc.medics = []; sc.stretcher = null; play('door', 0.4 * proxVol(v)); sc.st = 'leave'; }

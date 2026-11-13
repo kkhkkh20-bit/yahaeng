@@ -36,7 +36,7 @@ function elevatorPanel(E) {
 }
 function elevatorGo(E, to) {
   const P = S.player, D = elevDoorOf(E) || { x: tc(E.tx), y: tc(E.ty) }, x = to === 'roof' ? tc(E.tx) : D.x, y = to === 'roof' ? tc(E.ty) : D.y, seen = S.wanted > 0 && S.guards.some(g => g.police && npcAlive(g) && !g.off && flOf(g) === flOf(P) && dist(g.x, g.y, P.x, P.y) < 260);
-  doMotion({ x: D.x, y: D.y + 4, dur: 0.9, face: -Math.PI / 2, pose: 'idle', at: [[0.1, () => play('door', 0.45)]], end: () => {
+  doMotion({ x: D.x, y: D.y + 4, dur: 0.9, face: -Math.PI / 2, pose: 'idle', at: [[0.1, () => play('door', 0.45)]], end: () => { if (S.downing || S.cuffs) return;   /* 타는 사이 쓰러지거나 수갑이 채워지면 떠나지 않는다 */
     S.fade = 0.45; play('bell', 0.3, 1.6); fstat('elevator'); if (E.door) E.door.openT = S.t;
     const f = to === 'roof' ? E.roof.bfl : to; P.fl = f; P.z = 0; setLayer(f); P.x = x; P.y = y + 4; P.path = null; P.moving = false;
     if (P.carrying) { P.carrying.fl = f; P.carrying.x = P.x; P.carrying.y = P.y; }

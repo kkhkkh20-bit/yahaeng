@@ -71,17 +71,17 @@ function sideUpdate(dt) {
     return;
   }
   // 태우고 가는 중
-  const left = f.limit - (S.t - f.t1);
+  const left = f.limit - (S.t - f.t1); if (f.leaving) return;   // 내리는 0.5초 사이엔 시간 초과·사고로 다시 판정하지 않는다 (숨진 환자가 살아나 돈을 내던 일)
   if (f.hp0 - v.hp >= 3) { sideDropOut(f, true); gsay(f.g, sd.kind === 'taxi' ? '이게 운전이야?! 세워!' : '...', 2); sd.fare = null; sd.nextT = S.t + 4; evBanner(sd.kind === 'taxi' ? '손님이 화내며 내렸다' : '환자를 다치게 했다', '#f2b0a0'); return; }
   if (sd.kind === 'amb' && left <= 0) { sideDropOut(f, true); G_kill(f.g); sd.fare = null; sd.nextT = S.t + 4; evBanner('환자가 숨졌다…', '#f2b0a0'); return; }
   if (dist(v.x, v.y, f.to.x, f.to.y) < 110 && Math.abs(v.v) < 25 && !f.leaving) {
     f.leaving = true; const pay = Math.round((sd.kind === 'amb' ? 90 : 30) + f.d / (sd.kind === 'amb' ? 30 : 40) + Math.max(0, left) * 2), tip = Math.max(0, left) > f.limit * 0.35 ? (sd.kind === 'amb' ? 30 : 20) : 0;
-    after(0.5, () => { sideDropOut(f, false); cash(pay + tip); sd.n++; fstat(sd.kind === 'amb' ? 'patients' : 'taxi'); sd.earned += pay + tip; sd.fare = null; sd.nextT = S.t + 2.5; play('loot', 0.5);
+    after(0.5, () => { if (S.side !== sd || sd.fare !== f) return; sideDropOut(f, false); cash(pay + tip); sd.n++; fstat(sd.kind === 'amb' ? 'patients' : 'taxi'); sd.earned += pay + tip; sd.fare = null; sd.nextT = S.t + 2.5; play('loot', 0.5);
       gsay(f.g, sd.kind === 'amb' ? '고, 고맙습니다...' : tip ? '빠르네요! 잔돈은 넣어 두세요.' : '수고하세요.', 2);
       evBanner(`${sd.kind === 'amb' ? '환자 이송' : '운행 완료'} · ${pay}만${tip ? ` + 팁 ${tip}만` : ''}`, '#9fe0b0'); });
   }
 }
-function G_kill(g) { if (!g) return; g.off = false; npcDown(g, null, true); const c = S.corpses[S.corpses.length - 1]; if (c && c.g === g) c.byNpc = true; }
+function G_kill(g) { if (!g) return; g.off = false; g.downNpc = true; npcDown(g, null, true);   /* 이송 중 숨진 환자는 내가 죽인 게 아니다 */ const c = S.corpses[S.corpses.length - 1]; if (c && c.g === g) c.byNpc = true; }
 // 탄다: 차 쪽으로 걸어와 → 뒷문이 열리고 → 사라진다(차 안)
 function sideBoard(sd, f) {
   const g = f.g, v = sd.v; f.boarding = true; g.hail = false;

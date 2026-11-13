@@ -6,6 +6,7 @@ const ARMOR_MAX = 3, ARMOR_PRICE = 400;
 function pickupsInit() {
   S.pickups = []; S.dropScan = 0;
   S.player.armor = Math.min(ARMOR_MAX, S.armorSaved | 0); S.player.poison = S.poisonSaved | 0;
+  if (S.invSaved) for (const k of ['picks', 'bombs', 'kunai', 'smokes', 'coins', 'stones']) if (S.invSaved[k] != null) S.player[k] = S.invSaved[k] | 0;   // 가게에서 산 락픽·폭약·담배·빈 캔 (예전엔 돈만 줄고 물건은 저장되지 않았다)
 }
 // ---- 떨어진 탄약 · 돈
 function pickupsUpdate(dt) {

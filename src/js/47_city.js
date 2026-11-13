@@ -30,7 +30,7 @@ function streetInit() {
 // 범행을 본 사람이 있나 (주민·경찰, 같은 층, 가까이, 시선이 닿음)
 function witnessed(x, y, r) {
   if (STAGE.cityLife) r *= repWitnessMul(x, y);  // 구역 평판: 높으면 덜 신고한다
-  return S.guards.some(g => (g.civ || g.police) && g.state !== 'DEAD' && !g.off && !g.child && !flOf(g) && dist(g.x, g.y, x, y) < r && los(g.x, g.y, x, y) && (g.state === 'PANIC' || Math.abs(angDiff(g.a, Math.atan2(y - g.y, x - g.x))) < 1.6));
+  return S.guards.some(g => (g.civ || g.police) && g.state !== 'DEAD' && !g.off && !g.child && flOf(g) === flOf(S.player) && dist(g.x, g.y, x, y) < r && los(g.x, g.y, x, y) && (g.state === 'PANIC' || Math.abs(angDiff(g.a, Math.atan2(y - g.y, x - g.x))) < 1.6));
 }
 function addWanted(n, why) {
   if (!STAGE.city || S.over) return;
@@ -86,6 +86,7 @@ function cityGuardRefs() {
   const h = S.hit; if (h) { s.add(h.g); for (const e of h.escorts) s.add(e); }
   if (S.ev && !S.ev.done) for (const g of S.ev.actors || []) s.add(g);
   if (S.cuffs?.cop) s.add(S.cuffs.cop);
+  if (S.side?.fare?.g) s.add(S.side.fare.g);   // 택시·구급차에 탄 손님 자리
   return s;
 }
 function cityGuardSlot() {
@@ -118,6 +119,11 @@ function cityListsCleanup() {
   for (const g of S.guards) { if (g.off || g.state !== 'DEAD' || g.keep || !TEMP_ACTOR(g) || hitNow?.includes(g)) continue;  /* keep: 트렁크 속 시체·살인 현장 */
     if (!far(g)) { g._deadAt = null; continue; } g._deadAt = g._deadAt || S.t;
     if (S.t - g._deadAt > 45) { S.corpses = (S.corpses || []).filter(c => c.g !== g && c.guardId !== g.id); evGone(g); } }
+  // 끝난 사건·부업·현장에서 살아 남은 임시 인물: 멀리 화면 밖에 30초 넘게 있으면 들여보낸다 (예전엔 한 점에 멈춘 채 영영 남아 자리를 먹었다)
+  const refs = cityGuardRefs(), sc = S.scene, sd = S.side;
+  const inUse = g => refs.has(g) || g.keep || g.contact || g.dealer || g.staff || g.rideIn || g.rideTo || g.skBi != null || g.state === 'CAPTIVE' || (sc && (sc.cop === g || sc.medics?.includes(g))) || (sd && (sd.fare?.g === g || sd.stops?.some(s => s.wait === g || s.wait?.includes?.(g))));
+  for (const g of S.guards) { if (g.off || g.state === 'DEAD' || !TEMP_ACTOR(g) || inUse(g)) { g._idleFar = null; continue; }
+    if (!far(g)) { g._idleFar = null; continue; } g._idleFar = g._idleFar || S.t; if (S.t - g._idleFar > 30) { g._idleFar = null; evGone(g); } }
   // 새로 생긴 차(사건·추격·조직 차): 멀리 있고 아무도 쓰지 않으면 뺀다
   const busy = new Set([P.car, P.lastCar, ...S.vehicles.filter(v => v.trunk?.length || v.riders?.length), S.hit?.trunk, S.scene?.v, S.job?.v, ...(S.ev && !S.ev.done ? S.ev.cars || [] : [])]);
   // 오래 켜 둬도 쌓이지 않게 (10분 실험: 터진 차·시체가 계속 늘었다):
@@ -214,6 +220,7 @@ function cityDropHeld() {
   if (P.carrying) { const c = P.carrying; c.carried = false; c.x = P.x; c.y = P.y; c.fl = flOf(P); }
   if (P.captive && P.captive.state === 'CAPTIVE') { const g = P.captive; g.state = 'PATROL'; g.meter = 1; g.path = null; }
   P.captive = null; P.carrying = null;
+  if (S.safeIn) { S.safeIn = null; P.hidden = false; }   // 은신처에 들어가다 쓰러졌으면 그 상태를 푼다
   for (const v of S.vehicles || []) if (v.jacking && !v.scripted && !S.garage?.busy) { v.jacking = false; v.parked = true; }   // 타다 만 차
   S.wantEpoch = (S.wantEpoch || 0) + 1;   // 쓰러지기 전 걸어 둔 뺑소니 신고는 무효
 }

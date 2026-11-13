@@ -26,7 +26,7 @@ function dealerSpawn() {
 }
 function dealerUpdate(dt = 1 / 60) {
   const D = S.dealer2; if (!D) return;
-  if (D.g && !npcAlive(D.g) && !D.respawn) D.respawn = S.t + 180;
+  if (D.g && D.g.state === 'DEAD' && !D.respawn) D.respawn = S.t + 180; if (D.respawn && D.g && D.g.state !== 'DEAD') D.respawn = 0;   /* 붙잡혔다 풀려난 건 죽은 게 아니다 (둘이 되지 않게) */
   if (D.respawn && S.t > D.respawn && !inView(D.x, D.y, 80)) { D.respawn = 0; dealerSpawn(); }
   const g = D.g;
   // 박씨는 총을 찬다: 맞서기 시작하면(협박이 틀어졌거나 내가 먼저 때렸다) 주먹 대신 권총을 뽑는다. 내가 멀어지거나 놈이 쓰러질 때까지

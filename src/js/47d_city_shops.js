@@ -30,7 +30,7 @@ function shopAction() {
   const P = S.player;
   if (P.car) {
     const v = P.car;
-    if (inLot(v.x, v.y) && Math.abs(v.v) < 25 && !v.forSale && !v.police && vType(v).price > 0) return { k: 'carSell', v, label: `차 팔기 · ${Math.round(vType(v).price * SELL_RATE)}만` };
+    if (inLot(v.x, v.y) && Math.abs(v.v) < 25 && !v.forSale && !v.soldBack && !v.police && !v.jobCar && !(v.trunk?.length) && S.job?.v !== v && vType(v).price > 0)   /* 한 번 판 차를 도로 훔쳐 와 또 팔 수는 없다 */ return { k: 'carSell', v, label: `차 팔기 · ${Math.round(vType(v).price * SELL_RATE)}만` };
     return null;
   }
   if (P.z || flOf(P) || P.hide) return null;
@@ -76,7 +76,7 @@ function openDealer() {
 function sellCar(v) {
   const P = S.player, price = Math.round(vType(v).price * SELL_RATE);
   carExit(true); S.cash = (S.cash || 0) + price; play('loot', 0.7); hudCache.objH = null;
-  v.forSale = vType(v).price; v.parked = true; v.ai = false; v.driver = false; v.v = 0;
+  v.forSale = vType(v).price; v.soldBack = true; v.parked = true; v.ai = false; v.driver = false; v.v = 0;
 }
 // 매 프레임: 구역 이름 · 훔친 전시장 차 · 도색 칸
 function shopsUpdate(dt) {

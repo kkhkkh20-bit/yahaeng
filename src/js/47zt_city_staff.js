@@ -27,7 +27,7 @@ function staffUpdate(dt) {
   if (!STAGE.cityLife || !S.staffB || (S.staffT -= dt) > 0) return; S.staffT = 0.5; const P = S.player; staffTalk(dt); civTalkUpdate();   // 나가며 인사가 일꾼을 들여보내기 전에
   // 실내는 들어가야 보인다: 내가 들어간 건물에만 일꾼을 세우고, 나오면 들여보낸다 (바깥 사람 수·목격자 수는 그대로)
   const inB = P.z ? -1 : bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE));
-  for (const [bi, have] of S.staffB) if (bi !== inB) { for (const g of have) if (!g.off && g.evt === '__staff') { if (npcAlive(g)) evGone(g); else g.keep = false; } S.staffB.delete(bi); }
+  for (const [bi, have] of S.staffB) if (bi !== inB && !have.some(g => g.state === 'CAPTIVE')) {   /* 붙잡혀 끌려 나온 직원이 있으면 풀려날 때까지 기다린다 */ for (const g of have) if (!g.off && g.evt === '__staff') { if (npcAlive(g)) evGone(g); else g.keep = false; } S.staffB.delete(bi); }
   if (inB >= 0 && PLANS[inB] && !BLD[inB].vacant && !S.staffB.has(inB)) S.staffB.set(inB, staffSpawn(inB));
 }
 // 직원 대사 (대사집 47zt0): 상황이 맞을 때만 —

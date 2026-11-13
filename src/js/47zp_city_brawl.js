@@ -37,13 +37,13 @@ function brawlHit(g, knife, heavy) {
   if (g.bhp <= 0) { g.fist = false; npcDown(g, null, !!knife); if (!knife) gsay(g, '...', 1); return; }
   // 반응: 맞서거나 도망
   if (g.fist) { if (Math.random() < 0.3) saysLine(g, 'civ', 'fighting', 1.2); return; }
-  if (brawlTough(g) || Math.random() < 0.25) { g.fist = true; g.fistT = 0; saysLine(g, g.police ? 'cop' : 'civ', g.police ? 'resist' : 'fight', 1.8); }
+  if (brawlTough(g) || Math.random() < 0.25) { if (!g.fist && !g.routeQ) g.routeQ = g.route; g.fist = true; g.fistT = 0; saysLine(g, g.police ? 'cop' : 'civ', g.police ? 'resist' : 'fight', 1.8); }
   else { civPanic(g, P.x, P.y, 12); saysLine(g, 'civ', 'hurt', 1.6); }
 }
 // 맞서는 사람: 다가와 주먹을 휘두른다 (맞으면 잠깐 멈칫)
 function brawlUpdate(dt) {
   if (!STAGE.cityLife) return; const P = S.player;
-  for (const g of S.guards) { if (!g.fist) continue; if (!npcAlive(g) || g.off || dist(g.x, g.y, P.x, P.y) > 500 || P.car) { g.fist = false; continue; }
+  for (const g of S.guards) { if (!g.fist) continue; if (!npcAlive(g) || g.off || dist(g.x, g.y, P.x, P.y) > 500 || P.car) { g.fist = false; if (g.routeQ) { g.route = g.routeQ; g.routeQ = null; g.ri = 0; g.path = null; } continue; }   /* 싸움이 끝나면 원래 다니던 길로 */
     if (g.state === 'PANIC' || g.state === 'FLEE') { g.state = 'PATROL'; g.fear = null; }
     if ((g.stunT || 0) > S.t) continue;
     const d = dist(g.x, g.y, P.x, P.y); g.a = Math.atan2(P.y - g.y, P.x - g.x);

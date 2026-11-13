@@ -57,7 +57,7 @@ function evLoot(ev, owner, val, reward, what) {
 // 나는 선인도 악인도 아니다. 눈앞에서 알짱대는 놈이 거슬려서 치우고, 돈을 챙길 뿐
 const ANNOYED = ['...거슬리네.', '눈에 띈 게 네 운이다.', '시끄럽네.', '하필 내 앞에서.', '돈은 좀 있겠지.', '귀찮게 하네.'];
 function evKeep(ev) { const L = ev.loot; if (!L || ev.done) return; cash(L.val); addRep(ev.d, -3); evEnd(ev, `${L.what} 꿀꺽 · +${L.val}만`); }
-function evGive(ev) { const L = ev.loot; if (!L || ev.done) return; cash(L.reward); if (npcAlive(L.owner)) gsay(L.owner, '...가, 감사합니다.', 3); evEnd(ev, `주인 품으로 · 수고비 +${L.reward}만`, true); if (ev.def.onGive) ev.def.onGive(ev); }
+function evGive(ev) { const L = ev.loot; if (!L || ev.done) return; cash(L.reward); addRep(ev.d, 2);   /* 돌려주면 동네 평판이 오른다 */ if (npcAlive(L.owner)) gsay(L.owner, '...가, 감사합니다.', 3); evEnd(ev, `주인 품으로 · 수고비 +${L.reward}만`, true); if (ev.def.onGive) ev.def.onGive(ev); }
 
 // ---------------------------------------------------------------- 이벤트 14개
 // start(ev): 자리를 잡고 사람·차를 세운다 (못 하면 false). update(ev,dt). goal(ev): 목표 줄. action(ev): [행동] 후보. x,y: 표시할 곳(ev.focus())
@@ -217,7 +217,7 @@ const EVENTS = [
     action(ev) { const P = S.player; if (P.car || dist(P.x, P.y, ev.p.x, ev.p.y) > 90) return null; return { label: '폐공장 도박장', at: { x: ev.p.x, y: ev.p.y - 56 }, fn: () => openDen(ev) }; },
     goal: () => '폐공장 도박장 · 걸거나 신고하거나 털기' },
 ];
-function evHelpVendor(ev) { if (ev.done) return; for (const g of ev.enf) evFlee(g, S.player.x, S.player.y, 20); if (npcAlive(ev.vendor)) gsay(ev.vendor, '고맙수! 다음에 오면 싸게 해 주지.', 3); cash(30); evEnd(ev, '상인 편 · +30만', true); }
+function evHelpVendor(ev) { if (ev.done) return; addRep(ev.d, 5);   /* 고르는 칸에 적힌 '평판 +5' */ for (const g of ev.enf) evFlee(g, S.player.x, S.player.y, 20); if (npcAlive(ev.vendor)) gsay(ev.vendor, '고맙수! 다음에 오면 싸게 해 주지.', 3); cash(30); evEnd(ev, '상인 편 · +30만', true); }
 function openDen(ev) {
   const show = () => shopPanel('폐공장 도박장', [
     { name: '판돈 50만 걸기 (반반)', price: 50, ok: (S.cash || 0) >= 50, buy: () => { if (ev.done) { closeShopPanel(); return; } S.cash -= 50; const win = Math.random() < 0.48; if (win) cash(100); else play('click', 0.4); evBanner(win ? '땄다! +100만' : '잃었다'); show(); } },

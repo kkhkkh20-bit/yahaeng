@@ -42,7 +42,7 @@ const NUISANCE = [
     start(ev) { const c = crewSpawn('kick'); if (!c) return false; ev.crew = c; for (const m of c.members) { m.evt = ev.key; ev.actors.push(m); } gsay(c.members[0], '꽉 잡아!', 2); ev.hits = 0; return true; },
     focus: ev => ev.crew.members[0],
     update(ev, dt = 1 / 60) { const c = ev.crew, P = S.player;
-      if (c.members.some(m => !npcAlive(m))) { if (!ev.paid) { ev.paid = true; cash(60); evEnd(ev, '킥보드 폭주족 처리 · +60만', true); const L = c.members[0]; justiceMoment('인도 질주 킥보드 정지', `[속보] 2인 탑승 킥보드 인도 질주하다 멈춰 세워져… 치인 행인 ${ev.hits}명, 보호자 호출`, L.x, L.y); } return; }
+      if (c.members.some(m => m.state === 'DEAD' && !m.off)) { if (!ev.paid) { ev.paid = true; cash(60); evEnd(ev, '킥보드 폭주족 처리 · +60만', true); const L = c.members[0]; justiceMoment('인도 질주 킥보드 정지', `[속보] 2인 탑승 킥보드 인도 질주하다 멈춰 세워져… 치인 행인 ${ev.hits}명, 보호자 호출`, L.x, L.y); } return; }
       if (c.broken) { if (dist(c.members[0].x, c.members[0].y, P.x, P.y) > 1400) evEnd(ev, '(킥보드 놓쳤어.)'); return; }
       // 보도를 질주하며 앞에 있는 행인을 치고 지나간다 (뺑소니)
       const L = c.members[0];

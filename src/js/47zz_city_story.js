@@ -47,7 +47,7 @@ const STORY_SIDE = {
     { title: '야간 배달', kind: 'parcel', pay: 260, intro: ['이번 물건은 깨지는 거다. 조심해서, 빨리.'], outro: ['한 병도 안 깨졌군. 이제 큰일을 맡기지.'] },
     { title: '얼굴 없는 손님', kind: 'hit', fac: 'C', ctr: 'photo', pay: 540, intro: ['시장에서 매번 판을 털어 가는 놈이 있다. 사진 한 장뿐이야.', '그 블록을 돌며 얼굴을 찾아서 끝내.'], outro: ['밤 시장이 다시 열린다. 넌 이제 이 시장의 손님이 아니라 주인이다.'] }] },
 };
-function storyInit() { S.story = Object.assign({ ch: 0, side: {}, failed: false }, S.storySaved || {}); if (!S.story.side) S.story.side = {}; S.story.nextT = 0; }
+function storyInit() { S.story = Object.assign({ ch: 0, side: {}, failed: false }, S.storySaved || {}); if (!S.story.side) S.story.side = {}; S.story.nextT = 0; S.story.phNextT = 0; S.story.dtNextT = 0; }   /* 지난 판의 시각(S.t)은 새 판에서 뜻이 없다 */
 const storyMainLeft = () => STAGE.cityLife && S.story && S.story.ch < STORY_MAIN.length;
 // 전화 한 통: 메인 이야기가 남았으면 그 장 (앞 장 결과 보고 + 이번 지령). 없으면 null → 평소 일거리
 function storyCall() {
