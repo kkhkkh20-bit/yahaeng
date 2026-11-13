@@ -22,7 +22,7 @@ async def main():
           for(const g of S.guards)if((g.fac&&!g.civ&&!g.contact)||g.police&&!g.contact){g.x=-9000;g.route=[{x:-9000,y:-9000,pause:999}];}}''')
         r = await q.evaluate('()=>(__game.S.rampSpots||[]).length')
         print('spots', r); ok(r == 0, 'rampage marks should be off (guns are scarce): %s' % r)
-        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;P.x+=400;tick(.1);S.wanted=2;const g=S.guards.find(g=>g.police&&!g.contact&&g.state!=='DEAD');if(!g)return {cop:false};g.x=P.x+80;g.y=P.y;g.route=[{x:g.x,y:g.y,pause:999}];
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;P.x+=400;tick(.1);S.wanted=2;S.guns.pistol=S.guns.pistol??0;/* 권총 주인에게만 떨군다 */const g=S.guards.find(g=>g.police&&!g.contact&&g.state!=='DEAD');if(!g)return {cop:false};g.x=P.x+80;g.y=P.y;g.route=[{x:g.x,y:g.y,pause:999}];
           G.npcDown(g,null,true);tick(.5);const k=S.pickups.find(k=>k.kind==='ammo');if(!k)return {cop:true,drop:false};const a0=S.guns.pistol||0;P.x=k.x;P.y=k.y;tick(.2);return {cop:true,drop:true,got:(S.guns.pistol||0)-a0,left:S.pickups.length}}''')
         print('drop', r); ok(r.get('drop') and r['got'] > 0, 'police ammo drop: %s' % r)
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player,c=S.contacts.D;S.wanted=0;P.x=c.g.x+30;P.y=c.g.y+10;tick(.05);G.events.openContact('D');
