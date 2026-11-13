@@ -9,7 +9,7 @@ function markCityDone(id) { try { const d = cityDone(); d[id] = 1; localStorage.
 function cityInit() {
   S.wanted = 0; S.wantLost = 0; S.copT = 0;
   S.contracts = (STAGE.contracts || []).map(c => ({ id: c.id, name: c.name, x: tc(c.at[0]), y: tc(c.at[1]), si: STAGES.findIndex(s => s.id === c.id) })).filter(c => c.si >= 0);
-  trafficInit(); if (STAGE.hits) hitsInit(); loadFreeProgress(); shopsInit(); cityFactionsInit(); garageInit(); S.side = null; weatherInit(); heatInit(); havocInit(); gunsInit(); pickupsInit(); warInit(); safehouseInit(); hunterInit(); crewsInit(); homeInit(); dealerInit(); cozyPlacesInit(); placesInit(); killerInit(); ambientInit(); sceneInit(); if (STAGE.cityLife) storyInit();  // 가게 · 중고차 매매 · 도색소  // 도시 안 의뢰 (공중전화)
+  trafficInit(); if (STAGE.hits) hitsInit(); loadFreeProgress(); shopsInit(); cityFactionsInit(); garageInit(); S.side = null; weatherInit(); heatInit(); havocInit(); gunsInit(); pickupsInit(); warInit(); safehouseInit(); hunterInit(); crewsInit(); homeInit(); dealerInit(); cozyPlacesInit(); placesInit(); killerInit(); ambientInit(); sceneInit(); liftsInit(); if (STAGE.cityLife) storyInit();  // 가게 · 중고차 매매 · 도색소  // 도시 안 의뢰 (공중전화)
   // 순찰 경찰 둘: 시내 보도를 돈다 (조직 구역에는 들어가지 않는다)
   for (const r of STAGE.copBeats || []) { const g = makeGuard({ kind: 'g1', route: r, radio: false }, S.guards.length); g.police = true; g.beat = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; g.radio = false; setLayer(0); buildRouteLine(g); S.guards.push(g); }
   // 자유 모드 첫 화면: 칼 든 조직원이 바로 옆에 서 있지 않게 — 300px 안의 조직원은 제자리 근처, 나와 350px 넘게 떨어진 빈 길로 옮긴다
@@ -35,15 +35,26 @@ function witnessed(x, y, r) {
 function addWanted(n, why) {
   if (!STAGE.city || S.over) return;
   const was = S.wanted; S.wanted = Math.min(5, Math.max(S.wanted, 0) + n); S.wantLost = 0;
-  if (S.wanted > was) { toast(`수배 ${'★'.repeat(S.wanted)} — ${why || '경찰이 쫓는다'}`, 2.4, 'warn'); play('alarm', 0.35); S.copT = 0; hint('wanted', '수배 별만큼 경찰이 쫓아온다. 경찰 눈에서 벗어나 버티면 별이 하나씩 내려간다'); }
+  if (S.wanted > was) { toast(`수배 ${'★'.repeat(S.wanted)} — ${why || '경찰이 쫓는다'}`, 2.4, 'warn'); play('alarm', 0.35); S.copT = [0, 12, 7, 4, 2, 1][S.wanted] ?? 2;  /* 출동까지 걸리는 시간: 별 하나면 한참 뒤에 온다 */ hint('wanted', '수배 별만큼 경찰이 쫓아온다. 경찰 눈에서 벗어나 버티면 별이 하나씩 내려간다'); }
   for (const g of wantedCops()) copChase(g);
+}
+// 차로 사람을 쳤을 때: 경찰이 봤으면 바로 수배. 아니면 살짝 친 건 넘어가고, 죽였으면 본 사람이 10초 뒤 신고(뺑소니).
+// 조직원을 친 건 아무도 신고 안 한다 (경찰이 보지 않았다면)
+function carHitReport(g, lethal) {
+  if (g.police) { addWanted(2, '경찰을 차로 쳤다'); return; }
+  const cop = S.guards.some(o => o.police && npcAlive(o) && !o.off && !flOf(o) && dist(o.x, o.y, g.x, g.y) < 420 && los(o.x, o.y, g.x, g.y));
+  if (cop) { addWanted(1, g.civ ? '경찰 앞에서 사람을 쳤다' : '경찰 앞에서 조직원을 쳤다'); return; }
+  if (!lethal || !g.civ || !witnessed(g.x, g.y, 320) || (S.hitRunT || 0) > S.t) return;
+  S.hitRunT = S.t + 10; toast('(누가 휴대폰을 꺼냈다.)', 2, 'warn');
+  after(10, () => { if (!S.over) addWanted(1, '뺑소니 신고가 들어갔다'); });
 }
 // 수배 별만큼만 쫓는다: 가까운 경찰부터 WANT_COPS[별] 명 (+ 이미 나를 보고 있는 경찰). 자유 모드가 아니면 예전처럼 모두
 function wantedCops() {
   const P = S.player, all = S.guards.filter(g => g.police && !g.off && g.state !== 'DEAD' && !g.contact);
   if (!STAGE.cityLife) return all;
   const n = WANT_COPS[Math.min(5, S.wanted || 0)] || 0, near = all.slice().sort((a, b) => dist(a.x, a.y, P.x, P.y) - dist(b.x, b.y, P.x, P.y));
-  return near.filter((g, i) => i < n || g.state === 'ALERT' && g.seen);
+  const R = S.wanted <= 2 ? 750 : 1e9;  // 별 한두 개: 근처에 있던 경찰만 바로 온다 (나머지는 출동해서 온다)
+  return near.filter((g, i) => (i < n && dist(g.x, g.y, P.x, P.y) < R) || g.state === 'ALERT' && g.seen);
 }
 function copChase(g) { if (g.state === 'ALERT') { g.lastSeen = pSpot(); return; } g.state = 'ALERT'; g.icon = '!'; g.iconT = 99; g.lastSeen = pSpot(); g.lostT = 0; g.path = null; g.repath = 0; g.meter = 1; g.shootT = 0; g.aim = 0; }
 // 화면 밖 길(도로·보도) 칸 하나: 나에게서 r0~r1 떨어진 곳
@@ -157,7 +168,7 @@ function cityUpdate(dt) {
     if (seen) { S.wantLost = 0; for (const g of wantedCops()) copChase(g); }
     else { S.wantLost += dt; for (const g of cops) if (g.state !== 'ALERT' && g.state !== 'DEAD' && !P.hide && !P.under && !P.vent && canSee(g, P.x, P.y, Math.max(0.4, P.light || 0), P.hidden, P.mode === 'sneak', P.z, flOf(P)) > 0) copChase(g); }
     const need = WANT_COPS[S.wanted];
-    if (cops.length < need && (S.copT -= dt) <= 0) { S.copT = 2.2; spawnCop(); }
+    if (cops.length < need && (S.copT -= dt) <= 0) { S.copT = S.wanted <= 2 ? 6 : 3; spawnCop(); }
     if (S.wantLost > 10 + S.wanted * 3) { S.wanted--; S.wantLost = 0; toast(S.wanted ? `수배 ${'★'.repeat(S.wanted)} — 경찰이 놓쳤다` : '수배가 풀렸다', 2.2);
       if (!S.wanted) for (const g of cops) { if (g.contact) { g.state = 'RETURN'; g.path = null; g.icon = null; continue; } g.state = 'RETURN'; g.icon = null; g.path = null; g.leaveT = 6; } }
   } else for (const g of cops) {  // 수배가 풀린 경찰: 화면 밖으로 사라진다
@@ -215,7 +226,7 @@ function cityAction() {
 function cityActionList() {
   const P = S.player, out = [];
   if (STAGE.cityLife) { const a = shopAction(); if (a) out.push(a); }
-  for (const f of [envKillAction, elevatorAction, hospitalAction, cuffAction, captureAction, basementAction, killerAction, trunkAction, homeAction, dealerAction, carbombAction, poisonAction, havocAction, sideAction, eventAction, factionAction, rideAction]) { const e = f(); if (e) out.push(e); }  // 구역 이벤트·부업 (차 안에서도: 드래그 레이스·택시)
+  for (const f of [envKillAction, elevatorAction, hospitalAction, cuffAction, captureAction, basementAction, killerAction, trunkAction, homeAction, dealerAction, carbombAction, poisonAction, havocAction, sideAction, eventAction, factionAction, rideAction, liftAction]) { const e = f(); if (e) out.push(e); }  // 구역 이벤트·부업 (차 안에서도: 드래그 레이스·택시)
   const one = a => { if (a) out.push(a); return out; };
   if (P.car) return one({ k: 'carOut', v: P.car, label: P.car.fireT > 0 ? '뛰어내리기!' : Math.abs(P.car.v) >= 60 ? '뛰어내리기' : '차에서 내리기' });
   if (P.z || flOf(P) || P.hide) return out;

@@ -32,7 +32,7 @@ async def main():
         print('trunk', json.dumps(r, ensure_ascii=False))
         ok(r['l1'] and r['inTrunk'] == 1 and r['stashed'] and not r['carrying'] and r['l2'] and r['back'], 'trunk: %s' % r)
         # 태우기: 내 차 곁에서 행인을 태우고, 내려 준다
-        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;P.carrying=null;const v=S.vehicles[S.vehicles.length-1];P.lastCar=v;P.x=v.x;P.y=v.y+60;
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;P.carrying=null;S.wanted=0;S.wantLost=0;P.cuffed=false;S.cuffs=null;for(const o of S.guards)if(o.police&&!o.beat){o.state='PATROL';o.x+=5000;}/* 앞 단계(트렁크를 본 사람)의 수배는 지운다 */const v=S.vehicles[S.vehicles.length-1];P.lastCar=v;P.x=v.x;P.y=v.y+60;
           const g=S.guards.find(o=>o.civ&&o.state==='PATROL'&&!o.off&&!o.crew&&!o.evt&&!o.dog);g.x=P.x+30;g.y=P.y;g.route=[{x:g.x,y:g.y,pause:999}];g.path=null;g.wait=99;tick(.05);const dbg=[!!P.lastCar,Math.round(Math.hypot(P.x-v.x,P.y-v.y)),g.state,g.civ,g.fac,g.police,g.evt,G.actionBusy?G.actionBusy(P):'?',JSON.stringify(G.events.rideAction()&&G.events.rideAction().label),Math.round(Math.hypot(g.x-P.x,g.y-P.y))];
           const l1=ACT('차에 태우기');tick(3.2);const aboard=(v.riders||[]).length,off=!!g.off;v.x+=600;P.x=v.x+20;P.y=v.y+40;tick(.1);const l2=ACT('내려 주기');tick(.2);
           return{dbg,l1,aboard,off,l2,riders:(v.riders||[]).length,back:!g.off,near:Math.round(Math.hypot(g.x-v.x,g.y-v.y))}}''')

@@ -51,7 +51,7 @@ function sceneUpdate(dt) {
   if (P.car === v || v.dead || (sc.medics.length && live.length < sc.medics.length) || (sc.cop && !npcAlive(sc.cop) && sc.st !== 'keep')) { sceneEnd(false); return; }
   if (sc.st === 'drive') {   // 같은 길을 따라 달려와 선다
     const dx = sc.to.x - v.x, dy = sc.to.y - v.y, d = Math.hypot(dx, dy);
-    if (d > 6) { const s = Math.min(d, 260 * dt); v.x += dx / d * s; v.y += dy / d * s; v.a = Math.atan2(dy, dx); v.v = 260; return; }
+    if (d > 6) { const s = Math.min(d, 260 * dt); v.x += dx / d * s; v.y += dy / d * s; v.a = Math.atan2(dy, dx); v.v = 0; return; }  /* 속도는 0으로 둔다: 차 충돌 판정(48_traffic)에 걸려 사람을 치지 않게 */
     v.v = 0; v.x = sc.to.x; v.y = sc.to.y; const c = sc.c;
     if (!S.corpses.includes(c) || c.carried || c.stashed || c.hidden) { sc.st = 'leave'; return; }   // 그새 누가 치웠다
     // 대원은 둘 다 시신 쪽 문으로 내린다 (차를 돌아가지 않게)
@@ -78,7 +78,7 @@ function sceneUpdate(dt) {
   }
   if (sc.st === 'leave') {   // 온 길로 돌아 나간다
     const dx = sc.from.x - v.x, dy = sc.from.y - v.y, d = Math.hypot(dx, dy);
-    if (d > 6 && !(d > 30 && sc.from.x === sc.to.x && sc.from.y === sc.to.y)) { const s = Math.min(d, 200 * dt); v.x += dx / d * s; v.y += dy / d * s; v.a = Math.atan2(dy, dx); v.v = 200; }
+    if (d > 6 && !(d > 30 && sc.from.x === sc.to.x && sc.from.y === sc.to.y)) { const s = Math.min(d, 200 * dt); v.x += dx / d * s; v.y += dy / d * s; v.a = Math.atan2(dy, dx); v.v = 0; }
     if (d <= 6 || !inView(v.x, v.y, 80)) { S.vehicles = S.vehicles.filter(o => o !== v); sc.v = { dead: false }; sc.st = 'keep'; sc.t2 = S.t; }
     return;
   }

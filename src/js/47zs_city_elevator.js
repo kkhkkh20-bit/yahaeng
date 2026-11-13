@@ -34,3 +34,14 @@ function elevatorGo(E, to) {
     else evBanner(`${f + 1}층`, '#c8c0b0');
     if (seen) after(1, () => { for (const g of S.guards) if (g.police && npcAlive(g) && !g.off && dist(g.x, g.y, S.player.x, S.player.y) < 900) copChase(g); }); } });
 }
+// ---- 건물 정문 엘리베이터: 모든 건물에 실내 계단이 있지만 안쪽 깊이 있어 찾기 어렵다 → 정문 앞에서도 바로 층을 고른다
+function liftsInit() {
+  S.lifts = []; if (!STAGE.cityLife) return; const byB = new Map();
+  for (const l of S.ladders || []) if (l.kind === 'fstair' || l.kind === 'stair') { const bi = bldAt(l.tx, l.ty); if (bi >= 0 && !byB.has(bi)) byB.set(bi, l); }
+  BLD.forEach((b, i) => { if (b.vacant || b.school || b.hospital) return; const l = byB.get(i), door = l && shopFront(b); if (!door) return; const E = elevStack(l.tx, l.ty); if (E && (E.top >= 1 || E.roof)) S.lifts.push({ b: i, door, E }); });
+}
+function liftAction() {
+  if (!STAGE.cityLife || !S.lifts) return null; const P = S.player; if (P.car || P.trav || P.hide || P.wire || P.captive || flOf(P) || P.z || actionBusy(P)) return null;
+  for (const L of S.lifts) if (dist(P.x, P.y, L.door.x, L.door.y) < 40) return { k: 'evAct', label: `엘리베이터 · ${L.E.top + 1}층 건물`, at: { x: L.door.x, y: L.door.y - 50 }, fn: () => elevatorPanel(L.E) };
+  return null;
+}
