@@ -8379,7 +8379,7 @@ function actorMarker(g,c){
   if(c){const b=corpseBounds(c);return{x:(b[0]+b[2])/2,y:(b[1]+b[3])/2,rx:(b[2]-b[0])/2+4,ry:(b[3]-b[1])/2+4};}
   return{x:g.x,y:g.y-12,rx:18,ry:24};
 }
-function drawTargetRing(g,col,c){const p=actorMarker(g,c);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y,p.rx,p.ry,0,0,TAU);ctx.stroke();}
+function drawTargetRing(g,col,c){if(STAGE.cityLife)return;const p=actorMarker(g,c);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y,p.rx,p.ry,0,0,TAU);ctx.stroke();}
 function drawBody(c, lift = 0) {
   if (c.hideT > S.t || c.skillAnimating) return;  // 목 조르는 동안은 주인공과 함께 그린다
   if (c.carried && S.player.carrying === c && pairCarry(S.player)) return;  // 층·그리기 순서와 관계없이 운반 짝동작에서 한 번만 그린다
@@ -15849,9 +15849,7 @@ function drawContracts() {
   if (STAGE.cityLife) drawShopMarks();
   if (!S.contracts) return; const done = cityDone();  // 옥상·위층에선 땅 표시를 그리지 않는다
   for (const c of S.contracts) {
-    const ok = done[c.id], pulse = 0.6 + 0.4 * Math.sin(S.t * 3);
-    ctx.strokeStyle = ok ? 'rgba(150,150,160,.6)' : `rgba(232,71,60,${pulse})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(c.x, c.y, 26, 0, TAU); ctx.stroke();
-    ctx.fillStyle = ok ? 'rgba(150,150,160,.25)' : 'rgba(232,71,60,.22)'; ctx.beginPath(); ctx.arc(c.x, c.y, 26, 0, TAU); ctx.fill();
+    const ok = done[c.id];   // 바닥 원은 그리지 않는다 — 이름표만
     tag(c.x, c.y + 40, (ok ? '끝낸 의뢰 · ' : '의뢰 · ') + STAGES[c.si].name, ok ? '#9a9aa6' : '#e8473c', ok ? 1 : 2.4);
   }
 }
@@ -16136,7 +16134,7 @@ function drawHits(layer) {
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = ring ? 'rgba(255,236,190,.28)' : 'rgba(255,236,190,.10)'; ctx.fillRect(p.x - 13, p.y - 50, 26, 58);
       if (ring) { ctx.fillStyle = 'rgba(255,90,70,.5)'; ctx.fillRect(p.x - 18, p.y - 58, 36, 7); } ctx.restore();  // 부스 안 형광등 · 울릴 때 지붕 띠가 깜빡인다
       const P = S.player; if (P.booth === p || (P.trav && Math.abs(P.x - p.x) < BOOTH_HW && Math.abs(P.y - p.y) < 14)) drawBooth(p, true);
-      if (!STAGE.noPrompts && !S.hit && !S.job) { const pu = .5 + .4 * Math.sin(S.t * 4); ctx.strokeStyle = `rgba(80,220,170,${pu})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y - 4, 24, 0, TAU); ctx.stroke(); infoTag(p.x, p.y + 22, '공중전화', '#8fe0c4', .9); }
+      if (!STAGE.noPrompts && !S.hit && !S.job) { infoTag(p.x, p.y + 22, '공중전화', '#8fe0c4', .9); }
       continue;
     }
     drawBooth(p, false);
@@ -16145,8 +16143,6 @@ function drawHits(layer) {
   drawEvents(); drawContacts(); drawJobs(); drawCarPickProgress(); drawCarriedParcel(); drawWpRoute(); drawSide(); drawSafes(); drawHome(); drawNuisance(); drawSlashes(); drawScene(); drawHunter(); drawScope(); drawPoison(); drawPickups(); drawGuns(); drawIntel();  drawRain();
   const h = S.hit; if (!h || h.g.state === 'DEAD' && !h.g.unconscious || contractHides(h)) return;
   const g = h.g; if (flOf(g) !== flOf(S.player) || !inView(g.x, g.y, 60)) return;
-  const pu = .55 + .35 * Math.sin(S.t * 5);
-  ctx.strokeStyle = `rgba(232,71,60,${pu})`; ctx.lineWidth = 2.5; ctx.setLineDash([6, 5]); ctx.beginPath(); ctx.arc(g.x, g.y, 22, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
   if (!STAGE.noPrompts) infoTag(g.x, g.y - 60, h.name + ' · 표적', '#ff9a86', .95);
 }
 
@@ -16680,9 +16676,7 @@ function jobGoal(money) {
 // 땅 표시 (어둠 위): 목표 자리에 고리와 이름표
 function drawJobs() {
   const j = S.job; if (!j || flOf(S.player) || S.player.z > 0) return;
-  const ring = (x, y, r, col, tag) => { if (!inView(x, y, r + 40)) return; const pu = .55 + .35 * Math.sin(S.t * 5);
-    ctx.fillStyle = `rgba(${col},${0.10 + 0.06 * pu})`; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
-    ctx.strokeStyle = `rgba(${col},${0.5 + 0.5 * pu})`; ctx.lineWidth = 5; ctx.setLineDash([14, 8]); ctx.lineDashOffset = -S.t * 30; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
+  const ring = (x, y, r, col, tag) => { if (!inView(x, y, r + 40)) return;   // 바닥 원 없이 이름표만
     if (tag && !STAGE.noPrompts) infoTag(x, y - r - 18, tag, `rgb(${col})`, .95); };
   if (j.kind === 'car') { const v = j.v, D = S.dealer;
     if (S.player.car !== v) ring(v.x, v.y, 52, '255,200,90', j.name + ' · 가져갈 차');
@@ -17253,11 +17247,10 @@ function sideDropOut(f, angry) {
 // 길가 손님 머리 위 손짓 · 행선지 고리 · 남은 시간 (어둠 위)
 function drawSide() {
   const sd = S.side; if (sd?.kind === 'bus') { drawBus(sd); return; } if (sd?.kind === 'cop') { drawCopSide(sd); return; } if (!sd || !sd.fare) return; const f = sd.fare, col = sd.kind === 'taxi' ? '255,215,106' : '255,120,120';
-  if (!f.aboard && npcAlive(f.g) && inView(f.g.x, f.g.y, 60)) { const b = .6 + .4 * Math.sin(S.t * 8);
-    ctx.strokeStyle = `rgba(${col},${b})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(f.g.x, f.g.y - 4, 22, 0, TAU); ctx.stroke();
+  if (!f.aboard && npcAlive(f.g) && inView(f.g.x, f.g.y, 60)) {
     if (sd.kind === 'amb') { ctx.fillStyle = 'rgba(120,10,10,.6)'; ctx.beginPath(); ctx.ellipse(f.g.x + 4, f.g.y + 4, 9, 5, 0, 0, TAU); ctx.fill(); }  // 바닥에 떨어진 피
     infoTag(f.g.x, f.g.y - 60, sd.kind === 'taxi' ? '손님' : '환자', `rgb(${col})`, .9); }
-  if (f.aboard && inView(f.to.x, f.to.y, 80)) { const b = .5 + .4 * Math.sin(S.t * 5); ctx.strokeStyle = `rgba(${col},${b})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(f.to.x, f.to.y, 46, 0, TAU); ctx.stroke(); infoTag(f.to.x, f.to.y + 30, f.to.label, `rgb(${col})`, .9); }
+  if (f.aboard && inView(f.to.x, f.to.y, 80)) { infoTag(f.to.x, f.to.y + 30, f.to.label, `rgb(${col})`, .9); }
 }
 function sideGoal(money) {
   const sd = S.side; if (!sd) return null; const f = sd.fare, nm = SIDE[sd.kind].name;
@@ -17365,7 +17358,7 @@ function drawBus(sd) {
   const st = sd.stops[sd.si]; if (!st) return;
   for (const [i, s] of sd.stops.entries()) { if (i < sd.si || !inView(s.x, s.y, 80)) continue;  // 정류장 표지: 기둥 + 파란 판
     const x = s.x | 0, y = s.y + 36 | 0; ctx.fillStyle = '#2a2e34'; ctx.fillRect(x - 1, y - 38, 3, 40); ctx.fillStyle = '#2f6db4'; ctx.fillRect(x - 9, y - 50, 19, 13); ctx.fillStyle = '#e8f0ff'; ctx.fillRect(x - 6, y - 47, 13, 2); ctx.fillRect(x - 6, y - 43, 9, 2);
-    if (i === sd.si) { const b = .5 + .4 * Math.sin(S.t * 5); ctx.strokeStyle = `rgba(143,224,168,${b})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(s.x, s.y, 54, 0, TAU); ctx.stroke(); infoTag(s.x, s.y - 70, `${s.name} 정류장`, '#8fe0a8', .9); } }
+    if (i === sd.si) { infoTag(s.x, s.y - 70, `${s.name} 정류장`, '#8fe0a8', .9); } }
 }
 // ---------- 자경단: 경찰차로 무전을 받는다 → 화면 밖에서 도주 차량(조직 스포츠카)이 달아난다 → 들이받아 내구성 절반 아래로 세우면 범인이 내려 손을 든다
 function copSideUpdate(sd, dt) {
@@ -17389,7 +17382,6 @@ function copSideUpdate(sd, dt) {
 }
 function drawCopSide(sd) {
   const c = sd.target; if (!c || !inView(c.x, c.y, 80)) return; const b = (S.t * 4 | 0) % 2;
-  ctx.strokeStyle = b ? 'rgba(255,90,90,.85)' : 'rgba(90,140,255,.85)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(c.x, c.y, 58, 0, TAU); ctx.stroke();
   const k = clamp(c.hp / sd.hp0, 0, 1); ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(c.x - 26, c.y - 74, 52, 6); ctx.fillStyle = '#ff6a5a'; ctx.fillRect(c.x - 25, c.y - 73, Math.round(50 * k), 4);
   infoTag(c.x, c.y - 84, '도주 차량', '#ff9a8a', .9);
 }
@@ -17526,7 +17518,6 @@ function drawWpRoute() {
       ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.beginPath(); ctx.moveTo(9, 0); ctx.lineTo(-5, -8); ctx.lineTo(-1, 0); ctx.lineTo(-5, 8); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); }
     acc = 0;
   }
-  if (S.wp && inView(S.wp.x, S.wp.y, 40)) { const b = .6 + .4 * Math.sin(S.t * 5); ctx.strokeStyle = `rgba(255,215,106,${b})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(S.wp.x, S.wp.y, 40, 0, TAU); ctx.stroke(); }
   ctx.restore();
 }
 function drawMiniWp(x, T) {
@@ -18387,9 +18378,6 @@ function safeLeave(s) {
 function drawSafes() {
   if (!S.safes) return; const P = S.player;
   for (const s of S.safes) { if (!inView(s.x, s.y, 60) || dist(P.x, P.y, s.x, s.y) > 360) continue;
-    const pu = .45 + .3 * Math.sin(S.t * 3 + s.i);
-    ctx.strokeStyle = s.owned ? `rgba(120,230,150,${pu})` : `rgba(220,220,200,${pu * 0.6})`; ctx.lineWidth = 2; ctx.setLineDash(s.owned ? [] : [4, 4]);
-    ctx.beginPath(); ctx.ellipse(s.x, s.y, 20, 8, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
     if (!STAGE.noPrompts) infoTag(s.x, s.y + 20, s.owned ? '은신처' : `은신처 매물 ${s.price}만`, s.owned ? '#8fe0a8' : '#cfcab8', .9); }
 }
 function drawMiniSafes(x, T) {
@@ -18968,7 +18956,11 @@ function rageCar() {
       if (!inMap(Math.floor(x / TILE), Math.floor(y / TILE)) || (Math.abs(x - cam.x) < vw && Math.abs(y - cam.y) < vh)) continue;
       if ((hor ? RX : RY).some(r => (hor ? x : y) > r * TILE - 60 && (hor ? x : y) < (r + 4) * TILE + 60)) continue;
       if (deckSpawnZ(x, y) !== 0) continue; c.push({ x, y, d }); } }
-  if (!c.length) return null; const o = c[(Math.random() * c.length) | 0];
+  if (!c.length) return null;
+  // 바로 뒤에서 붙는다: 내가 달리는 방향과 같은 차로 · 내 차로에 가장 가까운 줄을 먼저 (다른 길에서 돌아오다 30초 넘게 헤매지 않게)
+  const car = P.car, ca = car ? Math.cos(car.a) : 1, sa = car ? Math.sin(car.a) : 0;
+  const score = o => { const along = DV[o.d][0] * ca + DV[o.d][1] * sa, hor = o.d === 0 || o.d === 2; return (along > 0.7 ? 0 : 5000) + Math.abs(hor ? o.y - P.y : o.x - P.x) + Math.hypot(o.x - P.x, o.y - P.y) * 0.1; };
+  c.sort((p, q) => score(p) - score(q)); const o = c[0];
   const v = makeVehicle({ type: 'suv', x: o.x, y: o.y, d: o.d, a: Math.atan2(DV[o.d][1], DV[o.d][0]), v: AI_SPD, ai: true, driver: true, chase: true }); planTurn(v); S.vehicles.push(v); return v;
 }
 // 보복운전 차가 내 곁에 서면: 운전자가 내린다 (47_city copCarArrive에서 부른다)
@@ -25164,6 +25156,7 @@ function drawLootItem(it) {
 function drawScroll(x,y,t){if(!drawFieldItem(ctx,'folder',x,y))drawItemIcon('it_scroll',x,y,t,true);}
 
 function drawPlayerLocator(P) {
+  if (STAGE.cityLife) return;   // 자유 모드: 발밑·차 둘레 파란 원은 그리지 않는다
   const k=1/SCALE,x=P.x,y=P.y+10,a=P.car?P.car.a:P.cover?Math.atan2(P.cover.y,P.cover.x):P.a;
   const col='#7fe3ff';  // 내 위치는 항상 같은 색. 위험은 중앙 상태와 시선 방향 호가 알린다.
   ctx.save();ctx.setLineDash([]);ctx.lineWidth=3.5*k;ctx.strokeStyle='#081015cc';ctx.beginPath();ctx.ellipse(x,y,11*k,5*k,0,0,TAU);ctx.stroke();
@@ -25209,7 +25202,7 @@ function drawPlayerBody(P) {
   if (P.z || P.jump) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(P.x + 4 + P.z * 2, P.y + 6 + P.z * 3, 15, 11, 0, 0, TAU); ctx.fill(); }
   // 숨은 상태(어둠·화단): 몸은 반투명, 밝은 외곽선과 발밑 고리로 내 위치는 늘 보이게
   const concealed = !P.jump && !P.under && (S.expo != null ? S.expo === 0 : (P.hidden || P.light < 0.3)) && !(STAGE.zones && !P.hidden && !P.z && pZoneEff() === Z_PUB);  // 공개 구역에서 섞여 있을 땐 숨음 외곽선을 쓰지 않는다 (위 표시와 맞춘다)
-  if (!isTouch && !P.jump && !P.z && !P.under && S.expo > 0) {  // 드러남 고리: 노랑(돌아보면 보인다) · 빨강(보고 있다)
+  if (!isTouch && !STAGE.cityLife && !P.jump && !P.z && !P.under && S.expo > 0) {  // 드러남 고리: 노랑(돌아보면 보인다) · 빨강(보고 있다)
     const red = S.expo === 2, pu = red ? 0.6 + 0.35 * Math.sin(S.t * 10) : 0.75;
     ctx.strokeStyle = red ? `rgba(240,80,60,${pu})` : `rgba(242,196,107,${pu})`; ctx.lineWidth = red ? 3 : 2;
     ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 21, 10, 0, 0, TAU); ctx.stroke();
@@ -25348,7 +25341,7 @@ function drawPlayerBody(P) {
     const other = pc ? [carryKey(P.carrying), mv ? 'carried' : 'carriedI'] : pg ? [charOf(P.captive), mv ? 'held' : 'heldI'] : null;
     const shake = pg ? Math.sin(S.t * 31) * 1.2 : 0;
     if (concealed) {
-      if(!isTouch){
+      if(!isTouch&&!STAGE.cityLife){
       const pulse = 0.55 + 0.25 * Math.sin(S.t * 3);
       ctx.fillStyle = 'rgba(120,200,255,.10)'; ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.fill();
       ctx.strokeStyle = `rgba(160,230,255,${pulse})`; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
@@ -25363,8 +25356,8 @@ function drawPlayerBody(P) {
   ctx.save(); if (crouch) { ctx.translate(P.x, P.y + 16); ctx.scale(1.14, 0.72); ctx.translate(-P.x, -(P.y + 16)); }
   if (concealed) {
     const pulse = 0.55 + 0.25 * Math.sin(S.t * 3);
-    ctx.fillStyle = 'rgba(120,200,255,.10)'; ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.fill();
-    ctx.strokeStyle = `rgba(160,230,255,${pulse})`; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+    if (!STAGE.cityLife) { ctx.fillStyle = 'rgba(120,200,255,.10)'; ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.fill(); }
+    if (!STAGE.cityLife) { ctx.strokeStyle = `rgba(160,230,255,${pulse})`; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
     drawChar('ninja', P.x, P.y, P.a, mv, blink ? 0.25 : 0.5, sc, P.strikeT > 0, -yo);
     if (F.ch_ninja_ol) drawChar('ninja_ol', P.x, P.y, P.a, mv, blink ? 0.3 : 0.95, sc, P.strikeT > 0, -yo);
   } else drawChar('ninja', P.x, P.y, P.a, mv, blink ? 0.35 : 1, sc, P.strikeT > 0, -yo);
@@ -26109,7 +26102,7 @@ function drawNearMarks(P, openB) { if (P.trav || (window.__skip && window.__skip
   const WAY = new Set(['↓', '↑', '↕', 'window', 'pick', 'door', 'vent', 'manhole', 'wire']);
   for (const m of list) {
     // 오르내리는 곳·창문·문: 가까이 오면 실제로 서야 할 자리에 바닥 고리를 그린다. 바로 앞인데 다른 행동이 잡혀 있으면 이유를 적는다
-    if (WAY.has(m.g) && !m.roofDoor && m.d < 150) { const on = paAt && dist(paAt.x, paAt.y, m.x, m.y) < 30; ctx.strokeStyle = m.col; ctx.globalAlpha = on ? 0.95 : 0.5; ctx.lineWidth = on ? 2.5 : 1.5; ctx.setLineDash(on ? [] : [4, 4]); ctx.beginPath(); ctx.ellipse(m.x, m.y + 4 * k, 20 * k, 11 * k, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+    if (WAY.has(m.g) && !m.roofDoor && m.d < 150) { const on = paAt && dist(paAt.x, paAt.y, m.x, m.y) < 30; ctx.strokeStyle = m.col; ctx.globalAlpha = on ? 0.95 : 0.5; ctx.lineWidth = on ? 2.5 : 1.5; ctx.setLineDash(on ? [] : [4, 4]); if (!STAGE.cityLife) { ctx.beginPath(); ctx.ellipse(m.x, m.y + 4 * k, 20 * k, 11 * k, 0, 0, TAU); ctx.stroke(); } ctx.setLineDash([]); ctx.globalAlpha = 1;
       if (!on && m.d < 60) { const why = P.carrying && !/^[↑↓]\d+층/.test(m.lab || '') ? '운반 중에는 통과 불가 · [행동]으로 내려놓기' : P.captive ? '붙잡은 상태에서는 통과 불가' : pa && pa.choices > 1 ? (isTouch ? '[대상] 버튼으로 바꾸기' : 'Tab으로 바꾸기') : pa && pa.k !== 'none' ? '한 걸음 더 가까이' : '';
         if (why) { ctx.font = uiFont(11 * k); const tw = ctx.measureText(why).width + 10 * k; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.fillRect(m.x - tw / 2, m.y + 18 * k, tw, 15 * k); ctx.fillStyle = '#ffb36b'; ctx.textAlign = 'center'; ctx.fillText(why, m.x, m.y + 29 * k); } } }
     if (m.d > 170 || (m.roofDoor && paAt && dist(paAt.x, paAt.y, m.x, m.y) < 2)) continue;  // 선택된 옥탑문은 문 테두리와 행동 안내만
@@ -28644,7 +28637,7 @@ function drawEnvSelection() {
   const a=envAction(); if(a.k==='none' || !(a.choices>1 || S.envExplicit)) return;
   if(a.c&&a.k!=='retrieve'){const ka=attackAction();if(ka.c===a.c&&!subduedAction(ka)||a.c.hidden&&!S.envExplicit)return;ctx.save();ctx.setLineDash([4,3]);drawTargetRing(a.c,'#e6d9ae',a.c);ctx.restore();return;}
   const raw=objectActionPoint(a),p=raw?.surface?surfacePoint(raw):raw; if(!p || !Number.isFinite(p.x)) return;
-  ctx.save(); ctx.strokeStyle='#e6d9ae';ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.beginPath();ctx.ellipse(p.x,p.y+4,19,10,0,0,TAU);ctx.stroke();ctx.restore();
+  if(STAGE.cityLife)return; ctx.save(); ctx.strokeStyle='#e6d9ae';ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.beginPath();ctx.ellipse(p.x,p.y+4,19,10,0,0,TAU);ctx.stroke();ctx.restore();
 }
 function unavailableEnvReason() {
   const P=S.player;
