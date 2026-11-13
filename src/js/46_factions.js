@@ -309,7 +309,7 @@ function copWatch(g, dt) {
   if ((g.cwT = (g.cwT || 0) - dt) <= 0) { g.cwT = 0.35;
     // 눈앞에서 싸우거나 주민을 쫓는 조직원: 끼어들어 제압한다
     for (const o of S.guards) {
-      if (o === g || o.fac === 'P' || o.civ || !npcAlive(o) || !(o.brawl || o.hunt) || flOf(o) !== flOf(g) || dist(o.x, o.y, g.x, g.y) > 420 || !los(g.x, g.y, o.x, o.y)) continue;
+      if (o === g || o.fac === 'P' || (o.civ && !o.criminal && !(o.cfight && o.cfight.starter)) || !npcAlive(o) || !(o.brawl || o.hunt || o.criminal || (o.cfight && o.cfight.starter)) || flOf(o) !== flOf(g) || dist(o.x, o.y, g.x, g.y) > 420 || !los(g.x, g.y, o.x, o.y)) continue;
       if (!inc && Math.abs(angDiff(g.a, Math.atan2(o.y - g.y, o.x - g.x))) > 1.4 && dist(o.x, o.y, g.x, g.y) > 320) continue;  // 등 뒤라도 가까운 싸움(320px)은 소리로 안다. 출동 중이면 둘러본다
       o.hunt = null; g.incident = null; startBrawl(g, o); return true;
     }
