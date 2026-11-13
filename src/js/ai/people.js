@@ -43,7 +43,7 @@ function updateCiv(g, dt) {
     // 범죄(처치·기절·운반·붙잡기·락픽·몰래 약 타기)와 무단 침입(직원이 일터의 불청객을 봄)을 따로 본다
     const crimeNow = !!((P.interact && P.interact.illegal) || P.carrying || P.captive || P.strikeT > 0 || (STAGE.zones && (P.pick || (P.useT || 0) > S.t)));
     const homeNow = !!(H && gb === H.b && pb === H.b && flOf(P) === H.fl && !P.z && !P.wire && ptx >= H.x0 && ptx <= H.x1 && pty >= H.y0 && pty <= H.y1);
-    const tresNow = !!(STAGE.zones && g.outfit && !g.child && pZoneEff(g) !== Z_PUB && dist(g.x, g.y, P.x, P.y) < 420);
+    const tresNow = !!(STAGE.zones && g.outfit && !g.child && !g.staff && pZoneEff(g) !== Z_PUB && dist(g.x, g.y, P.x, P.y) < 420);
     g.wary = homeNow || crimeNow || tresNow;
     const vis0 = (P.hide || P.under || P.vent || !sameF) ? 0 : canSee(g, P.x, P.y, P.light, P.hidden, P.mode === 'sneak', P.jump ? Math.max(1, P.z) : P.z);
     if (vis0 > 0 && !g.wary && dist(g.x, g.y, P.x, P.y) < 110 && Math.random() < dt * 0.6) g.want = Math.atan2(P.y - g.y, P.x - g.x);  // 힐끔 쳐다볼 뿐

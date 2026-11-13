@@ -161,11 +161,15 @@ function planInterior(g, b, bi, f) {
       for (let x = sx0 + 1; x + 2 <= sx1 - 1; x += 4) furn(x, vy + 2, 3, 1, 'disp');
       furn(sx1 - 2, vy + 2, 2, 1, 'disp');
     }
-    else if (use === 'store' && open) {  // 자유 모드 가게(넓힌 층): 안쪽 벽을 따라 냉장고, 폭에 맞춘 진열대 줄, 앞쪽 계산대
-      for (let x = sx0 + 1, n = 0; x <= sx1 && n < 4; x++) if (furn(x, iy0, 1, 1, 'fridge')) n++;
-      const sw = sx1 - sx0 + 1 >= 7 ? 3 : 2; for (let y = iy0 + 2; y < iy1 - 1; y += 2) for (let x = sx0 + 1; x + sw - 1 <= sx1 - 1; x += sw + 1) furn(x, y, sw, 1, 'shelf');
-      if (furn(sx1 - 1, iy1 - 1, 2, 1, 'counter', true, 0)) furn(sx1, iy1 - 2, 1, 1, 'chairD', true, 0);
-      if (/편의점|마트|슈퍼|시장|상회/.test((b.signs || [])[f] || '')) { if (iy0 + 4 < iy1 - 1) furn(sx0 + 1, iy0 + 4, 2, 1, 'csfood', true, 0); furn(sx0, iy1 - 1, 1, 1, 'plant'); }  // 편의점: 반찬·도시락 진열대, 입구 화분 (47zu 그림)
+    else if (use === 'store' && open) {  // 자유 모드 가게(넓힌 층): 안쪽 벽(편의점 냉장고 · 약국·철물 벽 선반), 계산대, 폭에 맞춘 진열대
+      const sign = (b.signs || [])[f] || '', cs = /편의점|마트|슈퍼|시장|상회/.test(sign), ph = /약국/.test(sign), W = sx1 - sx0 + 1;
+      for (let x = sx0 + 1, n = 0; x <= sx1 && n < 5; x++) if (furn(x, iy0, 1, 1, cs ? 'fridge' : 'shelfS', true, 0)) n++;
+      // 계산대: 편의점은 앞쪽 오른편, 약국은 안쪽(약사 뒤로 약 선반). 문 앞 칸에 걸리면 다음 자리
+      const ctr = ph ? [[sx1 - 1, iy0 + 2], [sx1 - 1, iy0 + 3], [sx1 - 1, iy1 - 2], [sx1 - 1, iy1 - 1]] : [[sx1 - 1, iy1 - 1], [sx1 - 1, iy1 - 2], [sx1 - 1, iy0 + 2]];
+      let cy = -1; for (const [x, y] of ctr) if (y > iy0 && y < iy1 && furn(x, y, 2, 1, 'counter', true, 0)) { cy = y; rec.counter = { x, y }; break; }
+      const sw = W >= 7 ? 3 : W >= 5 ? 2 : 1;   // 좁은 가게는 한 칸짜리 진열대
+      for (let y = iy0 + 2; y <= iy1 - 1; y += 2) { if (y === cy) continue; for (let x = sx0 + 1; x + sw - 1 <= sx1 - (cy >= 0 ? 2 : 1); x += sw + 1) furn(x, y, sw, 1, 'shelf'); }
+      if (cs) { if (iy0 + 4 < iy1 - 1) furn(sx0 + 1, iy0 + 4, 2, 1, 'csfood', true, 0); furn(sx0, iy1 - 1, 1, 1, 'plant'); }  // 편의점: 반찬·도시락 진열대, 입구 화분 (47zu 그림)
     }
     else if (use === 'store') { furn(sx0, iy0, 1, 1, 'fridge'); furn(sx0 + 1, iy0, 1, 1, 'fridge'); for (let y = iy0 + 2; y < iy1 - 1; y += 2) for (let x = sx0 + 1; x + 2 <= sx1 - 1; x += 4) furn(x, y, 3, 1, 'shelf'); if (furn(sx1 - 1, iy1 - 1, 2, 1, 'counter', true, 0)) furn(sx1, iy1 - 2, 1, 1, 'chairD', true, 0); }  // 가게: 안쪽 벽 음료 냉장고, 진열대 줄, 계산대와 점원 의자
     else if (use === 'pc') { for (let y = iy0; y + 1 < iy1; y += 3) for (let x = sx0; x <= sx1; x++) if ((x - sx0) % 4 !== 3 && furn(x, y, 1, 1, 'pc', true, 0)) furn(x, y + 1, 1, 1, 'chairD', true, 2); }  // 줄마다 컴퓨터 + 의자, 그 아래 통로

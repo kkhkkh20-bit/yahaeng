@@ -31,9 +31,9 @@ async def main():
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player,ST=G.STAGE;P.x=(ST.roadsX[2]+4)*48+300;P.y=(ST.roadsY[2]+2)*48;P.a=0;tick(.05);const a=CIV(160,0),b=CIV(200,30);
           G.actAttack();tick(.35);const k1=JSON.stringify(S.kills),a1=a.state,b1=b.state;b.x=P.x+200;b.y=P.y;b.state='PATROL';b.fear=null;b.path=null;b.route=[{x:b.x,y:b.y,pause:999}];tick(.05);G.actAttack();tick(.35);return {a:a.state,b:b.state,ammo:S.guns.pistol,streak:S.kills.n,k1,a1,b1,gk:S.fst.gunKills}}''')
         print('shoot', r); ok(r['a'] == 'DEAD' and r['b'] == 'DEAD' and r['ammo'] == 10 and r['streak'] >= 2, 'pistol shots: %s' % r)
-        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.guns.shotgun=4;S.wpn='shotgun';const v=G.traffic.makeVehicle({type:'sedan',x:P.x+120,y:P.y,parked:true});S.vehicles.push(v);const h0=v.hp;
-          for(const g of S.guards)if(Math.abs(g.x-P.x)<400&&Math.abs(g.y-P.y)<400&&g.state!=='DEAD')g.x+=2000;P.a=0;G.actAttack();tick(.2);return {lost:h0-v.hp}}''')
-        print('shotgun', r); ok(r['lost'] > 0, 'shotgun does not hit cars: %s' % r)
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;const keep=S.guns.pistol;S.guns.pistol=4;S.wpn='pistol';const v=G.traffic.makeVehicle({type:'sedan',x:P.x+120,y:P.y,parked:true});S.vehicles.push(v);const h0=v.hp;
+          for(const g of S.guards)if(Math.abs(g.x-P.x)<400&&Math.abs(g.y-P.y)<400&&g.state!=='DEAD')g.x+=2000;P.a=0;G.actAttack();tick(.2);S.guns.pistol=keep;return {lost:h0-v.hp}}''')
+        print('car', r); ok(r['lost'] > 0, 'pistol does not hit cars: %s' % r)
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;tick(1);S.guns.grenade=1;S.wpn='grenade';const nb=(S.booms||[]).length;P.a=0;G.actAttack();tick(2);const boom=(S.booms||[]).length>nb;
           S.guns.molotov=1;S.wpn='molotov';P.x+=600;tick(1);P.a=0;G.actAttack();tick(.7);const pool=S.firePools.length;const g=CIV(0,0);const F=S.firePools[0];g.x=F.x;g.y=F.y;tick(.4);
           return {boom,pool,burning:!!g.burnT}}''')

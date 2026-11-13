@@ -36,9 +36,9 @@ function brawlHit(g, knife, heavy) {
   if ((g.civ || g.police) && !g.evt && g.skBi == null && witnessed(P.x, P.y, 300)) { if (g.police) addWanted(1, '경찰을 폭행했다'); else if (!S.wanted) addWanted(1, knife ? '칼로 사람을 찔렀다' : '사람을 때리는 걸 봤다'); }
   if (g.bhp <= 0) { g.fist = false; npcDown(g, null, !!knife); if (!knife) gsay(g, '...', 1); return; }
   // 반응: 맞서거나 도망
-  if (g.fist) { if (Math.random() < 0.3) gsay(g, ['이 새끼가!', '컥...', '죽여 버린다!'][(S.t * 3 | 0) % 3], 1.2); return; }
-  if (brawlTough(g) || Math.random() < 0.25) { g.fist = true; g.fistT = 0; gsay(g, g.police ? '공무집행방해야! 엎드려!' : ['뭐야 이 미친X이!', '한판 붙자 이거지?', '어디서 손을 대!'][g.id % 3], 1.8); }
-  else { civPanic(g, P.x, P.y, 12); gsay(g, ['사람 살려!', '왜 이래요!', '경찰! 경찰!'][g.id % 3], 1.6); }
+  if (g.fist) { if (Math.random() < 0.3) saysLine(g, 'civ', 'fighting', 1.2); return; }
+  if (brawlTough(g) || Math.random() < 0.25) { g.fist = true; g.fistT = 0; saysLine(g, g.police ? 'cop' : 'civ', g.police ? 'resist' : 'fight', 1.8); }
+  else { civPanic(g, P.x, P.y, 12); saysLine(g, 'civ', 'hurt', 1.6); }
 }
 // 맞서는 사람: 다가와 주먹을 휘두른다 (맞으면 잠깐 멈칫)
 function brawlUpdate(dt) {

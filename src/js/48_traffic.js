@@ -506,7 +506,7 @@ function carEnter(v) {
     const gi = cityGuardSlot(), g = makeGuard({ kind: 'civ', at: [Math.floor(v.x / TILE), Math.floor(v.y / TILE)] }, gi);
     g.x = v.x; g.y = v.y; g.a = side; g.route = [{ x: out.x, y: out.y, pause: 999 }]; g.driverOut = true; g.state = 'PATROL'; g.meter = 1; placeGuard(g, gi);
     if (PR) prWarm([charOf(g)], true);
-    let k = 0; const slide = () => { k++; g.x = v.x + (out.x - v.x) * k / 4; g.y = v.y + (out.y - v.y) * k / 4; if (k < 4) after(0.06, slide); else { civPanic(g, v.x, v.y, 8); gsay(g, ['내 차!', '뭐, 뭐야!', '사람 살려!'][v.id % 3], 1.6); } };
+    let k = 0; const slide = () => { k++; g.x = v.x + (out.x - v.x) * k / 4; g.y = v.y + (out.y - v.y) * k / 4; if (k < 4) after(0.06, slide); else { civPanic(g, v.x, v.y, 8); (typeof saysLine === 'function' ? saysLine(g, 'civ', 'carjack', 1.6) : gsay(g, '내 차!', 1.6)); } };
     slide();
     if (witnessed(P.x, P.y, 380)) addWanted(1, '차를 빼앗는 걸 사람들이 봤다');
     v.driver = false;

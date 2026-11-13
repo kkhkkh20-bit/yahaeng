@@ -61,13 +61,13 @@ function sceneUpdate(dt) {
     for (const m of sc.medics) m.medic = true;
     const cp = walkableNear(c.x + 40, c.y - 20, { x: c.x, y: c.y }); sc.cop = scenePerson(cp.x, cp.y, { police: true }); sc.cop.civ = true; sc.cop.beat = true; sc.cop.police = true;
     sc.tape = { x0: c.x - 52, y0: c.y - 34, x1: c.x + 52, y1: c.y + 30, t0: S.t };
-    gsay(sc.cop, '여기 라인 쳐. 사람들 못 들어오게.', 2.2); play('door', 0.4 * proxVol(v)); sc.st = 'walk'; return;
+    saysLine(sc.cop, 'cop', 'tape', 2.2); play('door', 0.4 * proxVol(v)); sc.st = 'walk'; return;
   }
   const c = sc.c, home = { x: v.x + Math.cos(v.a + (sc.side || 0)) * 46, y: v.y + Math.sin(v.a + (sc.side || 0)) * 46 };   // 시신 쪽 옆문
   if (sc.st === 'walk') {
-    if (!S.corpses.includes(c) || c.carried || c.stashed) { sc.st = 'back'; gsay(sc.medics[0], '...어디 갔어?', 1.8); return; }   // 내가 들고 갔다
+    if (!S.corpses.includes(c) || c.carried || c.stashed) { sc.st = 'back'; saysLine(sc.medics[0], 'medic', 'lost', 1.8); return; }   // 내가 들고 갔다
     let near = 0; sc.medics.forEach((m, i) => { const tx = c.x + (i ? 18 : -18), ty = c.y + 4; if (dist(m.x, m.y, tx, ty) > 14) evRun(m, tx, ty, 95, dt); else { near++; m.a = Math.atan2(c.y - m.y, c.x - m.x); } });
-    if (near === 2) { sc.st = 'lift'; sc.t1 = S.t; gsay(sc.medics[0], ['맥박 없어.', '하나, 둘, 셋.', '조심해서 들어.'][S.hitN % 3 || 0], 1.8); }
+    if (near === 2) { sc.st = 'lift'; sc.t1 = S.t; saysLine(sc.medics[0], 'medic', 'lift', 1.8); }
     return;
   }
   if (sc.st === 'lift') { if (S.t - sc.t1 > 2.4) { sceneLift(sc); sc.st = 'back'; sc.t3 = S.t; } return; }
@@ -83,10 +83,10 @@ function sceneUpdate(dt) {
     return;
   }
   if (sc.st === 'keep') {   // 테이프와 경찰은 잠시 남는다
-    const cop = sc.cop; if (cop && npcAlive(cop) && sc.tape && !P.car && S.t > sc.sayT && dist(P.x, P.y, (sc.tape.x0 + sc.tape.x1) / 2, (sc.tape.y0 + sc.tape.y1) / 2) < 90) { sc.sayT = S.t + 4; gsay(cop, ['물러서세요. 현장입니다.', '구경하지 마시고 가세요.', '...혹시 뭐 보신 거 있어요?'][(S.t | 0) % 3], 2); }
+    const cop = sc.cop; if (cop && npcAlive(cop) && sc.tape && !P.car && S.t > sc.sayT && dist(P.x, P.y, (sc.tape.x0 + sc.tape.x1) / 2, (sc.tape.y0 + sc.tape.y1) / 2) < 90) { sc.sayT = S.t + 4; saysLine(cop, 'cop', 'line', 2); }
     if (S.t - sc.t2 > SCENE_KEEP) sceneEnd(true);
   }
-  if (sc.cop && npcAlive(sc.cop) && sc.tape && sc.st !== 'keep' && !P.car && S.t > sc.sayT && dist(P.x, P.y, (sc.tape.x0 + sc.tape.x1) / 2, (sc.tape.y0 + sc.tape.y1) / 2) < 90) { sc.sayT = S.t + 4; gsay(sc.cop, '물러서세요. 현장입니다.', 2); }
+  if (sc.cop && npcAlive(sc.cop) && sc.tape && sc.st !== 'keep' && !P.car && S.t > sc.sayT && dist(P.x, P.y, (sc.tape.x0 + sc.tape.x1) / 2, (sc.tape.y0 + sc.tape.y1) / 2) < 90) { sc.sayT = S.t + 4; saysLine(sc.cop, 'cop', 'line', 2); }
 }
 // 폴리스라인(노랑·검정 테이프와 기둥) · 들것(대원 둘 사이 흰 들것과 덮인 시신)
 function drawScene() {
