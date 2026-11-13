@@ -8430,6 +8430,10 @@ function drawHeldBox(x, y, a, s, front) {
 }
 function guardAnim(g) {
   if (g.crew && g.moving) return g.crew.kind === 'kick' ? 'idleC' : g.crew.kind === 'bike' ? (PR && PR.anims.crouch ? 'crouch' : 'walk') : 'run';  // 무리 (47zc)
+  if (g.seat && !g.moving && g.state === 'PATROL') return PR && PR.anims.crouch ? 'crouch' : 'idleC';   // 자유 모드 가게: 의자에 앉은 사람 (47zt)
+  if (g.jog && !g.moving && g.state === 'PATROL') return 'run';   // 러닝머신 위
+  if ((g.act === 'workHigh' || g.act === 'workLow') && g.shopper && !g.moving && g.state === 'PATROL') return g.act;
+  if (g.chatter && !g.moving && g.state === 'PATROL' && PR && PR.anims.talk) return 'talk';
   if(g.act==='pickup')return 'workLow';
   if(g.act==='smoke')return 'workHigh';
   if (g.state === 'BODY' && g.bodyWork) return 'crouch';
@@ -19748,6 +19752,7 @@ function brawlHit(g, knife, heavy) {
   hitJuice(g, a, heavy ? 1.4 : knife ? 1 : 0.7, g.bhp <= 0);   // 타격감 (47zw)
   // 수배: 행인·경찰을 때리는 걸 봤다
   if ((g.civ || g.police) && !g.evt && g.skBi == null && witnessed(P.x, P.y, 300)) { if (g.police) addWanted(1, '경찰을 폭행했다'); else if (!S.wanted) addWanted(1, knife ? '칼로 사람을 찔렀다' : '사람을 때리는 걸 봤다'); }
+  if (g.bhp > 0 && typeof villainHit === 'function') villainHit(g);   // 악당은 맞아도 뻔뻔하게 (47zt1)
   if (g.bhp <= 0) { g.fist = false; npcDown(g, null, !!knife); if (!knife) gsay(g, '...', 1); return; }
   // 반응: 맞서거나 도망
   if (g.fist) { if (Math.random() < 0.3) saysLine(g, 'civ', 'fighting', 1.2); return; }
@@ -20097,6 +20102,18 @@ const LINES = {
     resist: ['공무집행방해야! 엎드려!'],
     line: ['물러서세요. 현장입니다.', '구경하지 마시고 가세요.', '...혹시 뭐 보신 거 있어요?', '라인 밖으로요.'],
     tape: ['여기 라인 쳐. 사람들 못 들어오게.'] },
+  // ---- 악당 (동네 사건): 얄밉게. taunt = 내가 다가가면 · hit = 맞으면 (뻔뻔하게)
+  v_assault: { taunt: ['뭘 봐? 너도 맞고 싶어?', '세상이 날 이렇게 만든 거야. 난 잘못 없어.', '어차피 심신미약이면 금방 나와.'], hit: ['아 씨, 이거 쌍방이다?', '나 맞았다. 다들 봤지?'] },
+  v_rage: { taunt: ['깜빡이는 장식이야? 운전 배워서 와.', '블랙박스? 찍어 봐. 내가 쫄 것 같아?', '너 같은 놈 때문에 길이 막히는 거야.'], hit: ['어? 폭행이네? 합의금 각이다.', '내 차 긁히면 네가 물어내.'] },
+  v_kick: { taunt: ['비켜, 비켜! 길 막지 말고!', '헬멧? 그런 거 촌스러워.', '인도가 넓은데 왜 거기 서 있어요?'], hit: ['아 왜 때려요! 킥보드 내 거 아니거든요?', '이거 공유 킥보드라 상관없어요.'] },
+  v_delivery: { taunt: ['잠깐 세운 거예요, 잠깐. 5분이면 돼요.', '다들 여기 세우는데 왜 나만 갖고 그래요?', '바쁜 사람한테 시비예요?'], hit: ['배달 늦으면 당신이 책임져요?', '별점 테러 맞고 싶어요?'] },
+  v_molka: { taunt: ['찍긴 뭘 찍어요. 그냥 화면 본 건데.', '증거 있어요? 없잖아요.'], hit: ['폰 돌려줘! 그거 내 사생활이야!', '초상권 침해야 이거!'] },
+  v_stalker: { taunt: ['우리 둘 일이니까 빠져요.', '그 사람도 사실 날 좋아해요. 부끄러워서 그래.', '내가 지켜 주는 거예요.'], hit: ['당신이 뭔데 우리 사이에 끼어들어!', '이거 다 기록하고 있어.'] },
+  v_gapjil: { taunt: ['내가 여기 단골이야. 사장 나오라 그래.', '손님이 왕인 거 몰라?', '리뷰 별 하나 줄까?'], hit: ['어머, 사람 친다! 동영상 찍어! 찍어!', '나 이 동네 유지야!'] },
+  v_jeonse: { taunt: ['계약서에 다 써 있었어요. 안 읽은 사람 잘못이지.', '저도 피해자예요. 이름만 빌려준 거라니까요.', '억울하면 소송하세요. 몇 년 걸리겠지만.'], hit: ['폭행으로 고소합니다! 변호사 있어요!', '이러면 그쪽이 불리해져요.'] },
+  v_tteot: { taunt: ['어르신들 다 좋아서 사시는 거예요.', '이 건강식품 하나면 병원 갈 일 없다니까.', '오늘만 이 가격! 내일은 없어요!'], hit: ['환불은 안 돼요! 개봉했잖아!', '영업 방해예요, 이거!'] },
+  v_animal: { taunt: ['내 개야. 내 맘대로 하는 거지.', '개가 말을 안 들으니까 그렇지.', '훈육하는 거야, 훈육.'], hit: ['동물보다 사람이 먼저지!', '개 한 마리 갖고 사람을 쳐?'] },
+  v_gongal: { taunt: ['아이고 다리야! 보험 처리 해 줘야지?', '블랙박스 확인하면 손해 보는 건 그쪽이야.', '합의 보자고. 좋게 좋게.'], hit: ['어? 진짜로 치면 어떡해!', '이거 진단서 끊는다!'] },
   medic: {
     lift: ['맥박 없어.', '하나, 둘, 셋.', '조심해서 들어.'],
     lost: ['...어디 갔어?'] },
@@ -20144,6 +20161,15 @@ function civTalkUpdate() {
   // 혼잣말: 내가 곁에 멈춰 있을 때 가까운 행인이 가끔 (밤거리 분위기)
   if (near && nd < 90 && !walking && !P.car && S.t > (S.civIdleT || 0)) { S.civIdleT = S.t + 14; civSay(near, 'idle', 2.2, 30); }
 }
+// ---- 악당 도발: 동네 사건의 악당이 내가 다가가면 얄밉게 한마디 (8초에 한 번) · 맞으면 뻔뻔하게 (47zp brawlHit 에서)
+function villainOf(g) { const E = S.ev; if (!E || E.done || !E.def?.villain || !g) return null; const k = 'v_' + E.def.key; if (!LINES[k]) return null;
+  const f = E.def.focus?.(E); return (f === g || E.crew?.members?.includes(g) || E.thugs?.includes(g)) ? k : null; }
+function villainTalk() {
+  const E = S.ev; if (!STAGE.cityLife || !E || E.done || !E.def?.villain || !E.engaged) return; const k = 'v_' + E.def.key; if (!LINES[k]) return;
+  const g = E.def.focus?.(E), P = S.player; if (!g || !npcAlive(g) || g.off || flOf(g) !== flOf(P)) return;
+  if (dist(g.x, g.y, P.x, P.y) < 150 && S.t > (E.tauntT || 0)) { E.tauntT = S.t + 8; g.want = Math.atan2(P.y - g.y, P.x - g.x); saysLine(g, k, 'taunt', 2.6); }
+}
+function villainHit(g) { const k = villainOf(g); if (k && npcAlive(g) && S.t > (g.vHitT || 0)) { g.vHitT = S.t + 2.5; saysLine(g, k, 'hit', 1.8); } }
 
 // ---------------------------------------------------------------- 자유 모드 가게 일꾼: 건물마다 층의 쓰임새대로 일하는 사람과 옷
 // 편의점 조끼 · 약국 흰 가운 · 철물점 작업복 · 식당 조리복/앞치마 · PC방·노래방 직원 · 헬스 트레이너 · 학원 선생님 · 사무실 양복.
@@ -20167,13 +20193,7 @@ function staffSpawn(bi) {
     const gi = cityGuardSlot(), g = makeGuard({ kind: 'civ', at: t, fl: f, radio: false }, gi);
     g.evt = '__staff'; g.staff = o; g.shopA = A; g.shopB = bi; g.shopF = f; g.outfit = o; g.fl = f; g.homeFl = f; g.x = tc(t[0]); g.y = tc(t[1]); g.route = t[2] ? [{ x: g.x, y: g.y, pause: 999 }] : [{ x: g.x, y: g.y, pause: 6 }, { x: g.x + (t[0] > A.x0 ? -TILE : TILE), y: g.y, pause: 4 }]; g.ri = 0; g.a = Math.PI / 2;
     placeGuard(g, gi); out.push(g); });
-  // 손님: 매장 크기에 맞춰 1~3명. 진열대·냉장고·식탁·PC 같은 가구 바로 앞 칸을 몇 군데 돌며 구경한다 (무작위 없이 칸 순서로 고른다)
-  plans.forEach((p, f) => { const A = p && p.store; if (!A || !['store', 'food', 'pc', 'karaoke', 'billiards', 'gym'].includes(A.use)) return;
-    const spots = shopperSpots(f, A, p.counter); if (spots.length < 2) return; const n = Math.min(3, Math.max(1, Math.floor((A.x1 - A.x0 + 1) * (A.y1 - A.y0 + 1) / 14)));
-    for (let k = 0; k < n; k++) { const pts = [spots[(k * 5) % spots.length], spots[(k * 5 + 3) % spots.length], spots[(k * 5 + 7) % spots.length]];
-      const gi = cityGuardSlot(), g = makeGuard({ kind: 'civ', at: pts[0], fl: f, radio: false }, gi);
-      g.evt = '__staff'; g.shopper = true; g.shopA = A; g.shopB = bi; g.shopF = f; g.fl = f; g.homeFl = f; g.x = tc(pts[0][0]); g.y = tc(pts[0][1]);
-      g.route = pts.map((t, i) => ({ x: tc(t[0]), y: tc(t[1]), pause: 4 + ((k + i) % 3) * 2 })); g.ri = 0; placeGuard(g, gi); out.push(g); } });
+  plans.forEach((p, f) => { const A = p && p.store; if (A) for (const g of castSpawn(b, bi, f, A, p)) out.push(g); });
   if (PR && out.length) prWarm(out.map(charOf), true);
   return out;
 }
@@ -20186,7 +20206,7 @@ function shopperSpots(f, A, C) {
   setLayer(old); return out;
 }
 function staffUpdate(dt) {
-  if (!STAGE.cityLife || !S.staffB || (S.staffT -= dt) > 0) return; S.staffT = 0.5; const P = S.player; staffTalk(dt); civTalkUpdate();   // 나가며 인사가 일꾼을 들여보내기 전에
+  if (!STAGE.cityLife || !S.staffB || (S.staffT -= dt) > 0) return; S.staffT = 0.5; const P = S.player; staffTalk(dt); civTalkUpdate(); villainTalk();   // 나가며 인사가 일꾼을 들여보내기 전에
   // 실내는 들어가야 보인다: 내가 들어간 건물에만 일꾼을 세우고, 나오면 들여보낸다 (바깥 사람 수·목격자 수는 그대로)
   const inB = P.z ? -1 : bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE));
   for (const [bi, have] of S.staffB) if (bi !== inB && !have.some(g => g.state === 'CAPTIVE')) {   /* 붙잡혀 끌려 나온 직원이 있으면 풀려날 때까지 기다린다 */ for (const g of have) if (!g.off && g.evt === '__staff') { if (npcAlive(g)) evGone(g); else g.keep = false; } S.staffB.delete(bi); }
@@ -20216,6 +20236,35 @@ function staffTalk(dt) {
     if (g.stillT >= 1 && (!g.nearT || S.t - g.nearT > 12)) { g.nearT = S.t; g.want = Math.atan2(P.y - g.y, P.x - g.x); saysLine(g, g.staff, 'near'); }
     else if (d > 120 && S.t - Math.max(g.custIn, g.nearT || 0, g.idleT || 0) > 18) { g.idleT = S.t; saysLine(g, g.staff, 'idle', 2.4); }   // 손님이 멀리 둘러보는 동안 혼잣말
   }
+}
+// ---- 가게마다 '누가 어떻게 있는가' (실제 동네처럼): 가구를 보고 사람을 앉히고 세운다. 무작위 없이 가구 순서로 고른다.
+//  식당·호프: 식탁 의자에 손님 · PC방: 컴퓨터 앞 의자에 게이머 · 학원: 책상에 학생 · 사무실: 책상에 직원 · 노래방: 소파에 손님
+//  당구장: 당구대 옆에서 큐를 겨누는 둘 · 헬스장: 러닝머신 위 · 랙 앞 · 미용실: 의자에 앉은 손님
+//  편의점·철물: 진열대 앞에서 물건을 보는 손님(손 뻗기) · 약국: 계산대 앞에서 약사와 이야기하는 어르신
+const SEATS = new Set(['chair', 'chairD', 'sofa', 'sofaV']), FACES = new Set(['table', 'tableS', 'pc', 'desk', 'desk2', 'board', 'kscreen', 'counter']);
+function castSpawn(b, bi, f, A, p) {
+  const use = A.use, sign = (b.signs || [])[f] || '', items = FURN.filter(it => (it.fl || 0) === f && it.x >= A.x0 - 1 && it.x <= A.x1 + 1 && it.y >= A.y0 && it.y <= A.y1);
+  const at = (tx, ty) => items.find(it => tx >= it.x && tx < it.x + it.w && ty >= it.y && ty < it.y + it.h);
+  const faceOf = (tx, ty) => { for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) { const it = at(tx + dx, ty + dy); if (it && FACES.has(it.t)) return Math.atan2(dy, dx); } return -Math.PI / 2; };
+  const people = [], put = (tx, ty, o) => people.push(Object.assign({ tx, ty }, o));
+  const seats = items.filter(it => SEATS.has(it.t)), pick = (L, every) => L.filter((_, i) => i % every === 0);
+  if (['food', 'pc', 'academy', 'office', 'karaoke'].includes(use) || /미용|헤어/.test(sign)) {   // 앉은 사람
+    const every = use === 'office' ? 2 : use === 'karaoke' ? 2 : use === 'food' ? 2 : 1; let n = 0, max = use === 'karaoke' ? 3 : 8;
+    for (const it of pick(seats, every)) { if (n++ >= max) break; put(it.x, it.y, { seat: true, a: faceOf(it.x, it.y) }); } }
+  if (use === 'billiards') { let k = 0; for (const it of items.filter(it => it.t === 'pool')) { if (k++ >= 2) break;   // 당구대 양끝에서 겨누는 둘
+      for (const [tx, ty] of [[it.x - 1, it.y], [it.x + it.w, it.y + it.h - 1]]) put(tx, ty, { act: 'workLow', a: Math.atan2(it.y - ty, (it.x + it.w / 2) - tx) }); } }
+  if (use === 'gym') { let k = 0; for (const it of items.filter(it => it.t === 'tread' || it.t === 'rack')) { if (k++ >= 3) break;
+      if (it.t === 'tread') put(it.x, it.y, { jog: true, a: -Math.PI / 2 }); else put(it.x, it.y + it.h, { act: 'workHigh', a: -Math.PI / 2 }); } }
+  if (use === 'store') {
+    if (/약국/.test(sign) && p.counter) put(p.counter.x, p.counter.y + 1, { body: 'old', talk: true, a: -Math.PI / 2 });   // 약사와 이야기하는 어르신
+    const spots = shopperSpots(f, A, p.counter), n = Math.min(3, Math.max(1, Math.floor(spots.length / 4)));
+    for (let k = 0; k < n && spots.length; k++) { const s = spots[(k * 7 + 2) % spots.length]; put(s[0], s[1], { act: 'workHigh', a: -Math.PI / 2 }); } }
+  const out = [];
+  for (const q of people) { if (!inMap(q.tx, q.ty)) continue;
+    const gi = cityGuardSlot(), g = makeGuard(Object.assign({ kind: 'civ', at: [q.tx, q.ty], fl: f, radio: false }, q.body ? { body: q.body } : {}), gi);
+    g.evt = '__staff'; g.shopper = true; g.shopA = A; g.shopB = bi; g.shopF = f; g.fl = f; g.homeFl = f; g.x = tc(q.tx); g.y = tc(q.ty) - (q.seat ? 6 : 0); g.a = g.want = q.a || 0;
+    g.route = [{ x: g.x, y: g.y, pause: 999 }]; g.ri = 0; g.seat = !!q.seat; g.jog = !!q.jog; g.act = q.act || null; if (q.talk) g.chatter = true; placeGuard(g, gi); out.push(g); }
+  return out;
 }
 
 // ---------------------------------------------------------------- 자유 모드 편의점 실내 그림 (구매한 GuttyKreum Corner Store 팩에서 글자 없는 조각만)
