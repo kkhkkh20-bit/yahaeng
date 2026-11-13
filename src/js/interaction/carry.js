@@ -59,7 +59,7 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
     return;
   }
   const c = sa.c || nearCorpse();
-  if (c && !c.carried && !c.stashed && objectReachable(c, 46)) { const cx = c.x, cy = c.y, ca = c.a; c.carried = true; c.hidden = false; c.accident = null;c.playerHandled=true; P.carrying = c; if (pairCarry(P)) { P.a = Math.atan2(cy - P.y, cx - P.x); startBodyAnim('lift', c, 0.7, { cx, cy, ca }); if(sa.fromRecovery){P.bodyAnim.t0-=.12;P.strikeT=.58;} } play('cloth', 0.5); if(!sa.quick)hint('carry', '운반 중엔 느리고 뛸 수 없다. 화단 위나 수거함·맨홀 옆에서 다시 누르면 숨긴다'); }
+  if (c && !c.carried && !c.stashed && objectReachable(c, 46)) { const cx = c.x, cy = c.y, ca = c.a; c.carried = true; c.hidden = false; c.accident = null;c.playerHandled=true; P.carrying = c; if (pairCarry(P)) { P.a = Math.atan2(cy - P.y, cx - P.x); startBodyAnim('lift', c, 0.7, { cx, cy, ca }); if(sa.fromRecovery){P.bodyAnim.t0-=.12;P.strikeT=.58;} } else { P.strikeT = Math.max(P.strikeT || 0, sa.fromRecovery ? .58 : .7); P.moving = false; }  /* 그림이 아직 안 왔어도 들어 올리는 동안은 다른 행동을 막는다 */ play('cloth', 0.5); if(!sa.quick)hint('carry', '운반 중엔 느리고 뛸 수 없다. 화단 위나 수거함·맨홀 옆에서 다시 누르면 숨긴다'); }
 }
 // 보조 버튼에 걸린 행동: 열쇠 훔치기 > 붙잡기 > 운반
 function secondaryAction(envOnly) {  // envOnly: [행동] 버튼용 — 붙잡기·겹친 시설 행동은 빼고
