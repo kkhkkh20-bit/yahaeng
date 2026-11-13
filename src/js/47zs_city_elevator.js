@@ -8,9 +8,9 @@ function elevStack(tx, ty) {
   const top = Math.max(0, ...fl.map(l => l.tfl)); return { tx, ty, top, roof, fl };
 }
 function nearElevator() {
-  const P = S.player; if (P.z || P.car || P.carrying?.fly) return null; let best = null, bd = 40;
+  const P = S.player; if (P.z || P.car || P.carrying?.fly) return null; let best = null, bd = 40; const inB = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE));   // 같은 건물 안에서만 (벽 너머 계단은 안 된다)
   for (const l of S.ladders || []) { if ((l.kind !== 'fstair' && l.kind !== 'stair') || (l.bfl || 0) > flOf(P) || (l.kind === 'fstair' ? l.tfl < flOf(P) : l.bfl !== flOf(P))) continue;
-    const d = dist(P.x, P.y, l.x, l.y); if (d < bd) { bd = d; best = l; } }
+    if (bldAt(l.tx, l.ty) !== inB) continue; const d = dist(P.x, P.y, l.x, l.y); if (d < bd) { bd = d; best = l; } }
   return best ? elevStack(best.tx, best.ty) : null;
 }
 function elevatorAction() {
@@ -38,10 +38,15 @@ function elevatorGo(E, to) {
 function liftsInit() {
   S.lifts = []; if (!STAGE.cityLife) return; const byB = new Map();
   for (const l of S.ladders || []) if (l.kind === 'fstair' || l.kind === 'stair') { const bi = bldAt(l.tx, l.ty); if (bi >= 0 && !byB.has(bi)) byB.set(bi, l); }
-  BLD.forEach((b, i) => { if (b.vacant || b.school || b.hospital) return; const l = byB.get(i), door = l && shopFront(b); if (!door) return; const E = elevStack(l.tx, l.ty); if (E && (E.top >= 1 || E.roof)) S.lifts.push({ b: i, door, E }); });
+  const sold = new Set((S.shops || []).map(o => o.b)), lot = S.dealer?.lot;
+  BLD.forEach((b, i) => { if (b.vacant || b.school || b.hospital || sold.has(i)) return; const l = byB.get(i), f = l && shopFront(b); if (!f) return;   // 물건 파는 가게는 정문을 가게에 양보
+    const side = [TILE, -TILE].map(dx => ({ x: f.x + dx, y: f.y })).find(p => jobOpen(p.x, p.y)); const door = side || f;   // 정문 바로 옆 칸 (문 앞 다른 행동과 겹치지 않게)
+    if ((S.shops || []).some(o => dist(o.x, o.y, door.x, door.y) < 60) || (S.safes || []).some(o => dist(o.x, o.y, door.x, door.y) < 60)) return;   /* 옆 가게·은신처 문 앞은 비켜 둔다 */
+    const E = elevStack(l.tx, l.ty); if (E && (E.top >= 1 || E.roof)) S.lifts.push({ b: i, door, E }); });
 }
 function liftAction() {
   if (!STAGE.cityLife || !S.lifts) return null; const P = S.player; if (P.car || P.trav || P.hide || P.wire || P.captive || flOf(P) || P.z || actionBusy(P)) return null;
-  for (const L of S.lifts) if (dist(P.x, P.y, L.door.x, L.door.y) < 40) return { k: 'evAct', label: `엘리베이터 · ${L.E.top + 1}층 건물`, at: { x: L.door.x, y: L.door.y - 50 }, fn: () => elevatorPanel(L.E) };
+  if ((S.shops || []).some(o => dist(o.x, o.y, P.x, P.y) < 60) || (S.safes || []).some(o => dist(o.x, o.y, P.x, P.y) < 60)) return null;   // 가게·은신처 문 앞은 그쪽 행동이 먼저
+  for (const L of S.lifts) if (dist(P.x, P.y, L.door.x, L.door.y) < 30) return { k: 'evAct', label: `엘리베이터 · ${L.E.top + 1}층 건물`, at: { x: L.door.x, y: L.door.y - 50 }, fn: () => elevatorPanel(L.E) };
   return null;
 }
