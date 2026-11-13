@@ -61,9 +61,6 @@ function safeLeave(s) {
 function drawSafes() {
   if (!S.safes) return; const P = S.player;
   for (const s of S.safes) { if (!inView(s.x, s.y, 60) || dist(P.x, P.y, s.x, s.y) > 360) continue;
-    const pu = .45 + .3 * Math.sin(S.t * 3 + s.i);
-    ctx.strokeStyle = s.owned ? `rgba(120,230,150,${pu})` : `rgba(220,220,200,${pu * 0.6})`; ctx.lineWidth = 2; ctx.setLineDash(s.owned ? [] : [4, 4]);
-    ctx.beginPath(); ctx.ellipse(s.x, s.y, 20, 8, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
     if (!STAGE.noPrompts) infoTag(s.x, s.y + 20, s.owned ? '은신처' : `은신처 매물 ${s.price}만`, s.owned ? '#8fe0a8' : '#cfcab8', .9); }
 }
 function drawMiniSafes(x, T) {

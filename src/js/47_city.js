@@ -255,9 +255,7 @@ function drawContracts() {
   if (STAGE.cityLife) drawShopMarks();
   if (!S.contracts) return; const done = cityDone();  // 옥상·위층에선 땅 표시를 그리지 않는다
   for (const c of S.contracts) {
-    const ok = done[c.id], pulse = 0.6 + 0.4 * Math.sin(S.t * 3);
-    ctx.strokeStyle = ok ? 'rgba(150,150,160,.6)' : `rgba(232,71,60,${pulse})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(c.x, c.y, 26, 0, TAU); ctx.stroke();
-    ctx.fillStyle = ok ? 'rgba(150,150,160,.25)' : 'rgba(232,71,60,.22)'; ctx.beginPath(); ctx.arc(c.x, c.y, 26, 0, TAU); ctx.fill();
+    const ok = done[c.id];   // 바닥 원은 그리지 않는다 — 이름표만
     tag(c.x, c.y + 40, (ok ? '끝낸 의뢰 · ' : '의뢰 · ') + STAGES[c.si].name, ok ? '#9a9aa6' : '#e8473c', ok ? 1 : 2.4);
   }
 }

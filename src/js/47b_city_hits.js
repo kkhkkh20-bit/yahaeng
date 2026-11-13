@@ -227,7 +227,7 @@ function drawHits(layer) {
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = ring ? 'rgba(255,236,190,.28)' : 'rgba(255,236,190,.10)'; ctx.fillRect(p.x - 13, p.y - 50, 26, 58);
       if (ring) { ctx.fillStyle = 'rgba(255,90,70,.5)'; ctx.fillRect(p.x - 18, p.y - 58, 36, 7); } ctx.restore();  // 부스 안 형광등 · 울릴 때 지붕 띠가 깜빡인다
       const P = S.player; if (P.booth === p || (P.trav && Math.abs(P.x - p.x) < BOOTH_HW && Math.abs(P.y - p.y) < 14)) drawBooth(p, true);
-      if (!STAGE.noPrompts && !S.hit && !S.job) { const pu = .5 + .4 * Math.sin(S.t * 4); ctx.strokeStyle = `rgba(80,220,170,${pu})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y - 4, 24, 0, TAU); ctx.stroke(); infoTag(p.x, p.y + 22, '공중전화', '#8fe0c4', .9); }
+      if (!STAGE.noPrompts && !S.hit && !S.job) { infoTag(p.x, p.y + 22, '공중전화', '#8fe0c4', .9); }
       continue;
     }
     drawBooth(p, false);
@@ -236,7 +236,5 @@ function drawHits(layer) {
   drawEvents(); drawContacts(); drawJobs(); drawCarPickProgress(); drawCarriedParcel(); drawWpRoute(); drawSide(); drawSafes(); drawHome(); drawNuisance(); drawSlashes(); drawScene(); drawHunter(); drawScope(); drawPoison(); drawPickups(); drawGuns(); drawIntel();  drawRain();
   const h = S.hit; if (!h || h.g.state === 'DEAD' && !h.g.unconscious || contractHides(h)) return;
   const g = h.g; if (flOf(g) !== flOf(S.player) || !inView(g.x, g.y, 60)) return;
-  const pu = .55 + .35 * Math.sin(S.t * 5);
-  ctx.strokeStyle = `rgba(232,71,60,${pu})`; ctx.lineWidth = 2.5; ctx.setLineDash([6, 5]); ctx.beginPath(); ctx.arc(g.x, g.y, 22, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
   if (!STAGE.noPrompts) infoTag(g.x, g.y - 60, h.name + ' · 표적', '#ff9a86', .95);
 }

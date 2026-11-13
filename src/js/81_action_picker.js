@@ -69,7 +69,7 @@ function drawEnvSelection() {
   const a=envAction(); if(a.k==='none' || !(a.choices>1 || S.envExplicit)) return;
   if(a.c&&a.k!=='retrieve'){const ka=attackAction();if(ka.c===a.c&&!subduedAction(ka)||a.c.hidden&&!S.envExplicit)return;ctx.save();ctx.setLineDash([4,3]);drawTargetRing(a.c,'#e6d9ae',a.c);ctx.restore();return;}
   const raw=objectActionPoint(a),p=raw?.surface?surfacePoint(raw):raw; if(!p || !Number.isFinite(p.x)) return;
-  ctx.save(); ctx.strokeStyle='#e6d9ae';ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.beginPath();ctx.ellipse(p.x,p.y+4,19,10,0,0,TAU);ctx.stroke();ctx.restore();
+  if(STAGE.cityLife)return; ctx.save(); ctx.strokeStyle='#e6d9ae';ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.beginPath();ctx.ellipse(p.x,p.y+4,19,10,0,0,TAU);ctx.stroke();ctx.restore();
 }
 function unavailableEnvReason() {
   const P=S.player;

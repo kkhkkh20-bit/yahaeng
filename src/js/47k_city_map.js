@@ -74,7 +74,6 @@ function drawWpRoute() {
       ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.beginPath(); ctx.moveTo(9, 0); ctx.lineTo(-5, -8); ctx.lineTo(-1, 0); ctx.lineTo(-5, 8); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); }
     acc = 0;
   }
-  if (S.wp && inView(S.wp.x, S.wp.y, 40)) { const b = .6 + .4 * Math.sin(S.t * 5); ctx.strokeStyle = `rgba(255,215,106,${b})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(S.wp.x, S.wp.y, 40, 0, TAU); ctx.stroke(); }
   ctx.restore();
 }
 function drawMiniWp(x, T) {

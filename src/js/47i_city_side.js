@@ -102,11 +102,10 @@ function sideDropOut(f, angry) {
 // 길가 손님 머리 위 손짓 · 행선지 고리 · 남은 시간 (어둠 위)
 function drawSide() {
   const sd = S.side; if (sd?.kind === 'bus') { drawBus(sd); return; } if (sd?.kind === 'cop') { drawCopSide(sd); return; } if (!sd || !sd.fare) return; const f = sd.fare, col = sd.kind === 'taxi' ? '255,215,106' : '255,120,120';
-  if (!f.aboard && npcAlive(f.g) && inView(f.g.x, f.g.y, 60)) { const b = .6 + .4 * Math.sin(S.t * 8);
-    ctx.strokeStyle = `rgba(${col},${b})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(f.g.x, f.g.y - 4, 22, 0, TAU); ctx.stroke();
+  if (!f.aboard && npcAlive(f.g) && inView(f.g.x, f.g.y, 60)) {
     if (sd.kind === 'amb') { ctx.fillStyle = 'rgba(120,10,10,.6)'; ctx.beginPath(); ctx.ellipse(f.g.x + 4, f.g.y + 4, 9, 5, 0, 0, TAU); ctx.fill(); }  // 바닥에 떨어진 피
     infoTag(f.g.x, f.g.y - 60, sd.kind === 'taxi' ? '손님' : '환자', `rgb(${col})`, .9); }
-  if (f.aboard && inView(f.to.x, f.to.y, 80)) { const b = .5 + .4 * Math.sin(S.t * 5); ctx.strokeStyle = `rgba(${col},${b})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(f.to.x, f.to.y, 46, 0, TAU); ctx.stroke(); infoTag(f.to.x, f.to.y + 30, f.to.label, `rgb(${col})`, .9); }
+  if (f.aboard && inView(f.to.x, f.to.y, 80)) { infoTag(f.to.x, f.to.y + 30, f.to.label, `rgb(${col})`, .9); }
 }
 function sideGoal(money) {
   const sd = S.side; if (!sd) return null; const f = sd.fare, nm = SIDE[sd.kind].name;
@@ -214,7 +213,7 @@ function drawBus(sd) {
   const st = sd.stops[sd.si]; if (!st) return;
   for (const [i, s] of sd.stops.entries()) { if (i < sd.si || !inView(s.x, s.y, 80)) continue;  // 정류장 표지: 기둥 + 파란 판
     const x = s.x | 0, y = s.y + 36 | 0; ctx.fillStyle = '#2a2e34'; ctx.fillRect(x - 1, y - 38, 3, 40); ctx.fillStyle = '#2f6db4'; ctx.fillRect(x - 9, y - 50, 19, 13); ctx.fillStyle = '#e8f0ff'; ctx.fillRect(x - 6, y - 47, 13, 2); ctx.fillRect(x - 6, y - 43, 9, 2);
-    if (i === sd.si) { const b = .5 + .4 * Math.sin(S.t * 5); ctx.strokeStyle = `rgba(143,224,168,${b})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(s.x, s.y, 54, 0, TAU); ctx.stroke(); infoTag(s.x, s.y - 70, `${s.name} 정류장`, '#8fe0a8', .9); } }
+    if (i === sd.si) { infoTag(s.x, s.y - 70, `${s.name} 정류장`, '#8fe0a8', .9); } }
 }
 // ---------- 자경단: 경찰차로 무전을 받는다 → 화면 밖에서 도주 차량(조직 스포츠카)이 달아난다 → 들이받아 내구성 절반 아래로 세우면 범인이 내려 손을 든다
 function copSideUpdate(sd, dt) {
@@ -238,7 +237,6 @@ function copSideUpdate(sd, dt) {
 }
 function drawCopSide(sd) {
   const c = sd.target; if (!c || !inView(c.x, c.y, 80)) return; const b = (S.t * 4 | 0) % 2;
-  ctx.strokeStyle = b ? 'rgba(255,90,90,.85)' : 'rgba(90,140,255,.85)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(c.x, c.y, 58, 0, TAU); ctx.stroke();
   const k = clamp(c.hp / sd.hp0, 0, 1); ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(c.x - 26, c.y - 74, 52, 6); ctx.fillStyle = '#ff6a5a'; ctx.fillRect(c.x - 25, c.y - 73, Math.round(50 * k), 4);
   infoTag(c.x, c.y - 84, '도주 차량', '#ff9a8a', .9);
 }

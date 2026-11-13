@@ -139,9 +139,7 @@ function jobGoal(money) {
 // 땅 표시 (어둠 위): 목표 자리에 고리와 이름표
 function drawJobs() {
   const j = S.job; if (!j || flOf(S.player) || S.player.z > 0) return;
-  const ring = (x, y, r, col, tag) => { if (!inView(x, y, r + 40)) return; const pu = .55 + .35 * Math.sin(S.t * 5);
-    ctx.fillStyle = `rgba(${col},${0.10 + 0.06 * pu})`; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
-    ctx.strokeStyle = `rgba(${col},${0.5 + 0.5 * pu})`; ctx.lineWidth = 5; ctx.setLineDash([14, 8]); ctx.lineDashOffset = -S.t * 30; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
+  const ring = (x, y, r, col, tag) => { if (!inView(x, y, r + 40)) return;   // 바닥 원 없이 이름표만
     if (tag && !STAGE.noPrompts) infoTag(x, y - r - 18, tag, `rgb(${col})`, .95); };
   if (j.kind === 'car') { const v = j.v, D = S.dealer;
     if (S.player.car !== v) ring(v.x, v.y, 52, '255,200,90', j.name + ' · 가져갈 차');
