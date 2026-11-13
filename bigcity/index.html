@@ -12224,7 +12224,7 @@ function updateCiv(g, dt) {
     // 범죄(처치·기절·운반·붙잡기·락픽·몰래 약 타기)와 무단 침입(직원이 일터의 불청객을 봄)을 따로 본다
     const crimeNow = !!((P.interact && P.interact.illegal) || P.carrying || P.captive || P.strikeT > 0 || (STAGE.zones && (P.pick || (P.useT || 0) > S.t)));
     const homeNow = !!(H && gb === H.b && pb === H.b && flOf(P) === H.fl && !P.z && !P.wire && ptx >= H.x0 && ptx <= H.x1 && pty >= H.y0 && pty <= H.y1);
-    const tresNow = !!(STAGE.zones && g.outfit && !g.child && !g.staff && pZoneEff(g) !== Z_PUB && dist(g.x, g.y, P.x, P.y) < 420);
+    const tresNow = !!(STAGE.zones && g.outfit && !g.child && !g.staff && !g.shopper && pZoneEff(g) !== Z_PUB && dist(g.x, g.y, P.x, P.y) < 420);
     g.wary = homeNow || crimeNow || tresNow;
     const vis0 = (P.hide || P.under || P.vent || !sameF) ? 0 : canSee(g, P.x, P.y, P.light, P.hidden, P.mode === 'sneak', P.jump ? Math.max(1, P.z) : P.z);
     if (vis0 > 0 && !g.wary && dist(g.x, g.y, P.x, P.y) < 110 && Math.random() < dt * 0.6) g.want = Math.atan2(P.y - g.y, P.x - g.x);  // 힐끔 쳐다볼 뿐
@@ -16398,7 +16398,7 @@ function updateBlood(dt) {
 function drawBloodParts() {
   const B = S.bloodParts; if (!B || !B.length) return;
   ctx.save(); ctx.fillStyle = '#9a1016';
-  for (const p of B) { if (!inView(p.x, p.y, 40)) continue; ctx.beginPath(); ctx.ellipse(p.x, p.y - p.z, p.r, p.r * 1.3, 0, 0, TAU); ctx.fill(); }
+  for (const p of B) { if (!inView(p.x, p.y, 40)) continue; const q = 1.5, s = Math.max(q, Math.round(p.r * 1.4 / q) * q); ctx.fillRect(Math.round((p.x - s / 2) / q) * q, Math.round((p.y - p.z - s / 2) / q) * q, s, s); }   // 도트 핏방울 (1.5px 격자)
   ctx.restore();
 }
 // 사람이 죽는 순간(칼·주먹·총·차): 피가 터지고 몸 밑에 웅덩이가 번진다
@@ -19734,7 +19734,8 @@ function brawlStrike() {
   const knife = knifeOn(), g = brawlTarget(); if (g) P.a = Math.atan2(g.y - P.y, g.x - P.x);
   if (S.t - (P.comboT || -9) > 0.8) P.combo = 0; P.combo = (P.combo || 0) + 1; P.comboT = S.t; const heavy = !knife && P.combo % 3 === 0;
   P.strikeT = knife ? 0.26 : heavy ? 0.42 : 0.3; P.killAnim = null; P.brawling = true; P.brawlQueued = false; play(knife ? 'cloth' : 'cloth', 0.35, knife ? 1.6 : 1.1);
-  if (knife) (S.slashes || (S.slashes = [])).push({ x: P.x, y: P.y - 14, a: P.a, t0: S.t, side: P.combo % 2 ? 1 : -1 });
+  if (knife) (S.slashes || (S.slashes = [])).push({ x: P.x, y: P.y - 14, a: P.a, t0: S.t, side: P.combo % 2 ? 1 : -1, fx: true });
+  if (knife) spawnEffect('strike', { x: P.x + Math.cos(P.a) * 20, y: P.y - 14 + Math.sin(P.a) * 12, fl: flOf(P), z: 0 }, { angle: P.a, scale: 0.7 });   // 칼 궤적: PixelFX 베기 (예전엔 흰 원호를 선으로 그렸다)
   after(knife ? 0.08 : heavy ? 0.16 : 0.1, () => { if (!g || !npcAlive(g) || dist(P.x, P.y, g.x, g.y) > 64) return; brawlHit(g, knife, heavy); });
   return true;
 }
@@ -19767,7 +19768,7 @@ function brawlUpdate(dt) {
 }
 // 칼 궤적: 휘두른 방향으로 흰 호가 잠깐 남는다
 function drawSlashes() {
-  if (!S.slashes?.length) return; ctx.save(); ctx.lineCap = 'round';
+  if (!S.slashes?.length || STAGE.cityLife) return;   // 자유 모드: PixelFX 베기 효과로 그린다 ctx.save(); ctx.lineCap = 'round';
   for (const s of S.slashes) { const u = (S.t - s.t0) / 0.22, a0 = s.a - 1.1 * s.side, a1 = s.a + 1.1 * s.side * (u * 2 - 1);
     ctx.strokeStyle = `rgba(235,245,255,${0.85 * (1 - u)})`; ctx.lineWidth = 4 * (1 - u) + 1; ctx.beginPath(); ctx.arc(s.x, s.y, 26, Math.min(a0, a1), Math.max(a0, a1)); ctx.stroke(); }
   ctx.restore();
@@ -20166,8 +20167,23 @@ function staffSpawn(bi) {
     const gi = cityGuardSlot(), g = makeGuard({ kind: 'civ', at: t, fl: f, radio: false }, gi);
     g.evt = '__staff'; g.staff = o; g.shopA = A; g.shopB = bi; g.shopF = f; g.outfit = o; g.fl = f; g.homeFl = f; g.x = tc(t[0]); g.y = tc(t[1]); g.route = t[2] ? [{ x: g.x, y: g.y, pause: 999 }] : [{ x: g.x, y: g.y, pause: 6 }, { x: g.x + (t[0] > A.x0 ? -TILE : TILE), y: g.y, pause: 4 }]; g.ri = 0; g.a = Math.PI / 2;
     placeGuard(g, gi); out.push(g); });
+  // 손님: 매장 크기에 맞춰 1~3명. 진열대·냉장고·식탁·PC 같은 가구 바로 앞 칸을 몇 군데 돌며 구경한다 (무작위 없이 칸 순서로 고른다)
+  plans.forEach((p, f) => { const A = p && p.store; if (!A || !['store', 'food', 'pc', 'karaoke', 'billiards', 'gym'].includes(A.use)) return;
+    const spots = shopperSpots(f, A, p.counter); if (spots.length < 2) return; const n = Math.min(3, Math.max(1, Math.floor((A.x1 - A.x0 + 1) * (A.y1 - A.y0 + 1) / 14)));
+    for (let k = 0; k < n; k++) { const pts = [spots[(k * 5) % spots.length], spots[(k * 5 + 3) % spots.length], spots[(k * 5 + 7) % spots.length]];
+      const gi = cityGuardSlot(), g = makeGuard({ kind: 'civ', at: pts[0], fl: f, radio: false }, gi);
+      g.evt = '__staff'; g.shopper = true; g.shopA = A; g.shopB = bi; g.shopF = f; g.fl = f; g.homeFl = f; g.x = tc(pts[0][0]); g.y = tc(pts[0][1]);
+      g.route = pts.map((t, i) => ({ x: tc(t[0]), y: tc(t[1]), pause: 4 + ((k + i) % 3) * 2 })); g.ri = 0; placeGuard(g, gi); out.push(g); } });
   if (PR && out.length) prWarm(out.map(charOf), true);
   return out;
+}
+// 손님이 설 자리: 가구 바로 아래(앞) 칸 중 걸을 수 있는 곳 (계산대 뒤·엘리베이터 문 앞은 빼고)
+function shopperSpots(f, A, C) {
+  const old = CUR_F; setLayer(f); const out = [];
+  for (let ty = A.y0 + 1; ty <= A.y1; ty++) for (let tx = A.x0; tx <= A.x1; tx++) {
+    if (solidAt(tx, ty) || furnAt(f, tx, ty) || !furnAt(f, tx, ty - 1)) continue; if (C && ty === C.y - 1 && tx >= C.x - 1 && tx <= C.x + 2) continue;
+    if (tx === A.x0 && ty <= A.y0 + 1) continue; out.push([tx, ty]); }
+  setLayer(old); return out;
 }
 function staffUpdate(dt) {
   if (!STAGE.cityLife || !S.staffB || (S.staffT -= dt) > 0) return; S.staffT = 0.5; const P = S.player; staffTalk(dt); civTalkUpdate();   // 나가며 인사가 일꾼을 들여보내기 전에
@@ -20190,7 +20206,7 @@ function staffInShop(g) {
 function staffTalk(dt) {
   const P = S.player, armed = (typeof wpnOn === 'function' && wpnOn()) || (typeof knifeOn === 'function' && knifeOn());
   for (const list of S.staffB.values()) for (const g of list) {
-    if (!npcAlive(g) || g.off || g.state !== 'PATROL') continue; const inn = staffInShop(g), d = dist(g.x, g.y, P.x, P.y);
+    if (!g.staff || !npcAlive(g) || g.off || g.state !== 'PATROL') continue; const inn = staffInShop(g), d = dist(g.x, g.y, P.x, P.y);
     if (inn && !g.custIn) { g.custIn = S.t; g.stillT = 0; if (!g.greetT || S.t - g.greetT > 25) { g.greetT = S.t; saysLine(g, g.staff, 'greet'); } }
     else if (!inn && g.custIn) { if (S.t - g.custIn > 2 && !g.scared && (!g.byeT || S.t - g.byeT > 25)) { g.byeT = S.t; saysLine(g, g.staff, 'bye'); } g.custIn = 0; }
     if (!inn) continue;
@@ -20265,6 +20281,14 @@ drawCuffs = pixWrap(drawCuffs, () => { const P = S.player; return [P.x - 24, P.y
 drawElevDoors = pixWrap(drawElevDoors, () => { const P = S.player, inB = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)), E = S.elevs?.get(inB), D = E?.door; return D && !D.stairs ? [D.x - 32, D.y - TILE - 34, 64, 64] : null; });
 drawScene = pixWrap(drawScene, () => { const T = S.scene?.tape; return T ? [T.x0 - 40, T.y0 - 60, T.x1 - T.x0 + 80, T.y1 - T.y0 + 100] : null; });
 drawNuisance = pixWrap(drawNuisance, () => { const B = S.ev?.bikes; if (!B?.length) return null; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const b of B) { x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x); y1 = Math.max(y1, b.y); } return x1 - x0 < 300 && y1 - y0 < 300 ? [x0 - 30, y0 - 30, x1 - x0 + 60, y1 - y0 + 60] : null; });
+// 바닥 핏자국 (도트): 1.5px 격자에 맞춘 덩어리 몇 개 — 크기·모양은 자국마다 정해진 씨앗으로 (매 프레임 같은 모양)
+function drawPixelBlood(d) {
+  const q = 1.5, r = Math.max(q, d.r), seed = (d.rot || 0) * 1000, n = r > 6 ? 4 : 2; ctx.fillStyle = d.spray ? 'rgba(130,16,20,.85)' : 'rgba(110,14,18,.85)';
+  const cx = Math.round(d.x / q) * q, cy = Math.round(d.y / q) * q;
+  ctx.fillRect(cx - Math.round(r / q) * q, cy - Math.round(r * 0.6 / q) * q, Math.round(r * 2 / q) * q, Math.round(r * 1.2 / q) * q);
+  for (let k = 0; k < n; k++) { const a = seed + k * 2.3, rr = r * (0.5 + 0.4 * Math.abs(Math.sin(a * 1.7))), ox = Math.round(Math.cos(a) * r * 0.8 / q) * q, oy = Math.round(Math.sin(a) * r * 0.5 / q) * q;
+    ctx.fillRect(cx + ox - Math.round(rr / q) * q, cy + oy - Math.round(rr * 0.6 / q) * q, Math.round(rr * 2 / q) * q, Math.round(rr * 1.2 / q) * q); }
+}
 
 // ---------------------------------------------------------------- 자유 모드 타격감: 주먹·칼·암살·총도 차 충돌만큼 시원하게
 // 한 번 맞힐 때마다: 아주 짧은 멈칫(히트스톱) · 맞은 쪽으로 화면이 툭 밀리는 반동 · 살짝 당겨지는 줌 · 충격 파편 · 겹친 소리.
@@ -21631,7 +21655,7 @@ function drawDeckBodies() {
       let u = d.a0 + d.r; const end = d.a1 - d.r;
       while (u < end) { const g = d.gaps.find(g => g.side === side && u >= g.u0 && u < g.u1), nu = g ? Math.min(end, g.u1) : Math.min(end, ...d.gaps.filter(g => g.side === side && g.u0 > u).map(g => g.u0), end);
         if (!g) deckBeam(u, nu, c, h);
-        else { ctx.fillStyle = '#e07a1f'; for (let k = u; k < nu; k += 40) { if (h) ctx.fillRect(k, c - 3, 16, 6); else ctx.fillRect(c - 3, k, 6, 16); } }
+        else deckGapBarriers(u, nu, c, h);
         u = nu; }
     }
     ctx.restore();
@@ -21640,6 +21664,19 @@ function drawDeckBodies() {
     deckLamps(d);
   }
   ctx.restore();
+}
+// 공사 구간 방호벽 (도트): 3px 한 칸으로 테두리 · 주황 몸통 · 흰 사선 줄무늬 · 아래 그늘, 블록 사이 라바콘
+function deckGapBarriers(u0, u1, c, h) {
+  const R = (a, b, w, l, col) => { ctx.fillStyle = col; if (h) ctx.fillRect(a, c + b, w, l); else ctx.fillRect(c + b, a, l, w); };   // a: 길 방향 위치 · b: 난간에서 가로 위치
+  for (let k = u0, i = 0; k + 24 <= u1; k += 48, i++) {
+    R(k - 3, -9, 48, 18, '#24180f');                 // 테두리
+    R(k, -6, 42, 12, '#e07a1f');                      // 몸통
+    R(k, 3, 42, 3, '#a4511a');                        // 아래 그늘
+    R(k, -6, 42, 3, '#f39a45');                       // 위 밝은 면
+    for (let j = 0; j < 3; j++) for (let r = 0; r < 4; r++) R(k + 3 + j * 14 + r * 3, -6 + r * 3, 6, 3, '#f1ede2');   // 흰 사선 줄무늬 (계단처럼)
+    if (i % 2 === 1 && k + 48 < u1) {                 // 라바콘: 주황 삼각 + 흰 띠 + 검은 받침
+      const m = k + 45; R(m - 6, -3, 12, 9, '#1c1c1f'); R(m - 3, -12, 6, 3, '#ff8a2a'); R(m - 4, -9, 9, 3, '#f1ede2'); R(m - 4, -6, 9, 3, '#ff8a2a'); R(m - 6, -3, 12, 3, '#e07a1f'); }
+  }
 }
 function drawDeckCars() {
   // 고가·경사로 위 차 (높이만큼 크게)
@@ -26868,7 +26905,7 @@ function draw() {
   }
   if (showRoutes || tactical) drawRoutes(P);
   drawCityEntryThresholds();drawTrapsGround(); drawProps(); if (STAGE.cityLife && typeof drawElevDoors === 'function') drawElevDoors();   // 엘리베이터 문은 벽 그림 — 사람보다 먼저(아래) 그린다
-  for (const d of S.decals) { if (!onGround(d)) continue; ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.arc(d.r * 0.8, d.r * 0.4, d.r * 0.3, 0, TAU); ctx.fill(); ctx.restore(); }
+  for (const d of S.decals) { if (!onGround(d)) continue; if (STAGE.cityLife) { drawPixelBlood(d); continue; } ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.arc(d.r * 0.8, d.r * 0.4, d.r * 0.3, 0, TAU); ctx.fill(); ctx.restore(); }
   if (STAGE.cityLife) drawBloodParts();
   for (const it of S.items) if (!it.got && onGround(it)) drawLootItem(it);
   for (const n of S.notes || []) if (onGround(n)) drawNote(n);
@@ -26972,7 +27009,7 @@ function draw() {
     ctx.drawImage(floorCanvas(VB, VF), bx, by);
     { const tint = ['', '255,196,130', '140,196,255', '160,230,170', '226,170,255', '255,150,150'][VF] || '200,200,200'; ctx.fillStyle = `rgba(${tint},.09)`; ctx.fillRect(bx, by, bw, bh); }
     for (const w of S.fwindows) if (w.fl === VF && bldAt(w.tx, w.ty) === VB) drawWindow(w, 1);
-    for (const d of S.decals) if (onFloor(d)) { ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.restore(); }
+    for (const d of S.decals) if (onFloor(d)) { if (STAGE.cityLife) { drawPixelBlood(d); continue; } ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.restore(); }
     drawLures(onFloor);drawThrownCans(onFloor);
     for (const it of S.items) if (!it.got && onFloor(it)) drawLootItem(it);
     for (const n of S.notes || []) if (onFloor(n)) drawNote(n);
