@@ -137,7 +137,11 @@ const PHISH = [
     debrief: [['master', '관리자 차 트렁크에서 환전 영수증이 나왔다. 돈을 해외로 빼는 세탁책 곽도윤이 오늘 밤 출국한다.']] },
   { title: '세탁책', ctr: 'timed', target: '곽도윤', escorts: 1, pay: 700,
     brief: [['master', '곽도윤이 공항버스를 타기 전에 끝내야 한다. 3분.'], ['master', '그놈이 떠나면 피해자 돈은 영영 못 찾는다.'], ['hero', '3분이면 충분해.']],
-    debrief: [['master', '세탁책 노트북에 해외 콜센터 운영자 이름이 있다. "사장" 진석호 — 지금 서울에 들어와 있다.']] },
+    debrief: [['master', '세탁책 노트북에 국내 거점 주소와 해외 콜센터 운영자 이름이 있다. "사장" 진석호. 먼저 거점부터 치운다.']] },
+  { title: '콜센터 거점', ctr: 'demolish', target: '왕재필', escorts: 2, pay: 900,
+    brief: [['master', '작은 건물 한 채를 통째로 "상황실"로 쓴다. 대포폰 수백 대, 피해자 명단이 다 거기 있다.'],
+      ['master', '밤엔 현장 관리자 왕재필과 상담원 둘만 남는다. 건물 벽에 폭약을 붙여 무너뜨려. 증거째로.'], ['master', '폭약 하나 넣어 뒀다. 모자라면 철물점. 붙이고 나면 5초 — 멀리 뛰어.'], ['hero', '전화 걸 데가 없어지겠군.']],
+    debrief: [['master', '거점이 무너지면서 해외 콜센터와의 연락이 끊겼다. 당황한 총책이 직접 서울로 들어왔다.']] },
   { title: '총책', ctr: 'snipe', target: '진석호', escorts: 2, pay: 1500,
     brief: [['master', '진석호. 해외에 콜센터를 차려 놓고 수천 명의 노후를 털었다. 서울엔 거래를 정리하러 들어왔다.'], ['master', '경호원이 둘이다. 멀리서 한 발로.'], ['hero', '전화는 내가 끊는다.']],
     debrief: [['master', '상황실은 끝났다. 압수된 장부로 피해금 일부가 돌아간다 — 그 할머니 돈도.'], ['hero', '...그거면 됐다.']] },
@@ -147,6 +151,7 @@ const PHISH_NEWS = [
   '[속보] 대포통장 모집책 "사고사"… 장부에서 명의 대여자 수백 명 드러나',
   '[속보] 보이스피싱 국내 관리자 차량 폭발… 트렁크에서 현금 다발·환전 영수증',
   '[속보] 출국 직전 자금 세탁책 사망… 해외 송금 수십억 원 동결',
+  '[속보] 보이스피싱 국내 거점 건물 폭발·붕괴… 잔해서 대포폰 수백 대·피해자 명단 발견',
   '[속보] 해외 콜센터 총책 서울서 피격… "상황실" 사기단 와해, 피해금 환수 시작',
 ];
 function phishCall() {
@@ -154,6 +159,7 @@ function phishCall() {
   const n = st.ph || 0; if (n >= PHISH.length || S.t < (st.phNextT || 0)) return null;
   const C = PHISH[n]; const plan = planHit(); if (!plan) return null;
   Object.assign(plan, { kind: 'hit', name: C.target, fac: 'X', escorts: C.escorts, ctr: C.ctr, pay: C.pay, phish: n });
+  if (C.ctr === 'demolish' && !demolishPlan(plan)) return null;
   const prev = n > 0 ? PHISH[n - 1].debrief : [], retry = st.phFailed ? [['master', '상황실 일이 틀어졌다. 놈들이 더 숨기 전에 다시 가.']] : [];
   const brief = n === 0 ? C.brief : [[{ note: '야행 지령 · 부업' }, `보이스피싱 사기단 "상황실" ${n + 1}/${PHISH.length} · ${C.title}`], ...C.brief];
   return { plan, lines: [...(st.phFailed ? retry : prev), ...brief] };
@@ -166,4 +172,20 @@ function phishDone(h, ok) {
   const g = h.g || S.player; justiceMoment(`보이스피싱 ${C.title} 처치`, PHISH_NEWS[h.phish], g.x, g.y, { thank: false });
   if (st.ph >= PHISH.length) after(2.5, () => say([...C.debrief, [{ note: '문자 메시지 · 모르는 번호' }, '"돈이 돌아왔어요. 누군지 모르지만, 고맙습니다. 손주 대학 등록금이었어요."']], true));
   S.ringNext = S.t + 18; saveFreeProgress(true);
+}
+
+// 콜센터 거점 폭파 ('demolish'): 작은 건물 한 채 안에 현장 관리자(표적)와 상담원들이 있다. 건물이 무너지면 성공.
+function demolishPlan(plan) {
+  const P = S.player, c = BLD.map((b, i) => ({ b, i })).filter(({ b }) => smallBld(b) && !b.vacant && !b.collapsed && b.x1 - b.x0 >= 3 && b.y1 - b.y0 >= 3)
+    .map(o => ({ ...o, d: dist(P.x, P.y, (o.b.x0 + o.b.x1 + 1) * TILE / 2, (o.b.y0 + o.b.y1 + 1) * TILE / 2) })).filter(o => o.d > 900 && o.d < 3200);
+  for (const { b, i } of c.sort(() => Math.random() - .5)) {
+    for (let ty = b.y0 + 1; ty < b.y1; ty++) for (let tx = b.x0 + 1; tx < b.x1; tx++) if (!solidAt(tx, ty) && bldAt(tx, ty) === i) {
+      plan.route = [[tx, ty, 999]]; plan.bld = i; plan.cx = tc(tx); plan.cy = tc(ty); return true; }
+  }
+  return false;
+}
+function demolishStart(h, plan) { h.bld = BLD[plan.bld]; S.player.bombs = (S.player.bombs || 0) + 1; for (const e of h.escorts) { e.x = h.g.x + rnd(-30, 30); e.y = h.g.y + rnd(-20, 20); e.route = [{ x: e.x, y: e.y, pause: 999 }]; e.follow = null; } }
+function drawMiniDemolish(x, T) {
+  const h = S.hit; if (!h || h.ctr !== 'demolish' || !h.bld || h.bld.collapsed) return; const b = h.bld;
+  x.strokeStyle = '#ff7a3a'; x.lineWidth = 2; x.strokeRect(T(b.x0 * TILE), T(b.y0 * TILE), T((b.x1 + 1) * TILE) - T(b.x0 * TILE), T((b.y1 + 1) * TILE) - T(b.y0 * TILE));
 }

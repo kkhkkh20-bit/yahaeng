@@ -26,7 +26,7 @@ async def main():
         print('step1', json.dumps(r, ensure_ascii=False)[:300])
         ok(r['hit'] and r['hit']['phish'] == 0 and r['hit']['name'] == '문광호' and any('상황실' in t for t in r['lines']), 'first phishing call: %s' % r)
         r = await q.evaluate('''()=>{const S=__game.S;KILL();return{ph:S.story.ph,hit:!!S.hit,banner:(document.getElementById('evBanner')||{}).textContent||''}}''')
-        print('done1', r); ok(r['ph'] == 1 and not r['hit'] and '보이스피싱 사기단 1/5' in r['banner'], 'step 1 did not complete: %s' % r)
+        print('done1', r); ok(r['ph'] == 1 and not r['hit'] and '보이스피싱 사기단 1/6' in r['banner'], 'step 1 did not complete: %s' % r)
         r = await q.evaluate('''()=>{const G=__game,S=G.S;while(G.DLG.modal)G.advanceDialog();const l=CALL(),gap=!(S.hit&&S.hit.phish!=null);if(S.hit)G.events.contractFail(S.hit,'x');S.hit=null;S.job=null;while(G.DLG.modal)G.advanceDialog();
           S.story.phNextT=0;const l2=CALL(),h=S.hit;return{gap,lines:l2,hit:h&&{name:h.name,phish:h.phish,ctr:h.ctr}}}''')
         print('step2', json.dumps(r, ensure_ascii=False)[:300])
@@ -35,6 +35,13 @@ async def main():
         r = await q.evaluate('''()=>{const G=__game,S=G.S;G.events.contractFail(S.hit,'x');S.story.phNextT=0;const l=CALL();const out={failed:S.story.phFailed,retry:l.some(t=>t.includes('다시 가')),phish:S.hit&&S.hit.phish};
           G.events.saveFreeProgress(true);const key=Object.keys(localStorage).find(k=>/free/i.test(k));out.saved=(JSON.parse(localStorage.getItem(key)||'{}').story||{}).ph;return out}''')
         print('retry', r); ok(r['failed'] and r['retry'] and r['phish'] == 1 and r['saved'] == 1, 'retry or save: %s' % r)
+        # 콜센터 거점 폭파
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,E=G.events,P=S.player;if(S.hit)E.contractFail(S.hit,'x');S.hit=null;S.job=null;while(G.DLG.modal)G.advanceDialog();S.story.ph=4;S.story.phFailed=false;S.story.phNextT=0;
+          const l=CALL(),h=S.hit;if(!h||h.ctr!=='demolish')return{ctr:h&&h.ctr,lines:l};const b=h.bld,inside=h.g.x>b.x0*48&&h.g.x<(b.x1+1)*48;
+          let a=null;for(let ty=b.y0-1;ty<=b.y1+1&&!a;ty++)for(let tx=b.x0-1;tx<=b.x1+1&&!a;tx++){if(G.bldAt(tx,ty)>=0||G.solidAt(tx,ty))continue;P.x=(tx+.5)*48;P.y=(ty+.5)*48;P.car=null;tick(.02);const x=E.havocAction();if(x&&x.label.includes('건물'))a=x;}
+          if(!a)return{ctr:'demolish',noWall:true};a.fn();tick(1.5);P.x+=600;tick(7);return{ctr:'demolish',inside,collapsed:!!b.collapsed,done:!S.hit,ph:S.story.ph,dead:h.g.state}}''')
+        print('demolish', r)
+        ok(r.get('ctr') == 'demolish' and r.get('collapsed') and r.get('done') and r.get('ph') == 5, 'call-center demolition: %s' % r)
         ok(not errs, 'page errors: %s' % errs)
         await b.close()
     print('통과' if not bad else '문제', bad)
