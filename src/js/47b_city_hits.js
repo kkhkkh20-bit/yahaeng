@@ -109,7 +109,7 @@ function startHit(plan) {
   }
   setLayer(0); for (const g of [t, ...escorts]) buildRouteLine(g); setLayer(flOf(P));
   if (PR) prWarm([t, ...escorts].map(charOf), true);
-  S.hit = { g: t, escorts, name, t0: S.t, wantedAtStart: S.wanted, ko: !!plan.ko, pay: plan.pay, stand: plan.stand, by: plan.by }; if (STAGE.cityLife) { hitGradeStart(S.hit); const k = (plan.pay == null || plan.story != null || plan.chain) && !plan.ko ? plan.ctr || 'plain' : 'plain'; if (plan.story != null) S.hit.story = plan.story; if (plan.chain) S.hit.chain = plan.chain; Object.assign(S.hit, { ctr: k, cx: plan.cx, cy: plan.cy, deadline: S.t + (CONTRACTS[k].time || 1e9) }); if (k === 'carbomb') carbombStart(S.hit, plan); if (k === 'sign' && !signStart(S.hit)) { S.hit.ctr = 'accident'; } if (plan.story != null) storyCard(plan.story); }  // 간판 자리가 없으면 사고 위장으로
+  S.hit = { g: t, escorts, name, t0: S.t, wantedAtStart: S.wanted, ko: !!plan.ko, pay: plan.pay, stand: plan.stand, by: plan.by }; if (STAGE.cityLife) { hitGradeStart(S.hit); const k = (plan.pay == null || plan.story != null || plan.phish != null || plan.dtr != null || plan.chain) && !plan.ko ? plan.ctr || 'plain' : 'plain'; if (plan.story != null) S.hit.story = plan.story; if (plan.phish != null) S.hit.phish = plan.phish; if (plan.dtr != null) Object.assign(S.hit, { dtr: plan.dtr, confess: plan.confess, victimLine: plan.victimLine }); if (plan.chain) S.hit.chain = plan.chain; Object.assign(S.hit, { ctr: k, cx: plan.cx, cy: plan.cy, deadline: S.t + (CONTRACTS[k].time || 1e9) }); if (k === 'carbomb') carbombStart(S.hit, plan); if (k === 'stage') stageStart(S.hit, plan); if (k === 'demolish') demolishStart(S.hit, plan); if (k === 'snipe' && STAGE.cityLife) { if (!(S.guns.sniper > 0)) S.sniperLent = true; S.guns.sniper = Math.max(S.guns.sniper || 0, 6); S.wpn = S.wpn || 'sniper'; if (typeof gunChip === 'function') gunChip(); after(0.5, () => evBanner('강 형사가 압수품 저격총을 빌려줬다 · 여섯 발', '#9fc4ff')); } if (k === 'sign' && !signStart(S.hit)) { S.hit.ctr = 'accident'; } if (plan.story != null) storyCard(plan.story); }  // 간판 자리가 없으면 사고 위장으로
   if (!STAGE.noPrompts) toast(`의뢰: ${name} 처치`, 2.4, 'good');
 }
 // 부스는 사람이 지나가지 못한다 (안에 든 나만 예외)
@@ -128,13 +128,15 @@ function boothBlock() {
 function hitsUpdate(dt) {
   boothBlock(); updatePhoneRing(dt || 1 / 60);
   const P = S.player; if (P.booth) { P.x = P.booth.x; P.y = P.booth.y + 2; P.moving = false; }
-  jobsUpdate(dt || 1 / 60); cityEventsUpdate(dt || 1 / 60); factionsUpdate(dt || 1 / 60); carTheftUpdate(dt || 1 / 60); sideUpdate(dt || 1 / 60); garageUpdate(dt || 1 / 60); weatherUpdate(dt || 1 / 60); wpUpdate(dt || 1 / 60); heatUpdate(dt || 1 / 60); havocUpdate(dt || 1 / 60); gunsUpdate(dt || 1 / 60); rampageUpdate(dt || 1 / 60); warUpdate(dt || 1 / 60); disguiseUpdate(); hunterUpdate(dt || 1 / 60); sniperUpdate(dt || 1 / 60); carHintUpdate(); cityListsCleanup();
+  jobsUpdate(dt || 1 / 60); cityEventsUpdate(dt || 1 / 60); factionsUpdate(dt || 1 / 60); carTheftUpdate(dt || 1 / 60); sideUpdate(dt || 1 / 60); garageUpdate(dt || 1 / 60); weatherUpdate(dt || 1 / 60); wpUpdate(dt || 1 / 60); heatUpdate(dt || 1 / 60); havocUpdate(dt || 1 / 60); gunsUpdate(dt || 1 / 60); pickupsUpdate(dt || 1 / 60); warUpdate(dt || 1 / 60); disguiseUpdate(); hunterUpdate(dt || 1 / 60); sniperUpdate(dt || 1 / 60); carHintUpdate(); cityListsCleanup();
+  if (S.sniperLent && !S.hit) { S.sniperLent = false; delete S.guns.sniper; if (S.wpn === 'sniper') S.wpn = null; if (typeof gunChip === 'function') gunChip(); evBanner('(빌린 총은 강 형사한테 돌려줬어.)', '#c8c0b0'); }  // 이야기 저격 장이 끝나면 빌린 저격총은 돌려준다
   saveFreeProgress();
   const h = S.hit; if (!h) return;
   const g = h.g; hitGradeTrack(); if (STAGE.cityLife) { contractUpdate(); if (!S.hit) return; intelUpdate(); }
   if (!S.guards.includes(g)) { S.hit = null; return; }
   const ko = g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko);
-  if (h.ko && ko && !h.cuffed) return;  // 검거: 기절시킨 뒤 수갑을 채워야 끝난다 (47h cuffAction)
+  if (h.ctr === 'capture' && captureUpdate(h, ko)) return;  // 납치·심문 (47zz)
+  if (h.ko && ko && !h.cuffed) { h.cuffed = true; g.cuffed = true; evBanner('제압했다. 순찰차가 데려간다', '#9fc4ff'); after(6, () => { if (S.guards.includes(g)) evGone(g); }); }  // 검거: 쓰러뜨리면 끝 (수갑 채우는 단계는 뺐다)
   if (g.state === 'DEAD' && (!ko || h.ko)) {
     // 경찰 검거 미션(h.ko): 기절시키면 제값, 죽이면 3분의 1. 조직 미션: 보수와 호감도 변화가 따로 정해져 있다
     const quiet = !S.wanted, pay = h.ko ? (ko ? h.pay : Math.round(h.pay / 3)) : h.pay != null ? h.pay + (quiet ? 50 : 0) : HIT_PAY + (quiet ? HIT_QUIET_BONUS : 0);
@@ -142,7 +144,7 @@ function hitsUpdate(dt) {
     if (h.ko && ko) for (const e of h.escorts) if (npcAlive(e)) evFlee(e, S.player.x, S.player.y, 20);  // 연행: 수갑 찬 수배자는 순찰차가 데려간다 (47h)
     const paid = STAGE.cityLife ? hitFinish(h, pay) : pay;
     S.cash = (S.cash || 0) + paid; S.hitN++; S.hit = null;
-    if (STAGE.cityLife) { if (h.story != null) storyMainDone(h, true); if (h.chain) storySideDone(h.chain, true); }  // 이야기 다음 장 (47zz)
+    if (STAGE.cityLife) { if (h.story != null) storyMainDone(h, true); if (h.phish != null) phishDone(h, true); if (h.dtr != null) dtrDone(h, true); if (h.chain) storySideDone(h.chain, true); }  // 이야기 다음 장 (47zz)
     play('bell', 0.6); if (!STAGE.noPrompts) toast(`의뢰 완료 · ${paid}만${quiet ? ' (조용히)' : ''}`, 2.6, 'good');
     if (typeof feedbackPulse === 'function') feedbackPulse(document.querySelector('#hud .obj'), 'loot');
   }
@@ -150,14 +152,15 @@ function hitsUpdate(dt) {
 function hitGoal() {
   const h = S.hit, P = S.player, money = `수입 ${S.cash || 0}만`;
   if (S.job) return jobGoal(money);
-  if (!h) { const e = sideGoal(money) || eventGoal(money); if (e) return e; }
+  if (!h) { const e = sideGoal(money) || killerGoal(money) || eventGoal(money); if (e) return e; }
   if (!h) {
     const p = S.ringPhone; if (!p) return { text: `거리를 돈다 · ${money}`, where: '', x: null, y: null, fl: 0 };
     return { text: `울리는 공중전화 받기 · ${money}`, where: '', x: p.x, y: p.y, fl: 0 };
   }
   const g = h.g;
-  if (STAGE.cityLife && contractHides(h)) return { text: `사진 속 ${h.name} 찾기 — 표시된 블록을 돌며 얼굴 확인 · ${money}`, where: '', x: h.cx, y: h.cy, fl: 0 };
-  return { text: (h.ko ? (g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko) ? `${h.name} 기절 — 수갑 채우기` : `${h.name} 검거 — 기절시키기`) : g.unconscious ? `${h.name} 기절 — 숨통을 끊어라` : `${h.name} 처치`) + (STAGE.cityLife ? contractGoal(h) : '') + ` · ${money}`, where: '', x: g.x, y: g.y, fl: flOf(g), g };
+  if (h.ctr === 'capture') { const c = captureGoal(h); c.text += ` · ${money}`; return c; }
+  if (STAGE.cityLife && contractHides(h)) return { text: `표시된 블록을 돌며 사진 속 ${h.name} 찾기 · ${money}`, where: '', x: h.cx, y: h.cy, fl: 0 };
+  return { text: (h.ko ? (g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko) ? `기절한 ${h.name}에게 수갑 채우기` : `${withJosa(h.name, '을/를')} 기절시켜 검거하기`) : g.unconscious ? `기절한 ${h.name}의 숨통을 끊어라` : `${h.name} 처치`) + (STAGE.cityLife ? contractGoal(h) : '') + ` · ${money}`, where: '', x: g.x, y: g.y, fl: flOf(g), g };
 }
 // 공중전화 부스 (위에서 비스듬히 본 유리 상자: 은색 기둥 · 유리벽 · 안쪽 벽의 파란 전화기 · 빨간 지붕 띠)와 표적 표시
 // layer 'world': 조명을 받는 부스 · 'ui': 어둠 위 — 안에 든 나를 덮는 앞 유리, 부스 안 불빛, 표적 고리
@@ -215,6 +218,7 @@ function drawBooth(p, front) {
   ctx.restore();
 }
 function drawHits(layer) {
+  if (layer === 'ui') { if (!flOf(S.player)) drawHeli(); }   // 실내 엘리베이터 문 (위층에서도) · 헬기   // 헬기는 옥상·전깃줄 위에서도 보인다 (실내 위층만 빼고)
   if (flOf(S.player) || S.player.z > 0 || S.player.wire) return;
   for (const p of S.phones || []) {
     if (!inView(p.x, p.y, 80)) continue;
@@ -223,16 +227,14 @@ function drawHits(layer) {
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = ring ? 'rgba(255,236,190,.28)' : 'rgba(255,236,190,.10)'; ctx.fillRect(p.x - 13, p.y - 50, 26, 58);
       if (ring) { ctx.fillStyle = 'rgba(255,90,70,.5)'; ctx.fillRect(p.x - 18, p.y - 58, 36, 7); } ctx.restore();  // 부스 안 형광등 · 울릴 때 지붕 띠가 깜빡인다
       const P = S.player; if (P.booth === p || (P.trav && Math.abs(P.x - p.x) < BOOTH_HW && Math.abs(P.y - p.y) < 14)) drawBooth(p, true);
-      if (!STAGE.noPrompts && !S.hit && !S.job) { const pu = .5 + .4 * Math.sin(S.t * 4); ctx.strokeStyle = `rgba(80,220,170,${pu})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y - 4, 24, 0, TAU); ctx.stroke(); infoTag(p.x, p.y + 22, '공중전화', '#8fe0c4', .9); }
+      if (!STAGE.noPrompts && !S.hit && !S.job) { infoTag(p.x, p.y + 22, '공중전화', '#8fe0c4', .9); }
       continue;
     }
     drawBooth(p, false);
   }
   if (layer !== 'ui') return;
-  drawEvents(); drawContacts(); drawJobs(); drawCarPickProgress(); drawCarriedParcel(); drawWpRoute(); drawSide(); drawSafes(); drawHunter(); drawScope(); drawPoison(); drawRampage(); drawGuns(); drawIntel(); drawHeli(); drawRain();
+  drawEvents(); drawContacts(); drawJobs(); drawCarPickProgress(); drawCarriedParcel(); drawWpRoute(); drawSide(); drawSafes(); drawHome(); drawNuisance(); drawSlashes(); drawScene(); drawHunter(); drawScope(); drawPoison(); drawPickups(); drawGuns(); drawIntel();  drawRain();
   const h = S.hit; if (!h || h.g.state === 'DEAD' && !h.g.unconscious || contractHides(h)) return;
   const g = h.g; if (flOf(g) !== flOf(S.player) || !inView(g.x, g.y, 60)) return;
-  const pu = .55 + .35 * Math.sin(S.t * 5);
-  ctx.strokeStyle = `rgba(232,71,60,${pu})`; ctx.lineWidth = 2.5; ctx.setLineDash([6, 5]); ctx.beginPath(); ctx.arc(g.x, g.y, 22, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
   if (!STAGE.noPrompts) infoTag(g.x, g.y - 60, h.name + ' · 표적', '#ff9a86', .95);
 }

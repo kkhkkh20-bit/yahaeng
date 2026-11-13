@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------- 자유 모드 킬러 (내 목에 붙은 현상금)
-// 의뢰를 세 건 끝내면 소문이 돈다. 그 뒤로 4~6분마다(의뢰·수배·광란 중이 아닐 때) 행인 차림의 킬러 하나가 화면 밖에서 나를 향해 걸어온다.
+// 의뢰를 세 건 끝내면 소문이 돈다. 그 뒤로 4~6분마다(의뢰·수배 중이 아닐 때) 행인 차림의 킬러 하나가 화면 밖에서 나를 향해 걸어온다.
 //   · 겉모습은 행인. 티: 똑바로 나에게 걸어온다 · 300px 안에선 가끔 품에서 쇠붙이가 번쩍인다.
 //   · 170px 안에서 나를 보면 총을 꺼내 1초 겨눈다(붉은 조준선) → 쏜다. 벽·차 뒤로 시야를 끊거나 먼저 처리하라.
 //   · 처리하면 현상금 사냥꾼의 품에서 돈(200만). 2600px 넘게 따돌리면 포기한다.
@@ -8,7 +8,7 @@ function hunterInit() { S.hunter = null; S.huntNext = S.t + rnd(...HUNT_GAP); }
 function hunterUpdate(dt) {
   if (!STAGE.cityLife || !S.player) return; const P = S.player;
   if (!S.hunter) {
-    if ((S.hitN || 0) < HUNT_AFTER || S.t < S.huntNext || S.hit || S.wanted || S.ramp || S.downing || S.cuffs || S.safeIn) return;
+    if ((S.hitN || 0) < HUNT_AFTER || S.t < S.huntNext || S.hit || S.wanted || S.downing || S.cuffs || S.safeIn) return;
     if (!hunterSpawn()) S.huntNext = S.t + 30; return;
   }
   const H = S.hunter, g = H.g;
@@ -21,13 +21,13 @@ function hunterSpawn() {
   g.x = p.x; g.y = p.y; g.route = [{ x: p.x, y: p.y, pause: 999 }]; g.civ = true; g.hunter = true; g.huntCd = 0; g.aimH = 0;
   placeGuard(g, gi); setLayer(0); if (PR) prWarm([charOf(g)], true);
   S.hunter = { g, t0: S.t }; fstat('hunters');
-  play('click', 0.4, 0.6); evBanner('까마귀: "네 목에 돈이 걸렸다. 누가 오고 있다 — 행인 얼굴을 잘 봐."', '#ffb070');
+  play('click', 0.4, 0.6); evBanner('강 형사: "네 목에 돈이 걸렸다. 누가 오고 있다. 행인 얼굴을 잘 봐."', '#ffb070');
   return true;
 }
 function hunterEnd(killed) {
   const H = S.hunter; if (!H) return; S.hunter = null; S.huntNext = S.t + rnd(...HUNT_GAP);
   const g = H.g; g.hunter = false;
-  if (killed) { S.cash = (S.cash || 0) + HUNT_PAY; fstat('huntersDown'); fstat('earned', HUNT_PAY); play('loot', 0.5); evBanner(`킬러를 처리했다 — 품에서 ${HUNT_PAY}만`, '#9fe0b0'); }
+  if (killed) { S.cash = (S.cash || 0) + HUNT_PAY; fstat('huntersDown'); fstat('earned', HUNT_PAY); play('loot', 0.5); evBanner(`킬러를 처리했다 · 품에서 ${HUNT_PAY}만`, '#9fe0b0'); }
   else { if (!inView(g.x, g.y, 80)) evGone(g); evBanner('킬러를 따돌렸다', '#c8c0b0'); }
 }
 // 매 프레임 (updateGuard 맨 앞에서): 나를 쫓아 걷고, 가까우면 겨누고 쏜다

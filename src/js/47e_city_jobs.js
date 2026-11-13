@@ -80,7 +80,7 @@ function startJob(plan) {
     if (!STAGE.noPrompts) toast(`일: '${plan.fromSign}'에서 꾸러미 받기`, 2.4, 'good');
   } else {
     S.job = { kind: 'race', pts: plan.pts, i: 0, limit: plan.limit, started: null, t0: S.t };
-    if (!STAGE.noPrompts) toast('일: 교차로 경주 — 차에 타고 첫 체크포인트로', 2.6, 'good');
+    if (!STAGE.noPrompts) toast('일: 교차로 경주 · 차에 타고 첫 체크포인트로', 2.6, 'good');
   }
 }
 function endJob(ok, msg, pay = 0) {
@@ -97,10 +97,10 @@ const jobLeft = j => Math.max(0, Math.ceil(j.deadline - S.t));
 function jobsUpdate(dt) {
   const j = S.job, P = S.player; if (!j || S.downing) return;
   // 받아만 두고 시작하지 않은 일(꾸러미를 안 받음·출발을 안 함)은 3분 뒤 취소된다 (전화·연락책이 계속 막히지 않게)
-  j.t0 = j.t0 || S.t; if ((j.kind === 'parcel' && !j.got || j.kind === 'race' && !j.started) && S.t - j.t0 > 180) { endJob(false, '일이 취소됐다 — 너무 오래 미뤘다'); return; }
+  j.t0 = j.t0 || S.t; if ((j.kind === 'parcel' && !j.got || j.kind === 'race' && !j.started) && S.t - j.t0 > 180) { endJob(false, '너무 오래 미뤄서 일이 취소됐다'); return; }
   if (j.kind === 'car') {
     const v = j.v;
-    if (!S.vehicles.includes(v) || v.dead) { endJob(false, '일 실패 — 차가 망가졌다'); return; }
+    if (!S.vehicles.includes(v) || v.dead) { endJob(false, '일 실패 · 차가 망가졌다'); return; }
     const D = S.dealer, inLotNow = j.drop ? dist(v.x, v.y, j.drop.x, j.drop.y) < 110 : D && v.x > D.lot[0] && v.x < D.lot[2] && v.y > D.lot[1] && v.y < D.lot[3];
     if (P.car === v && inLotNow && Math.abs(v.v) < 25) {
       const k = clamp(v.hp / (j.hp0 || v.hpMax || 6), 0, 1), pay = Math.round((j.pay || JOB_PAY.car) * (0.35 + 0.65 * k) / 10) * 10;
@@ -110,16 +110,16 @@ function jobsUpdate(dt) {
     return;
   }
   if (j.kind === 'parcel') {
-    if (!j.got) { if (dist(P.x, P.y, j.from.x, j.from.y) < 70 && !j.getting) { const got = () => { j.getting = false; if (S.job !== j) return; j.got = true; j.deadline = S.t + Math.round(dist(j.from.x, j.from.y, j.to.x, j.to.y) / 170 + 15); j.total = j.deadline - S.t; play('loot', 0.5); if (!STAGE.noPrompts) toast(`꾸러미를 받았다 — ${jobLeft(j)}초 안에 '${j.toSign}'까지`, 2.6, 'good'); };
+    if (!j.got) { if (dist(P.x, P.y, j.from.x, j.from.y) < 70 && !j.getting) { const got = () => { j.getting = false; if (S.job !== j) return; j.got = true; j.deadline = S.t + Math.round(dist(j.from.x, j.from.y, j.to.x, j.to.y) / 170 + 15); j.total = j.deadline - S.t; play('loot', 0.5); if (!STAGE.noPrompts) toast(`꾸러미를 받았다 · ${jobLeft(j)}초 안에 '${j.toSign}'까지`, 2.6, 'good'); };
       if (P.car) got(); else { j.getting = true; doMotion({ x: j.from.x, y: j.from.y, pose: 'grab', dur: 0.5, at: [[0.25, () => play('cloth', 0.4)]], end: got }); } } return; }
-    if (S.t > j.deadline) { endJob(false, '일 실패 — 늦었다'); return; }
+    if (S.t > j.deadline) { endJob(false, '일 실패 · 늦었다'); return; }
     if (dist(P.x, P.y, j.to.x, j.to.y) < (P.car ? 110 : 70) && !j.giving) { const spare = (j.deadline - S.t) / j.total, pay = (j.pay || JOB_PAY.parcel) + Math.round(spare * 100 / 10) * 10, done = () => { j.giving = false; if (S.job === j) endJob(true, `배달 완료 · ${pay}만`, pay); };
       if (P.car) done(); else { j.giving = true; doMotion({ x: j.to.x, y: j.to.y, pose: 'grab', dur: 0.5, at: [[0.25, () => play('cloth', 0.4)]], end: done }); } }  // 걸어서면 문 앞에 내려놓는다
     return;
   }
   if (j.kind === 'race') {
     if (!j.started) { const p = j.pts[0]; if (P.car && dist(P.x, P.y, p.x, p.y) < 160) { j.started = S.t; j.i = 1; j.deadline = S.t + j.limit; play('bell', 0.4); if (!STAGE.noPrompts) toast(`출발! ${j.limit}초`, 1.6, 'good'); } return; }
-    if (S.t > j.deadline) { endJob(false, '경주 실패 — 시간 초과'); return; }
+    if (S.t > j.deadline) { endJob(false, '경주 실패 · 시간 초과'); return; }
     const p = j.pts[j.i]; if (P.car && dist(P.x, P.y, p.x, p.y) < 150) { j.i++; play('click', 0.6);
       if (j.i >= j.pts.length) { const pay = j.pay || JOB_PAY.race; endJob(true, `${j.patrol ? '순찰 완료' : '경주 완주'} · ${Math.round(S.t - j.started)}초 · ${pay}만`, pay); } }
   }
@@ -139,9 +139,7 @@ function jobGoal(money) {
 // 땅 표시 (어둠 위): 목표 자리에 고리와 이름표
 function drawJobs() {
   const j = S.job; if (!j || flOf(S.player) || S.player.z > 0) return;
-  const ring = (x, y, r, col, tag) => { if (!inView(x, y, r + 40)) return; const pu = .55 + .35 * Math.sin(S.t * 5);
-    ctx.fillStyle = `rgba(${col},${0.10 + 0.06 * pu})`; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
-    ctx.strokeStyle = `rgba(${col},${0.5 + 0.5 * pu})`; ctx.lineWidth = 5; ctx.setLineDash([14, 8]); ctx.lineDashOffset = -S.t * 30; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
+  const ring = (x, y, r, col, tag) => { if (!inView(x, y, r + 40)) return;   // 바닥 원 없이 이름표만
     if (tag && !STAGE.noPrompts) infoTag(x, y - r - 18, tag, `rgb(${col})`, .95); };
   if (j.kind === 'car') { const v = j.v, D = S.dealer;
     if (S.player.car !== v) ring(v.x, v.y, 52, '255,200,90', j.name + ' · 가져갈 차');
@@ -159,13 +157,13 @@ function loadFreeProgress() {
   if (!STAGE.freeMode) return; let d = null;
   try { d = JSON.parse(localStorage.getItem(FREE_SAVE) || 'null'); } catch (e) {}
   if (!d) return;
-  S.cash = Math.max(0, d.cash | 0); S.jobN = d.jobN | 0; S.hitN = d.hitN | 0; S.rep = d.rep && typeof d.rep === 'object' ? d.rep : {}; S.stand = d.stand && typeof d.stand === 'object' ? d.stand : {}; S.garageSaved = Array.isArray(d.garage) ? d.garage.filter(c => c && VTYPES[c.type]) : []; S.fstSaved = d.st && typeof d.st === 'object' ? d.st : {}; S.fachSaved = d.ach && typeof d.ach === 'object' ? d.ach : {}; S.gunsSaved = d.guns && typeof d.guns === 'object' ? d.guns : {}; S.wpnSaved = d.wpn || null; S.armorSaved = d.armor | 0; S.poisonSaved = d.poison | 0; S.safesSaved = d.safes && typeof d.safes === 'object' ? d.safes : {}; S.rampDoneSaved = d.ramp && typeof d.ramp === 'object' ? d.ramp : {}; S.storySaved = d.story && typeof d.story === 'object' ? d.story : null; S.freeLoaded = true;
+  S.gunTipSaved = !!d.gunTip; S.homeSaved = d.home && typeof d.home === 'object' ? d.home : {}; S.cash = Math.max(0, d.cash | 0); S.jobN = d.jobN | 0; S.hitN = d.hitN | 0; S.rep = d.rep && typeof d.rep === 'object' ? d.rep : {}; S.stand = d.stand && typeof d.stand === 'object' ? d.stand : {}; S.garageSaved = Array.isArray(d.garage) ? d.garage.filter(c => c && VTYPES[c.type]) : []; S.fstSaved = d.st && typeof d.st === 'object' ? d.st : {}; S.fachSaved = d.ach && typeof d.ach === 'object' ? d.ach : {}; S.gunsSaved = d.guns && typeof d.guns === 'object' ? d.guns : {}; S.wpnSaved = d.wpn || null; S.armorSaved = d.armor | 0; S.poisonSaved = d.poison | 0; S.invSaved = d.inv && typeof d.inv === 'object' ? d.inv : null; S.safesSaved = d.safes && typeof d.safes === 'object' ? d.safes : {}; S.storySaved = d.story && typeof d.story === 'object' ? d.story : null; S.night = Math.max(1, d.night | 0); S.freeLoaded = true;
   if (!STAGE.noPrompts && (S.cash || S.jobN)) toast(`이어서 · 수입 ${S.cash}만`, 2, 'good');
 }
 function saveFreeProgress(force) {
   if (!STAGE.freeMode || !S) return;
   if (!force && S.t - (S.freeSaveT || 0) < 2) return; S.freeSaveT = S.t;
-  const d = { cash: S.cash | 0, jobN: S.jobN | 0, hitN: S.hitN | 0, rep: S.rep || {}, stand: S.stand || {}, garage: S.garage ? S.garage.cars : (S.garageSaved || []), st: S.fst ? Object.fromEntries(Object.entries(S.fst).map(([k, v]) => [k, Math.round(v)])) : (S.fstSaved || {}), ach: S.fach || S.fachSaved || {}, guns: S.guns ? (S.ramp ? Object.assign({}, S.guns, { [S.ramp.wpn]: S.ramp.prevAmmo }) : S.guns) : (S.gunsSaved || {}), wpn: S.ramp ? S.ramp.prevWpn || null : S.wpn || null, armor: S.player ? S.player.armor | 0 : 0, poison: S.player ? S.player.poison | 0 : (S.poisonSaved | 0), safes: S.safes ? Object.fromEntries(S.safes.filter(s => s.owned && s.i).map(s => [s.i, 1])) : (S.safesSaved || {}), ramp: S.rampDone || S.rampDoneSaved || {}, story: S.story || S.storySaved || null }, k = JSON.stringify(d);
+  const d = { gunTip: !!(S.gunTip || S.gunTipSaved), home: S.home || S.homeSaved || {}, cash: S.cash | 0, jobN: S.jobN | 0, hitN: S.hitN | 0, rep: S.rep || {}, stand: S.stand || {}, garage: S.garage ? S.garage.cars : (S.garageSaved || []), st: S.fst ? Object.fromEntries(Object.entries(S.fst).map(([k, v]) => [k, Math.round(v)])) : (S.fstSaved || {}), ach: S.fach || S.fachSaved || {}, guns: S.guns ? (S.sniperLent ? Object.assign({}, S.guns, { sniper: 0 }) : S.guns) : (S.gunsSaved || {}), wpn: S.wpn || null, armor: S.player ? S.player.armor | 0 : 0, poison: S.player ? S.player.poison | 0 : (S.poisonSaved | 0), inv: S.player ? Object.fromEntries(['picks', 'bombs', 'kunai', 'smokes', 'coins', 'stones'].map(k => [k, S.player[k] | 0])) : (S.invSaved || null), safes: S.safes ? Object.fromEntries(S.safes.filter(s => s.owned && s.i).map(s => [s.i, 1])) : (S.safesSaved || {}), story: S.story || S.storySaved || null, night: S.night || 1 }, k = JSON.stringify(d);
   if (k === S.freeSaveK) return; S.freeSaveK = k;
   try { localStorage.setItem(FREE_SAVE, k); } catch (e) {}
 }
@@ -174,7 +172,7 @@ function drawMiniCity(x, T) {
   if (!STAGE.cityLife) return;
   const blink = Math.floor(S.t * 4) % 2 === 0;
   drawMiniContacts(x, T);
-  drawMiniSide(x, T); drawMiniWp(x, T); drawMiniWar(x, T); drawMiniIntel(x, T); drawMiniSafes(x, T); drawMiniCarbomb(x, T); drawMiniSign(x, T);
+  drawMiniSide(x, T); drawMiniWp(x, T); drawMiniWar(x, T); drawMiniIntel(x, T); drawMiniSafes(x, T); drawMiniCarbomb(x, T); drawMiniSign(x, T); drawMiniStage(x, T); drawMiniDemolish(x, T); drawMiniDealer(x, T); drawMiniKiller(x, T); drawMiniPlaces(x, T);
   if (S.dealer) { const D = S.dealer; x.fillStyle = '#6aa8ff'; x.fillRect(T((D.lot[0] + D.lot[2]) / 2) - 3, T((D.lot[1] + D.lot[3]) / 2) - 3, 6, 6); }
   if (S.ringPhone && blink) { x.fillStyle = '#7fe0a8'; x.beginPath(); x.arc(T(S.ringPhone.x), T(S.ringPhone.y), 3.5, 0, TAU); x.fill(); }
   if (S.ev && !S.ev.done && dist(S.ev.x, S.ev.y, S.player.x, S.player.y) < 1800 && blink) { x.fillStyle = '#ff5a46'; x.beginPath(); x.arc(T(S.ev.x), T(S.ev.y), 3.5, 0, TAU); x.fill(); }

@@ -35,6 +35,10 @@ def campaign_assets(root):
     if (props/'props.json').exists():
         assets['purchasedProps']=json.loads((props/'props.json').read_text())
         assets['purchasedProps']['src']='data:image/webp;base64,'+base64.b64encode((props/'props.webp').read_bytes()).decode()
+    cs=Path(root)/'src/art/corner-store'
+    if (cs/'store.json').exists():
+        assets['cornerStore']=json.loads((cs/'store.json').read_text())
+        assets['cornerStore']['src']='data:image/webp;base64,'+base64.b64encode((cs/'store.webp').read_bytes()).decode()
     study=Path(root)/'src/art/city-study'
     if (study/'details.json').exists():
         assets['cityStudy']=json.loads((study/'details.json').read_text())

@@ -30,7 +30,7 @@ function attackAction() {
   const P = S.player; if (actionBusy(P)) {const next=followupCandidate(P);if(next)return{k:'kill',list:[next],label:P.followupAttack?'다음 기절 대기':'다음 기절',hold:'처치',busy:true};return canQueueGrabAttack(P) ? {k:'cap',g:P.grabIn.g,label:'기절',hold:'처치',queued:!!P.attackQueue} : { k: 'none', busy: true, label: P.skillHold ? ASSASSIN_SKILLS[P.skillHold.key].name+' 준비' : P.lethalHold ? '길게 누르는 중' : '공격' };}
   const down=nearFinish();if(down)return combatLabel({k:'finish',c:down,g:down.g});
   if(!concealedMeleeAllowed(P)){const near=concealedAttackCandidate(P);return near?{k:'none',label:'은신 기습 필요',skillLocked:'ambush'}:{k:'none',label:P.cover?'엄폐 중':'공격'};}
-  if (P.car) return STAGE.cityLife && wpnOn() ? { k: 'none', label: WEAPONS[S.wpn].throw ? '창밖으로 던지기' : '창밖으로 쏘기', driveBy: true } : { k: 'none', label: '경적', honk: true };
+  if (P.car) return STAGE.cityLife && wpnOn() && !WEAPONS[S.wpn]?.melee ? { k: 'none', label: WEAPONS[S.wpn].throw ? '창밖으로 던지기' : '창밖으로 쏘기', driveBy: true } : { k: 'none', label: '경적', honk: true };
   if (P.captive) return combatLabel({ k: 'cap', g:P.captive, label: '기절', hold: '처치' });
   const a = rawChoices().find(isAtk); if (a) {
     const action=koLabel(Object.assign({},a)),choice=assassinPreview();
@@ -139,12 +139,14 @@ function actAttack() {if(S?.player?.cuffed)return;
   if (!S || S.over || paused || !running || tactical || S.amb) { if (S && DLG.modal) advanceDialog(); return; }
   if (DLG.modal) { advanceDialog(); return; }
   const P = S.player;
+  if (STAGE.cityLife && P.brawling && P.strikeT > 0 && !P.killAnim) { P.brawlQueued = true; return; }  // 난타 중 연타: 지금 동작이 끝나면 바로 다음 주먹 (47zp)
   if (actionBusy(P)) { if(!queueFollowupAttack())queueGrabAttack(); return; }
   if (P.car) { if (STAGE.cityLife && driveBy()) return; honk(); return; }  // 자유 모드: 무기를 들었으면 창밖으로 쏜다
   if (P.captive) { actPrimary({ k: 'execute', viaZ: true, inputGroup: 'atk' }); return; }  // 기절 → 계속 누르면 처치 (updateKoHold)
   if (STAGE.cityLife && gunAttack()) return;  // 자유 모드: 손 닿는 처치가 없으면 든 무기로 쏜다
   const a = attackAction();
   if (a.k === 'none') {
+    if (STAGE.cityLife && !a.skillLocked && ((a.stalk && queueApproachAttack(a.stalk)) || brawlStrike())) return;  // 등 뒤로 다가가는 중이면 처치 예약이 먼저. 아니면: 정면·들킴 → 주먹질·칼질 (47zp)
     if(a.skillLocked)toast(abilityLockText(a.skillLocked),2);
     else if(a.stalk){if(!queueApproachAttack(a.stalk))toast('아직 손이 닿지 않는다 · 등 뒤로 더 가까이',1.5,'warn');}  // 입력 실패 반응: 최소 모드에서도 사실만 남는다
     else toast('공격할 사람의 등 뒤 가까이 접근하기',1.5);

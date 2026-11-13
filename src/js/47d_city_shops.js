@@ -4,11 +4,11 @@
 // 중고차 매매: 사무실 앞에서 전시장 차를 사고, 전시장에 차를 몰고 와 세우면 판다. 값을 안 내고 전시장 차에 타면 훔친 것이다(수배 둘).
 // 도색소: 도색 칸에 차를 세우면 색을 바꾸고 수배가 풀린다(값 50만, 수배 없으면 그냥 지나간다).
 const SHOP_ITEMS = {
-  약국: [{ name: '구급약 (체력 가득)', price: 40, can: P => P.hp < P.hpMax, buy: P => { P.hp = P.hpMax; } }, { name: '독침 두 개 (+2) — 등 뒤에서 찌르면 8초 뒤 쓰러진다', price: 120, buy: P => { P.poison = (P.poison || 0) + 2; } }],
+  약국: [{ name: '구급약 (체력 가득)', price: 40, can: P => P.hp < P.hpMax, buy: P => { P.hp = P.hpMax; } }, { name: '독침 두 개 (+2) · 등 뒤에서 찌르면 8초 뒤 쓰러진다', price: 120, buy: P => { P.poison = (P.poison || 0) + 2; } }],
   편의점: [{ name: '담배 한 갑 (+3)', price: 5, buy: P => { P.coins = (P.coins || 0) + 3; } }, { name: '빈 캔 세 개 (+3)', price: 3, buy: P => { P.stones = (P.stones || 0) + 3; } },
     { name: '구급약 (체력 +1)', price: 15, can: P => P.hp < P.hpMax, buy: P => { P.hp = Math.min(P.hpMax, P.hp + 1); } }],
-  철물: [{ name: '락픽 두 개 (+2) — 잠긴 차 따기', price: 25, buy: P => { P.picks = (P.picks || 0) + 2; } }, { name: '폭약 (+1) — 교각·작은 건물', price: 150, buy: P => { P.bombs = (P.bombs || 0) + 1; } }, { name: '다트 세 개 (+3)', price: 30, buy: P => { P.kunai = (P.kunai || 0) + 3; } }, { name: '연막탄 (+1)', price: 40, buy: P => { P.smokes = (P.smokes || 0) + 1; } }],
-  공구: [{ name: '락픽 두 개 (+2) — 잠긴 차 따기', price: 25, buy: P => { P.picks = (P.picks || 0) + 2; } }, { name: '폭약 (+1) — 교각·작은 건물', price: 150, buy: P => { P.bombs = (P.bombs || 0) + 1; } }, { name: '다트 세 개 (+3)', price: 30, buy: P => { P.kunai = (P.kunai || 0) + 3; } }, { name: '연막탄 (+1)', price: 40, buy: P => { P.smokes = (P.smokes || 0) + 1; } }],
+  철물: [{ name: '락픽 두 개 (+2) · 잠긴 차 따기', price: 25, buy: P => { P.picks = (P.picks || 0) + 2; } }, { name: '폭약 (+1) · 교각과 작은 건물용', price: 150, buy: P => { P.bombs = (P.bombs || 0) + 1; } }, { name: '다트 세 개 (+3)', price: 30, buy: P => { P.kunai = (P.kunai || 0) + 3; } }, { name: '연막탄 (+1)', price: 40, buy: P => { P.smokes = (P.smokes || 0) + 1; } }],
+  공구: [{ name: '락픽 두 개 (+2) · 잠긴 차 따기', price: 25, buy: P => { P.picks = (P.picks || 0) + 2; } }, { name: '폭약 (+1) · 교각과 작은 건물용', price: 150, buy: P => { P.bombs = (P.bombs || 0) + 1; } }, { name: '다트 세 개 (+3)', price: 30, buy: P => { P.kunai = (P.kunai || 0) + 3; } }, { name: '연막탄 (+1)', price: 40, buy: P => { P.smokes = (P.smokes || 0) + 1; } }],
 };
 const RESPRAY_PRICE = 50, SELL_RATE = 0.3;
 function shopsInit() {
@@ -30,11 +30,15 @@ function shopAction() {
   const P = S.player;
   if (P.car) {
     const v = P.car;
-    if (inLot(v.x, v.y) && Math.abs(v.v) < 25 && !v.forSale && !v.police && vType(v).price > 0) return { k: 'carSell', v, label: `차 팔기 · ${Math.round(vType(v).price * SELL_RATE)}만` };
+    if (inLot(v.x, v.y) && Math.abs(v.v) < 25 && !v.forSale && !v.soldBack && !v.police && !v.jobCar && !(v.trunk?.length) && S.job?.v !== v && vType(v).price > 0)   /* 한 번 판 차를 도로 훔쳐 와 또 팔 수는 없다 */ return { k: 'carSell', v, label: `차 팔기 · ${Math.round(vType(v).price * SELL_RATE)}만` };
     return null;
   }
   if (P.z || flOf(P) || P.hide) return null;
   for (const s of S.shops || []) if (dist(P.x, P.y, s.x, s.y) < 56) return { k: 'shop', s, at: { x: s.x, y: s.y - 40 }, label: s.name };
+  // 가게 안 계산대 앞에서도 산다 (예전엔 문 앞에서만 열려, 들어가서 [행동]을 누르면 '더 가까이' 안내만 떴다)
+  const pb = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE));
+  for (const s of S.shops || []) { if (s.b !== pb) continue; const C = PLANS[s.b]?.[0]?.counter; if (!C) continue; const cx = tc(C.x) + TILE / 2, cy = tc(C.y);
+    if (dist(P.x, P.y, cx, cy) < 78) return { k: 'shop', s, at: { x: cx, y: cy - 40 }, label: s.name + ' 계산대' }; }
   if (S.dealer && dist(P.x, P.y, S.dealer.office.x, S.dealer.office.y) < 70) return { k: 'dealer', at: { x: S.dealer.office.x, y: S.dealer.office.y - 40 }, label: '중고차 매매' };
   return null;
 }
@@ -76,7 +80,7 @@ function openDealer() {
 function sellCar(v) {
   const P = S.player, price = Math.round(vType(v).price * SELL_RATE);
   carExit(true); S.cash = (S.cash || 0) + price; play('loot', 0.7); hudCache.objH = null;
-  v.forSale = vType(v).price; v.parked = true; v.ai = false; v.driver = false; v.v = 0;
+  v.forSale = vType(v).price; v.soldBack = true; v.parked = true; v.ai = false; v.driver = false; v.v = 0;
 }
 // 매 프레임: 구역 이름 · 훔친 전시장 차 · 도색 칸
 function shopsUpdate(dt) {

@@ -26,9 +26,7 @@ async def main():
         r = await q.evaluate('()=>{__game.S.wanted=0;tick(1)}')
         r = await q.evaluate(HIT, 3); print('C', r); ok(r['plan'] and r['done'] and r['paid'] == 240 and '등급 C' in r['banner'], 'grade C: %s' % r)
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player,ST=G.STAGE;S.wanted=0;S.cash=2000;P.car=null;P.x=(ST.roadsX[2]+4)*48+300;P.y=(ST.roadsY[2]+2)*48;tick(.1);
-          const c=S.contacts.D;const px=P.x,py=P.y;P.x=c.g.x+30;P.y=c.g.y+10;tick(.05);G.events.openContact('D');
-          [...document.querySelectorAll('#shopPanel button')].find(b=>b.textContent.includes('무기 거래')).click();
-          const sb=[...document.querySelectorAll('#shopPanel button')].find(b=>b.textContent.includes('소음 권총'));if(!sb)return {row:false};sb.click();document.querySelector('#shopPanel button:last-child').click();
+          const px=P.x,py=P.y;S.guns.silenced=12;  /* 소음 권총은 더 이상 팔지 않는다 — 등급 규칙만 본다 */
           P.x=px;P.y=py;for(const g of S.guards)if(Math.abs(g.x-P.x)<700&&Math.abs(g.y-P.y)<700&&g.state!=='DEAD'){g.x+=3000;g.route=[{x:g.x,y:g.y,pause:999}];g.path=null;}
           tick(.2);S.wpn='silenced';P.a=0;S.gunT=0;G.actAttack();tick(.5);return {row:true,ammo:S.guns.silenced,wanted:S.wanted}}''')
         print('silenced', r); ok(r.get('row') and r['ammo'] == 11 and r['wanted'] == 0, 'silenced pistol: %s' % r)

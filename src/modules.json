@@ -410,6 +410,98 @@
       "group": "city"
     },
     {
+      "path": "47zy_city_stage.js",
+      "group": "city"
+    },
+    {
+      "path": "47zc_city_crews.js",
+      "group": "city"
+    },
+    {
+      "path": "47zd_city_home.js",
+      "group": "city"
+    },
+    {
+      "path": "47ze_city_nuisance.js",
+      "group": "city"
+    },
+    {
+      "path": "47zf_city_justice.js",
+      "group": "city"
+    },
+    {
+      "path": "47zg_city_gundealer.js",
+      "group": "city"
+    },
+    {
+      "path": "47zh_city_revenge.js",
+      "group": "city"
+    },
+    {
+      "path": "47zi_city_trunk.js",
+      "group": "city"
+    },
+    {
+      "path": "47zj_city_killer.js",
+      "group": "city"
+    },
+    {
+      "path": "47zk_city_methods.js",
+      "group": "city"
+    },
+    {
+      "path": "47zl_city_envkill.js",
+      "group": "city"
+    },
+    {
+      "path": "47zm_city_daughter.js",
+      "group": "city"
+    },
+    {
+      "path": "47zn_city_places.js",
+      "group": "city"
+    },
+    {
+      "path": "47zp_city_brawl.js",
+      "group": "city"
+    },
+    {
+      "path": "47zq_city_ambient.js",
+      "group": "city"
+    },
+    {
+      "path": "47zr_city_scene.js",
+      "group": "city"
+    },
+    {
+      "path": "47zs_city_elevator.js",
+      "group": "city"
+    },
+    {
+      "path": "47zt0_city_lines.js",
+      "group": "city"
+    },
+    {
+      "path": "47zt1_city_civtalk.js",
+      "group": "city"
+    },
+    {
+      "path": "47zt_city_staff.js",
+      "group": "city"
+    },
+    {
+      "path": "47zu_city_store_art.js",
+      "group": "city"
+    },
+    {
+      "path": "47zv_city_pixel.js",
+      "group": "city"
+    },
+    {
+      "path": "47zw_city_juice.js",
+      "group": "city"
+    },
+    {
       "path": "47zz_city_story.js",
       "group": "city"
     },

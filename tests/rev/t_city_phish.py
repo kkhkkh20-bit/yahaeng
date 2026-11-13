@@ -1,0 +1,63 @@
+"""Free mode phishing-ring chain: after main chapter 1, phone calls between main chapters walk up a voice-phishing ring
+(collector -> recruiter -> manager -> launderer -> boss). Each call carries the previous step's debrief; finishing a
+step advances the chain; a failure is retried; the chain waits two minutes between steps; progress is saved."""
+import asyncio, json
+from pathlib import Path
+from playwright.async_api import async_playwright
+
+R = Path(__file__).resolve().parents[2]
+SETUP = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));while(G.DLG.modal)G.advanceDialog();
+  window.tick=s=>{for(let t=0;t<s;t+=1/60)G.update(1/60)};tick(.3);const S=G.S;S.copT=1e9;S.warNext=1e9;S.huntNext=1e9;S.evNext={};for(const e of G.events.list)S.evNext[e.d]=1e9;
+  S.story.ch=1;S.story.nextT=1e9;
+  window.CALL=()=>{S.wanted=0;const P=S.player,p=S.phones.reduce((a,b)=>Math.hypot(b.x-P.x,b.y-P.y)<Math.hypot(a.x-P.x,a.y-P.y)?b:a);P.x=p.x-40;P.y=p.y+4;P.car=null;S.ringPhone=p;S.ringT0=S.t;tick(.05);G.events.enterBooth(p);tick(1.2);
+    const lines=[];let k=0;while(G.DLG.modal&&k<30){lines.push(document.getElementById('dlgText')?.textContent||'');G.advanceDialog();tick(.05);k++;}tick(1);return lines};
+  window.KILL=()=>{const h=S.hit;h.g.shotT=null;G.killGuard(h.g);for(let k=0;k<60&&S.hit;k++)tick(1/30);};}'''
+
+async def main():
+    bad = []
+    async with async_playwright() as p:
+        b = await p.chromium.launch(); q = await b.new_page(); errs = []
+        q.on('pageerror', lambda e: errs.append(str(e)[:300]))
+        await q.add_init_script('window.__seed=5;window.requestAnimationFrame=()=>0;try{localStorage.clear()}catch(e){}')
+        await q.goto((R / 'build/preview_city.html').as_uri() + '?nostats&study=city-xl'); await q.wait_for_function('!!window.__game')
+        await q.evaluate(SETUP)
+        ok = lambda c, m: c or bad.append(m)
+        r = await q.evaluate('''()=>{const S=__game.S,l=CALL(),h=S.hit;return{lines:l,hit:h&&{name:h.name,phish:h.phish,ctr:h.ctr}}}''')
+        print('step1', json.dumps(r, ensure_ascii=False)[:300])
+        ok(r['hit'] and r['hit']['phish'] == 0 and r['hit']['name'] == '문광호' and any('상황실' in t for t in r['lines']), 'first phishing call: %s' % r)
+        r = await q.evaluate('''()=>{const S=__game.S;KILL();return{ph:S.story.ph,hit:!!S.hit,banner:(document.getElementById('evBanner')||{}).textContent||''}}''')
+        print('done1', r); ok(r['ph'] == 1 and not r['hit'] and '보이스피싱 사기단 1/6' in r['banner'], 'step 1 did not complete: %s' % r)
+        r = await q.evaluate('''()=>{const G=__game,S=G.S;while(G.DLG.modal)G.advanceDialog();const l=CALL(),gap=!(S.hit&&S.hit.phish!=null);if(S.hit)G.events.contractFail(S.hit,'x');S.hit=null;S.job=null;while(G.DLG.modal)G.advanceDialog();
+          S.story.phNextT=0;const l2=CALL(),h=S.hit;return{gap,lines:l2,hit:h&&{name:h.name,phish:h.phish,ctr:h.ctr}}}''')
+        print('step2', json.dumps(r, ensure_ascii=False)[:300])
+        ok(r['gap'], 'no break between phishing steps')
+        ok(r['hit'] and r['hit']['phish'] == 1 and r['hit']['ctr'] == 'accident' and any('모집책' in t for t in r['lines']), 'step 2 lacks debrief or contract: %s' % r)
+        r = await q.evaluate('''()=>{const G=__game,S=G.S;G.events.contractFail(S.hit,'x');S.story.phNextT=0;const l=CALL();const out={failed:S.story.phFailed,retry:l.some(t=>t.includes('다시 가')),phish:S.hit&&S.hit.phish};
+          G.events.saveFreeProgress(true);const key=Object.keys(localStorage).find(k=>/free/i.test(k));out.saved=(JSON.parse(localStorage.getItem(key)||'{}').story||{}).ph;return out}''')
+        print('retry', r); ok(r['failed'] and r['retry'] and r['phish'] == 1 and r['saved'] == 1, 'retry or save: %s' % r)
+        # 세탁책 납치·심문: 기절 → 트렁크 → 내 집 지하실 → 압박 100% → 자백
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,E=G.events,T=G.traffic,P=S.player;if(S.hit)E.contractFail(S.hit,'x');S.hit=null;S.job=null;while(G.DLG.modal)G.advanceDialog();S.story.ph=3;S.story.phFailed=false;S.story.phNextT=0;
+          CALL();const h=S.hit;if(!h||h.ctr!=='capture')return{ctr:h&&h.ctr};const g=h.g;for(const e of h.escorts){e.x=-9000;e.route=[{x:-9000,y:-9000,pause:999}];}
+          G.npcDown(g,null,false);tick(.3);const v=T.makeVehicle({type:'sedan',x:g.x+80,y:g.y,a:0,parked:true});v.unlocked=true;S.vehicles.push(v);P.x=g.x+30;P.y=g.y;P.car=null;tick(.05);
+          const a=E.captureAction();const label=a&&a.label;if(a)a.fn();tick(2.2);const loaded=h.trunk===v;
+          const home=S.safes[0];P.car=v;v.ai=false;v.x=home.x+60;v.y=home.y+60;v.v=0;P.x=v.x;P.y=v.y;tick(.3);const asking=!!h.asking;
+          const c0=S.cash;let k=0;while(S.hit===h&&k<20){const b=[...document.querySelectorAll('#shopPanel button')].find(b=>!b.disabled&&b.textContent!=='나가기');if(b)b.click();let j=0;while(G.DLG.modal&&j<20){G.advanceDialog();tick(.05);j++;}tick(1.6);k++;}
+          return{ctr:'capture',label,loaded,asking,done:!S.hit,ph:S.story.ph,paid:S.cash-c0,rounds:k}}''')
+        print('capture', r)
+        ok(r.get('ctr') == 'capture' and r.get('loaded') and r.get('asking') and r.get('done') and r.get('ph') == 4 and r.get('paid', 0) >= 800, 'capture and interrogation: %s' % r)
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,E=G.events;S.story.ph=3;S.story.phFailed=false;S.story.phNextT=0;CALL();const h=S.hit;if(!h)return{};h.g.shotT=S.t;G.killGuard(h.g);tick(.5);return{failed:S.story.phFailed,ph:S.story.ph,hit:!!S.hit}}''')
+        print('capture-dead', r)
+        ok(r.get('failed') and r.get('ph') == 3 and not r.get('hit'), 'killing the launderer should fail the step: %s' % r)
+        # 콜센터 거점 폭파
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,E=G.events,P=S.player;if(S.hit)E.contractFail(S.hit,'x');S.hit=null;S.job=null;while(G.DLG.modal)G.advanceDialog();S.story.ph=4;S.story.phFailed=false;S.story.phNextT=0;
+          const l=CALL(),h=S.hit;if(!h||h.ctr!=='demolish')return{ctr:h&&h.ctr,lines:l};const b=h.bld,inside=h.g.x>b.x0*48&&h.g.x<(b.x1+1)*48;
+          let a=null;for(let ty=b.y0-1;ty<=b.y1+1&&!a;ty++)for(let tx=b.x0-1;tx<=b.x1+1&&!a;tx++){if(G.bldAt(tx,ty)>=0||G.solidAt(tx,ty))continue;P.x=(tx+.5)*48;P.y=(ty+.5)*48;P.car=null;tick(.02);const x=E.havocAction();if(x&&x.label.includes('건물'))a=x;}
+          if(!a)return{ctr:'demolish',noWall:true};a.fn();tick(1.5);P.x+=600;tick(7);return{ctr:'demolish',inside,collapsed:!!b.collapsed,done:!S.hit,ph:S.story.ph,dead:h.g.state}}''')
+        print('demolish', r)
+        ok(r.get('ctr') == 'demolish' and r.get('collapsed') and r.get('done') and r.get('ph') == 5, 'call-center demolition: %s' % r)
+        ok(not errs, 'page errors: %s' % errs)
+        await b.close()
+    print('통과' if not bad else '문제', bad)
+    if bad: raise SystemExit(1)
+
+if __name__ == '__main__': asyncio.run(main())

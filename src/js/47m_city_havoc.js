@@ -39,7 +39,7 @@ function pileHit(a, b) {  // 추돌 한 번: 두 차가 서고 비상등, 연쇄
     spawnEffect('impact', { x: mx, y: my, fl: 0, z: 0 }, { scale: 0.8, alpha: 0.9 }); crashSound(320, clamp(1 - dist(mx, my, S.player.x, S.player.y) / 900, 0, 1));
     for (const v of [a, b]) if (v && v !== S.player.car && !v.crashed) { v.a += rnd(-0.4, 0.4); v.va = v.a; v.smoke = 3; v.hp = Math.min(v.hp, (v.hpMax || 6) * rnd(0.35, 0.6)); } }  // 비틀려 서고 연기
   for (const v of [a, b]) { if (!v || v === S.player.car) continue; v.ai = false; v.v = 0; v.crashed = true; v.hazardT = S.t + 40; v.panicT = 0;
-    if (v.driver && !v.driverOutT) { v.driverOutT = S.t; after(rnd(1, 2.2), () => { if (v.dead) return; v.driver = false; v.doorT = S.t + 0.2; v.doorSide = -1;
+    if (v.driver && !v.driverOutT) { v.driverOutT = S.t; after(rnd(1, 2.2), () => { if (v.dead || !v.driver || v.jacking || S.player.car === v) return; v.driver = false;   /* 그사이 내가 차를 빼앗았으면 운전자를 또 만들지 않는다 */ v.doorT = S.t + 0.2; v.doorSide = -1;
       const gi = cityGuardSlot(), side = v.a - Math.PI / 2, g = makeGuard({ kind: 'civ', at: [Math.floor(v.x / TILE), Math.floor(v.y / TILE)], radio: false }, gi);
       g.x = v.x + Math.cos(side) * 44; g.y = v.y + Math.sin(side) * 44; g.route = [{ x: g.x, y: g.y, pause: 999 }]; g.driverOut = true; placeGuard(g, gi); if (PR) prWarm([charOf(g)], true);
       gsay(g, ['아이고 내 차!', '어떻게 된 거야!', '보험사 불러!', '아 진짜...'][(Math.random() * 4) | 0], 2.2); }); } }
@@ -63,7 +63,7 @@ function havocAction() {
 }
 function plantBomb(x, y, target) {
   const P = S.player; doMotion({ pose: 'crouch', dur: 1.1, at: [[0.4, () => play('click', 0.4)], [0.8, () => play('switch', 0.4)]], end: () => {
-    P.bombs--; S.bombs.push({ x, y, t: S.t + BOMB_T, target, beep: 0 }); evBanner(`폭약 설치 — ${BOMB_T}초 안에 피해라!`, '#ff8a6a');
+    P.bombs--; S.bombs.push({ x, y, t: S.t + BOMB_T, target, beep: 0 }); evBanner(`폭약 설치. ${BOMB_T}초 안에 피해라!`, '#ff8a6a');
     if (witnessed(x, y, 380)) addWanted(2, '폭약을 설치하는 걸 사람들이 봤다'); } });
 }
 function bombsUpdate(dt) {
@@ -116,6 +116,7 @@ function buildingCollapse(b) {
   b.collapsed = true; const x0 = b.x0 * TILE, x1 = (b.x1 + 1) * TILE, y0 = b.y0 * TILE, y1 = (b.y1 + 1) * TILE, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
   // 안에 있던 사람은 깔린다
   for (const g of S.guards) if (g.state !== 'DEAD' && !g.off && g.x > x0 && g.x < x1 && g.y > y0 && g.y < y1) npcDown(g, null, true);
+  for (const c of S.corpses || []) if (c.ko && c.x > x0 && c.x < x1 && c.y > y0 && c.y < y1) { c.ko = false; if (c.g) { c.g.killHow = 'crush'; c.g.unconscious = false; } }  // 기절해 쓰러져 있던 사람도 깔린다
   const P = S.player; if (P.x > x0 - 10 && P.x < x1 + 10 && P.y > y0 - 10 && P.y < y1 + 10) { P.fl = 0; P.z = 0; setLayer(0); P.hurtT = 0; hurtPlayer(null, '무너진 건물에 깔렸다.'); }
   // 땅이 되고(벽 칸이 사라진다) 잔해 더미가 덮는다
   for (let ty = b.y0; ty <= b.y1; ty++) for (let tx = b.x0; tx <= b.x1; tx++) { if (!inMap(tx, ty)) continue; const row = G0[ty]; if (typeof row === 'string') G0[ty] = row.substring(0, tx) + '.' + row.substring(tx + 1); else row[tx] = '.'; }  // 1층 지도(G0)만 바꾼다

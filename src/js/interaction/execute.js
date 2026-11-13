@@ -26,6 +26,14 @@ function actPrimary(force) {
     case 'clean': startClean(a.d); break;
     case 'loot': startLoot(a.it); break;
     case 'counter': doCounter(a.g); break;
+    case 'winRoof': {  // 자유 모드: 창틀을 딛고 → 옆 건물 옥상으로 뛴다
+      const r = a.r, w = r.w, o = w.out; P.a = Math.atan2(o.d[1], o.d[0]); play('cloth', 0.4);
+      startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: w.inn.x, y: w.inn.y, f: 0.5 }, { x: (w.inn.x + o.x) / 2, y: (w.inn.y + o.y) / 2 - 10, f: 1 }], dur: 0.45, phases: [{ to: 1, pose: 'vault' }], face: P.a, step: 'cloth',
+        room: { b: bldAt(w.tx, w.ty), fl: w.fl, until: 1 } });
+      P.trav.end = () => { P.fl = 0; setLayer(0); P.z = 1; P.x = (w.inn.x + o.x) / 2; P.y = (w.inn.y + o.y) / 2;
+        P.jump = { x0: P.x, y0: P.y, x1: tc(r.tx), y1: tc(r.ty), t: 0, dur: 0.48, z1: 1, arc: 30 }; P.jump.downward = false; P.jump.face = Math.atan2(P.jump.y1 - P.y, P.jump.x1 - P.x); P.a = P.jump.face; play('throw', 0.35); fstat('roofHops'); };
+      break;
+    }
     case 'winDrop': {  // 창틀을 넘고 → 벽에 매달려 → 내려선다
       const w = a.w, o = w.out, up = { x: o.x - o.d[0] * 22, y: o.y - o.d[1] * 22 }; P.a = Math.atan2(o.d[1], o.d[0]); play('cloth', 0.4);
       startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: w.inn.x, y: w.inn.y, f: 0.15 }, { x: up.x, y: up.y - 44, f: 0.4 }, { x: up.x, y: up.y, f: 0.85 }, { x: o.x, y: o.y, f: 1 }], dur: 1.2,

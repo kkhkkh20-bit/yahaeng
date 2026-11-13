@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------- 상태
 const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+let ctx = canvas.getContext('2d');  // let: 자유 모드 도트화(47zv)가 작은 캔버스로 잠시 바꿔 그린다
 const darkC = document.createElement('canvas'); const dctx = darkC.getContext('2d', {willReadFrequently:true});
 let mapC = null, ugC = null, ventC = null, S_ugC = null, stripePat = {};
 // 큰 지도 그림(가로 4000px 넘는 것도 있다)은 휴대폰 그래픽 칩이 한 장으로 못 다뤄 매 프레임 느린 길로 그려졌다.
@@ -392,7 +392,9 @@ function floorCanvas(bi, f) {
 }
 // 주민 체형 자동 배정 (어른만): 남자 기본 3 · 여자 셋 6 · 덩치·노인·코트·백팩 각 1
 const BODY_MIX = [null, 'vest', 'jacket', 'fLong', 'femaleBlazer', 'fBob', 'femaleCoat', 'fTail', 'workApron', 'big', 'old', 'coat', 'pack', 'hoodieCasual'];
-const autoBody = i => BODY_MIX[((i * 7919 + 13) >>> 0) % BODY_MIX.length];
+// 자유 모드 거리는 더 북적이고 다양하다: 정장 회사원(남녀)·작업복·여성 작업복을 더 섞는다 (스토리 모드 판은 그대로)
+const CITY_BODY_MIX = BODY_MIX.concat(['suit', 'femaleSuit', 'worker', 'femaleWorker', 'jacket', 'fLong']);
+const autoBody = i => { const M = STAGE?.cityLife ? CITY_BODY_MIX : BODY_MIX; return M[((i * 7919 + 13) >>> 0) % M.length]; };
 function makeGuard(d, i) {
   let sx, sy;
   if (d.at) { sx = d.at[0]; sy = d.at[1]; }
@@ -668,7 +670,7 @@ function renderMap(R) {
   const draw = (name, dx, dy, dw = TILE, dh = TILE) => blit(x, name, dx, dy, dw, dh);
   const wallish = v => v === '#' || v === 'S' || v === 'N';
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) {
-    const ch = G[ty][tx],floorCh=propGround(ch,tx,ty); if(officeGround(x,floorCh,tx,ty)||freeCityGround(x,floorCh,tx,ty)||quarterFloor(x,floorCh,tx,ty))continue; let b = base(floorCh, tx, ty);
+    const ch = G[ty][tx],floorCh=propGround(ch,tx,ty); if((typeof cornerStoreGround==='function'&&cornerStoreGround(x,floorCh,tx,ty))||officeGround(x,floorCh,tx,ty)||freeCityGround(x,floorCh,tx,ty)||quarterFloor(x,floorCh,tx,ty))continue; let b = base(floorCh, tx, ty);
     if (!b) { const n = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(o => G[ty + o[1]] && G[ty + o[1]][tx + o[0]]).find(v => v && !wallish(v) && v !== '~' && base(v, tx, ty)); b = base(n || '=', tx, ty) || 'stone0'; }
     const kg = KIT ? kitGround(floorCh, tx, ty) : null;
     if (kg) x.drawImage(kg, tx * TILE, ty * TILE, TILE, TILE); else draw(b, tx * TILE, ty * TILE);
@@ -717,7 +719,7 @@ function renderMap(R) {
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) {
     const ch = G[ty][tx], px = tx * TILE, py = ty * TILE;
     if (wallish(ch)) {
-      if(officeWall(x,tx,ty))continue;
+      if((typeof cornerStoreWall==='function'&&cornerStoreWall(x,tx,ty))||officeWall(x,tx,ty))continue;
       const n = wallish((G[ty - 1] || [])[tx]), so = wallish((G[ty + 1] || [])[tx]), e = wallish(G[ty][tx + 1]), w = wallish(G[ty][tx - 1]);
       let piece = 'wallH';
       if (e && so && !n && !w) piece = 'wallTL'; else if (w && so && !n && !e) piece = 'wallTR';

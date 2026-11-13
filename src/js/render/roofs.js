@@ -116,7 +116,7 @@ function drawRoof1(b, i, roof) {
       ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = 2; ctx.stroke();
       for (let k = 1; k < (b.fh || 1); k++) { const t = k / b.fh; ctx.strokeStyle = 'rgba(255,255,255,.05)'; ctx.beginPath(); ctx.moveTo(ex + shift * (1 - t), fyb - fH * (1 - t)); ctx.lineTo(ex + shift * (1 - t), y + fH * t); ctx.stroke(); }  // 층 줄
     }
-    if (b.facade) { ctx.save(); if (shift) ctx.transform(1, 0, -shift / fH, 1, shift * fyb / fH, 0); drawFacade(b); drawFacadeExtras(b); ctx.restore(); }
+    if (b.facade) { ctx.save(); if (shift) ctx.transform(1, 0, -shift / fH, 1, shift * fyb / fH, 0); drawFacade(b); drawFacadeExtras(b); if (STAGE.cityLife && typeof drawHomePlate === 'function') drawHomePlate(b); ctx.restore(); }
     ctx.save(); if (shift) ctx.translate(shift, 0);
     ctx.drawImage(b.roofC, x, y);
     drawCityRoofProps(b);

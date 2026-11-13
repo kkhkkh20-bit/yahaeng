@@ -424,9 +424,11 @@ window.renderFace = (side, size) => {
   const url = renderer.domElement.toDataURL('image/png'); renderer.setSize(RS, RS); return url;
 };
 window.boneNames = () => Object.keys(bones);
+window.boneWorld = n => { const b = bones[n]; if (!b) return null; const v = new THREE.Vector3(); b.getWorldPosition(v); return [v.x, v.y, v.z].map(Math.round); };
+window.boneParent = n => bones[n]?.parent?.name || null;
 // 동작 포즈: climb (배관·벽·전봇대 타기, 팔다리 번갈아) / vault (창문·난간 넘기: 짚기 → 몸 접어 넘기 → 착지)
 window.renderPose = (name, k, dirA) => {
-  mixer.stopAllAction(); const act = mixer.clipAction(clips.Idle); act.reset(); act.play(); mixer.setTime(0);
+  mixer.stopAllAction(); const act = mixer.clipAction(name === 'sit' ? (clips.Idle_Neutral || clips.Idle) : clips.Idle);  // 앉기는 평상시 서기(전투 대기 아님)에서 시작 act.reset(); act.play(); mixer.setTime(0);
   bones.Hips.position.x = 0; bones.Hips.position.z = 0;
   model.rotation.set(0, 0, 0); model.position.set(0, 0, 0); model.updateMatrixWorld(true);
   const B = bones;
@@ -475,6 +477,20 @@ window.renderPose = (name, k, dirA) => {
     rotW(B.Spine, 0.75); rotW(B.Spine1, 0.3);
     for (const sd of ['Left', 'Right']) { const side = sd === 'Left' ? 1 : -1; aimB(B[sd + 'Arm'], B[sd + 'ForeArm'], V3(0.18 * side, -0.85, 0.5)); aimB(B[sd + 'ForeArm'], B[sd + 'Hand'], V3(0.05 * side, -0.8, 0.6)); }
     aimB(B.Neck, B.Head, V3(0, 0.3, 1));
+  } else if (name === 'sit') {  // 의자에 앉은 자세: 허벅지는 앞으로 수평, 정강이는 바닥으로, 상체는 곧게, 두 손은 무릎 위 (식당·PC방·사무실 손님)
+    for (const sd of ['Left', 'Right']) { const side = sd === 'Left' ? 1 : -1;
+      // 이 뼈대의 발(Foot)은 무릎 아래가 아니라 Root 밑 IK 뼈다: 서 있을 때의 정강이 방향(무릎→발)을 정강이 뼈 기준으로 기억해 두고,
+      // 허벅지를 앞으로 겨눈 뒤 그 정강이 방향을 아래로 돌리고, 발 뼈를 정강이 끝에 직접 옮긴다
+      const L = B[sd + 'Leg'], Ft = B[sd + 'Foot'], kn = new THREE.Vector3(), ft = new THREE.Vector3(), lq = new THREE.Quaternion();
+      L.getWorldPosition(kn); Ft.getWorldPosition(ft); const shinW = ft.clone().sub(kn), shin = shinW.length(); L.getWorldQuaternion(lq); const shinL = shinW.normalize().applyQuaternion(lq.clone().invert());
+      aimB(B[sd + 'UpLeg'], L, V3(0.12 * side, -0.08, 1));
+      L.getWorldQuaternion(lq); const cur = shinL.clone().applyQuaternion(lq), q = new THREE.Quaternion().setFromUnitVectors(cur, V3(0.03 * side, -1, 0.06).normalize()), pq = new THREE.Quaternion(); L.parent.getWorldQuaternion(pq);
+      L.quaternion.premultiply(pq.clone().invert().multiply(q).multiply(pq)); L.updateMatrixWorld(true); L.getWorldPosition(kn);
+      L.getWorldQuaternion(lq); const to = kn.clone().addScaledVector(shinL.clone().applyQuaternion(lq), shin);
+      Ft.parent.updateMatrixWorld(true); Ft.position.copy(Ft.parent.worldToLocal(to)); Ft.updateMatrixWorld(true);
+      const T = B[sd + 'ToeBase']; if (T && T.parent === Ft.parent) { T.position.copy(T.parent.worldToLocal(V3(kn.x, kn.y, kn.z + 160))); T.updateMatrixWorld(true); }
+      aimB(B[sd + 'Arm'], B[sd + 'ForeArm'], V3(0.16 * side, -1, 0.28)); aimB(B[sd + 'ForeArm'], B[sd + 'Hand'], V3(0.06 * side, -0.5, 1)); }
+    aimB(B.Spine, B.Spine1, V3(0, 1, 0.06)); aimB(B.Neck, B.Head, V3(0, 1, 0.1));
   } else if (name === 'vault') {
     if (k === 1) {  // 몸을 접어 넘는 순간: 허벅지를 가슴으로, 두 손은 창턱을 짚는다
       aimB(B.Spine, B.Spine1, V3(0, 0.55, 0.85)); aimB(B.Spine1, B.Spine2, V3(0, 0.45, 0.9));
@@ -495,7 +511,7 @@ window.renderPose = (name, k, dirA) => {
   model.position.y = -fy + lift - (name === 'climb' ? 200 : 0); model.updateMatrixWorld(true);  // 타기: 팔이 잘리지 않게 200 내려 찍는다 (게임에서 14px 올려 그린다)
   model.rotation.y = Math.atan2(Math.cos(dirA), Math.sin(dirA)); model.updateMatrixWorld(true);
   shadow.visible = name === 'vault' && k !== 1; shadow.position.set(0, 1, 0);
-  renderSprite(modular && name === 'climb' ? CY - 100 : 0, modular ? (name === 'climb' ? 1.25 : ['vault','stoop'].includes(name) ? 1.6 : 1) : 1); shadow.visible = true;
+  renderSprite(modular && name === 'climb' ? CY - 100 : 0, modular ? (name === 'climb' ? 1.25 : ['vault','stoop','sit'].includes(name) ? 1.6 : 1) : 1); shadow.visible = true;
   return renderer.domElement.toDataURL('image/png');
 };
 

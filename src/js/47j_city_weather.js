@@ -6,7 +6,7 @@ function weatherInit() { S.rain = { k: 0, on: false, next: S.t + rnd(90, 160), d
 const rainK = () => (STAGE.cityLife && S.rain) ? S.rain.k : 0;
 function weatherUpdate(dt) {
   const W = S.rain; if (!W || !STAGE.cityLife) return;
-  if (S.t > W.next) { W.on = !W.on; W.next = S.t + (W.on ? rnd(60, 120) : rnd(120, 240)); if (W.on) evBanner('비가 내리기 시작한다 — 길이 미끄럽다', '#a8c8e8'); else evBanner('비가 그쳤다', '#c8d8e8'); }
+  if (S.t > W.next) { W.on = !W.on; W.next = S.t + (W.on ? rnd(60, 120) : rnd(120, 240)); if (W.on) evBanner('비가 내린다. 길이 미끄럽다', '#a8c8e8'); else evBanner('비가 그쳤다', '#c8d8e8'); }
   W.k = clamp(W.k + (W.on ? 1 : -1) * dt / 8, 0, RAIN_MAX);  // 8초에 걸쳐 들고 난다
   rainSound(W.k);
   // 비 오는 날 행인 몇은 처마 밑으로 서두른다 (말 한마디)
@@ -44,11 +44,11 @@ function drawRain() {
 }
 // 처음 화면으로 나갈 때: 자유 모드가 띄운 창·알림·소리를 모두 정리한다 (다음 판·메뉴에 남지 않게)
 function cityTeardown() {
-  for (const id of ['evBanner', 'districtName', 'shopPanel', 'rampHud', 'carHint']) { const el = document.getElementById(id); if (el) el.remove(); }
+  for (const id of ['evBanner', 'districtName', 'shopPanel', 'carHint']) { const el = document.getElementById(id); if (el) el.remove(); }
   if (CMAP) { CMAP.el.remove(); CMAP = null; }
   { const w = document.getElementById('wpnChip'); if (w) w.remove(); }
   if (S) S.heli = null; if (typeof HELI_SND !== 'undefined' && HELI_SND && AC) HELI_SND.g.gain.setTargetAtTime(0, AC.currentTime, 0.1);
-  if (S) { S.shopOpen = false; S.side = null; S.wp = null; S.wpPath = null; S.ramp = null; S.war = null; S.safeIn = null; S.hunter = null; S.scope = false; S.stillT = 0; if (S.rain) { S.rain.on = false; S.rain.k = 0; } }
+  if (S) { S.shopOpen = false; S.side = null; S.wp = null; S.wpPath = null; S.war = null; S.safeIn = null; S.hunter = null; S.scope = false; S.stillT = 0; if (S.rain) { S.rain.on = false; S.rain.k = 0; } }
   document.body.classList.remove('free-city', 'no-prompts');
   if (AC) { const now = AC.currentTime; if (RAIN_SND) RAIN_SND.g.gain.setTargetAtTime(0, now, 0.1); if (typeof SCREECH !== 'undefined' && SCREECH) SCREECH.g.gain.setTargetAtTime(0, now, 0.05); }
   if (typeof musicRadio === 'function') musicRadio(false);

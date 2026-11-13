@@ -15,6 +15,7 @@ function updateArrest(dt) {
 const CUFF_T = 1.6;
 function startCuffs(why, cop) {
   const P = S.player; if (S.cuffs || S.downing) return;
+  if (STAGE.cityLife && typeof cityDown === 'function') { cityDown(why || '경찰에게 제압됐다'); if (S.downing) S.downing.arrest = true; return; }   // 자유 모드: 수갑 장면 없이 제압돼 쓰러진다 → 지구대
   P.trav = null; clearCarScripts();  // 하던 동작(문 따기·차 타기)은 끊긴다
   if (P.car) { const v = P.car; P.car = null; v.parked = true; v.v = 0; }
   cop = cop || S.guards.filter(g => g.police && !g.off && g.state !== 'DEAD').sort((a, b) => dist(a.x, a.y, P.x, P.y) - dist(b.x, b.y, P.x, P.y))[0];
@@ -39,20 +40,20 @@ function drawCuffs() {
 }
 // 체포: 지구대 앞에서 풀려난다. 수입의 30%를 벌금으로 낸다
 function cityArrest(why) {
-  const P = S.player, fine = Math.round((S.cash || 0) * 0.3);
+  const P = S.player, fine = Math.round((S.cash || 0) * (homeHas('safe') ? 0.15 : 0.3));  /* 집 벽 금고 (47zd) */
   if (P.car) { const v = P.car; P.car = null; v.parked = true; }
-  P.captive = null; P.carrying = null; P.hide = null; P.hp = P.hpMax; P.hurtT = 2.5; S.fade = 1.2; S.flash = 0.2; cityDisguiseOff();
+  cityDropHeld(); P.hide = null; P.hp = P.hpMax; P.hurtT = 2.5; S.fade = 1.2; S.flash = 0.2; cityDisguiseOff();
   const at = STAGE.police || STAGE.start; P.x = tc(at[0]); P.y = tc(at[1] + 1); P.z = 0; P.fl = 0; setLayer(0);
   if (STAGE.cityLife && bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) >= 0) {  // 지구대 '앞' 길에서 풀려난다 (건물 안 사무실이 아니라)
     let best = null; for (let r = 1; r <= 8 && !best; r++) for (let dy = -r; dy <= r && !best; dy++) for (let dx = -r; dx <= r && !best; dx++) { if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue; const tx = Math.floor(P.x / TILE) + dx, ty = Math.floor(P.y / TILE) + dy; if (inMap(tx, ty) && !solidAt(tx, ty) && bldAt(tx, ty) < 0) best = [tx, ty]; }
     if (best) { P.x = tc(best[0]); P.y = tc(best[1]); } }
   cam.x = P.x; cam.y = P.y;
   S.cash = Math.max(0, (S.cash || 0) - fine); S.wanted = 0; S.wantLost = 0; S.alevel = 0; S.alevelT = 0;
-  for (const g of S.guards) { if (g.police && !g.off && !g.contact && !g.beat) despawnCop(g); else if (['ALERT', 'SEARCH', 'SUSPICIOUS', 'CHECK'].includes(g.state)) { g.state = 'RETURN'; g.path = null; g.icon = null; g.meter = 0; } }
+  cityStandDownCops();
   // 벌을 받았으니 경찰과의 악연은 '알아보면 수배' 아래로 덜어 주고, 풀려난 뒤 90초는 얼굴만 보고 수배를 걸지 않는다 (지구대 안에서 바로 다시 잡히는 고리 방지)
   if (S.stand && (S.stand.P || 0) <= -30) S.stand.P = -20; S.releasedT = S.t + 90; S.gunHeat = 0;
   S.stats.arrests = (S.stats.arrests || 0) + 1; fstat('arrests'); play('lose', 0.35);
-  toast(why + ' — 지구대에서 풀려났다' + (fine ? ` (벌금 ${fine}만)` : ''), 3.2, 'warn');
+  toast(why + ' · 지구대에서 풀려났다' + (fine ? ` (벌금 ${fine}만)` : ''), 3.2, 'warn');
 }
 
 // 조직원의 칼: 손에 든 칼날. 나를 쫓을 때는 앞으로 내민다
@@ -197,7 +198,7 @@ function updateBlood(dt) {
 function drawBloodParts() {
   const B = S.bloodParts; if (!B || !B.length) return;
   ctx.save(); ctx.fillStyle = '#9a1016';
-  for (const p of B) { if (!inView(p.x, p.y, 40)) continue; ctx.beginPath(); ctx.ellipse(p.x, p.y - p.z, p.r, p.r * 1.3, 0, 0, TAU); ctx.fill(); }
+  for (const p of B) { if (!inView(p.x, p.y, 40)) continue; const q = 1.5, s = Math.max(q, Math.round(p.r * 1.4 / q) * q); ctx.fillRect(Math.round((p.x - s / 2) / q) * q, Math.round((p.y - p.z - s / 2) / q) * q, s, s); }   // 도트 핏방울 (1.5px 격자)
   ctx.restore();
 }
 // 사람이 죽는 순간(칼·주먹·총·차): 피가 터지고 몸 밑에 웅덩이가 번진다
@@ -218,6 +219,10 @@ function cityLifeUpdate(dt) {
 // 한국식 간판: 1층 위 건물 폭 가로 간판(가게 이름 · 작은 부제), 위층 업소는 건물 오른쪽 세로 돌출 간판(층 표시)
 // 밤에는 LED처럼 스스로 빛난다(lit). 글자는 게임 UI 글꼴로 그린다
 const SIGN_STYLE = [
+  [/학교/, '#1f6a3a', '#ffffff', '#ffe14a'],
+  [/병원|의원/, '#ffffff', '#c8302a', '#c8302a'],
+  [/119|소방/, '#d42a22', '#ffffff', '#ffe14a'],
+  [/지구대|파출소|경찰/, '#14306e', '#ffffff', '#6ab8ff'],
   [/국밥|순댓국|백반|분식|곱창|골뱅이|노가리|포차|식당/, '#c8302a', '#fff6e8', '#ffd25a'],
   [/호프|생맥주|치킨/, '#f2b420', '#3a1a10', '#c8302a'],
   [/편의점/, '#1f8a4a', '#ffffff', '#ffd25a'],
@@ -238,7 +243,7 @@ function drawStoreSigns(b, lit) {
   // 가로 간판: 1층 출입구 차양보다 위(2층 창 아랫단)에 건다
   const name = (b.signs[0] || '').trim();
   if (name) {
-    const st = signStyle(name), bx = x0 + 4, bw = w - 8, bh = 30, by = b.y1 * TILE - bh - 22, sub = SIGN_SUB[hs % SIGN_SUB.length];
+    const st = signStyle(name), bx = x0 + 4, bw = w - 8, bh = 30, by = b.y1 * TILE - bh - 22, sub = b.school ? '교문' : b.hospital ? '응급실' : SIGN_SUB[hs % SIGN_SUB.length];
     if (lit) { ctx.globalCompositeOperation = 'lighter'; const c = hexRgb(st.bg === '#ffffff' || st.bg === '#f4f2ea' ? st.ac : st.bg);
       for (const [pad, a] of [[20, .07], [9, .12]]) { ctx.fillStyle = `rgba(${c},${a})`; ctx.fillRect(bx - pad, by - pad, bw + pad * 2, bh + pad * 2); } ctx.globalCompositeOperation = 'source-over'; }
     ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(bx + 2, by + 3, bw, bh);

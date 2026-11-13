@@ -24,9 +24,9 @@ function sideAction() {
 }
 function sideStart(kind) {
   S.side = { kind, v: S.player.car, n: 0, earned: 0, fare: null, nextT: S.t + 1.5, riders: 0 };
-  if (kind === 'bus') { if (!busPlanRoute(S.side)) { S.side = null; evBanner('지금은 노선을 짤 수 없다'); return; } evBanner('버스 운행 — 정류장마다 세워 승객을 태우고 내려라', '#8fe0a8'); play('bell', 0.4); return; }
-  if (kind === 'cop') { if (S.wanted) { S.side = null; evBanner('수배 중에는 자경단을 할 수 없다'); return; } evBanner('자경단 — 무전: 도주 차량을 들이받아 세워라', '#9fc4ff'); play('bell', 0.4); return; }
-  evBanner(kind === 'taxi' ? '택시 영업 — 손 흔드는 손님 옆에 세워라' : '구급 출동 — 환자를 태워 병원으로', kind === 'taxi' ? '#ffd76a' : '#ff8a8a');
+  if (kind === 'bus') { if (!busPlanRoute(S.side)) { S.side = null; evBanner('지금은 노선을 짤 수 없다'); return; } evBanner('버스 운행 · 정류장마다 세워 승객을 태우고 내려라', '#8fe0a8'); play('bell', 0.4); return; }
+  if (kind === 'cop') { if (S.wanted) { S.side = null; evBanner('수배 중에는 자경단을 할 수 없다'); return; } evBanner('자경단 · 무전이 오면 도주 차량을 들이받아 세워라', '#9fc4ff'); play('bell', 0.4); return; }
+  evBanner(kind === 'taxi' ? '택시 영업 · 손 흔드는 손님 옆에 세워라' : '구급 출동 · 환자를 태워 병원으로', kind === 'taxi' ? '#ffd76a' : '#ff8a8a');
   play('bell', 0.4);
 }
 function sideEnd(msg) {
@@ -71,17 +71,17 @@ function sideUpdate(dt) {
     return;
   }
   // 태우고 가는 중
-  const left = f.limit - (S.t - f.t1);
+  const left = f.limit - (S.t - f.t1); if (f.leaving) return;   // 내리는 0.5초 사이엔 시간 초과·사고로 다시 판정하지 않는다 (숨진 환자가 살아나 돈을 내던 일)
   if (f.hp0 - v.hp >= 3) { sideDropOut(f, true); gsay(f.g, sd.kind === 'taxi' ? '이게 운전이야?! 세워!' : '...', 2); sd.fare = null; sd.nextT = S.t + 4; evBanner(sd.kind === 'taxi' ? '손님이 화내며 내렸다' : '환자를 다치게 했다', '#f2b0a0'); return; }
   if (sd.kind === 'amb' && left <= 0) { sideDropOut(f, true); G_kill(f.g); sd.fare = null; sd.nextT = S.t + 4; evBanner('환자가 숨졌다…', '#f2b0a0'); return; }
   if (dist(v.x, v.y, f.to.x, f.to.y) < 110 && Math.abs(v.v) < 25 && !f.leaving) {
     f.leaving = true; const pay = Math.round((sd.kind === 'amb' ? 90 : 30) + f.d / (sd.kind === 'amb' ? 30 : 40) + Math.max(0, left) * 2), tip = Math.max(0, left) > f.limit * 0.35 ? (sd.kind === 'amb' ? 30 : 20) : 0;
-    after(0.5, () => { sideDropOut(f, false); cash(pay + tip); sd.n++; fstat(sd.kind === 'amb' ? 'patients' : 'taxi'); sd.earned += pay + tip; sd.fare = null; sd.nextT = S.t + 2.5; play('loot', 0.5);
+    after(0.5, () => { if (S.side !== sd || sd.fare !== f) return; sideDropOut(f, false); cash(pay + tip); sd.n++; fstat(sd.kind === 'amb' ? 'patients' : 'taxi'); sd.earned += pay + tip; sd.fare = null; sd.nextT = S.t + 2.5; play('loot', 0.5);
       gsay(f.g, sd.kind === 'amb' ? '고, 고맙습니다...' : tip ? '빠르네요! 잔돈은 넣어 두세요.' : '수고하세요.', 2);
       evBanner(`${sd.kind === 'amb' ? '환자 이송' : '운행 완료'} · ${pay}만${tip ? ` + 팁 ${tip}만` : ''}`, '#9fe0b0'); });
   }
 }
-function G_kill(g) { if (!g) return; g.off = false; npcDown(g, null, true); const c = S.corpses[S.corpses.length - 1]; if (c && c.g === g) c.byNpc = true; }
+function G_kill(g) { if (!g) return; g.off = false; g.downNpc = true; npcDown(g, null, true);   /* 이송 중 숨진 환자는 내가 죽인 게 아니다 */ const c = S.corpses[S.corpses.length - 1]; if (c && c.g === g) c.byNpc = true; }
 // 탄다: 차 쪽으로 걸어와 → 뒷문이 열리고 → 사라진다(차 안)
 function sideBoard(sd, f) {
   const g = f.g, v = sd.v; f.boarding = true; g.hail = false;
@@ -102,11 +102,10 @@ function sideDropOut(f, angry) {
 // 길가 손님 머리 위 손짓 · 행선지 고리 · 남은 시간 (어둠 위)
 function drawSide() {
   const sd = S.side; if (sd?.kind === 'bus') { drawBus(sd); return; } if (sd?.kind === 'cop') { drawCopSide(sd); return; } if (!sd || !sd.fare) return; const f = sd.fare, col = sd.kind === 'taxi' ? '255,215,106' : '255,120,120';
-  if (!f.aboard && npcAlive(f.g) && inView(f.g.x, f.g.y, 60)) { const b = .6 + .4 * Math.sin(S.t * 8);
-    ctx.strokeStyle = `rgba(${col},${b})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(f.g.x, f.g.y - 4, 22, 0, TAU); ctx.stroke();
+  if (!f.aboard && npcAlive(f.g) && inView(f.g.x, f.g.y, 60)) {
     if (sd.kind === 'amb') { ctx.fillStyle = 'rgba(120,10,10,.6)'; ctx.beginPath(); ctx.ellipse(f.g.x + 4, f.g.y + 4, 9, 5, 0, 0, TAU); ctx.fill(); }  // 바닥에 떨어진 피
     infoTag(f.g.x, f.g.y - 60, sd.kind === 'taxi' ? '손님' : '환자', `rgb(${col})`, .9); }
-  if (f.aboard && inView(f.to.x, f.to.y, 80)) { const b = .5 + .4 * Math.sin(S.t * 5); ctx.strokeStyle = `rgba(${col},${b})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(f.to.x, f.to.y, 46, 0, TAU); ctx.stroke(); infoTag(f.to.x, f.to.y + 30, f.to.label, `rgb(${col})`, .9); }
+  if (f.aboard && inView(f.to.x, f.to.y, 80)) { infoTag(f.to.x, f.to.y + 30, f.to.label, `rgb(${col})`, .9); }
 }
 function sideGoal(money) {
   const sd = S.side; if (!sd) return null; const f = sd.fare, nm = SIDE[sd.kind].name;
@@ -130,13 +129,13 @@ function garageAction() {
   const G = S.garage, P = S.player; if (!G) return null;
   const v = P.car, inBay = o => o.x > G.bay.x0 && o.x < G.bay.x1 && o.y > G.bay.y0 && o.y < G.bay.y1;
   if (v && inBay(v) && Math.abs(v.v) < 20 && !G.busy) {
-    if (G.cars.length >= GARAGE_CAP) return { k: 'evAct', label: '차고가 꽉 찼다 (2대)', fn: () => evBanner('차고가 꽉 찼다 — 먼저 한 대를 꺼내라') };
+    if (G.cars.length >= GARAGE_CAP) return { k: 'evAct', label: '차고가 꽉 찼다 (2대)', fn: () => evBanner('차고가 꽉 찼다. 먼저 한 대를 꺼내라') };
     if (v.police || v.forSale != null || (S.job && S.job.v === v) || (S.side && S.side.v === v)) return null;
     return { k: 'evAct', label: '차고에 넣기', fn: () => garageStore(v) };
   }
   if (!v && !G.busy && dist(P.x, P.y, G.x, G.base + 20) < 70) {
-    if (!G.cars.length) return { k: 'evAct', label: '차고 (비어 있음)', fn: () => evBanner('차고가 비어 있다 — 차를 셔터 앞에 세우고 넣어라') };
-    return { k: 'evAct', label: `차고 — 차 꺼내기 (${G.cars.length}대)`, fn: () => shopPanel('내 차고', G.cars.map((c, i) => ({ name: `${VTYPES[c.type]?.name || '차'}${c.hp < c.hpMax ? ' (흠집)' : ''}`, price: null, tag: '꺼내기', ok: true, buy: () => { closeShopPanel(); garageTake(i); } }))) };
+    if (!G.cars.length) return { k: 'evAct', label: '차고 (비어 있음)', fn: () => evBanner('차고가 비어 있다. 차를 셔터 앞에 세우고 넣어라') };
+    return { k: 'evAct', label: `차고 · 차 꺼내기 (${G.cars.length}대)`, fn: () => shopPanel('내 차고', G.cars.map((c, i) => ({ name: `${VTYPES[c.type]?.name || '차'}${c.hp < c.hpMax ? ' (흠집)' : ''}`, price: null, tag: '꺼내기', ok: true, buy: () => { closeShopPanel(); garageTake(i); } }))) };
   }
   return null;
 }
@@ -145,7 +144,11 @@ function garageStore(v) {
   v.ai = false; v.v = 0; v.jacking = true;  // 셔터가 올라가면 차가 천천히 들어간다
   const x0 = v.x, y0 = v.y, a0 = v.a, tx = G.x, ty = G.base - 30;
   let k = 0; const step = () => { k++; const f = Math.min(1, k / 30); v.x = x0 + (tx - x0) * f; v.y = y0 + (ty - y0) * f; v.a = a0 + angDiff(a0, -Math.PI / 2) * Math.min(1, f * 2); P.x = v.x; P.y = v.y; if (k < 30) after(1 / 30, step); else done(); };
-  const done = () => { v.jacking = false; P.car = null; P.x = G.x + 56; P.y = G.base + 40; collide(P, 13, groundSolidP); v.gone = true; S.vehicles = S.vehicles.filter(o => o !== v);
+  const done = () => { v.jacking = false; P.car = null; P.x = G.x + 56; P.y = G.base + 40; collide(P, 13, groundSolidP); v.gone = true;
+    // 태운 사람·트렁크 짐은 셔터 앞에 내려놓고 차만 넣는다 (차와 함께 사라지면 영영 못 찾는다)
+    for (const g of v.riders || []) { g.off = false; g.rideIn = g.rideTo = null; g.x = P.x + 30; g.y = P.y + 10; g.path = null; } v.riders = [];
+    for (const c of v.trunk || []) { c.stashed = false; c.hidden = false; c.inTrunk = null; c.x = P.x - 20; c.y = P.y + 14; if (c.g) { c.g.keep = c.g.skBi != null; c.g.inTrunk = null; } } v.trunk = [];
+    if (P.lastCar === v) P.lastCar = null; S.vehicles = S.vehicles.filter(o => o !== v);
     G.cars.push({ type: v.type || 'sedan', c: v.c || 0, hp: Math.max(1, v.hp), hpMax: v.hpMax || vType(v).hp });
     G.openTo = 0; G.busy = false; play('metal', 0.4, 0.6); evBanner(`차고에 넣었다 · ${G.cars.length}/${GARAGE_CAP}`, '#9fe0b0'); saveFreeProgress(true); };
   after(0.7, step);
@@ -214,7 +217,7 @@ function drawBus(sd) {
   const st = sd.stops[sd.si]; if (!st) return;
   for (const [i, s] of sd.stops.entries()) { if (i < sd.si || !inView(s.x, s.y, 80)) continue;  // 정류장 표지: 기둥 + 파란 판
     const x = s.x | 0, y = s.y + 36 | 0; ctx.fillStyle = '#2a2e34'; ctx.fillRect(x - 1, y - 38, 3, 40); ctx.fillStyle = '#2f6db4'; ctx.fillRect(x - 9, y - 50, 19, 13); ctx.fillStyle = '#e8f0ff'; ctx.fillRect(x - 6, y - 47, 13, 2); ctx.fillRect(x - 6, y - 43, 9, 2);
-    if (i === sd.si) { const b = .5 + .4 * Math.sin(S.t * 5); ctx.strokeStyle = `rgba(143,224,168,${b})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(s.x, s.y, 54, 0, TAU); ctx.stroke(); infoTag(s.x, s.y - 70, `${s.name} 정류장`, '#8fe0a8', .9); } }
+    if (i === sd.si) { infoTag(s.x, s.y - 70, `${s.name} 정류장`, '#8fe0a8', .9); } }
 }
 // ---------- 자경단: 경찰차로 무전을 받는다 → 화면 밖에서 도주 차량(조직 스포츠카)이 달아난다 → 들이받아 내구성 절반 아래로 세우면 범인이 내려 손을 든다
 function copSideUpdate(sd, dt) {
@@ -224,7 +227,7 @@ function copSideUpdate(sd, dt) {
     const r = roadSpot(700, 1100); if (!r) { sd.nextT = S.t + 2; return; }
     const v = makeVehicle({ type: ['sport', 'luxury', 'suv'][(sd.n + (S.t | 0)) % 3], x: r.x, y: r.y, a: r.a ?? 0, parked: false }); Object.assign(v, { ai: true, driver: true, flee: true, gang: 'B', c: 3, v: 120 });
     v.d = ((Math.round((v.a || 0) / (Math.PI / 2)) % 4) + 4) % 4; S.vehicles.push(v); sd.target = v; sd.hp0 = v.hp; sd.until = S.t + 100; play('click', 0.5);
-    evBanner('무전: 도주 차량 발견 — 들이받아 세워라', '#9fc4ff'); return; }
+    evBanner('무전: 도주 차량 발견. 들이받아 세워라', '#9fc4ff'); return; }
   const c = sd.target;
   if (c.dead || c.hp <= sd.hp0 * 0.5) {  // 섰다: 범인이 내려 손을 든다
     c.ai = false; c.v = 0; c.flee = false; c.driver = false; c.doorT = S.t + 0.2; c.doorSide = -1;
@@ -238,7 +241,6 @@ function copSideUpdate(sd, dt) {
 }
 function drawCopSide(sd) {
   const c = sd.target; if (!c || !inView(c.x, c.y, 80)) return; const b = (S.t * 4 | 0) % 2;
-  ctx.strokeStyle = b ? 'rgba(255,90,90,.85)' : 'rgba(90,140,255,.85)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(c.x, c.y, 58, 0, TAU); ctx.stroke();
   const k = clamp(c.hp / sd.hp0, 0, 1); ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(c.x - 26, c.y - 74, 52, 6); ctx.fillStyle = '#ff6a5a'; ctx.fillRect(c.x - 25, c.y - 73, Math.round(50 * k), 4);
   infoTag(c.x, c.y - 84, '도주 차량', '#ff9a8a', .9);
 }

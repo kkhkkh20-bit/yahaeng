@@ -29,18 +29,18 @@ function carHintUpdate() {
   if (!el) { el = document.createElement('div'); el.id = 'carHint'; el.setAttribute('aria-live', 'off');
     el.style.cssText = 'position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);z-index:34;pointer-events:none;display:flex;gap:6px;font:600 13px "Yahaeng UI",sans-serif;color:#efe6cf;white-space:nowrap';
     document.body.appendChild(el); }
-  const gun = wpnOn(), W = gun && WEAPONS[S.wpn];
+  const gun = wpnOn() && !WEAPONS[S.wpn]?.melee, W = gun && WEAPONS[S.wpn];
   const keys = isTouch ? [['행동 버튼', P.car.fireT > 0 || Math.abs(P.car.v) >= 60 ? '뛰어내리기' : '차에서 내리기'], ['공격 버튼', gun ? (W.throw ? '창밖으로 던지기' : '창밖으로 쏘기') : '경적']]
     : [['F', P.car.fireT > 0 || Math.abs(P.car.v) >= 60 ? '뛰어내리기' : '내리기'], ['Space', gun ? (W.throw ? '던지기' : '창밖 사격') : '경적'], ['L', '무기'], ['M', '지도']];
   const html = keys.map(([k, t]) => `<span style="background:rgba(12,14,20,.78);border:1px solid #4a5160;border-radius:5px;padding:4px 8px"><b style="color:#ffd76a">${k}</b> ${t}</span>`).join('');
   if (el.dataset.k !== html) { el.innerHTML = html; el.dataset.k = html; } el.hidden = false;
 }
 
-// ---------------------------------------------------------------- 총 든 모습 (구운 동작: gun* 권총 / rifle* 기관단총·산탄총·저격총)
+// ---------------------------------------------------------------- 총 든 모습 (구운 동작: gun* 권총 / rifle* 저격총)
 // 무기를 고르면 0.32초 동안 허리에서 꺼내 든다(gunDraw). 든 동안: 서면 겨누기(Aim) · 걸으면 겨누고 걷기 · 뛰면 뛰기.
 // 쏠 때마다 0.22초 반동(Shoot). 맨손으로 바꾸면 꺼내기를 거꾸로(집어넣기). 던지는 무기는 기존 던지기 동작(punch)
 const GUN_DRAW_T = 0.32, GUN_SHOT_T = 0.22;
-const gunFamily = k => !k || WEAPONS[k]?.throw ? null : ['pistol', 'silenced'].includes(k) ? 'gun' : 'rifle';
+const gunFamily = k => !k || WEAPONS[k]?.throw || WEAPONS[k]?.melee ? null : ['pistol', 'silenced'].includes(k) ? 'gun' : 'rifle';
 function gunPose(P, moving, running) {
   if (P.car || P.hide || P.trav || P.climb || P.z && !STAGE.cityLife) return null;
   const now = wpnOn() ? gunFamily(S.wpn) : null, G = P.gunVis || (P.gunVis = { fam: null, t: -9, out: null, tOut: -9 });

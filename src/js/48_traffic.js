@@ -81,7 +81,7 @@ function planTurn(v) {
   for (const nd of [right, left]) { const s2 = DV[nd][0] + DV[nd][1]; if (myRoad == null || deckBlocksTurn(!hor, r, myRoad)) continue;  // 고가 아래 교차로에서 고가 도로로는 못 꺾는다
     if (s2 > 0 ? myRoad + 4 < rLim : myRoad > 0) opts.push(nd); }
   let nd = opts.length ? opts[(v.id * 7 + r * 3 + Math.floor(S.t)) % opts.length] : (v.d + 2) % 4;
-  if (v.chase && opts.length) { const P = S.player, ix = hor ? (r + 2) * TILE : v.x, iy = hor ? v.y : (r + 2) * TILE;  // 경찰차: 나에게 가까워지는 쪽
+  if (v.chase && opts.length) { const P = !v.rage && !v.rageCar && STAGE.cityLife && S.wanted > 0 && S.wantSpot ? S.wantSpot : S.player, ix = hor ? (r + 2) * TILE : v.x, iy = hor ? v.y : (r + 2) * TILE;  // 경찰차: 나에게 가까워지는 쪽
     nd = opts.slice().sort((a, b) => ((P.x - ix) * DV[b][0] + (P.y - iy) * DV[b][1]) - ((P.x - ix) * DV[a][0] + (P.y - iy) * DV[a][1]))[0]; }
   v.turn = nd === v.d ? null : { nd, at: laneOf(r, nd) };
   v.crossEnd = sgn > 0 ? (r + 4) * TILE + 4 : r * TILE - 4;  // 직진이면 이 지점을 지나서 다음 교차로를 고른다
@@ -339,10 +339,10 @@ function trafficStopDistance(v){
    incoming.sort((a,b)=>a.junctionWait[key]-b.junctionWait[key]||distance(a)-distance(b)||a.id-b.id);JC.m.set(key,jc={incoming,near});}
   const incoming=jc.incoming;
   let owner=VGr.byId.get(locks[key]);
-  if(owner&&!inside(owner)&&dist(owner.x,owner.y,(x0+x1)/2,(y0+y1)/2)>300){delete locks[key];owner=null;}
+  if(owner&&(owner.dead||owner.crashed||(!inside(owner)&&dist(owner.x,owner.y,(x0+x1)/2,(y0+y1)/2)>300))){delete locks[key];owner=null;}  // 부서진 차는 교차로를 잡지 않는다
   // A car behind the queue cannot reserve the junction ahead of its own lead.
   if(owner&&!inside(owner)){const lead=incoming.find(o=>o.d===owner.d&&distance(o)<distance(owner)-3);if(lead)owner=lead;}
-  if(!owner)owner=jc.near.find(o=>o!==v&&!o.parked&&!onDeckLevel(o)&&inside(o))||incoming[0]||v;
+  if(!owner)owner=jc.near.find(o=>o!==v&&!o.parked&&!o.dead&&!o.crashed&&!onDeckLevel(o)&&inside(o))||incoming[0]||v;
   locks[key]=owner.id;
   if(locks[key]===v.id||inside(v))return null;
   return Math.max(0,left);
@@ -430,8 +430,8 @@ function hitPeople(v, dt) {
     const lethal = STAGE.cityLife ? spd > 100 : spd > 170;  // 큰 도시: 제법 달리던 차에 치이면 죽는다
     if (mine) { if (!STAGE.cityLife) { play('thud', 0.8); S.shakeT = 0.2; } S.stats.runOver = (S.stats.runOver || 0) + 1; npcDown(g, null, lethal); const c = S.corpses[S.corpses.length - 1]; if (c && c.g === g) { c.byNpc = false; c.byCar = true; }
       if (STAGE.cityLife) carImpact(v, g, lethal);
-      if (g.police) addWanted(2, '경찰을 차로 쳤다'); else addWanted(1, g.civ ? '사람을 차로 쳤다' : '조직원을 차로 쳤다'); v.v *= 0.8; }
-    else if (v.chase) { npcDown(g, null, STAGE.cityLife && lethal); if (STAGE.cityLife) carImpact(v, g, lethal); v.v *= 0.7; }  // 추격 차에 치인 행인
+      if (STAGE.cityLife && typeof carHitReport === 'function') carHitReport(g, lethal); else if (g.police) addWanted(2, '경찰을 차로 쳤다'); else addWanted(1, g.civ ? '사람을 차로 쳤다' : '조직원을 차로 쳤다'); v.v *= 0.8; }
+    else if (v.chase) { g.downNpc = true; npcDown(g, null, STAGE.cityLife && lethal); if (STAGE.cityLife) carImpact(v, g, lethal); v.v *= 0.7; }  // 추격 차에 치인 행인
     else if (v.ai) { v.v = 0; }  // 다른 차는 사람 앞에서 선다 (그래도 닿았으면 멈춤)
   }
   // 내가 걷다가 달려오는 차에 치임
@@ -506,7 +506,7 @@ function carEnter(v) {
     const gi = cityGuardSlot(), g = makeGuard({ kind: 'civ', at: [Math.floor(v.x / TILE), Math.floor(v.y / TILE)] }, gi);
     g.x = v.x; g.y = v.y; g.a = side; g.route = [{ x: out.x, y: out.y, pause: 999 }]; g.driverOut = true; g.state = 'PATROL'; g.meter = 1; placeGuard(g, gi);
     if (PR) prWarm([charOf(g)], true);
-    let k = 0; const slide = () => { k++; g.x = v.x + (out.x - v.x) * k / 4; g.y = v.y + (out.y - v.y) * k / 4; if (k < 4) after(0.06, slide); else { civPanic(g, v.x, v.y, 8); gsay(g, ['내 차!', '뭐, 뭐야!', '사람 살려!'][v.id % 3], 1.6); } };
+    let k = 0; const slide = () => { k++; g.x = v.x + (out.x - v.x) * k / 4; g.y = v.y + (out.y - v.y) * k / 4; if (k < 4) after(0.06, slide); else { civPanic(g, v.x, v.y, 8); (typeof saysLine === 'function' ? saysLine(g, 'civ', 'carjack', 1.6) : gsay(g, '내 차!', 1.6)); } };
     slide();
     if (witnessed(P.x, P.y, 380)) addWanted(1, '차를 빼앗는 걸 사람들이 봤다');
     v.driver = false;

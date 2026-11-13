@@ -12,7 +12,7 @@ function actorMarker(g,c){
   if(c){const b=corpseBounds(c);return{x:(b[0]+b[2])/2,y:(b[1]+b[3])/2,rx:(b[2]-b[0])/2+4,ry:(b[3]-b[1])/2+4};}
   return{x:g.x,y:g.y-12,rx:18,ry:24};
 }
-function drawTargetRing(g,col,c){const p=actorMarker(g,c);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y,p.rx,p.ry,0,0,TAU);ctx.stroke();}
+function drawTargetRing(g,col,c){if(STAGE.cityLife)return;const p=actorMarker(g,c);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y,p.rx,p.ry,0,0,TAU);ctx.stroke();}
 function drawBody(c, lift = 0) {
   if (c.hideT > S.t || c.skillAnimating) return;  // 목 조르는 동안은 주인공과 함께 그린다
   if (c.carried && S.player.carrying === c && pairCarry(S.player)) return;  // 층·그리기 순서와 관계없이 운반 짝동작에서 한 번만 그린다
@@ -35,6 +35,11 @@ function drawHeldBox(x, y, a, s, front) {
   ctx.fillStyle = '#e8d9b8'; ctx.fillRect(-1.2 * s, -h / 2, 2.4 * s, h); ctx.restore();
 }
 function guardAnim(g) {
+  if (g.crew && g.moving) return g.crew.kind === 'kick' ? 'idleC' : g.crew.kind === 'bike' ? (PR && PR.anims.crouch ? 'crouch' : 'walk') : 'run';  // 무리 (47zc)
+  if (g.seat && !g.moving && g.state === 'PATROL') return PR && PR.bodies?.[prSplit(charOf(g))[1]]?.anims?.sit ? 'sit' : PR && PR.anims.crouch ? 'crouch' : 'idleC';   // 자유 모드 가게: 의자에 앉은 사람 (47zt) — 앉은 자세가 구워진 체형만, 없으면 웅크림
+  if (g.jog && !g.moving && g.state === 'PATROL') return 'run';   // 러닝머신 위
+  if ((g.act === 'workHigh' || g.act === 'workLow') && g.shopper && !g.moving && g.state === 'PATROL') return g.act;
+  if (g.chatter && !g.moving && g.state === 'PATROL' && PR && PR.anims.talk) return 'talk';
   if(g.act==='pickup')return 'workLow';
   if(g.act==='smoke')return 'workHigh';
   if (g.state === 'BODY' && g.bodyWork) return 'crouch';
@@ -88,7 +93,7 @@ function drawLastSeen() {
     ctx.fillStyle = q.hot ? 'rgba(232,90,70,.9)' : 'rgba(242,196,107,.9)'; ctx.font = uiFont(14); ctx.textAlign = 'center'; ctx.fillText(q.hot ? '!' : '?', q.x, q.y - 40);
   }
 }
-function drawGuard(g) {const r=withFurnitureOcclusion(g,()=>drawGuardSprite(g));if(STAGE.cityLife&&!(typeof npcGunPose==='function'&&npcGunPose(g))){drawGangKnife(g);drawCopGear(g);}return r;}
+function drawGuard(g) {if(g.crew&&typeof drawCrewBike==='function')drawCrewBike(g);const r=withFurnitureOcclusion(g,()=>drawGuardSprite(g));if(STAGE.cityLife&&!(typeof npcGunPose==='function'&&npcGunPose(g))){drawGangKnife(g);drawCopGear(g);}return r;}
 function drawGuardSprite(g) {
   if(assassinOwnsActor(g))return;
   if(S.player.killAnim?.g===g)return; // the paired pose draws this victim once

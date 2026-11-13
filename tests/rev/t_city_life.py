@@ -2,7 +2,7 @@
 
 Civilians far outnumber gang members and cross at crosswalks, waiting on a red walk signal. Gangs fight each other on sight and police step in.
 A car at speed kills a pedestrian: the body is thrown and blood sprays. Police arrest you at low
-wanted levels (handcuffs, then the police station with a fine) and draw pistols from two stars.
+wanted levels (knocked down, then the police station with a fine) and draw pistols from two stars.
 Gang members carry knives (a hit takes two hearts) and call a car when you get away from them.
 The big city shows no action prompts or key bar.
 """
@@ -23,7 +23,7 @@ CHECK = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));w
   P.car=null;v.parked=true;
   // arrest at one star
   S.cash=100;S.wanted=1;Object.assign(P,{x:RX(1),y:RY});const cop=need(g=>g.police&&!g.contact);  // 지구대 연락책은 쫓지 않는다cop.state='ALERT';cop.lastSeen=ls();cop.path=null;
-  let cuffed=false;for(let t=0;t<3.4;t+=1/60){if(!S.cuffs&&!cuffed){cop.x=P.x+18;cop.y=P.y;}if(S.cuffs)cuffed=true;G.update(1/60);}
+  let cuffed=false;for(let t=0;t<4.8;t+=1/60){if(!S.cuffs&&!cuffed){cop.x=P.x+18;cop.y=P.y;}if(S.cuffs||S.downing?.arrest)cuffed=true;G.update(1/60);}  /* 자유 모드: 수갑 장면 대신 제압돼 쓰러진다 */
   out.arrest={cuffed,wanted:S.wanted,cash:S.cash,station:Math.hypot(P.x-(ST.police[0]+.5)*48,P.y-(ST.police[1]+1.5)*48)};
   // gang knife
   Object.assign(P,{x:RX(2),y:RY});P.hp=P.hpMax;P.hurtT=0;const hp0=P.hp,gg=need(g=>g.fac==='C'&&!g.civ&&!g.police);gg.x=P.x+60;gg.y=P.y;gg.state='ALERT';gg.lastSeen=ls();gg.path=null;gg.seen=true;
@@ -71,7 +71,7 @@ async def main():
     ok(s['copBrawl'] >= 1, 'police never step into a fight')
     ok(s['hit']['state'] == 'DEAD' and not s['hit']['ko'], 'a car at speed did not kill: %s' % s['hit'])
     ok(s['hit']['blood'] >= 6 and s['hit']['thrown'] > 30, 'no blood or the body was not thrown: %s' % s['hit'])
-    ok(s['arrest']['cuffed'], 'no handcuff sequence before the arrest')
+    ok(s['arrest']['cuffed'], 'police did not subdue me before the arrest')
     ok(s['arrest']['wanted'] == 0 and s['arrest']['cash'] == 70 and s['arrest']['station'] < 420, 'arrest did not take me to the station: %s' % s['arrest'])
     ok(s['knife'] == 2, 'a gang knife hit did not take two hearts: %s' % s['knife'])
     ok(0 <= s['shot'] < 5, 'police did not shoot at two stars')

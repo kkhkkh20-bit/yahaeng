@@ -9,7 +9,7 @@ const WAR_GAP = [150, 240], WAR_N = 3, WAR_RANGE = 430, WAR_PAY = 150;
 function warInit() { S.war = null; S.warNext = S.t + rnd(70, 130); }
 // ---- 드라이브바이
 function driveBy() {
-  const P = S.player; if (!STAGE.cityLife || !P.car || !wpnOn() || S.downing || S.cuffs) return false;
+  const P = S.player; if (!STAGE.cityLife || !P.car || !wpnOn() || WEAPONS[S.wpn]?.melee || S.downing || S.cuffs) return false;
   if (S.t < S.gunT) return true;
   P.a = P.car.a + Math.PI / 2;  // 쏠 사람이 없으면 오른쪽 창밖
   fireWeapon(true); fstat('driveBy'); return true;
@@ -17,7 +17,7 @@ function driveBy() {
 // ---- 총격전
 function warUpdate(dt) {
   if (!STAGE.cityLife || !S.player) return; const P = S.player;
-  if (!S.war) { if (S.t < S.warNext || (S.wanted || 0) >= 2 || S.downing || S.cuffs || S.ramp || S.hit || S.ev || S.side) return; /* 다른 일이 벌어지는 중엔 안 생긴다 */ if (!warStart()) S.warNext = S.t + 20; return; }
+  if (!S.war) { if (S.t < S.warNext || (S.wanted || 0) >= 2 || S.downing || S.cuffs || S.hit || S.ev || S.side) return; /* 다른 일이 벌어지는 중엔 안 생긴다 */ if (!warStart()) S.warNext = S.t + 20; return; }
   const Wr = S.war; Wr.t += dt;
   if (Wr.over) { if (S.t - Wr.over > 20) warCleanup(); return; }
   const all = Wr.sides[0].concat(Wr.sides[1]);
@@ -46,7 +46,7 @@ function warStart() {
       let gx = cx + dx * sg * back + dy * side, gy = cy + dy * sg * back + dx * side; if (!open(gx, gy)) { gx = cx + dx * sg * back; gy = cy + dy * sg * back; }
       const g = evPerson(Wr, gx, gy, { fac: F[s], kind: i ? 'g1' : 'g2' }); g.warSide = s; g.civ = false; g.gunCdW = rnd(0.6, 1.8); g.a = Math.atan2(p.y - gy, p.x - gx); Wr.sides[s].push(g); } }
   play('gunshot', 0.25, 0.8); after(0.25, () => play('gunshot', 0.2, 0.9));
-  evBanner(`멀리서 총소리 — ${STAND_NAME[F[0]]} 대 ${STAND_NAME[F[1]]} 총격전`, '#ffb070'); fstat('wars');
+  evBanner(`멀리서 총소리 · ${STAND_NAME[F[0]]} 대 ${STAND_NAME[F[1]]} 총격전`, '#ffb070'); fstat('wars');
   return true;
 }
 function gunnerUpdate(g, dt, Wr) {
@@ -70,16 +70,16 @@ function npcShoot(g, tgt) {
   bulletFly(mx, my, ex, ey, GUN_FX.npc, hit ? (tgt === P && P.car ? 'metal' : 'body') : null);
   for (const c of actorsNearWide(g.x, g.y, 420)) if (c.civ && npcAlive(c) && c.state !== 'PANIC') civPanic(c, g.x, g.y, 10);
   if (!hit) return;
-  if (tgt === P) { if (P.car) { const v = P.car; v.hp -= 0.5; v.smoke = 1.5; play('metal', 0.4, 1.6); if (v.hp <= 0) carExplode(v); } else hurtPlayer(null, `${STAND_NAME[g.fac] || '조직'} 총에 맞았다.`, g); return; }
+  if (tgt === P) { if (P.car) { const v = P.car; v.hp -= 0.5; v.smoke = 1.5; play('metal', 0.4, 1.6); if (v.hp <= 0) carExplode(v); } else hurtPlayer(null, g.dealer ? '박씨 총에 맞았다.' : `${STAND_NAME[g.fac] || '조직'} 총에 맞았다.`, g); return; }
   bloodBurst(tgt.x, tgt.y - 12, a, 3); npcDown(tgt, g, true);
 }
 function warEnd(win) {
   const Wr = S.war; if (!Wr || Wr.over) return; Wr.over = S.t;
-  if (win < 0) { evBanner('총격전 — 양쪽 다 쓰러졌다', '#f2e7c8'); return; }
+  if (win < 0) { evBanner('총격전 끝. 양쪽 다 쓰러졌다', '#f2e7c8'); return; }
   const lose = 1 - win, Fw = Wr.F[win], Fl = Wr.F[lose];
   if (Wr.pk[lose] > 0 && !Wr.pk[win]) { applyStanding({ [Fw]: 8, [Fl]: -6 }); S.cash = (S.cash || 0) + WAR_PAY; fstat('earned', WAR_PAY); play('loot', 0.5);
-    after(1.2, () => evBanner(`${STAND_NAME[Fw]}${josaIGa(STAND_NAME[Fw])} 이겼다 — 도와준 사례 ${WAR_PAY}만`, '#9fe0b0')); }
-  else evBanner(`총격전 끝 — ${STAND_NAME[Fw]}${josaIGa(STAND_NAME[Fw])} 이겼다`, '#f2e7c8');
+    after(1.2, () => evBanner(`${STAND_NAME[Fw]}${josaIGa(STAND_NAME[Fw])} 이겼다 · 도와준 사례 ${WAR_PAY}만`, '#9fe0b0')); }
+  else evBanner(`총격전 끝. ${STAND_NAME[Fw]}${josaIGa(STAND_NAME[Fw])} 이겼다`, '#f2e7c8');
   for (const g of Wr.sides[win]) if (npcAlive(g)) { const a = rnd(0, TAU); evGo(g, g.x + Math.cos(a) * 900, g.y + Math.sin(a) * 900); }
 }
 function warCleanup() {

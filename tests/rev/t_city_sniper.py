@@ -21,9 +21,7 @@ async def main():
           window.tick=s=>{for(let t=0;t<s;t+=1/60)G.update(1/60)};tick(.3);const S=G.S;S.evNext={};for(const e of G.events.list)S.evNext[e.d]=1e9;S.copT=1e9;S.warNext=1e9;S.huntNext=1e9;S.stand={};S.cash=3000;
           const P=S.player,ST=G.STAGE;window.ROAD=()=>{P.car=null;P.x=(ST.roadsX[2]+4)*48+60;P.y=(ST.roadsY[2]+2)*48;P.a=0;};
           window.CLEAR=()=>{for(const o of S.guards)if(Math.abs(o.x-P.x)<1200&&Math.abs(o.y-P.y)<500&&o.state!=='DEAD'&&!(S.hit&&o===S.hit.g)){o.x+=5000;o.route=[{x:o.x,y:o.y,pause:999}];o.path=null;}};}''')
-        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player,c=S.contacts.D;P.x=c.g.x+30;P.y=c.g.y+10;tick(.05);G.events.openContact('D');
-          [...document.querySelectorAll('#shopPanel button')].find(b=>b.textContent.includes('무기 거래')).click();
-          const sb=[...document.querySelectorAll('#shopPanel button')].find(b=>b.textContent.includes('저격총'));if(!sb)return {row:false};sb.click();document.querySelector('#shopPanel button:last-child').click();
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.guns.sniper=6;  /* 저격총은 팔지 않는다 — 강 형사가 빌려준 한 자루 */
           S.wpn='sniper';ROAD();CLEAR();tick(.6);const scope=S.scope;return {row:true,ammo:S.guns.sniper,scope}}''')
         print('buy', r); ok(r.get('row') and r['ammo'] == 6 and r['scope'], 'buy + scope: %s' % r)
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;const g=S.guards.find(g=>g.civ&&g.state!=='DEAD'&&!g.off);g.x=P.x+700;g.y=P.y;g.route=[{x:g.x,y:g.y,pause:999}];g.path=null;tick(.3);

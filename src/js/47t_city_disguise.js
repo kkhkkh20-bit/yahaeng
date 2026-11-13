@@ -9,7 +9,7 @@ const DISG_COL = '#cfe0ff';
 function cityDisguiseOn(c, of) {
   const P = S.player, f = of === 'police' ? 'P' : c.fac || (c.g && c.g.fac) || null;
   P.disgFac = STAND_NAME[f] ? f : null; P.disgW = S.wanted || 0;
-  if (P.disgFac) evBanner(`${STAND_NAME[P.disgFac]} 옷 — 그쪽 사람들은 멀리서 나를 자기 편으로 본다`, DISG_COL);
+  if (P.disgFac) evBanner(`${STAND_NAME[P.disgFac]} 옷 · 그쪽 사람들은 멀리서 나를 자기 편으로 본다`, DISG_COL);
   fstat('disguises');
 }
 function cityDisguiseOff(why) {
@@ -30,5 +30,5 @@ function cityDisguiseMul(g) {
 const cityDisguisedAs = (f, g) => S.player.disgFac === f && dist(g.x, g.y, S.player.x, S.player.y) > 64;
 function disguiseUpdate() {
   const P = S.player; if (!P.disgFac) return;
-  if ((S.wanted || 0) > (P.disgW || 0)) cityDisguiseOff('변장이 들통났다 — 옷은 이제 소용없다');
+  if ((S.wanted || 0) > (P.disgW || 0)) cityDisguiseOff('변장이 들통났다. 이제 옷은 소용없다');
 }

@@ -19,12 +19,12 @@ function standBy(a, b, r = 28) { const k = Math.atan2(a.y - b.y, a.x - b.x); ret
 function faceEachOther(g) { const P = S.player; if (!g) return; P.a = Math.atan2(g.y - P.y, g.x - P.x); g.a = Math.atan2(P.y - g.y, P.x - g.x); }
 // 경찰 검거 미션: 기절시킨 수배자 옆에서 [행동] → 무릎 꿇고 수갑 (1.4초). 그 뒤 순찰차가 데려간 것으로 친다
 function cuffAction() {
-  const h = S.hit, P = S.player; if (!h || !h.ko || h.cuffed || P.car) return null; const g = h.g;
+  const h = S.hit, P = S.player; if (STAGE.cityLife || !h || !h.ko || h.cuffed || P.car) return null;   /* 자유 모드: 쓰러뜨리면 바로 검거 (47b) */ const g = h.g;
   const ko = g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko); if (!ko || dist(P.x, P.y, g.x, g.y) > 70) return null;
   return { k: 'evAct', label: '수갑 채우기', at: { x: g.x, y: g.y - 50 }, fn: () => {
     const s = standBy(P, g, 22);
     doMotion({ x: s.x, y: s.y, face: s.face, pose: 'crouch', dur: 1.4, at: [[0.4, () => play('metal', 0.35, 1.9)], [0.9, () => play('click', 0.5)]],
-      end: () => { if (S.hit !== h) return; h.cuffed = true; g.cuffed = true; evBanner('수갑을 채웠다 — 순찰차가 데려간다', '#9fc4ff'); after(6, () => { if (S.guards.includes(g)) evGone(g); }); } });
+      end: () => { if (S.hit !== h) return; h.cuffed = true; g.cuffed = true; evBanner('수갑을 채웠다. 순찰차가 데려간다', '#9fc4ff'); after(6, () => { if (S.guards.includes(g)) evGone(g); }); } });
   } };
 }
 // 꾸러미를 든 모습 (걸을 때 가슴 앞): 일거리 꾸러미를 받은 뒤

@@ -1,4 +1,5 @@
 function drawPlayerLocator(P) {
+  if (STAGE.cityLife) return;   // 자유 모드: 발밑·차 둘레 파란 원은 그리지 않는다
   const k=1/SCALE,x=P.x,y=P.y+10,a=P.car?P.car.a:P.cover?Math.atan2(P.cover.y,P.cover.x):P.a;
   const col='#7fe3ff';  // 내 위치는 항상 같은 색. 위험은 중앙 상태와 시선 방향 호가 알린다.
   ctx.save();ctx.setLineDash([]);ctx.lineWidth=3.5*k;ctx.strokeStyle='#081015cc';ctx.beginPath();ctx.ellipse(x,y,11*k,5*k,0,0,TAU);ctx.stroke();
@@ -44,7 +45,7 @@ function drawPlayerBody(P) {
   if (P.z || P.jump) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(P.x + 4 + P.z * 2, P.y + 6 + P.z * 3, 15, 11, 0, 0, TAU); ctx.fill(); }
   // 숨은 상태(어둠·화단): 몸은 반투명, 밝은 외곽선과 발밑 고리로 내 위치는 늘 보이게
   const concealed = !P.jump && !P.under && (S.expo != null ? S.expo === 0 : (P.hidden || P.light < 0.3)) && !(STAGE.zones && !P.hidden && !P.z && pZoneEff() === Z_PUB);  // 공개 구역에서 섞여 있을 땐 숨음 외곽선을 쓰지 않는다 (위 표시와 맞춘다)
-  if (!isTouch && !P.jump && !P.z && !P.under && S.expo > 0) {  // 드러남 고리: 노랑(돌아보면 보인다) · 빨강(보고 있다)
+  if (!isTouch && !STAGE.cityLife && !P.jump && !P.z && !P.under && S.expo > 0) {  // 드러남 고리: 노랑(돌아보면 보인다) · 빨강(보고 있다)
     const red = S.expo === 2, pu = red ? 0.6 + 0.35 * Math.sin(S.t * 10) : 0.75;
     ctx.strokeStyle = red ? `rgba(240,80,60,${pu})` : `rgba(242,196,107,${pu})`; ctx.lineWidth = red ? 3 : 2;
     ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 21, 10, 0, 0, TAU); ctx.stroke();
@@ -183,7 +184,7 @@ function drawPlayerBody(P) {
     const other = pc ? [carryKey(P.carrying), mv ? 'carried' : 'carriedI'] : pg ? [charOf(P.captive), mv ? 'held' : 'heldI'] : null;
     const shake = pg ? Math.sin(S.t * 31) * 1.2 : 0;
     if (concealed) {
-      if(!isTouch){
+      if(!isTouch&&!STAGE.cityLife){
       const pulse = 0.55 + 0.25 * Math.sin(S.t * 3);
       ctx.fillStyle = 'rgba(120,200,255,.10)'; ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.fill();
       ctx.strokeStyle = `rgba(160,230,255,${pulse})`; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
@@ -198,8 +199,8 @@ function drawPlayerBody(P) {
   ctx.save(); if (crouch) { ctx.translate(P.x, P.y + 16); ctx.scale(1.14, 0.72); ctx.translate(-P.x, -(P.y + 16)); }
   if (concealed) {
     const pulse = 0.55 + 0.25 * Math.sin(S.t * 3);
-    ctx.fillStyle = 'rgba(120,200,255,.10)'; ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.fill();
-    ctx.strokeStyle = `rgba(160,230,255,${pulse})`; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+    if (!STAGE.cityLife) { ctx.fillStyle = 'rgba(120,200,255,.10)'; ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.fill(); }
+    if (!STAGE.cityLife) { ctx.strokeStyle = `rgba(160,230,255,${pulse})`; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
     drawChar('ninja', P.x, P.y, P.a, mv, blink ? 0.25 : 0.5, sc, P.strikeT > 0, -yo);
     if (F.ch_ninja_ol) drawChar('ninja_ol', P.x, P.y, P.a, mv, blink ? 0.3 : 0.95, sc, P.strikeT > 0, -yo);
   } else drawChar('ninja', P.x, P.y, P.a, mv, blink ? 0.35 : 1, sc, P.strikeT > 0, -yo);

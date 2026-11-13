@@ -126,7 +126,7 @@ function jumpTarget() {
     if (n > 1 && lv > 0 && !robAt(lx,ly) && (lv === P.z || lv === P.z - 1) && real >= 1) {const key=lx+','+ly+','+lv;S.jumpLandings ||= {};return S.jumpLandings[key] ||= {tx:lx,ty:ly,z:lv};}
     if (lv >= P.z) return null;
     if (!facadeRow(lx, ly)) real++;
-    if (real > 1) return null;  // 사람 한 칸 정도 틈만 건너뛴다
+    if (real > (STAGE.cityLife ? 2 : 1)) return null;  // 사람 한 칸 정도 틈만 건너뛴다 (자유 모드: 두 칸 골목까지 — 옥상 이어 달리기)
   }
   return null;
 }

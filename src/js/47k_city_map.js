@@ -8,7 +8,7 @@ function cityMapOpen() {
   const el = document.createElement('div'); el.id = 'cityMap'; el.setAttribute('role', 'dialog');
   el.style.cssText = 'position:fixed;inset:0;z-index:72;background:rgba(6,9,14,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:12px;color:#efe6cf;font:600 14px "Yahaeng UI",sans-serif';
   const head = document.createElement('div'); head.style.cssText = 'display:flex;gap:14px;align-items:center;justify-content:space-between;width:min(96vw,1100px)';
-  const t = document.createElement('b'); t.textContent = '지도 — 누르면 목적지'; t.style.fontSize = '18px';
+  const t = document.createElement('b'); t.textContent = '지도 · 누른 곳이 목적지'; t.style.fontSize = '18px';
   const clr = document.createElement('button'), cls = document.createElement('button');
   for (const b of [clr, cls]) { b.type = 'button'; b.style.cssText = 'padding:8px 14px;background:#1d222c;color:inherit;border:1px solid #3b4250;border-radius:4px;font:inherit;cursor:pointer'; }
   clr.textContent = '목적지 지우기'; cls.textContent = '닫기 ×';
@@ -74,7 +74,6 @@ function drawWpRoute() {
       ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.beginPath(); ctx.moveTo(9, 0); ctx.lineTo(-5, -8); ctx.lineTo(-1, 0); ctx.lineTo(-5, 8); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); }
     acc = 0;
   }
-  if (S.wp && inView(S.wp.x, S.wp.y, 40)) { const b = .6 + .4 * Math.sin(S.t * 5); ctx.strokeStyle = `rgba(255,215,106,${b})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(S.wp.x, S.wp.y, 40, 0, TAU); ctx.stroke(); }
   ctx.restore();
 }
 function drawMiniWp(x, T) {

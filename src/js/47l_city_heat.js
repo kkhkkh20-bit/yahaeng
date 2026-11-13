@@ -18,15 +18,17 @@ function heatUpdate(dt) {
 // ---------- 헬기
 function heliUpdate(dt) {
   const P = S.player; let H = S.heli;
-  if (!H && S.wanted >= 4) { const a = Math.random() * TAU; H = S.heli = { x: P.x + Math.cos(a) * 1100, y: P.y + Math.sin(a) * 1100, a: a + Math.PI, sx: P.x, sy: P.y, leave: false }; evBanner('경찰 헬기가 떴다 — 서치라이트를 피해라', '#9fc4ff'); }
+  // 헬기는 마지막 카드: 별 다섯을 20초 넘게 버텨야 뜬다 (그 전엔 순찰차·검문으로)
+  if (S.wanted >= 5) S.w5T = (S.w5T || 0) + dt; else S.w5T = 0;
+  if (!H && S.wanted >= 5 && S.w5T > 20) { const a = Math.random() * TAU; H = S.heli = { x: P.x + Math.cos(a) * 1100, y: P.y + Math.sin(a) * 1100, a: a + Math.PI, sx: P.x, sy: P.y, leave: false }; evBanner('경찰 헬기가 떴다. 서치라이트를 피해라', '#9fc4ff'); }
   if (!H) { heliSound(0); return; }
-  if (S.wanted < 3) H.leave = true;
+  if (S.wanted < 4) H.leave = true; else if (S.wanted >= 5) H.leave = false;   // 다시 별 다섯이면 돌아온다
   const tv = P.car ? P.car : null, lead = tv ? 0.6 : 0.3, tx = H.leave ? H.x + Math.cos(H.a) * 900 : P.x + (tv ? Math.cos(tv.a) * tv.v * lead : 0), ty = H.leave ? H.y + Math.sin(H.a) * 900 : P.y + (tv ? Math.sin(tv.a) * tv.v * lead : 0);
   const d = dist(H.x, H.y, tx, ty), want = Math.atan2(ty - H.y, tx - H.x);
   if (d > 30) { H.a += angDiff(H.a, want) * Math.min(1, dt * 2.2); const sp = Math.min(HELI_SPD * (H.leave ? 1.3 : 1), d * 1.5); H.x += Math.cos(H.a) * sp * dt; H.y += Math.sin(H.a) * sp * dt; }
   // 서치라이트: 헬기 밑에서 나를 향해 따라오되 조금 늦다
   const k = Math.min(1, dt * 2.4); H.sx += ((H.leave ? H.x : P.x) - H.sx) * k; H.sy += ((H.leave ? H.y : P.y) - H.sy) * k;
-  const lit = !H.leave && !flOf(P) && !P.hide && !P.under && dist(H.sx, H.sy, P.x, P.y) < HELI_SPOT;
+  const lit = !H.leave && !flOf(P) && !P.hide && !P.booth && !P.under && dist(H.sx, H.sy, P.x, P.y) < HELI_SPOT;
   H.lit = lit;
   if (lit) { S.wantLost = 0; if ((H.callT = (H.callT || 0) - dt) <= 0) { H.callT = 1.5; for (const g of S.guards) if (g.police && !g.off && g.state !== 'ALERT' && g.state !== 'DEAD' && dist(g.x, g.y, P.x, P.y) < 900) copChase(g); } }
   heliSound(clamp(1 - dist(H.x, H.y, P.x, P.y) / 1400, 0, 1));
@@ -70,7 +72,7 @@ function roadblockUpdate() {
   for (let i = 0; i < n; i++) { const off = (i - (n - 1) / 2) * (span / n), x = along === 'x' ? p.x : mid + off, y = along === 'x' ? mid + off : p.y;
     const car = makeVehicle({ type: 'police', x, y, a: (along === 'x' ? Math.PI / 2 : 0) + (i % 2 ? 0.28 : -0.28), parked: true, police: true }); car.roadblock = true; car.ai = false; car.driver = false; if (carOverlap(car) === true) continue; S.vehicles.push(car); }  // 비스듬히 엇갈린 바리케이드 (벽과 겹칠 때만 뺀다)
   for (let i = 0; i < 2; i++) { const g = spawnCop(); if (g) { g.x = (along === 'x' ? p.x - 60 : mid + (i ? 60 : -60)); g.y = (along === 'x' ? mid + (i ? 60 : -60) : p.y - 60); g.path = null; } }
-  evBanner('앞에 경찰 검문 — 돌아가거나 들이받아라', '#9fc4ff');
+  evBanner('앞에 경찰 검문. 돌아가거나 들이받아라', '#9fc4ff');
 }
 // ---------- 기록 · 업적
 const FREE_ACH = [
@@ -78,17 +80,17 @@ const FREE_ACH = [
   ['cabbie', '택시 기사', '택시 손님 5명', s => s.taxi >= 5, 80], ['medic', '생명의 은인', '환자 3명을 병원으로', s => s.patients >= 3, 100],
   ['busman', '버스 운전사', '버스 승객 20명', s => s.busRiders >= 20, 80], ['vigil', '정의의 사도', '도주 차량 3대 검거', s => s.perps >= 3, 120],
   ['boom', '불꽃놀이', '차 5대 폭발', s => s.explosions >= 5, 50], ['five', '공공의 적', '수배 ★★★★★', s => s.maxWanted >= 5, 100],
-  ['pro', '청부업자', '조건 의뢰 5건 성공', s => s.ctrDone >= 5, 200], ['hunted', '사냥꾼 사냥', '킬러 3명 처리', s => s.huntersDown >= 3, 150], ['ghost', '유령', '의뢰 등급 S 3번', s => s.ghost >= 3, 200], ['rampage', '광란', '광란 도전 3번 성공', s => s.rampages >= 3, 150], ['gunner', '총잡이', '총으로 50명', s => s.gunKills >= 50, 100],
+  ['pro', '청부업자', '조건 의뢰 5건 성공', s => s.ctrDone >= 5, 200], ['hunted', '사냥꾼 사냥', '킬러 3명 처리', s => s.huntersDown >= 3, 150], ['ghost', '유령', '의뢰 등급 S 3번', s => s.ghost >= 3, 200], ['gunner', '총잡이', '총으로 50명', s => s.gunKills >= 50, 100],
   ['road', '장거리 운전', '20km 운전', s => (s.dist || 0) / 1000 >= 20, 100], ['rich', '부자', '모두 5,000만 벌기', s => s.earned >= 5000, 300]];
 function achCheck() {
   if ((S.achT = (S.achT || 0) + 1) % 30) return; const st = S.fst;
-  for (const [id, name, desc, test, bonus] of FREE_ACH) if (!S.fach[id] && test(st)) { S.fach[id] = 1; S.cash = (S.cash || 0) + bonus; S.cashSeen = S.cash; play('bell', 0.5); evBanner(`업적 · ${name} — ${desc} · +${bonus}만`, '#ffd76a'); saveFreeProgress(true); }
+  for (const [id, name, desc, test, bonus] of FREE_ACH) if (!S.fach[id] && test(st)) { S.fach[id] = 1; S.cash = (S.cash || 0) + bonus; S.cashSeen = S.cash; play('bell', 0.5); evBanner(`업적 · ${name} (${desc}) · +${bonus}만`, '#ffd76a'); saveFreeProgress(true); }
 }
 function freeStatsPanel() {
   const s = S.fst || {}, km = ((s.dist || 0) / 1000).toFixed(1), row = (n, v) => ({ name: n, price: null, tag: String(v), ok: false, buy: () => {} });
   const done = FREE_ACH.filter(a => S.fach[a[0]]).length;
   shopPanel(`자유 모드 기록 · 업적 ${done}/${FREE_ACH.length}`, [
     row('번 돈', `${s.earned || 0}만`), row('훔친 차', s.carsStolen || 0), row('운전 거리', `${km}km`), row('택시 손님 · 환자 · 버스 승객', `${s.taxi || 0} · ${s.patients || 0} · ${s.busRiders || 0}`),
-    row('도주 차량 검거', s.perps || 0), row('폭발시킨 차', s.explosions || 0), row('총으로 쓰러뜨림 · 광란 성공', `${s.gunKills || 0} · ${s.rampages || 0}/${RAMPS.length}`), row('체포 · 쓰러짐', `${s.arrests || 0} · ${s.downs || 0}`), row('최고 수배', '★'.repeat(s.maxWanted || 0) || '없음'),
+    row('도주 차량 검거', s.perps || 0), row('폭발시킨 차', s.explosions || 0), row('총으로 쓰러뜨림', s.gunKills || 0), row('체포 · 쓰러짐', `${s.arrests || 0} · ${s.downs || 0}`), row('최고 수배', '★'.repeat(s.maxWanted || 0) || '없음'),
     ...FREE_ACH.map(([id, name, desc, , bonus]) => ({ name: `${S.fach[id] ? '✔' : '○'} ${name} — ${desc}`, price: null, tag: S.fach[id] ? '달성' : `+${bonus}만`, ok: false, buy: () => {} }))]);
 }
