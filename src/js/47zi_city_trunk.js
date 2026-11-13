@@ -26,7 +26,7 @@ function trunkLoad(v, c) {
 }
 function trunkUnload(v) {
   const P = S.player, T = v.trunk || []; const c = T.pop(); if (!c) return; const p = carRear(v);
-  c.stashed = false; c.inTrunk = null; c.x = p.x; c.y = p.y; c.hidden = false; c.carried = true; P.carrying = c; if (c.g) { c.g.inTrunk = null; c.g.keep = false; }
+  c.stashed = false; c.inTrunk = null; c.x = p.x; c.y = p.y; c.hidden = false; c.carried = true; P.carrying = c; if (c.g) { c.g.inTrunk = null; c.g.keep = c.g.skBi != null; }
   play('thud', 0.4); evBanner('(으차. 어디다 버리지?)', '#9fc4ff');
   if (witnessed(P.x, P.y, 260)) addWanted(1, '트렁크에서 시체를 꺼내는 걸 봤다');
 }
@@ -57,13 +57,13 @@ function rideDrop(v) {
   evBanner(`(다 왔어. 내려.)`, '#9fc4ff'); v.riders = [];
 }
 // 차가 터지면 실린 사람·시체도 끝
-function trunkUpdate() {
+function trunkUpdate(dt = 1 / 60) {
   if (!STAGE.cityLife) return; const P = S.player; if (P.car) P.lastCar = P.car;
   // 태운 사람: 조수석 문 앞까지 걸어가 문을 열고 탄다 (2.5초 넘게 못 가면 그냥 탄 것으로)
   for (const v of S.vehicles) for (const g of v.riders || []) { if (!g.rideTo || g.off) continue; const dx = v.x + Math.cos(v.a + Math.PI / 2) * 22, dy = v.y + Math.sin(v.a + Math.PI / 2) * 22;
-    if (dist(g.x, g.y, dx, dy) > 16 && S.t - g.rideT0 < 2.5) evRun(g, dx, dy, 110, 1 / 60);
+    if (dist(g.x, g.y, dx, dy) > 16 && S.t - g.rideT0 < 2.5) evRun(g, dx, dy, 110, dt);
     else { g.rideTo = null; g.rideIn = v; g.off = true; g.x = -9999; g.y = -9999; g.path = null; play('door', 0.4 * proxVol(v)); } }
   for (const v of S.vehicles) { if (!v.dead) continue;
     if (v.riders?.length) { for (const g of v.riders) { g.off = false; g.x = v.x; g.y = v.y; npcDown(g, null, true); } v.riders = []; }
-    if (v.trunk?.length) { for (const c of v.trunk) { c.stashed = false; c.hidden = false; c.x = v.x - 10; c.y = v.y + 6; c.inTrunk = null; if (c.g) { c.g.keep = false; c.g.inTrunk = null; } } v.trunk = []; } }
+    if (v.trunk?.length) { for (const c of v.trunk) { c.stashed = false; c.hidden = false; c.x = v.x - 10; c.y = v.y + 6; c.inTrunk = null; if (c.g) { c.g.keep = c.g.skBi != null; c.g.inTrunk = null; } } v.trunk = []; } }
 }

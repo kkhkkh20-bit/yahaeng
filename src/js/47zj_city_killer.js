@@ -20,7 +20,7 @@ function skScene() {
   const v = evPerson(K.px, p.x, p.y, { body: ['fLong', 'fBob', 'fTail'][K.clues.length % 3] }); v.keep = true; npcDown(v, null, true);
   const c = S.corpses.find(o => o.g === v); if (c) { c.civSeen = true; c.discovered = true; c.skScene = true; }
   const cop = evPerson(K.px, p.x + 46, p.y - 10, { police: true }); cop.civ = true; cop.beat = true; cop.keep = true;
-  K.scene = { x: p.x, y: p.y, v, c, cop }; K.retryT = 0;
+  K.scene = { x: p.x, y: p.y, v, c, cop }; (K.held || (K.held = [])).push(v, cop); K.retryT = 0;
 }
 function skClueText(K, i) { return i === 0 ? K.trait[2] : i === 1 ? '같은 상표 담배꽁초 — 놈은 담배를 피운다' : `피해자 셋 다 ${K.area} 근처에서 사라졌다`; }
 function killerAction() {
@@ -74,12 +74,13 @@ function killerUpdate(dt) {
         newsTicker(SK_VICTIM_NEWS[(K.victims) % SK_VICTIM_NEWS.length].replace('세 번째', `${K.victims}번째`)); evBanner(`피해자 ${K.victims}명 · (또야... 놈이 자리를 옮긴다.)`, '#ff8a7a');
         const w = walkableNear(k.x + rnd(-500, 500), k.y + rnd(-500, 500), { x: P.x, y: P.y }); k.x = w.x; k.y = w.y; skWander(k); } } }
   // 들킨 걸 알면 칼을 꺼내 덤빈다
-  if (!P.car && dist(P.x, P.y, k.x, k.y) < 44 && (K.hitT || 0) < S.t && k.skSeen) { K.hitT = S.t + 1.4; k.swingT = 0.35; play('knife', 0.6); hurtPlayer(k, 'knife'); if (!K.bared) { K.bared = true; gsay(k, '알아챘어? 너도 똑같이 해 줄게.', 2.4); } }
+  if (!P.car && dist(P.x, P.y, k.x, k.y) < 44 && (K.hitT || 0) < S.t && k.skSeen) { K.hitT = S.t + 1.4; k.swingT = 0.35; play('knife', 0.6); hurtPlayer(k, '살인마 칼에 찔렸다.'); if (!K.bared) { K.bared = true; gsay(k, '알아챘어? 너도 똑같이 해 줄게.', 2.4); } }
 }
 function skSolved(g) {
   const K = S.sk; K.done = true; K.stage = 'done'; cash(500); fstat('skSolved');
   evBanner(`연쇄 살인마 처리 · 품속에 사원증 ${K.victims}장 · +500만`, '#9fe0b0');
   justiceMoment('연쇄 살인마 처리', `[속보] ${K.area} 연쇄살인 용의자, 길에서 숨진 채 발견… 품에서 피해자 ${K.victims}명 소지품 나와`, g.x, g.y);
+  for (const o of K.held || []) o.keep = false;  /* 현장 시신·경찰도 이제 치워도 된다 */
   for (const o of K.suspects) if (o !== g && npcAlive(o)) after(4, () => { if (!inView(o.x, o.y, 80)) evGone(o); else o.keep = false; });
   S.skNext = S.t + 900;
 }

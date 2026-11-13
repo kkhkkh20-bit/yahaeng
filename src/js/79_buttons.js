@@ -30,7 +30,7 @@ function attackAction() {
   const P = S.player; if (actionBusy(P)) {const next=followupCandidate(P);if(next)return{k:'kill',list:[next],label:P.followupAttack?'다음 기절 대기':'다음 기절',hold:'처치',busy:true};return canQueueGrabAttack(P) ? {k:'cap',g:P.grabIn.g,label:'기절',hold:'처치',queued:!!P.attackQueue} : { k: 'none', busy: true, label: P.skillHold ? ASSASSIN_SKILLS[P.skillHold.key].name+' 준비' : P.lethalHold ? '길게 누르는 중' : '공격' };}
   const down=nearFinish();if(down)return combatLabel({k:'finish',c:down,g:down.g});
   if(!concealedMeleeAllowed(P)){const near=concealedAttackCandidate(P);return near?{k:'none',label:'은신 기습 필요',skillLocked:'ambush'}:{k:'none',label:P.cover?'엄폐 중':'공격'};}
-  if (P.car) return STAGE.cityLife && wpnOn() ? { k: 'none', label: WEAPONS[S.wpn].throw ? '창밖으로 던지기' : '창밖으로 쏘기', driveBy: true } : { k: 'none', label: '경적', honk: true };
+  if (P.car) return STAGE.cityLife && wpnOn() && !WEAPONS[S.wpn]?.melee ? { k: 'none', label: WEAPONS[S.wpn].throw ? '창밖으로 던지기' : '창밖으로 쏘기', driveBy: true } : { k: 'none', label: '경적', honk: true };
   if (P.captive) return combatLabel({ k: 'cap', g:P.captive, label: '기절', hold: '처치' });
   const a = rawChoices().find(isAtk); if (a) {
     const action=koLabel(Object.assign({},a)),choice=assassinPreview();
@@ -154,7 +154,6 @@ function actAttack() {if(S?.player?.cuffed)return;
   }
   // 끌어당기기·끌어들이기·위에서 덮치기도 조직원은 먼저 기절 (계속 누르고 있으면 updateKoHold 가 처치)
   // 제압 의도는 대상에 묶는다. 비동기 끌어당기기가 다른 사람을 처치로 바꾸지 않는다.
-  if (STAGE.cityLife && knifeOn()) S.lethalNext = true;  // 칼을 든 등 뒤 처치는 죽인다
   const choice=assassinOpportunity();
   if(a.k!=='pull'&&choice&&choice.ids[0]===(a.g||a.list?.[0])?.id&&combatSource('atk')){beginAssassinSkill('atk',a);return;}
   actPrimary(Object.assign({}, a, { viaZ: true, inputGroup: 'atk' }));

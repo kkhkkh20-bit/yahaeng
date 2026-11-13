@@ -26,7 +26,7 @@ function placesInit() {
   S.school = BLD.find(b => b.school) || null; S.hospital = BLD.find(b => b.hospital) || null;
   schoolKids();
 }
-function setSign(b, n) { b.signs = [n, ...(b.signs || []).slice(1)]; b.name = n; b.plate = n + ' 빌딩'; b._facade = null; }
+const setSign = (b, n) => cozyRename(b, n);  /* 47zh 와 같은 이름 바꾸기 */
 // 학교 앞 학생들: 가까운 행인 몇을 학생으로 (교문 앞을 오간다)
 function schoolKids() {
   const b = S.school; if (!b) return; const p = shopFront(b); if (!p) return; let n = 0;

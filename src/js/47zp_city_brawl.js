@@ -33,7 +33,7 @@ function brawlHit(g, knife, heavy) {
   if (knife) { bloodBurst(g.x, g.y - 12, a, 3); play('knife', 0.6); } else { play('thud', heavy ? 0.85 : 0.6, heavy ? 0.7 : 1); spawnEffect('impact', { x: g.x, y: g.y - 18, fl: 0, z: 0 }, { scale: heavy ? 0.75 : 0.5 }); }
   S.hitStop = Math.max(S.hitStop || 0, heavy ? 0.09 : knife ? 0.05 : 0.04); S.shakeT = Math.max(S.shakeT || 0, heavy ? 0.22 : 0.1);
   // 수배: 행인·경찰을 때리는 걸 봤다
-  if ((g.civ || g.police) && !g.evt && !g.skBi && witnessed(P.x, P.y, 300)) { if (g.police) addWanted(1, '경찰을 폭행했다'); else if (!S.wanted) addWanted(1, knife ? '칼로 사람을 찔렀다' : '사람을 때리는 걸 봤다'); }
+  if ((g.civ || g.police) && !g.evt && g.skBi == null && witnessed(P.x, P.y, 300)) { if (g.police) addWanted(1, '경찰을 폭행했다'); else if (!S.wanted) addWanted(1, knife ? '칼로 사람을 찔렀다' : '사람을 때리는 걸 봤다'); }
   if (g.bhp <= 0) { g.fist = false; npcDown(g, null, !!knife); if (!knife) gsay(g, '...', 1); return; }
   // 반응: 맞서거나 도망
   if (g.fist) { if (Math.random() < 0.3) gsay(g, ['이 새끼가!', '컥...', '죽여 버린다!'][(S.t * 3 | 0) % 3], 1.2); return; }

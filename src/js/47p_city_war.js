@@ -9,7 +9,7 @@ const WAR_GAP = [150, 240], WAR_N = 3, WAR_RANGE = 430, WAR_PAY = 150;
 function warInit() { S.war = null; S.warNext = S.t + rnd(70, 130); }
 // ---- 드라이브바이
 function driveBy() {
-  const P = S.player; if (!STAGE.cityLife || !P.car || !wpnOn() || S.downing || S.cuffs) return false;
+  const P = S.player; if (!STAGE.cityLife || !P.car || !wpnOn() || WEAPONS[S.wpn]?.melee || S.downing || S.cuffs) return false;
   if (S.t < S.gunT) return true;
   P.a = P.car.a + Math.PI / 2;  // 쏠 사람이 없으면 오른쪽 창밖
   fireWeapon(true); fstat('driveBy'); return true;

@@ -66,9 +66,9 @@ const EVENTS = [
   { key: 'drunk', d: '종로 유흥가', name: '취객 시비',
     start(ev) { const p = offscreenSpot(380, 700); if (!p) return false; ev.g = evPerson(ev, p.x, p.y, { body: 'big' }); gsay(ev.g, '어이! 거기 너! 이리 와 봐!', 3); return true; },
     focus: ev => ev.g,
-    update(ev) { const g = ev.g, P = S.player;
+    update(ev, dt = 1 / 60) { const g = ev.g, P = S.player;
       if (g.state === 'DEAD') { if (!ev.dropped) { ev.dropped = true; const val = 60 + ((Math.random() * 7) | 0) * 10; if (witnessed(g.x, g.y, 300 * repWitnessMul(g.x, g.y))) addWanted(1, '취객을 때려눕혔다'); evItem(ev, g.x + 16, g.y + 8, 'wallet', val, it => { cash(it.val); addRep(ev.d, -1); evEnd(ev, `취객 지갑 · ${it.val}만`); }); } return; }
-      if ((ev.stepT = (ev.stepT || 0) - 1 / 60) <= 0) { ev.stepT = 1; if (dist(g.x, g.y, P.x, P.y) < 700 && !P.car) evGo(g, P.x, P.y); }
+      if ((ev.stepT = (ev.stepT || 0) - dt) <= 0) { ev.stepT = 1; if (dist(g.x, g.y, P.x, P.y) < 700 && !P.car) evGo(g, P.x, P.y); }
       if (!P.car && dist(g.x, g.y, P.x, P.y) < 42 && (ev.shoveT || 0) < S.t) { ev.shoveT = S.t + 2.6; gsay(g, ['뭘 꼬나봐!', '내가 누군 줄 알아?', '한잔 사든가!'][(S.t | 0) % 3], 2.2); const a = Math.atan2(P.y - g.y, P.x - g.x); P.x += Math.cos(a) * 22; P.y += Math.sin(a) * 22; collide(P, 13, groundSolidP); play('thud', 0.4); }
       if (ev.engaged && dist(g.x, g.y, P.x, P.y) > 950) evEnd(ev, '(비틀비틀 가 버리네.)', true); },
     goal: ev => ev.dropped ? '취객이 떨어뜨린 지갑 줍기' : '취객 시비 — 피하거나 때려눕히기' },
@@ -77,7 +77,7 @@ const EVENTS = [
     start(ev) { let f = null, r = null; for (let k = 0; k < 10 && !r; k++) { f = (k < 3 && districtFront(ev.d, b => signOf(b) === 'CLUB')) || districtFront(ev.d, b => b.kind === 'shop'); r = f && roadNear(f.p.x, f.p.y + TILE * 2, 10); } if (!r) return false;  // 클럽(없으면 아무 가게) 앞 · 차 세울 도로가 가까운 곳
       ev.car = evCar(ev, 'limo', r.x, r.y, 0); ev.car.driver = true; ev.vip = evPerson(ev, f.p.x, f.p.y, { kind: 'g2', fac: 'D' }); ev.guards = [-1, 1].map(s => evPerson(ev, r.x + s * 34, r.y - 40, { kind: 'g1', fac: 'D' })); ev.phase = 'wait'; ev.t = S.t; return true; },
     focus: ev => ev.car,
-    update(ev) { const v = ev.car, P = S.player;
+    update(ev, dt = 1 / 60) { const v = ev.car, P = S.player;
       if (P.car === v) { const c = 150 + ((Math.random() * 11) | 0) * 10; cash(c); addRep(ev.d, -3); for (const g of [ev.vip, ...ev.guards]) if (npcAlive(g) && !g.off) copChase(g); evEnd(ev, `VIP 차 탈취 · 글러브박스 +${c}만`); return; }
       if (ev.phase === 'wait' && ev.engaged && S.t - ev.t > 12) { ev.phase = 'walk'; evGo(ev.vip, v.x, v.y - 30); gsay(ev.vip, '차 빼.', 2); }
       if (ev.phase === 'walk' && npcAlive(ev.vip) && dist(ev.vip.x, ev.vip.y, v.x, v.y) < 60) { ev.phase = 'go'; ev.goT = S.t + 2.4;  // 경호원이 문을 열고 VIP부터 차례로 탄다
@@ -89,7 +89,7 @@ const EVENTS = [
   { key: 'snatch', d: '을지로 인쇄골목', name: '날치기',
     start(ev) { const r = roadSpot(420, 800); if (!r) return false; ev.victim = evPerson(ev, r.x, r.y - TILE * 2, {}); ev.car = evCar(ev, 'micro', r.x, r.y, rnd(0, TAU), { ai: true, driver: true }); ev.hp0 = ev.car.hp; gsay(ev.victim, '도둑이야! 내 가방!', 3.5); play('metal', 0.25, 1.6); return true; },
     focus: ev => ev.loot ? ev.victim : ev.car,
-    update(ev) { const v = ev.car, P = S.player;
+    update(ev, dt = 1 / 60) { const v = ev.car, P = S.player;
       if (!ev.stopped && (v.dead || v.hp < ev.hp0)) { ev.stopped = true; v.ai = false; v.v = 0; v.driver = false; const t = evPerson(ev, v.x + 40, v.y, {}); evFlee(t, P.x, P.y, 40); gsay(t, '젠장!', 1.5);
         evItem(ev, v.x - 30, v.y + 10, 'bag', 150, () => evLoot(ev, ev.victim, 150, 40, '가방')); }
       if (!ev.stopped && ev.engaged && dist(v.x, v.y, P.x, P.y) > 2400) evEnd(ev, '(날치기 놓쳤어.)'); },
@@ -99,7 +99,7 @@ const EVENTS = [
     start(ev) { const f = districtFront(ev.d, b => /인쇄/.test(signOf(b))) || districtFront(ev.d, b => b.kind === 'shop'); if (!f) return false; ev.f = f.p; ev.got = 0;
       for (let k = 0; k < 3; k++) evItem(ev, f.p.x + (k - 1) * 30, f.p.y + 6 + (k % 2) * 12, 'box', 0, () => { ev.got++; play('cloth', 0.5); if (ev.got === 3) evBanner('상자 셋 — 이제 멀리 벗어나라'); }); return true; },
     focus: ev => ev.f,
-    update(ev) { const P = S.player;
+    update(ev, dt = 1 / 60) { const P = S.player;
       if (ev.engaged && !ev.deadline) { ev.deadline = S.t + 60; evBanner('첩보: 60초 뒤 단속반 · (상자 셋, 빨리.)'); }
       if (!ev.deadline) return;
       if (ev.got === 3 && dist(P.x, P.y, ev.f.x, ev.f.y) > 650) { cash(300); addRep(ev.d, -2); evEnd(ev, '위조지폐 상자 확보 · +300만'); return; }
@@ -109,9 +109,9 @@ const EVENTS = [
   { key: 'pickpocket', d: '동대문 시장', name: '소매치기',
     start(ev) { const p = offscreenSpot(400, 700); if (!p) return false; ev.victim = evPerson(ev, p.x, p.y, { body: 'fBob' }); ev.thief = evPerson(ev, p.x + 30, p.y + 10, { body: 'pack' }); gsay(ev.victim, '소매치기야! 잡아 주세요!', 3.5); evFlee(ev.thief, p.x, p.y, 60); return true; },
     focus: ev => ev.loot ? ev.victim : ev.thief,
-    update(ev) { const t = ev.thief, P = S.player;
+    update(ev, dt = 1 / 60) { const t = ev.thief, P = S.player;
       if (t.state === 'DEAD') { if (!ev.dropped) { ev.dropped = true; evItem(ev, t.x + 14, t.y + 8, 'wallet', 100, () => evLoot(ev, ev.victim, 100, 30, '지갑')); } return; }
-      if ((ev.fT = (ev.fT || 0) - 1 / 60) <= 0) { ev.fT = 2; if (dist(t.x, t.y, P.x, P.y) < 600) evFlee(t, P.x, P.y, 30); }
+      if ((ev.fT = (ev.fT || 0) - dt) <= 0) { ev.fT = 2; if (dist(t.x, t.y, P.x, P.y) < 600) evFlee(t, P.x, P.y, 30); }
       if (ev.engaged && dist(t.x, t.y, P.x, P.y) > 1900) evEnd(ev, '(인파 속으로 빠졌어.)'); },
     goal: ev => ev.loot ? '지갑 — 주인에게 돌려주기 또는 챙기기' : ev.dropped ? '떨어진 지갑 줍기' : '소매치기 잡기 (때려눕히기)' },
   // 동대문 시장 ② 짐차 사고: 쏟아진 상자를 줍는다 (하나 30만). 상인이 보면 수배
@@ -120,7 +120,7 @@ const EVENTS = [
       ev.left = 5; for (let k = 0; k < 5; k++) evItem(ev, r.x + rnd(-70, 70), r.y + rnd(-50, 50), 'box', 30, it => { ev.left--; cash(it.val); addRep(ev.d, -1); if (!ev.seen && seesMe(ev.merchant, 300)) { ev.seen = true; addWanted(1, '상인의 물건을 주워 갔다'); } });
       ev.pickers = [0, 1].map(k => evPerson(ev, r.x + (k ? 300 : -300), r.y + 40, {})); return true; },
     focus: ev => ev.car,
-    update(ev) { // 구경꾼도 상자를 주워 간다
+    update(ev, dt = 1 / 60) { // 구경꾼도 상자를 주워 간다
       for (const g of ev.pickers) { if (!npcAlive(g)) continue; const it = (S.evItems || []).find(i => i.evt === ev.key); if (!it) break; if (dist(g.x, g.y, it.x, it.y) < 22) { S.evItems.splice(S.evItems.indexOf(it), 1); ev.left--; gsay(g, '횡재다!', 1.4); } else evGo(g, it.x, it.y); }
       if (ev.left <= 0) evEnd(ev, '(상자는 벌써 다 털렸네.)', true); },
     goal: ev => `쏟아진 상자 줍기 · 남은 ${ev.left}개` },
@@ -132,7 +132,7 @@ const EVENTS = [
       for (const [s, o] of [[-1, null], [1, 'gangD']]) for (let k = 0; k < 2; k++) { const g = evPerson(ev, p.x + s * (40 + k * 26), p.y + (k ? 26 : -10), { kind: k ? 'g1' : 'g2', fac: 'C' }); if (o) g.outfit = o; g.a = s < 0 ? 0 : Math.PI; ev.side.push(g); }
       ev.holder = ev.side[0]; return true; },
     focus: ev => ev.p,
-    update(ev) { const h = ev.holder;
+    update(ev, dt = 1 / 60) { const h = ev.holder;
       if (h.state === 'DEAD' && !ev.dropped) { ev.dropped = true; for (const g of ev.side) if (npcAlive(g)) copChase(g); evItem(ev, h.x + 12, h.y + 10, 'bag', 400, it => { cash(it.val); addRep(ev.d, -2); evEnd(ev, `거래 가방 가로채기 · +${it.val}만`); }); return; }
       if (ev.engaged && !ev.leaveT) ev.leaveT = S.t + 55;
       if (ev.leaveT && S.t > ev.leaveT && !ev.dropped) { for (const g of ev.side) evGo(g, g.x + (g.x < ev.p.x ? -900 : 900), g.y); evEnd(ev, '(거래 끝. 다 흩어졌어.)', true); } },
@@ -142,8 +142,8 @@ const EVENTS = [
     start(ev) { const f = districtFront(ev.d, b => b.kind === 'shop'); if (!f) return false; const p = f.p; ev.p = p; ev.vendor = evPerson(ev, p.x, p.y + 20, { body: 'old' }); ev.enf = [-1, 1].map(s => evPerson(ev, p.x + s * 40, p.y + 34, { outfit: 'staff' }));
       gsay(ev.vendor, '먹고살자고 하는 건데 너무하잖소!', 3); gsay(ev.enf[0], '불법 노점이에요. 치우세요.', 3); return true; },
     focus: ev => ev.p,
-    update(ev) { if (ev.enf.some(g => g.state === 'DEAD') && !ev.done) { if (witnessed(ev.p.x, ev.p.y, 280)) addWanted(1, '단속반을 때렸다'); evHelpVendor(ev); }
-      if ((ev.talkT = (ev.talkT || 0) - 1 / 60) <= 0) { ev.talkT = 3.5; const g = [ev.vendor, ...ev.enf][(S.t | 0) % 3]; if (npcAlive(g)) gsay(g, g === ev.vendor ? ['이거 뺏기면 우리 식구 굶어요!', '좀 봐줘요!'][(S.t | 0) % 2] : ['규정은 규정입니다.', '안 치우면 압수합니다.'][(S.t | 0) % 2], 2.4); } },
+    update(ev, dt = 1 / 60) { if (ev.enf.some(g => g.state === 'DEAD') && !ev.done) { if (witnessed(ev.p.x, ev.p.y, 280)) addWanted(1, '단속반을 때렸다'); evHelpVendor(ev); }
+      if ((ev.talkT = (ev.talkT || 0) - dt) <= 0) { ev.talkT = 3.5; const g = [ev.vendor, ...ev.enf][(S.t | 0) % 3]; if (npcAlive(g)) gsay(g, g === ev.vendor ? ['이거 뺏기면 우리 식구 굶어요!', '좀 봐줘요!'][(S.t | 0) % 2] : ['규정은 규정입니다.', '안 치우면 압수합니다.'][(S.t | 0) % 2], 2.4); } },
     action(ev) { const P = S.player; if (P.car || dist(P.x, P.y, ev.p.x, ev.p.y) > 80) return null; return { label: '노점 단속 끼어들기', at: { x: ev.p.x, y: ev.p.y - 50 }, fn: () => shopPanel('노점 단속', [
       { name: '상인 편 — 단속반 쫓아내기 (평판 +5)', price: null, tag: '+30만', ok: true, buy: () => { closeShopPanel(); evHelpVendor(ev); } },
       { name: '단속반 편 — 노점 치우기 (평판 -4)', price: null, tag: '+50만', ok: true, buy: () => { closeShopPanel(); if (ev.done) return; cash(50); addRep(ev.d, -4); evFlee(ev.vendor, S.player.x, S.player.y, 20); evEnd(ev, '단속반 사례 · +50만'); } }]) }; },
@@ -152,7 +152,7 @@ const EVENTS = [
   { key: 'burglar', d: '신당동 주택가', name: '빈집털이',
     start(ev) { const f = districtFront(ev.d, b => b.kind !== 'shop'); if (!f) return false; ev.p = f.p; ev.thief = evPerson(ev, f.p.x + 20, f.p.y - 10, { body: 'pack' }); ev.thief.a = -Math.PI / 2; gsay(ev.thief, '(창문을 비집는다)', 3); return true; },
     focus: ev => ev.loot ? ev.owner : ev.thief,
-    update(ev) { const t = ev.thief, P = S.player;
+    update(ev, dt = 1 / 60) { const t = ev.thief, P = S.player;
       if (t.state === 'DEAD') { if (!ev.dropped) { ev.dropped = true; ev.owner = evPerson(ev, ev.p.x - 30, ev.p.y + 10, { body: 'old' }); gsay(ev.owner, '우리 집 도둑이야!', 3); evItem(ev, t.x + 14, t.y + 8, 'bag', 140, () => evLoot(ev, ev.owner, 140, 80, '보따리')); } return; }
       if (!ev.fled && ev.engaged && (dist(t.x, t.y, P.x, P.y) < 130 || S.t - ev.t0 > 70)) { ev.fled = true; gsay(t, '들켰다!', 1.5); evFlee(t, P.x, P.y, 60); }
       if (ev.fled && dist(t.x, t.y, P.x, P.y) > 1700) evEnd(ev, '(빈집털이 놓쳤어.)'); },
@@ -161,7 +161,7 @@ const EVENTS = [
   { key: 'fire', d: '신당동 주택가', name: '차 화재',
     start(ev) { const r = roadSpot(420, 800); if (!r) return false; const v = ev.car = evCar(ev, 'hatch', r.x, r.y, rnd(0, TAU)); v.hp = 1; v.fireHold = true; ev.by = evPerson(ev, r.x + 60, r.y - 50, {}); gsay(ev.by, '사람이 갇혔어요! 누가 좀!', 3.5); return true; },
     focus: ev => ev.car,
-    update(ev) { const v = ev.car, P = S.player;
+    update(ev, dt = 1 / 60) { const v = ev.car, P = S.player;
       if (v.fireHold && dist(P.x, P.y, v.x, v.y) < 240) { v.fireHold = false; v.fireT = Math.min(v.fireT || 0, 0.5); }
       if (v.dead && !ev.done) evEnd(ev, '(늦었어... 차가 터졌다.)'); },
     action(ev) { const v = ev.car, P = S.player; if (P.car || v.dead || dist(P.x, P.y, v.x, v.y) > 75) return null; return { label: '갇힌 사람 끌어내기', at: { x: v.x, y: v.y - 56 }, fn: () => {  // 운전석 문으로 가서 열고 → 붙잡아 끌어낸다 → 바닥에 눕혔다가 일어나 달아난다
@@ -175,7 +175,7 @@ const EVENTS = [
   { key: 'armored', d: '중구 관청가', name: '현금 수송차',
     start(ev) { const r = roadSpot(600, 1000); if (!r) return false; const v = ev.car = evCar(ev, 'van', r.x, r.y, rnd(0, TAU), { ai: true, driver: true }); v.hpMax = v.hp = 14; v.hue = 200; ev.hp0 = v.hp; return true; },
     focus: ev => ev.car,
-    update(ev) { const v = ev.car, P = S.player;
+    update(ev, dt = 1 / 60) { const v = ev.car, P = S.player;
       if (!ev.hit && v.hp < ev.hp0 && P.car && dist(P.car.x, P.car.y, v.x, v.y) < 160) { ev.hit = true; addWanted(3, '현금 수송차를 습격했다'); }
       if (!ev.stopped && (v.dead || v.hp <= v.hpMax * 0.5)) { ev.stopped = true; v.ai = false; v.v = 0; v.driver = false; v.doorT = S.t + 0.2; v.doorSide = 1;
         for (const s of [-1, 1]) { const g = evPerson(ev, v.x + s * 44, v.y + 30, { kind: 'g1', police: true }); copChase(g); }
@@ -189,7 +189,7 @@ const EVENTS = [
       for (let k = 0; k < 9; k++) { const g = evPerson(ev, r.x + Math.cos(a) * (k % 3) * 26 - Math.sin(a) * ((k / 3) | 0) * 26, r.y + Math.sin(a) * (k % 3) * 26 + Math.cos(a) * ((k / 3) | 0) * 26, {}); ev.crowd.push(g); evGo(g, g.x + Math.cos(a) * 900, g.y + Math.sin(a) * 900); }
       for (let k = 0; k < 2; k++) { const g = spawnCop(true); if (g) evGo(g, r.x, r.y); } return true; },
     focus: ev => { const c = ev.crowd.filter(npcAlive); if (!c.length) return null; return { x: c.reduce((s, g) => s + g.x, 0) / c.length, y: c.reduce((s, g) => s + g.y, 0) / c.length }; },
-    update(ev, dt) { const c = this.focus(ev), P = S.player; if (!c) { evEnd(ev, '(시위는 끝났네.)', true); return; }
+    update(ev, dt = 1 / 60) { const c = this.focus(ev), P = S.player; if (!c) { evEnd(ev, '(시위는 끝났네.)', true); return; }
       if ((ev.sloganT = (ev.sloganT || 0) - dt) <= 0) { ev.sloganT = 2.2; const g = ev.crowd[(S.t * 3 | 0) % ev.crowd.length]; if (npcAlive(g)) gsay(g, ['물가를 잡아라!', '재개발 반대!', '상인도 사람이다!'][(S.t | 0) % 3], 2); }
       if (S.wanted > 0 && !P.car && dist(P.x, P.y, c.x, c.y) < 170) { S.wantLost = (S.wantLost || 0) + dt * 2.5; S.crowdT = S.t + 0.3; ev.hid = true; }
       if (S.t - ev.t0 > 95) evEnd(ev, ev.hid ? '시위대 속에서 경찰 눈을 피했다' : '시위 행진이 지나갔다', true); },
@@ -200,7 +200,7 @@ const EVENTS = [
       const d = dirs[(Math.random() * dirs.length) | 0]; ev.a = Math.atan2(d[1], d[0]); ev.start = r; ev.fin = { x: r.x + d[0] * 1000, y: r.y + d[1] * 1000 };
       ev.opp = evCar(ev, 'sport', r.x - Math.sin(ev.a) * 40, r.y + Math.cos(ev.a) * 40, ev.a, { scripted: true }); ev.bettor = evPerson(ev, r.x - Math.cos(ev.a) * 80 + Math.sin(ev.a) * 70, r.y - Math.sin(ev.a) * 80 - Math.cos(ev.a) * 70, {}); gsay(ev.bettor, '한 판 붙을 사람!', 3); return true; },
     focus: ev => ev.race ? ev.fin : ev.start,
-    update(ev, dt) { const P = S.player, o = ev.opp;
+    update(ev, dt = 1 / 60) { const P = S.player, o = ev.opp;
       if (ev.race === 'count' && S.t > ev.goT) { ev.race = 'run'; play('bell', 0.5); evBanner('출발!'); }
       if (ev.race === 'run') { o.v = Math.min(500, (o.v || 0) + 290 * dt); o.x += Math.cos(ev.a) * o.v * dt; o.y += Math.sin(ev.a) * o.v * dt; o.a = ev.a;
         const me = P.car && dist(P.x, P.y, ev.fin.x, ev.fin.y) < 130, him = dist(o.x, o.y, ev.fin.x, ev.fin.y) < 60;

@@ -116,7 +116,7 @@ function buildingCollapse(b) {
   b.collapsed = true; const x0 = b.x0 * TILE, x1 = (b.x1 + 1) * TILE, y0 = b.y0 * TILE, y1 = (b.y1 + 1) * TILE, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
   // 안에 있던 사람은 깔린다
   for (const g of S.guards) if (g.state !== 'DEAD' && !g.off && g.x > x0 && g.x < x1 && g.y > y0 && g.y < y1) npcDown(g, null, true);
-  for (const c of S.corpses || []) if (c.ko && c.x > x0 && c.x < x1 && c.y > y0 && c.y < y1) { c.ko = false; if (c.g) c.g.killHow = 'crush'; }  // 기절해 쓰러져 있던 사람도 깔린다
+  for (const c of S.corpses || []) if (c.ko && c.x > x0 && c.x < x1 && c.y > y0 && c.y < y1) { c.ko = false; if (c.g) { c.g.killHow = 'crush'; c.g.unconscious = false; } }  // 기절해 쓰러져 있던 사람도 깔린다
   const P = S.player; if (P.x > x0 - 10 && P.x < x1 + 10 && P.y > y0 - 10 && P.y < y1 + 10) { P.fl = 0; P.z = 0; setLayer(0); P.hurtT = 0; hurtPlayer(null, '무너진 건물에 깔렸다.'); }
   // 땅이 되고(벽 칸이 사라진다) 잔해 더미가 덮는다
   for (let ty = b.y0; ty <= b.y1; ty++) for (let tx = b.x0; tx <= b.x1; tx++) { if (!inMap(tx, ty)) continue; const row = G0[ty]; if (typeof row === 'string') G0[ty] = row.substring(0, tx) + '.' + row.substring(tx + 1); else row[tx] = '.'; }  // 1층 지도(G0)만 바꾼다
