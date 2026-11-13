@@ -28,8 +28,16 @@ function dealerUpdate(dt = 1 / 60) {
   const D = S.dealer2; if (!D) return;
   if (D.g && !npcAlive(D.g) && !D.respawn) D.respawn = S.t + 180;
   if (D.respawn && S.t > D.respawn && !inView(D.x, D.y, 80)) { D.respawn = 0; dealerSpawn(); }
+  const g = D.g;
+  // 박씨는 총을 찬다: 맞서기 시작하면(협박이 틀어졌거나 내가 먼저 때렸다) 주먹 대신 권총을 뽑는다. 내가 멀어지거나 놈이 쓰러질 때까지
+  if (g && npcAlive(g) && !g.off && g.fist) { D.sulkUntil = Math.max(D.sulkUntil || 0, S.t + 600); const P = S.player, d = dist(g.x, g.y, P.x, P.y);
+    if (!g.drew) { g.drew = true; g.drawT = S.t + 0.9; gsay(g, ['내 골목에서?', '...후회하게 될 거다.', '총은 너만 있는 줄 알았냐.'][(D.threats || 0) % 3], 1.8); play('click', 0.6 * proxVol(g)); }
+    if (d < 420 && (g.shootT || 0) < S.t && S.t > (g.drawT || 0) && los(g.x, g.y, P.x, P.y)) { g.shootT = S.t + 1.1; npcShoot(g, P); }
+    g.aim = 1;
+    g.fistT = Math.max(g.fistT || 0, S.t + 0.5); }   /* 주먹 대신 총 (47zp 의 주먹질은 미룬다) */
+  else if (g) { g.drew = false; if (g.aim) g.aim = 0; }
   // 제자리로: 태워 갔다 내려 주면 걸어서 골목으로 돌아온다 (타는 중엔 건드리지 않는다)
-  const g = D.g; if (g && npcAlive(g) && g.state === 'PATROL' && !g.off && !g.rideTo && !g.rideIn && !g.fist) { let d = dist(g.x, g.y, D.x, D.y);
+  if (g && npcAlive(g) && g.state === 'PATROL' && !g.off && !g.rideTo && !g.rideIn && !g.fist) { let d = dist(g.x, g.y, D.x, D.y);
     if (d > 8) { const moved = dist(g.x, g.y, g.lastX ?? 0, g.lastY ?? 0) > 0.5; g.lastX = g.x; g.lastY = g.y; g.stuckT = moved ? 0 : (g.stuckT || 0) + dt;
       if (g.stuckT > 4 || (!inView(g.x, g.y, 80) && !inView(D.x, D.y, 80))) d = 0; else evRun(g, D.x, D.y, 90, dt); }  /* 막혔거나 아무도 안 보면 제자리로 */
     if (d <= 8) { g.x = D.x; g.y = D.y; g.route = [{ x: D.x, y: D.y, pause: 999 }]; g.path = null; g.stuckT = 0; } }
@@ -41,13 +49,15 @@ function dealerAction() {
   return { k: 'evAct', label: '박씨와 거래', at: { x: D.x, y: D.y - 50 }, fn: openDealer2 };
 }
 // 협박: 무기를 들고 다가가면 [협박] — 권총 한 자루(있으면 탄 12발)를 빼앗는다. 대신 박씨는 10분 동안 안 판다.
-// 덩치라 셋 중 하나는 맞선다 (난타전). 누가 보면 수배.
+// 박씨도 권총을 찬다: 칼만 들고 오면 대개 맞받아 총을 뽑고, 총을 들이대도 세 번째엔 뽑는다. 누가 보면 수배.
 function dealerThreat(D) {
   const P = S.player, g = D.g; P.a = Math.atan2(g.y - P.y, g.x - P.x); g.a = P.a + Math.PI; fstat('dealerThreat');
   gsay(g, '...이봐, 진정해.', 1.4);
   doMotion({ dur: 1.2, pose: 'idle', at: [[0.3, () => play('click', 0.5)]], end: () => {
     if (!npcAlive(g)) return; D.sulkUntil = S.t + 600;
-    if ((D.threats = (D.threats || 0) + 1) % 3 === 0) { g.fist = true; g.fistT = 0; gsay(g, '두 번은 안 당해!', 1.8); evBanner('(...덤비네.)', '#ff9a86'); return; }
+    const n = D.threats = (D.threats || 0) + 1, melee = WEAPONS[S.wpn]?.melee;
+    // 총 든 사람한테 칼로? 셋 중 둘은 총을 뽑는다. 총을 들이대도 셋째 번엔 맞받아 뽑는다
+    if (melee ? n % 3 !== 0 : n % 3 === 0) { g.fist = true; gsay(g, melee ? '칼? 칼 가지고 날?' : '두 번은 안 당해!', 1.8); evBanner('(...뽑았다. 엎드려.)', '#ff9a86'); return; }
     const had = S.guns.pistol != null; S.guns.pistol = (S.guns.pistol || 0) + 12; if (!S.wpn) S.wpn = 'pistol'; if (typeof gunChip === 'function') gunChip(); play('loot', 0.5); saveFreeProgress(true);
     gsay(g, ['가져가. 가져가라고.', '...얼굴 기억해 둔다.'][D.threats % 2], 2.2);
     evBanner(had ? '권총 탄 +12 · (빌린 거야. 갚을 생각은 없지만.)' : '경찰 권총 +12발 · (공짜가 제일 비싸다던데.)', '#e8d8a8');

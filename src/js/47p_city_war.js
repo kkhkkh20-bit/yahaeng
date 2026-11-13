@@ -70,7 +70,7 @@ function npcShoot(g, tgt) {
   bulletFly(mx, my, ex, ey, GUN_FX.npc, hit ? (tgt === P && P.car ? 'metal' : 'body') : null);
   for (const c of actorsNearWide(g.x, g.y, 420)) if (c.civ && npcAlive(c) && c.state !== 'PANIC') civPanic(c, g.x, g.y, 10);
   if (!hit) return;
-  if (tgt === P) { if (P.car) { const v = P.car; v.hp -= 0.5; v.smoke = 1.5; play('metal', 0.4, 1.6); if (v.hp <= 0) carExplode(v); } else hurtPlayer(null, `${STAND_NAME[g.fac] || '조직'} 총에 맞았다.`, g); return; }
+  if (tgt === P) { if (P.car) { const v = P.car; v.hp -= 0.5; v.smoke = 1.5; play('metal', 0.4, 1.6); if (v.hp <= 0) carExplode(v); } else hurtPlayer(null, g.dealer ? '박씨 총에 맞았다.' : `${STAND_NAME[g.fac] || '조직'} 총에 맞았다.`, g); return; }
   bloodBurst(tgt.x, tgt.y - 12, a, 3); npcDown(tgt, g, true);
 }
 function warEnd(win) {

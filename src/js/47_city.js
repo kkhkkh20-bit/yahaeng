@@ -9,7 +9,7 @@ function markCityDone(id) { try { const d = cityDone(); d[id] = 1; localStorage.
 function cityInit() {
   S.wanted = 0; S.wantLost = 0; S.copT = 0;
   S.contracts = (STAGE.contracts || []).map(c => ({ id: c.id, name: c.name, x: tc(c.at[0]), y: tc(c.at[1]), si: STAGES.findIndex(s => s.id === c.id) })).filter(c => c.si >= 0);
-  trafficInit(); if (STAGE.hits) hitsInit(); loadFreeProgress(); shopsInit(); cityFactionsInit(); garageInit(); S.side = null; weatherInit(); heatInit(); havocInit(); gunsInit(); pickupsInit(); warInit(); safehouseInit(); hunterInit(); crewsInit(); homeInit(); dealerInit(); cozyPlacesInit(); placesInit(); killerInit(); ambientInit(); if (STAGE.cityLife) storyInit();  // 가게 · 중고차 매매 · 도색소  // 도시 안 의뢰 (공중전화)
+  trafficInit(); if (STAGE.hits) hitsInit(); loadFreeProgress(); shopsInit(); cityFactionsInit(); garageInit(); S.side = null; weatherInit(); heatInit(); havocInit(); gunsInit(); pickupsInit(); warInit(); safehouseInit(); hunterInit(); crewsInit(); homeInit(); dealerInit(); cozyPlacesInit(); placesInit(); killerInit(); ambientInit(); sceneInit(); if (STAGE.cityLife) storyInit();  // 가게 · 중고차 매매 · 도색소  // 도시 안 의뢰 (공중전화)
   // 순찰 경찰 둘: 시내 보도를 돈다 (조직 구역에는 들어가지 않는다)
   for (const r of STAGE.copBeats || []) { const g = makeGuard({ kind: 'g1', route: r, radio: false }, S.guards.length); g.police = true; g.beat = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; g.radio = false; setLayer(0); buildRouteLine(g); S.guards.push(g); }
   // 자유 모드 첫 화면: 칼 든 조직원이 바로 옆에 서 있지 않게 — 300px 안의 조직원은 제자리 근처, 나와 350px 넘게 떨어진 빈 길로 옮긴다
@@ -108,7 +108,7 @@ function cityListsCleanup() {
     if (!far(g)) { g._deadAt = null; continue; } g._deadAt = g._deadAt || S.t;
     if (S.t - g._deadAt > 45) { S.corpses = (S.corpses || []).filter(c => c.g !== g && c.guardId !== g.id); evGone(g); } }
   // 새로 생긴 차(사건·추격·조직 차): 멀리 있고 아무도 쓰지 않으면 뺀다
-  const busy = new Set([P.car, P.lastCar, ...S.vehicles.filter(v => v.trunk?.length || v.riders?.length), S.hit?.trunk, S.job?.v, ...(S.ev && !S.ev.done ? S.ev.cars || [] : [])]);
+  const busy = new Set([P.car, P.lastCar, ...S.vehicles.filter(v => v.trunk?.length || v.riders?.length), S.hit?.trunk, S.scene?.v, S.job?.v, ...(S.ev && !S.ev.done ? S.ev.cars || [] : [])]);
   // 오래 켜 둬도 쌓이지 않게 (10분 실험: 터진 차·시체가 계속 늘었다):
   //  · 원래 있던 차가 부서져 멀리 60초 → 치우고, 화면 밖 길 차로에 새 차를 한 대 넣는다 (교통량 유지)
   //  · 원래 있던 행인이 죽어 멀리 90초 → 시체를 치우고, 같은 길을 도는 새 행인을 화면 밖에 세운다 (인구 유지). 조직원은 시체만 치운다
@@ -149,7 +149,7 @@ function cityLodStep(o, dt, calm) {
   const d = Math.min(o.lodDt, cap); o.lodDt = 0; return d;
 }
 function cityUpdate(dt) {
-  updateVehicles(dt); updateCopCars(dt); if (STAGE.hits) hitsUpdate(dt); if (STAGE.cityLife) { cityLifeUpdate(dt); crewsUpdate(); dealerUpdate(dt); trunkUpdate(dt); killerUpdate(dt); brawlUpdate(dt); ambientUpdate(dt); }
+  updateVehicles(dt); updateCopCars(dt); if (STAGE.hits) hitsUpdate(dt); if (STAGE.cityLife) { cityLifeUpdate(dt); crewsUpdate(); dealerUpdate(dt); trunkUpdate(dt); killerUpdate(dt); brawlUpdate(dt); ambientUpdate(dt); sceneUpdate(dt); }
   const P = S.player, cops = S.guards.filter(g => g.police && !g.off && g.state !== 'DEAD');
   if (S.wanted > 0) {
     // 경찰끼리 무전: 하나라도 나를 보면 모두 그 자리로

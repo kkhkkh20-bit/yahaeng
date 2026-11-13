@@ -41,6 +41,8 @@ function safeEnter(s) {
   play('click', 0.6); after(0.3, () => { S.fade = SAFE_HIDE - 0.4; P.hidden = true; });
   P.trav.end = () => safeLeave(s);
 }
+const NIGHT_NEWS = ['[어젯밤] 을지로 일대 순찰 강화… 경찰 "야간 신고 늘어"', '[어젯밤] 청계천 산책로 CCTV 추가 설치 결정', '[어젯밤] 인쇄골목 상인회 "밤길이 무섭다"… 구청에 가로등 요청',
+  '[어젯밤] 종로 유흥가 단속, 불법 영업 3곳 적발', '[어젯밤] 시민 제보 "모자 쓴 여자를 봤다"… 경찰, 신빙성 낮다고', '[어젯밤] 비 그친 을지로, 새벽까지 택시 잡기 전쟁'];
 function safeLeave(s) {
   const P = S.player; S.safeIn = null; P.hidden = false;
   const had = S.wanted || 0;
@@ -49,8 +51,11 @@ function safeLeave(s) {
   P.hp = P.hpMax; P.x = s.x; P.y = s.y + 6; play('click', 0.5);
   if (typeof cityDisguiseOff === 'function' && had) cityDisguiseOff();
   saveFreeProgress(true); fstat('safeUses');
-  const extra = homeRest(s); if (extra) saveFreeProgress(true);
-  evBanner((had ? '열기를 식혔다 — 수배 해제 · 체력 회복 · 저장됨' : '푹 쉬었다 — 체력 회복 · 저장됨') + extra, '#9fe0b0');
+  // 자고 나면 다음 날 밤 (이 도시는 밤에만 움직인다): 며칠째인지 세고, 그동안 일어난 일이 뉴스로 지나간다
+  const n = S.night = (S.night || 1) + 1; if (S.dealer2) S.dealer2.sulkUntil = 0;
+  const extra = homeRest(s); saveFreeProgress(true);
+  evBanner(`${n}일째 밤 · ` + (had ? '열기 식힘 — 수배 해제 · 체력 회복 · 저장됨' : '체력 회복 · 저장됨') + extra, '#9fe0b0');
+  newsTicker(NIGHT_NEWS[n % NIGHT_NEWS.length]);
 }
 // 문 앞 표시 (가까울 때): 초록 문패 / 안 산 곳은 흐린 '매물'
 function drawSafes() {

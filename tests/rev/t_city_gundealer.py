@@ -18,8 +18,11 @@ CHECK = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));w
   return out}'''
 
 FREE = '''()=>{const G=__game;const S = G.S, P = S.player, E = G.events; const tick = s => { for (let t = 0; t < s; t += 1/60) G.update(1/60); }; tick(.3); S.copT = 1e9;
-    const D = E.dealer2, g = D.g, out = {}; S.guns = { knife: 1 }; S.wpn = 'knife'; P.x = D.x + 30; P.y = D.y; P.car = null; tick(.05);
+    const D = E.dealer2, g = D.g, out = {}; S.guns = { pistol: 5 }; S.wpn = 'pistol'; P.x = D.x + 30; P.y = D.y; P.car = null; tick(.05);
     let a = E.dealerAction(); out.label = a && a.label; a.fn(); tick(1.6); out.pistol = S.guns.pistol; out.sulk = (E.dealerAction() || {}).label;
+    // 칼만 들고 다시 협박: 박씨가 총을 뽑아 쏜다
+    D.sulkUntil = 0; S.guns.knife = 1; S.wpn = 'knife'; P.hp = P.hpMax || 3; P.hurtT = 0; const hp0 = P.hp; a = E.dealerAction(); out.label2 = a && a.label; a.fn(); for (let k = 0; k < 60 * 6 && P.hp === hp0; k++) { P.x = D.x + 60; P.y = D.y; G.update(1/60); }
+    out.drew = !!g.drew; out.shot = !!g.shotT; out.hurt = hp0 - P.hp; P.hp = hp0; g.fist = false; g.drew = false; D.sulkUntil = 0;
     // 태우기: 차를 옆에 두고
     D.sulkUntil = 0; const v = S.vehicles.find(v => !v.dead && !v.police && !v.ai); v.x = D.x + 60; v.y = D.y + 40; P.lastCar = v; S.wpn = null; P.x = D.x + 20; P.y = D.y + 10; tick(.05);
     a = E.rideAction(); out.ride = a && a.label; if (a) a.fn(); tick(3.5); out.riding = !!g.rideIn; out.shopWhileRiding = !!E.dealerAction();
@@ -42,7 +45,8 @@ async def main():
         await q.evaluate("()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));while(G.DLG.modal)G.advanceDialog();}")
         f = await q.evaluate(FREE); print('free', json.dumps(f, ensure_ascii=False))
         # 박씨: 무기를 들면 협박(권총을 뺏고 10분 안 판다) · 차에 태워 가도 되고, 내려 주면 골목으로 돌아온다
-        ok(f['label'].startswith('박씨 협박하기') and f['pistol'] == 12 and '눈도 안' in f['sulk'], 'threatening the dealer: %s' % f)
+        ok(f['label'].startswith('박씨 협박하기') and f['pistol'] == 17 and '눈도 안' in f['sulk'], 'threatening the dealer: %s' % f)
+        ok(f['label2'].startswith('박씨 협박하기 (칼)') and f['drew'] and f['shot'], 'a knife against an armed dealer: %s' % f)
         ok(f['ride'] == '차에 태우기' and f['riding'] and not f['shopWhileRiding'] and f['drop'] and f['back'] <= 8, 'giving the dealer a ride: %s' % f)
         ok(not errs, errs); await b.close()
     print('통과' if not bad else '문제', bad)

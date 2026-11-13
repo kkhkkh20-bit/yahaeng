@@ -470,6 +470,10 @@
       "group": "city"
     },
     {
+      "path": "47zr_city_scene.js",
+      "group": "city"
+    },
+    {
       "path": "47zz_city_story.js",
       "group": "city"
     },
