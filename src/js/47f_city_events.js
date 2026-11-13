@@ -55,7 +55,7 @@ function evLoot(ev, owner, val, reward, what) {
   evBanner(`${what}을 주웠다 — 주인에게 돌려주거나 챙긴다`);
 }
 function evKeep(ev) { const L = ev.loot; if (!L || ev.done) return; cash(L.val); addRep(ev.d, -3); evEnd(ev, `${L.what}을 챙겼다 · ${L.val}만`); }
-function evGive(ev) { const L = ev.loot; if (!L || ev.done) return; cash(L.reward); addRep(ev.d, 4); if (npcAlive(L.owner)) gsay(L.owner, '고맙습니다! 정말 고마워요!', 3); evEnd(ev, `돌려줬다 · 사례 ${L.reward}만`, true); if (ev.def.onGive) ev.def.onGive(ev); }
+function evGive(ev) { const L = ev.loot; if (!L || ev.done) return; cash(L.reward); if (npcAlive(L.owner)) gsay(L.owner, '...가, 감사합니다.', 3); evEnd(ev, `돌려줬다 · ${L.reward}만은 수고비로`, true); if (ev.def.onGive) ev.def.onGive(ev); }
 
 // ---------------------------------------------------------------- 이벤트 14개
 // start(ev): 자리를 잡고 사람·차를 세운다 (못 하면 false). update(ev,dt). goal(ev): 목표 줄. action(ev): [행동] 후보. x,y: 표시할 곳(ev.focus())
@@ -167,7 +167,7 @@ const EVENTS = [
       doMotion({ x: door.x, y: door.y, face: Math.atan2(v.y - door.y, v.x - door.x), pose: 'grab', dur: 1.0,
         at: [[0.05, () => { v.doorT = S.t + 0.2; v.doorSide = -1; play('switch', 0.5); }], [0.45, () => { play('cloth', 0.6); play('thud', 0.3); }]],
         end: () => { if (ev.done) return; const P = S.player, g = evPerson(ev, P.x + Math.cos(P.a + Math.PI) * 26, P.y + Math.sin(P.a + Math.PI) * 26, {}); gsay(g, '콜록... 살았다... 고맙습니다!', 2.5); after(0.8, () => evFlee(g, v.x, v.y, 10));
-          cash(60); addRep(ev.d, 5); evEnd(ev, '갇힌 사람을 구했다 · 사례 60만', true); } }); } }; },
+          cash(60); evEnd(ev, '갇힌 사람을 꺼냈다 · 60만', true); } }); } }; },
     goal: () => '불붙은 차 — 터지기 전에 갇힌 사람 구하기' },
   // 중구 관청가 ① 현금 수송차: 들이받아 세우면 돈자루 둘. 수배 3
   { key: 'armored', d: '중구 관청가', name: '현금 수송차',
@@ -276,7 +276,7 @@ function evItemsUpdate() {
 function eventAction() {
   const ev = S.ev; if (!ev || ev.done) return null; const P = S.player;
   const L = ev.loot; if (L && npcAlive(L.owner) && !P.car && dist(P.x, P.y, L.owner.x, L.owner.y) < 70) return { k: 'evAct', label: `${L.what} 돌려주기`, at: { x: L.owner.x, y: L.owner.y - 56 }, fn: () => shopPanel(`${L.what}`, [
-    { name: `주인에게 돌려주기 (평판 +4)`, price: null, tag: `사례 ${L.reward}만`, ok: true, buy: () => { closeShopPanel(); if (ev.done) return; const o = L.owner, s = standBy(S.player, o, 26); faceEachOther(o); doMotion({ x: s.x, y: s.y, face: s.face, pose: 'grab', dur: 0.55, at: [[0.2, () => play('cloth', 0.4)]], end: () => evGive(ev) }); } },
+    { name: `주인에게 돌려주기`, price: null, tag: `수고비 ${L.reward}만`, ok: true, buy: () => { closeShopPanel(); if (ev.done) return; const o = L.owner, s = standBy(S.player, o, 26); faceEachOther(o); doMotion({ x: s.x, y: s.y, face: s.face, pose: 'grab', dur: 0.55, at: [[0.2, () => play('cloth', 0.4)]], end: () => evGive(ev) }); } },
     { name: `챙기기 (평판 -3)`, price: null, tag: `+${L.val}만`, ok: true, buy: () => { closeShopPanel(); evKeep(ev); } }]) };
   const a = ev.def.action && ev.def.action(ev); return a ? Object.assign({ k: 'evAct' }, a) : null;
 }

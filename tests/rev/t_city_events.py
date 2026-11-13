@@ -48,7 +48,7 @@ async def main():
         # 3 snatch: ram the car, pick the bag, give it back
         await spawn('snatch'); s0 = await st(); await ev("()=>{const v=__game.S.ev.car;v.hp-=1;tick(.1)}"); await ev(PICK)
         await ev("()=>{const S=__game.S,o=S.ev.loot.owner;S.player.x=o.x+20;S.player.y=o.y;tick(.05)}"); lab = await q.evaluate(ACT, 0); s = await st(); print('snatch', lab, s)
-        ok(s['done'] and s['cash'] == s0['cash'] + 40 and s['rep'].get('을지로 인쇄골목', 0) > s0['rep'].get('을지로 인쇄골목', 0), 'snatch return: %s' % s)
+        ok(s['done'] and s['cash'] == s0['cash'] + 40 and s['rep'].get('을지로 인쇄골목', 0) == s0['rep'].get('을지로 인쇄골목', 0), 'snatch return: %s' % s)
         # 4 counterfeit: three boxes, then get away
         await spawn('counterfeit'); s0 = await st(); await ev(PICK); await ev("()=>{const S=__game.S,f=S.ev.f;S.player.x=f.x+700;S.player.y=f.y;tick(.1)}"); s = await st(); print('counterfeit', s)
         ok(s['done'] and s['cash'] == s0['cash'] + 300, 'counterfeit: %s' % s)
