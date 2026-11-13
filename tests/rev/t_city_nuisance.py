@@ -8,7 +8,7 @@ from playwright.async_api import async_playwright
 R = Path(__file__).resolve().parents[2]
 SETUP = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));while(G.DLG.modal)G.advanceDialog();
   window.tick=s=>{for(let t=0;t<s;t+=1/60)G.update(1/60)};tick(.3);const S=G.S;S.copT=1e9;S.warNext=1e9;S.huntNext=1e9;S.evNext={};for(const e of G.events.list)S.evNext[e.d]=1e9;
-  window.EV=k=>{const def=G.events.list.find(e=>e.key===k);const P=S.player,e={def,key:k+':t',d:G.events.evDist(P.x,P.y)||'종로 유흥가',t0:S.t,actors:[],cars:[],x:P.x,y:P.y};if(!def.start(e))return null;S.ev=e;e.engaged=true;return e;};
+  window.EV=k=>{const def=G.events.list.find(e=>e.key===k);const P=S.player;/* 장면마다 깨끗하게: 앞 장면의 부상·쓰러짐·수배·수갑을 지운다 */P.hp=P.hpMax||3;P.hurtT=0;S.downing=null;S.wanted=0;S.wantLost=0;S.cuffs=null;P.cuffed=false;const e={def,key:k+':t',d:G.events.evDist(P.x,P.y)||'종로 유흥가',t0:S.t,actors:[],cars:[],x:P.x,y:P.y};if(!def.start(e))return null;S.ev=e;e.engaged=true;return e;};
   window.DONE=()=>{const e=S.ev;return{done:!!(e&&e.done)||!S.ev,banner:(document.getElementById('evBanner')||{}).textContent||''}};}'''
 
 async def main():
@@ -31,7 +31,7 @@ async def main():
           const c0=S.cash;G.npcDown?G.npcDown(L,null,false):G.killGuard(L);tick(.3);return{start:true,moved,hits,paid:S.cash-c0,...DONE()}}''')
         print('kick', json.dumps(r, ensure_ascii=False))
         ok(r['start'] and r['moved'] > 300 and r['hits'] >= 1 and r['paid'] >= 60 and r['done'], 'kick scooter: %s' % r)
-        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.ev=null;let e=null;for(let k=0;k<6&&!e;k++){P.x+=900;e=EV('delivery');}if(!e)return{start:false};const n=e.bikes.length;const c0=S.cash;let labels=0;
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.ev=null;let e=null;for(let k=0;k<12&&!e;k++){const sh=S.shops[(k*5)%S.shops.length];P.x=sh.x-600;P.y=sh.y;e=EV('delivery');}/* 가게 거리 근처에서 */if(!e)return{start:false};const n=e.bikes.length;const c0=S.cash;let labels=0;
           for(const b of e.bikes){P.x=b.x-30;P.y=b.y;P.car=null;tick(.05);const a=e.def.action(e);if(a){labels++;a.fn();tick(1);}}tick(.5);return{start:true,n,labels,paid:S.cash-c0,...DONE()}}''')
         print('delivery', json.dumps(r, ensure_ascii=False))
         ok(r['start'] and r['labels'] == r['n'] and r['paid'] >= 50 and r['done'], 'delivery bikes: %s' % r)

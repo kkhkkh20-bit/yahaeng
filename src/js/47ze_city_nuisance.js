@@ -14,8 +14,8 @@ const NUISANCE = [
       if (g.state !== 'PATROL') { if (g.state === 'PANIC' || g.state === 'FLEE') { g.state = 'PATROL'; g.fear = null; g.icon = null; } }   // 겁먹고 도망가지 않는다
       if ((ev.stepT = (ev.stepT || 0) - dt) <= 0) { ev.stepT = 0.8;
         let tgt = null, bd = 260; for (const o of actorsNear(g.x, g.y)) { if (o === g || !o.civ || !npcAlive(o) || o.evt || o.crew || o.off) continue; const d = dist(o.x, o.y, g.x, g.y); if (d < bd) { bd = d; tgt = o; } }
-        if (!P.car && dist(P.x, P.y, g.x, g.y) < 200) tgt = P; ev.tgt = tgt; if (tgt) evGo(g, tgt.x, tgt.y); }
-      const t = ev.tgt;
+        if (!P.car && dist(P.x, P.y, g.x, g.y) < 200) tgt = P; ev.tgt = tgt; }
+      const t = ev.tgt; if (t && npcAlive(g) && g.state === 'PATROL' && dist(t.x, t.y, g.x, g.y) > 26) evRun(g, t.x, t.y, 120, dt);   // 표적에게 곧장 다가간다 (한 점짜리 길은 행인이 걷지 않는다)
       if (t && t !== P && npcAlive(t) && dist(t.x, t.y, g.x, g.y) < 34 && (ev.hitT || 0) < S.t) { ev.hitT = S.t + 1.5; ev.hits++; g.swingT = 0.35; play('thud', 0.5 * proxVol(g)); npcDown(t, g, false); gsay(g, ['비켜!', '뭘 봐!', '...'][ev.hits % 3], 1.4);
         for (const o of actorsNear(g.x, g.y)) if (o.civ && npcAlive(o) && o !== g && !o.crew && dist(o.x, o.y, g.x, g.y) < 260) civPanic(o, g.x, g.y, 8);
         if (ev.engaged) evBanner(`묻지마 폭행 — 피해자 ${ev.hits}명`, '#ff9a86'); }

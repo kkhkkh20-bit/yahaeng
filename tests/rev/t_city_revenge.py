@@ -9,7 +9,7 @@ from playwright.async_api import async_playwright
 R = Path(__file__).resolve().parents[2]
 SETUP = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));while(G.DLG.modal)G.advanceDialog();
   window.tick=s=>{for(let t=0;t<s;t+=1/60)G.update(1/60)};tick(.3);const S=G.S;S.copT=1e9;S.warNext=1e9;S.huntNext=1e9;S.evNext={};for(const e of G.events.list)S.evNext[e.d]=1e9;
-  window.EV=k=>{const def=G.events.list.find(e=>e.key===k);const P=S.player,e={def,key:k+':t',d:G.events.evDist(P.x,P.y)||'종로 유흥가',t0:S.t,actors:[],cars:[],x:P.x,y:P.y};if(!def.start(e))return null;S.ev=e;e.engaged=true;return e;};
+  window.EV=k=>{const def=G.events.list.find(e=>e.key===k);const P=S.player;/* 장면마다 깨끗하게: 앞 장면의 부상·쓰러짐·수배·수갑을 지운다 */P.hp=P.hpMax||3;P.hurtT=0;S.downing=null;S.wanted=0;S.wantLost=0;S.cuffs=null;P.cuffed=false;P.car=null;const e={def,key:k+':t',d:G.events.evDist(P.x,P.y)||'종로 유흥가',t0:S.t,actors:[],cars:[],x:P.x,y:P.y};if(!def.start(e))return null;S.ev=e;e.engaged=true;return e;};
   window.REP=()=>JSON.stringify(S.rep||{});
   window.DONE=()=>{const e=S.ev;return{done:!!(e&&e.done)||!S.ev,banner:(document.getElementById('evBanner')||{}).textContent||'',stamp:(document.getElementById('justiceStamp')||{}).textContent||'',news:(document.getElementById('newsTicker')||{}).textContent||''}};}'''
 
@@ -29,7 +29,7 @@ async def main():
         print('tteot', json.dumps(r, ensure_ascii=False))
         ok(r['start'] and r['hot'] and all(s == 'ALERT' for s in r['chase']) and r['dropped'] and '처리' in r['stamp'] and '경찰' in r['news'], 'tteot: %s' % r)
         # 동물 학대범
-        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.ev=null;S.copT=1e9;S.wanted=0;const c0=S.cash;const e=EV('animal');if(!e)return{start:false};for(let k=0;k<5*60;k++){P.x=e.g.x+500;P.y=e.g.y;G.update(1/60);}/* 놈을 따라다닌다 (멀어지면 '내 일 아니야'로 끝난다) */const kicks=e.kicks;const ch=G.events.charOf(e.dog);
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.ev=null;S.copT=1e9;S.wanted=0;const c0=S.cash;const e=EV('animal');if(!e)return{start:false};P.hp=P.hpMax||3;for(let k=0;k<5*60;k++){P.x=e.g.x+500;P.y=e.g.y;P.hurtT=1;G.update(1/60);}/* 앞 단계에서 다친 몸 · 근처 조직원에게 맞아 쓰러지지 않게 *//* 놈을 따라다닌다 (멀어지면 '내 일 아니야'로 끝난다) */const kicks=e.kicks;const ch=G.events.charOf(e.dog);
           G.killGuard(e.g);tick(1.6);const civ=[];return{start:true,kicks,ch,paid:S.cash-c0,...DONE()}}''')
         print('animal', json.dumps(r, ensure_ascii=False))
         ok(r['start'] and r['kicks'] >= 2 and r['ch'] == 'dog' and r['paid'] >= 30 and r['done'] and '처리' in r['stamp'], 'animal: %s' % r)
