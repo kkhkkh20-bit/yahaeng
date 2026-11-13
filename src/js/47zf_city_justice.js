@@ -4,7 +4,7 @@
 // 겁먹고 물러서며 수군댄다. 평판은 오르지 않는다 (속은 시원해도 사람들은 나를 무서워한다).
 //   justiceMoment(제목, 속보 문구, x, y)
 const WHISPERS = ['...속은 시원하네', '저 사람 뭐야...', '눈 마주치지 마', '당해도 싸긴 하지...', '경찰 불러야 하나?', '못 본 걸로 해', '또 그 사람이래', '무섭다...'];
-const POLICE_LINE = ['경찰 "사적 제재도 명백한 범죄" 수사 착수', '경찰, 동일인 소행 가능성 무게', '경찰 "자경단 행세 엄단"… 목격자 진술 엇갈려', 'CCTV엔 모자 쓴 남성 뒷모습만'];
+const POLICE_LINE = ['경찰 "사적 제재도 명백한 범죄" 수사 착수', '경찰, 동일인 소행 가능성 무게', '경찰 "자경단 행세 엄단"… 목격자 진술 엇갈려', 'CCTV엔 모자를 눌러쓴 여자 뒷모습만'];
 function justiceMoment(what, news, x, y) {
   if (!STAGE.cityLife) return; fstat('justice'); const n = (S.fst && S.fst.justice) || 1;
   slowMo(0.5); S.flash = Math.max(S.flash || 0, 0.18); play('bell', 0.45, 0.45);

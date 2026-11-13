@@ -60,7 +60,7 @@ function contractUpdate() {
 }
 function contractFail(h, msg) {
   for (const o of [h.g, ...h.escorts]) if (npcAlive(o)) { if (inView(o.x, o.y, 80)) { const a = rnd(0, TAU); evGo(o, o.x + Math.cos(a) * 1200, o.y + Math.sin(a) * 1200); after(15, () => { if (npcAlive(o) && !inView(o.x, o.y, 80)) evGone(o); }); } else evGone(o); }
-  S.hit = null; S.lastContract = h.ctr; fstat('hitFail'); if (h.story != null) storyMainDone(h, false); if (h.phish != null) phishDone(h, false); play('thud', 0.5); evBanner(msg, '#c8c0b0');
+  S.hit = null; S.lastContract = h.ctr; fstat('hitFail'); if (h.story != null) storyMainDone(h, false); if (h.phish != null) phishDone(h, false); if (h.dtr != null) dtrDone(h, false); play('thud', 0.5); evBanner(msg, '#c8c0b0');
 }
 // 사진 의뢰는 얼굴을 보기 전엔 표적 위치를 안 준다 (블록 가운데만)
 function contractHides(h) { return h && h.ctr === 'photo' && !h.spotted && npcAlive(h.g); }

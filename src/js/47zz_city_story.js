@@ -51,7 +51,7 @@ function storyInit() { S.story = Object.assign({ ch: 0, side: {}, failed: false 
 const storyMainLeft = () => STAGE.cityLife && S.story && S.story.ch < STORY_MAIN.length;
 // 전화 한 통: 메인 이야기가 남았으면 그 장 (앞 장 결과 보고 + 이번 지령). 없으면 null → 평소 일거리
 function storyCall() {
-  if (!storyMainLeft() || S.t < (S.story.nextT || 0)) return phishCall();  /* 장과 장 사이엔 보이스피싱 추적이나 평소 일거리 전화가 온다 */
+  if (!storyMainLeft() || S.t < (S.story.nextT || 0)) return phishCall() || dtrCall();  /* 보이스피싱 줄기와 「사라진 딸」 줄기가 번갈아 온다 (47zm) */  /* 장과 장 사이엔 보이스피싱 추적이나 평소 일거리 전화가 온다 */
   const n = S.story.ch, C = STORY_MAIN[n];
   let plan = planHit(); if (!plan) return null;
   if (C.ctr === 'stage') for (let k = 0; k < 12 && !signCands(plan.route).length; k++) plan = planHit() || plan;  /* 무대: 간판을 걸 수 있는 블록을 고른다 */
@@ -226,7 +226,7 @@ function captureGoal(h) {
 }
 function askOpen(h) {
   if (S.hit !== h) return; const used = h.used;
-  shopPanel(`지하실 · ${h.name} 심문 — 압박 ${h.press | 0}%`, ASK.map(a => { const n = used[a.k] | 0, max = a.max || 1;
+  shopPanel(`지하실 · ${h.name} 심문 — 압박 ${h.press | 0}%`, ASK.map(a0 => { const a = a0.k === 'victim' && h.victimLine ? { ...a0, name: h.victimLine, say: ['...그, 그 애는...', '(눈을 피한다)'] } : a0; const n = used[a.k] | 0, max = a.max || 1;
     return { name: a.name, price: null, tag: n >= max ? '했다' : `+${a.p}`, ok: n < max + (a.k === 'fist' ? 1 : 0), buy: () => askPick(h, a) }; }), () => { if (S.hit === h && !h.picking && !h.done) after(0.2, () => askOpen(h)); }); h.picking = false;
 }
 function askPick(h, a) {
@@ -234,11 +234,12 @@ function askPick(h, a) {
   if (a.k === 'fist' && n >= 2) { say([[{ note: h.name }, '(축 늘어진다. 기절했다 — 깨어날 때까지 기다린다)']], true, () => after(1.5, () => askOpen(h))); return; }
   h.press = Math.min(100, (h.press || 0) + a.p);
   const line = a.say[Math.min(n, a.say.length - 1)];
+  if (h.press >= 100 && h.confess) { say([[{ note: h.name }, line], ...h.confess], true, () => captureDone(h)); return; }
   if (h.press >= 100) { say([[{ note: h.name }, line], [{ note: h.name }, '...알았어, 말할게! 거점은 작은 건물 하나야. 대포폰이랑 명단 다 거기 있어.'], [{ note: h.name }, '사장... 진석호. 서울에 들어와 있어. 거래 끝나면 바로 나간대.'], ['hero', '녹음 끝. 이제 경찰서 앞으로 간다.']], true, () => captureDone(h)); return; }
   say([[{ note: h.name }, line]], true, () => askOpen(h));
 }
 function captureDone(h) {
   if (S.hit !== h) return; h.done = true; const g = h.g; evGone(g); fstat('confessions');
-  S.cash = (S.cash || 0) + h.pay; S.hitN++; S.hit = null; evBanner(`자백을 받아 냈다 · ${h.pay}만 — 세탁책은 경찰서 앞에 묶어 뒀다`, '#9fe0b0');
-  if (h.phish != null) phishDone(h, true); saveFreeProgress(true);
+  S.cash = (S.cash || 0) + h.pay; S.hitN++; S.hit = null; evBanner(`자백을 받아 냈다 · ${h.pay}만 — ${h.name}은(는) 경찰서 앞에 묶어 뒀다`, '#9fe0b0');
+  if (h.phish != null) phishDone(h, true); if (h.dtr != null) dtrDone(h, true); saveFreeProgress(true);
 }
