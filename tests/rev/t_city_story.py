@@ -40,7 +40,7 @@ async def main():
         print('side', json.dumps(r, ensure_ascii=False))
         ok(r['first'].startswith('[이야기 1/3]') and r['went'] and r['chain'] and r['side'] == 1 and r['next'].startswith('[이야기 2/3]') and r['saved'] and r['saved'].get('A') == 1, 'gang side story does not chain or save: %s' % r)
         # 간판 사고
-        r = await q.evaluate('''()=>{const G=__game,S=G.S,E=G.events,P=S.player;S.hit=null;S.job=null;S.wanted=0;const plan=E.planHit();plan.ctr='sign';E.startHit(plan);const h=S.hit;if(!h||!h.sign)return{sign:false,ctr:h&&h.ctr};
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,E=G.events,P=S.player;S.hit=null;S.job=null;S.wanted=0;let plan=E.planHit();for(let k=0;k<12&&!E.signCands(plan.route).length;k++)plan=E.planHit()||plan;plan.ctr='sign';E.startHit(plan);const h=S.hit;if(!h||!h.sign)return{sign:false,ctr:h&&h.ctr};
           const t=h.sign,gm=E.signGeometry(t);for(const e of h.escorts){e.x=-9000;e.route=[{x:-9000,y:-9000,pause:999}];}
           P.z=gm.z;P.fl=0;P.x=gm.x;P.y=gm.y+6;tick(.1);const near=E.nearTrap();const label=near&&near.label;
           const g=h.g;g.x=(t.hit[0]+1.5)*48;g.y=(t.hit[1]+.5)*48;g.route=[{x:g.x,y:g.y,pause:999}];g.path=null;g.state='PATROL';

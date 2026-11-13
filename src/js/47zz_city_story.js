@@ -54,7 +54,7 @@ function storyCall() {
   if (!storyMainLeft() || S.t < (S.story.nextT || 0)) return phishCall() || dtrCall();  /* 보이스피싱 줄기와 「사라진 딸」 줄기가 번갈아 온다 (47zm) */  /* 장과 장 사이엔 보이스피싱 추적이나 평소 일거리 전화가 온다 */
   const n = S.story.ch, C = STORY_MAIN[n];
   let plan = planHit(); if (!plan) return null;
-  if (C.ctr === 'stage') for (let k = 0; k < 12 && !signCands(plan.route).length; k++) plan = planHit() || plan;  /* 무대: 간판을 걸 수 있는 블록을 고른다 */
+  if (C.ctr === 'stage' || C.ctr === 'sign') for (let k = 0; k < 12 && !signCands(plan.route).length; k++) plan = planHit() || plan;  /* 무대: 간판을 걸 수 있는 블록을 고른다 */
   Object.assign(plan, { kind: 'hit', name: C.target, fac: C.fac, escorts: C.escorts, ctr: C.ctr, pay: C.pay, story: n });
   if (n === 0) S.gunTip = true;  /* 첫 통화에서 밀매상 귀띔 → 미니맵에 뜬다 (47zg) */
   const prev = n > 0 ? STORY_MAIN[n - 1].debrief : [], retry = S.story.failed ? [['master', '지난번 일은 틀어졌다. 한 번 더 기회를 주지.']] : [];

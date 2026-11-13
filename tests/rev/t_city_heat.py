@@ -29,7 +29,7 @@ async def main():
           const n0=S.vehicles.filter(c=>c.roadblock).length;for(const a of [0,Math.PI/2,Math.PI,-Math.PI/2]){v.a=a;S.blockT=0;tick(.05);if(S.vehicles.some(c=>c.roadblock))break;}
           return {blocks:S.vehicles.filter(c=>c.roadblock).length-n0}}''')
         print('roadblock', r); ok(r['blocks'] >= 2, 'no roadblock: %s' % r)
-        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.wanted=0;P.car=null;S.cash=0;S.cashSeen=0;const v=G.traffic.makeVehicle({type:'sedan',x:P.x+30,y:P.y,parked:true});v.unlocked=true;S.vehicles.push(v);
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.wanted=0;S.cuffs=null;P.cuffed=false;P.car=null;S.cash=0;S.cashSeen=0;const v=G.traffic.makeVehicle({type:'sedan',x:P.x+30,y:P.y,parked:true});v.unlocked=true;S.vehicles.push(v);
           G.traffic.carEnter(v);tick(2);const saved=JSON.parse(localStorage.getItem('yahaeng.free1')||'{}');
           return {stolen:G.events.fst.carsStolen,ach:!!G.events.fach.firstCar,cash:S.cash,saved:{st:saved.st&&saved.st.carsStolen,ach:saved.ach&&saved.ach.firstCar}}}''')
         print('records', r); ok(r['stolen'] == 1 and r['ach'] and r['cash'] >= 20 and r['saved']['st'] == 1 and r['saved']['ach'], 'records/achievement: %s' % r)
