@@ -33,7 +33,7 @@ async def main():
           let hitT=null,downT=null;for(let k=0;k<60*40;k++){P.x=g.x+900;P.y=g.y;G.update(1/60);if(hitT==null&&e.hits)hitT=k;if(g.state==='DEAD'&&downT==null)downT=k;if(downT!=null&&g.off)break;}
           return{hits:e.hits,criminal:hitT!=null,down:g.state,gone:!!g.off,copTook:!!e.copTook,done:!!e.done,banner:(document.getElementById('evBanner')||{}).textContent||''}}''')
         print('arrest', json.dumps(r, ensure_ascii=False))
-        ok(r['hits'] >= 1 and r['down'] == 'DEAD' and r['gone'] and r['copTook'] and '경찰이 먼저' in r['banner'], 'police arrest: %s' % r)
+        ok(r['hits'] >= 1 and r['down'] == 'DEAD' and r['gone'] and r['copTook'] and '경찰 몫' in r['banner'], 'police arrest: %s' % r)
         ok(not errs, 'page errors: %s' % errs)
         await b.close()
     print('통과' if not bad else '문제', bad)

@@ -27,7 +27,7 @@ async def main():
         # 표적 곁에서 엿듣기 → 차
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player,h=S.hit,g=h.g;for(const e of h.escorts){e.x=g.x+400;e.y=g.y;}P.x=g.x+60;P.y=g.y+10;tick(6.5);P.x=h.g.x+60;P.y=h.g.y+10;tick(.3);
           return{car:h.opp.car.known,banner:(document.getElementById('evBanner')||{}).textContent||''}}''')
-        print('car clue', r); ok(r['car'] and '엿들었다' in r['banner'], 'overhearing the target does not reveal the car: %s' % r)
+        print('car clue', r); ok(r['car'] and '들었어' in r['banner'], 'overhearing the target does not reveal the car: %s' % r)
         # 간판 밑을 지나는 경호원 → 간판
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player,h=S.hit,E=G.events,gm=E.signGeometry(h.sign),e=h.escorts[0];e.x=gm.x;e.y=(h.sign.hit[1]+.5)*48;e.state='PATROL';P.x=e.x+80;P.y=e.y+30;tick(.2);return{sign:h.opp.sign.known}}''')
         print('sign clue', r); ok(r['sign'], 'escort under the sign does not reveal it: %s' % r)

@@ -22,12 +22,12 @@ function trunkLoad(v, c) {
   c.carried = false; P.carrying = null; c.stashed = true; c.hidden = true; c.inTrunk = v; if (c.g) { c.g.keep = true; c.g.inTrunk = v; }
   T.push(c); v.unlocked = true; v.locked = false; fstat('trunk');
   if (witnessed(P.x, P.y, 260)) addWanted(1, '트렁크에 사람을 싣는 걸 봤다');
-  evBanner(`트렁크에 실었다 (${T.length}/${TRUNK_MAX}) — 보는 눈이 없는 데서 꺼내라`, '#9fc4ff');
+  evBanner(`트렁크 ${T.length}/${TRUNK_MAX} · (조용한 데 가서 꺼내자.)`, '#9fc4ff');
 }
 function trunkUnload(v) {
   const P = S.player, T = v.trunk || []; const c = T.pop(); if (!c) return; const p = carRear(v);
   c.stashed = false; c.inTrunk = null; c.x = p.x; c.y = p.y; c.hidden = false; c.carried = true; P.carrying = c; if (c.g) { c.g.inTrunk = null; c.g.keep = false; }
-  play('thud', 0.4); evBanner('트렁크에서 꺼내 들쳐 멨다', '#9fc4ff');
+  play('thud', 0.4); evBanner('(으차. 어디다 버리지?)', '#9fc4ff');
   if (witnessed(P.x, P.y, 260)) addWanted(1, '트렁크에서 시체를 꺼내는 걸 봤다');
 }
 // ---- 사람 태우기
@@ -48,13 +48,13 @@ function rideBoard(v, g) {
   if (!rideOk(g)) return; const R = v.riders || (v.riders = []);
   faceEachOther(g); gsay(g, g.evt ? '네, 태워 주세요.' : ['...어디로 가는데요?', '태워 주시는 거예요?', '아, 네... 감사합니다.'][g.id % 3], 2);
   doMotion({ dur: 0.5, pose: 'idle', end: () => { if (!npcAlive(g)) return; g.rideTo = v; g.rideT0 = S.t; R.push(g); fstat('riders');  /* 차 문까지 걸어가서 탄다 (trunkUpdate) */
-    evBanner(`조수석에 태운다 (${R.length}/${RIDE_MAX}) — 차를 몰고 가서 내려 줘라`, '#9fc4ff'); } });
+    evBanner(`조수석 ${R.length}/${RIDE_MAX} · (벨트 매. 어디까지 가?)`, '#9fc4ff'); } });
 }
 function rideDrop(v) {
   const R = v.riders || []; if (!R.length) return; play('door', 0.4);
   R.forEach((g, i) => { g.rideTo = null; const a = v.a + Math.PI / 2 + i * 0.5, w = walkableNear(v.x + Math.cos(a) * 34, v.y + Math.sin(a) * 34, { x: -1e5, y: -1e5 });
     g.off = false; g.state = 'PATROL'; g.x = w.x; g.y = w.y; g.route = [{ x: w.x, y: w.y, pause: 999 }]; g.ri = 0; g.path = null; g.rideIn = null; if (g.onDrop) g.onDrop(g, v); });
-  evBanner(`${R.length}명을 내려 줬다`, '#9fc4ff'); v.riders = [];
+  evBanner(`(다 왔어. 내려.)`, '#9fc4ff'); v.riders = [];
 }
 // 차가 터지면 실린 사람·시체도 끝
 function trunkUpdate() {

@@ -74,10 +74,10 @@ function basementTruth(g) {
   const K = S.sk;
   if (g.skBi != null && K && !K.done) {
     if (g.skReal) return ['...그래, 나야. 셋 다... 아니, 넷이던가. 기억 안 나.', () => { C_note('자백: 진범이다'); }];
-    const k = K.killer; return [`난 아니라고! ...그 사람 봤어요, ${SK_BODIES[k.skBi][1]}에 담배 피우는 남자. 늘 혼자 다니는 여자 뒤에 있었어.`, () => { if (npcAlive(k)) { k.skSeen = true; K.revealed = true; evBanner(`진범 인상착의를 들었다 — ${SK_BODIES[k.skBi][1]} · 담배`, '#ffd066'); } }];
+    const k = K.killer; return [`난 아니라고! ...그 사람 봤어요, ${SK_BODIES[k.skBi][1]}에 담배 피우는 남자. 늘 혼자 다니는 여자 뒤에 있었어.`, () => { if (npcAlive(k)) { k.skSeen = true; K.revealed = true; evBanner(`(${SK_BODIES[k.skBi][1]}에 담배... 얼굴이 그려진다.)`, '#ffd066'); } }];
   }
   const amt = 60 + ((Math.random() * 10) | 0) * 15;
-  return [`도, 돈은... 차 시트 밑에 ${amt}만. 그거 다 가져가요.`, () => { cash(amt); evBanner(`숨긴 돈 ${amt}만을 챙겼다`, '#9fe0b0'); }];
+  return [`도, 돈은... 차 시트 밑에 ${amt}만. 그거 다 가져가요.`, () => { cash(amt); evBanner(`숨긴 돈 +${amt}만 · (착하게도 불었네.)`, '#9fe0b0'); }];
 }
 function C_note(t) { evBanner(t, '#ffd066'); }
 function basementEnd(how) {
@@ -87,10 +87,10 @@ function basementEnd(how) {
     const k = (S.corpses || []).find(o => o.g === g); if (k) { k.stashed = true; k.hidden = true; }  /* 지하실에 남는다 — 아무도 못 본다 */
     g.off = true; play('thud', 0.4);
     if (g.skReal && S.sk && !S.sk.done) skSolved(g);
-    else if (g.skBi != null) evBanner('엉뚱한 사람이었다 — 아무도 모르게 끝났지만, 진범은 아직 밖에 있다', '#ff8a7a');
-    else { g.methodPaid = false; const m = killMethodBonus(g.x, g.y) || { name: '지하실', bonus: 0 }; evBanner(`지하실에서 끝냈다 · 처리 방식 ${m.name}${m.bonus ? ' +' + m.bonus + '만' : ''}`, '#c8c0b0'); }
+    else if (g.skBi != null) evBanner('(...아니었어. 진범은 아직 밖에 있어.)', '#ff8a7a');
+    else { g.methodPaid = false; const m = killMethodBonus(g.x, g.y) || { name: '지하실', bonus: 0 }; evBanner(`지하실 처리 · ${m.name}${m.bonus ? ' +' + m.bonus + '만' : ''} · (아무도 몰라.)`, '#c8c0b0'); }
     return; }
   g.off = true; g.state = 'DEAD'; g.x = -9999; g.y = -9999;
-  if (how === 'dump') { evBanner('눈을 가려 먼 길에 내다 버렸다 — 다신 이 동네에 안 나타난다', '#c8c0b0'); if (g.skReal && S.sk && !S.sk.done) skSolved(g); return; }
-  cash(40); evBanner('경찰서 앞 기둥에 묶어 뒀다 · 강 형사가 40만을 보냈다', '#9fc4ff'); if (g.skReal && S.sk && !S.sk.done) skSolved(g);
+  if (how === 'dump') { evBanner('(눈 가리고 먼 길에 버렸어. 이 동네에 다시 보이면, 그땐 없다.)', '#c8c0b0'); if (g.skReal && S.sk && !S.sk.done) skSolved(g); return; }
+  cash(40); evBanner('경찰서 앞 기둥에 꽁꽁 · 강 형사 송금 +40만', '#9fc4ff'); if (g.skReal && S.sk && !S.sk.done) skSolved(g);
 }

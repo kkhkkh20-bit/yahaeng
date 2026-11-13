@@ -215,7 +215,7 @@ function captureAction() {
   return { k: 'evAct', label: `${h.name} 트렁크에 싣기`, at: { x: g.x, y: g.y - 50 }, fn: () => { const s = standBy(P, g, 22);
     doMotion({ x: s.x, y: s.y, face: s.face, pose: 'grab', dur: 1.6, at: [[0.5, () => play('cloth', 0.6)], [1.2, () => play('thud', 0.5)]],
       end: () => { if (S.hit !== h) return; h.trunk = v; v.unlocked = true; v.locked = false; g.off = true; for (const c of S.corpses || []) if (c.g === g) c.hidden = true;
-        evBanner(`${h.name}을(를) 트렁크에 실었다 — 그 차로 내 집 지하실까지`, '#9fc4ff'); if (witnessed(g.x, g.y, 300)) addWanted(1, '사람을 트렁크에 싣는 걸 봤다'); } }); } };
+        evBanner(`${h.name} 트렁크로 · (집 지하실까지 조용히.)`, '#9fc4ff'); if (witnessed(g.x, g.y, 300)) addWanted(1, '사람을 트렁크에 싣는 걸 봤다'); } }); } };
 }
 function captureGoal(h) {
   const g = h.g, home = S.safes && S.safes[0];
@@ -240,6 +240,6 @@ function askPick(h, a) {
 }
 function captureDone(h) {
   if (S.hit !== h) return; h.done = true; const g = h.g; evGone(g); fstat('confessions');
-  S.cash = (S.cash || 0) + h.pay; S.hitN++; S.hit = null; evBanner(`자백을 받아 냈다 · ${h.pay}만 — ${h.name}은(는) 경찰서 앞에 묶어 뒀다`, '#9fe0b0');
+  S.cash = (S.cash || 0) + h.pay; S.hitN++; S.hit = null; evBanner(`자백 확보 · +${h.pay}만 · ${h.name}은(는) 경찰서 앞 기둥에`, '#9fe0b0');
   if (h.phish != null) phishDone(h, true); if (h.dtr != null) dtrDone(h, true); saveFreeProgress(true);
 }

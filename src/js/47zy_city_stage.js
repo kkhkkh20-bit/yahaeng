@@ -25,7 +25,7 @@ function stageGoal(h) {
 function stageReveal(h, k, who, line, note) {
   const o = h.opp[k]; if (!o || o.known || o.none) return; o.known = true;
   if (who && npcAlive(who)) gsay(who, line, 3.2);
-  play('bell', 0.35, 1.5); evBanner(`엿들었다 — ${note}`, '#9fd8ff'); fstat('stageClue');
+  play('bell', 0.35, 1.5); evBanner(`(들었어 — ${note})`, '#9fd8ff'); fstat('stageClue');
 }
 function stageUpdate(h) {
   const P = S.player, g = h.g; if (!npcAlive(g) || h.cbIn || flOf(P) || P.car) return;

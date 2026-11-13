@@ -10,8 +10,8 @@ function ambientInit() { if (!STAGE.cityLife) return; S.quarrelT = S.t + 90 + am
 // 경찰 손에 쓰러진 범죄자: 잠시 뒤 연행돼 사라진다. 진행 중인 사건이면 "경찰이 먼저"
 function copTookDown(o, cop) {
   const near = dist(o.x, o.y, S.player.x, S.player.y) < 700; o.criminal = false; o.cfight = null;
-  if (o.evt && S.ev && S.ev.key === o.evt && !S.ev.done) { S.ev.copTook = true; evEnd(S.ev, '경찰이 먼저 잡았다 — 이번엔 빈손', false); }
-  if (near) { gsay(cop, ['연행한다. 일어나.', '현행범으로 체포합니다.', '얌전히 있어.'][cop.id % 3], 2.2); toast('경찰이 범인을 제압했다', 2); }
+  if (o.evt && S.ev && S.ev.key === o.evt && !S.ev.done) { S.ev.copTook = true; evEnd(S.ev, '(한발 늦었네. 이번 건 경찰 몫이야.)', false); }
+  if (near) { gsay(cop, ['연행한다. 일어나.', '현행범으로 체포합니다.', '얌전히 있어.'][cop.id % 3], 2.2); toast('경찰이 범인 제압 · 연행', 2); }
   after(3.5, () => { if (o.state === 'DEAD' && !o.off) { const c = (S.corpses || []).find(k => k.g === o); if (c && c.ko && !c.carried && !c.inTrunk) { S.corpses = S.corpses.filter(k => k !== c); evGone(o); } } });
 }
 // npcDown 을 한 겹 더: 범죄자가 사람을 해치면 신고 / 경찰이 범죄자를 쓰러뜨리면 연행
