@@ -14,7 +14,7 @@ function placesInit() {
   const area = b => (b.x1 - b.x0 + 1) * (b.y1 - b.y0 + 1);
   // 학교·병원: 가장 넓은 상가 둘 (특별한 곳은 빼고)
   const shopBld = new Set((S.shops || []).map(o => o.b));  /* 물건 파는 가게(철물·약국 …)는 이름을 바꾸지 않는다 — 문을 열면 그 가게 메뉴다 */
-  const big = shops.filter(o => !KEEP_SIGNS.test(signOf(o.b)) && !shopBld.has(o.i)).sort((p, q) => area(q.b) - area(p.b) || p.i - q.i);
+  const big = shops.filter(o => !KEEP_SIGNS.test(signOf(o.b)) && !shopBld.has(o.i) && !o.b.plateName && !o.b.name)   /* 조직 본부·사무실·지구대처럼 판에서 이름 붙인 건물은 빼고 (본부가 커져 병원이 되던 것) */.sort((p, q) => area(q.b) - area(p.b) || p.i - q.i);
   if (big[0]) { setSign(big[0].b, '을지초등학교'); big[0].b.school = true; big[0].b.plate = big[0].b.plateName = '교무실 · 행정실'; }
   if (big[1]) { setSign(big[1].b, '을지 중앙병원'); big[1].b.hospital = true; big[1].b.plate = big[1].b.plateName = '응급실 24시'; }
   // 빈 간판 채우기
