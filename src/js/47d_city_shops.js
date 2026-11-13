@@ -4,11 +4,11 @@
 // 중고차 매매: 사무실 앞에서 전시장 차를 사고, 전시장에 차를 몰고 와 세우면 판다. 값을 안 내고 전시장 차에 타면 훔친 것이다(수배 둘).
 // 도색소: 도색 칸에 차를 세우면 색을 바꾸고 수배가 풀린다(값 50만, 수배 없으면 그냥 지나간다).
 const SHOP_ITEMS = {
-  약국: [{ name: '구급약 (체력 가득)', price: 40, can: P => P.hp < P.hpMax, buy: P => { P.hp = P.hpMax; } }, { name: '독침 두 개 (+2) — 등 뒤에서 찌르면 8초 뒤 쓰러진다', price: 120, buy: P => { P.poison = (P.poison || 0) + 2; } }],
+  약국: [{ name: '구급약 (체력 가득)', price: 40, can: P => P.hp < P.hpMax, buy: P => { P.hp = P.hpMax; } }, { name: '독침 두 개 (+2) · 등 뒤에서 찌르면 8초 뒤 쓰러진다', price: 120, buy: P => { P.poison = (P.poison || 0) + 2; } }],
   편의점: [{ name: '담배 한 갑 (+3)', price: 5, buy: P => { P.coins = (P.coins || 0) + 3; } }, { name: '빈 캔 세 개 (+3)', price: 3, buy: P => { P.stones = (P.stones || 0) + 3; } },
     { name: '구급약 (체력 +1)', price: 15, can: P => P.hp < P.hpMax, buy: P => { P.hp = Math.min(P.hpMax, P.hp + 1); } }],
-  철물: [{ name: '락픽 두 개 (+2) — 잠긴 차 따기', price: 25, buy: P => { P.picks = (P.picks || 0) + 2; } }, { name: '폭약 (+1) — 교각·작은 건물', price: 150, buy: P => { P.bombs = (P.bombs || 0) + 1; } }, { name: '다트 세 개 (+3)', price: 30, buy: P => { P.kunai = (P.kunai || 0) + 3; } }, { name: '연막탄 (+1)', price: 40, buy: P => { P.smokes = (P.smokes || 0) + 1; } }],
-  공구: [{ name: '락픽 두 개 (+2) — 잠긴 차 따기', price: 25, buy: P => { P.picks = (P.picks || 0) + 2; } }, { name: '폭약 (+1) — 교각·작은 건물', price: 150, buy: P => { P.bombs = (P.bombs || 0) + 1; } }, { name: '다트 세 개 (+3)', price: 30, buy: P => { P.kunai = (P.kunai || 0) + 3; } }, { name: '연막탄 (+1)', price: 40, buy: P => { P.smokes = (P.smokes || 0) + 1; } }],
+  철물: [{ name: '락픽 두 개 (+2) · 잠긴 차 따기', price: 25, buy: P => { P.picks = (P.picks || 0) + 2; } }, { name: '폭약 (+1) · 교각과 작은 건물용', price: 150, buy: P => { P.bombs = (P.bombs || 0) + 1; } }, { name: '다트 세 개 (+3)', price: 30, buy: P => { P.kunai = (P.kunai || 0) + 3; } }, { name: '연막탄 (+1)', price: 40, buy: P => { P.smokes = (P.smokes || 0) + 1; } }],
+  공구: [{ name: '락픽 두 개 (+2) · 잠긴 차 따기', price: 25, buy: P => { P.picks = (P.picks || 0) + 2; } }, { name: '폭약 (+1) · 교각과 작은 건물용', price: 150, buy: P => { P.bombs = (P.bombs || 0) + 1; } }, { name: '다트 세 개 (+3)', price: 30, buy: P => { P.kunai = (P.kunai || 0) + 3; } }, { name: '연막탄 (+1)', price: 40, buy: P => { P.smokes = (P.smokes || 0) + 1; } }],
 };
 const RESPRAY_PRICE = 50, SELL_RATE = 0.3;
 function shopsInit() {

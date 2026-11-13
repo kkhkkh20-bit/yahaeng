@@ -80,7 +80,7 @@ function startJob(plan) {
     if (!STAGE.noPrompts) toast(`일: '${plan.fromSign}'에서 꾸러미 받기`, 2.4, 'good');
   } else {
     S.job = { kind: 'race', pts: plan.pts, i: 0, limit: plan.limit, started: null, t0: S.t };
-    if (!STAGE.noPrompts) toast('일: 교차로 경주 — 차에 타고 첫 체크포인트로', 2.6, 'good');
+    if (!STAGE.noPrompts) toast('일: 교차로 경주 · 차에 타고 첫 체크포인트로', 2.6, 'good');
   }
 }
 function endJob(ok, msg, pay = 0) {
@@ -97,10 +97,10 @@ const jobLeft = j => Math.max(0, Math.ceil(j.deadline - S.t));
 function jobsUpdate(dt) {
   const j = S.job, P = S.player; if (!j || S.downing) return;
   // 받아만 두고 시작하지 않은 일(꾸러미를 안 받음·출발을 안 함)은 3분 뒤 취소된다 (전화·연락책이 계속 막히지 않게)
-  j.t0 = j.t0 || S.t; if ((j.kind === 'parcel' && !j.got || j.kind === 'race' && !j.started) && S.t - j.t0 > 180) { endJob(false, '일이 취소됐다 — 너무 오래 미뤘다'); return; }
+  j.t0 = j.t0 || S.t; if ((j.kind === 'parcel' && !j.got || j.kind === 'race' && !j.started) && S.t - j.t0 > 180) { endJob(false, '너무 오래 미뤄서 일이 취소됐다'); return; }
   if (j.kind === 'car') {
     const v = j.v;
-    if (!S.vehicles.includes(v) || v.dead) { endJob(false, '일 실패 — 차가 망가졌다'); return; }
+    if (!S.vehicles.includes(v) || v.dead) { endJob(false, '일 실패 · 차가 망가졌다'); return; }
     const D = S.dealer, inLotNow = j.drop ? dist(v.x, v.y, j.drop.x, j.drop.y) < 110 : D && v.x > D.lot[0] && v.x < D.lot[2] && v.y > D.lot[1] && v.y < D.lot[3];
     if (P.car === v && inLotNow && Math.abs(v.v) < 25) {
       const k = clamp(v.hp / (j.hp0 || v.hpMax || 6), 0, 1), pay = Math.round((j.pay || JOB_PAY.car) * (0.35 + 0.65 * k) / 10) * 10;
@@ -110,16 +110,16 @@ function jobsUpdate(dt) {
     return;
   }
   if (j.kind === 'parcel') {
-    if (!j.got) { if (dist(P.x, P.y, j.from.x, j.from.y) < 70 && !j.getting) { const got = () => { j.getting = false; if (S.job !== j) return; j.got = true; j.deadline = S.t + Math.round(dist(j.from.x, j.from.y, j.to.x, j.to.y) / 170 + 15); j.total = j.deadline - S.t; play('loot', 0.5); if (!STAGE.noPrompts) toast(`꾸러미를 받았다 — ${jobLeft(j)}초 안에 '${j.toSign}'까지`, 2.6, 'good'); };
+    if (!j.got) { if (dist(P.x, P.y, j.from.x, j.from.y) < 70 && !j.getting) { const got = () => { j.getting = false; if (S.job !== j) return; j.got = true; j.deadline = S.t + Math.round(dist(j.from.x, j.from.y, j.to.x, j.to.y) / 170 + 15); j.total = j.deadline - S.t; play('loot', 0.5); if (!STAGE.noPrompts) toast(`꾸러미를 받았다 · ${jobLeft(j)}초 안에 '${j.toSign}'까지`, 2.6, 'good'); };
       if (P.car) got(); else { j.getting = true; doMotion({ x: j.from.x, y: j.from.y, pose: 'grab', dur: 0.5, at: [[0.25, () => play('cloth', 0.4)]], end: got }); } } return; }
-    if (S.t > j.deadline) { endJob(false, '일 실패 — 늦었다'); return; }
+    if (S.t > j.deadline) { endJob(false, '일 실패 · 늦었다'); return; }
     if (dist(P.x, P.y, j.to.x, j.to.y) < (P.car ? 110 : 70) && !j.giving) { const spare = (j.deadline - S.t) / j.total, pay = (j.pay || JOB_PAY.parcel) + Math.round(spare * 100 / 10) * 10, done = () => { j.giving = false; if (S.job === j) endJob(true, `배달 완료 · ${pay}만`, pay); };
       if (P.car) done(); else { j.giving = true; doMotion({ x: j.to.x, y: j.to.y, pose: 'grab', dur: 0.5, at: [[0.25, () => play('cloth', 0.4)]], end: done }); } }  // 걸어서면 문 앞에 내려놓는다
     return;
   }
   if (j.kind === 'race') {
     if (!j.started) { const p = j.pts[0]; if (P.car && dist(P.x, P.y, p.x, p.y) < 160) { j.started = S.t; j.i = 1; j.deadline = S.t + j.limit; play('bell', 0.4); if (!STAGE.noPrompts) toast(`출발! ${j.limit}초`, 1.6, 'good'); } return; }
-    if (S.t > j.deadline) { endJob(false, '경주 실패 — 시간 초과'); return; }
+    if (S.t > j.deadline) { endJob(false, '경주 실패 · 시간 초과'); return; }
     const p = j.pts[j.i]; if (P.car && dist(P.x, P.y, p.x, p.y) < 150) { j.i++; play('click', 0.6);
       if (j.i >= j.pts.length) { const pay = j.pay || JOB_PAY.race; endJob(true, `${j.patrol ? '순찰 완료' : '경주 완주'} · ${Math.round(S.t - j.started)}초 · ${pay}만`, pay); } }
   }

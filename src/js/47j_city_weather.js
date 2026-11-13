@@ -6,7 +6,7 @@ function weatherInit() { S.rain = { k: 0, on: false, next: S.t + rnd(90, 160), d
 const rainK = () => (STAGE.cityLife && S.rain) ? S.rain.k : 0;
 function weatherUpdate(dt) {
   const W = S.rain; if (!W || !STAGE.cityLife) return;
-  if (S.t > W.next) { W.on = !W.on; W.next = S.t + (W.on ? rnd(60, 120) : rnd(120, 240)); if (W.on) evBanner('비가 내리기 시작한다 — 길이 미끄럽다', '#a8c8e8'); else evBanner('비가 그쳤다', '#c8d8e8'); }
+  if (S.t > W.next) { W.on = !W.on; W.next = S.t + (W.on ? rnd(60, 120) : rnd(120, 240)); if (W.on) evBanner('비가 내린다. 길이 미끄럽다', '#a8c8e8'); else evBanner('비가 그쳤다', '#c8d8e8'); }
   W.k = clamp(W.k + (W.on ? 1 : -1) * dt / 8, 0, RAIN_MAX);  // 8초에 걸쳐 들고 난다
   rainSound(W.k);
   // 비 오는 날 행인 몇은 처마 밑으로 서두른다 (말 한마디)

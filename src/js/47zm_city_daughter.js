@@ -6,7 +6,7 @@ const DTR = [
   { title: '노래방 실장 납치·심문', ctr: 'capture', target: '마현철', escorts: 1, pay: 300,
     brief: [[{ note: '제보 · 강 형사' }, '「사라진 딸」 1/6'], ['master', '서연이 마지막으로 찍힌 CCTV가 을지로 노래방 앞이다. 새벽 두 시, 실장 차에 탔어.'],
       ['master', '위에선 가출로 덮으래. ...난 못 덮겠다. 실장 마현철, 기절시켜서 네 집 지하실로 데려가.'], ['hero', '...살아만 있어, 서연아.']],
-    victimLine: '서연이 사진을 눈앞에 들이민다 — "이 얼굴 기억 안 나?"',
+    victimLine: '서연이 사진을 눈앞에 들이민다 · "이 얼굴 기억 안 나?"',
     confess: [[{ note: '마현철' }, '...알았어! 그 애 아빠 빚이 있었어. 사채업자 표만식한테 넘겼다고!'], [{ note: '마현철' }, '차용증에 그 애 이름 써서... 난 운전만 했어, 진짜야!'], ['hero', '운전만. 그래, 운전만.']],
     debrief: [['master', '표만식. 을지로에서 일수 찍는 놈이다. 피해자가 몇인지 세다 말았어.']] },
   { title: '사채업자', ctr: 'stage', target: '표만식', escorts: 1, pay: 500,
@@ -46,7 +46,7 @@ function dtrDone(h, ok) {
   const st = S.story; if (h.dtr == null || !st) return;
   if (!ok) { st.dtFailed = true; return; }
   st.dtFailed = false; st.dt = Math.max(st.dt || 0, h.dtr + 1); st.dtNextT = S.t + 120; fstat('dtrCh');
-  const C = DTR[h.dtr]; evBanner(`「사라진 딸」 ${h.dtr + 1}/${DTR.length} — ${C.title}`, '#ffcf8a');
+  const C = DTR[h.dtr]; evBanner(`「사라진 딸」 ${h.dtr + 1}/${DTR.length} · ${C.title}`, '#ffcf8a');
   const g = h.g || S.player; justiceMoment(`${C.title} 처리`, DTR_NEWS[h.dtr], g.x, g.y);
   if (st.dt >= DTR.length) after(2.5, () => say(C.debrief, true));
   S.ringNext = S.t + 18; saveFreeProgress(true);

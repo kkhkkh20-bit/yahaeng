@@ -18,7 +18,7 @@ const NUISANCE = [
       const t = ev.tgt; if (t && npcAlive(g) && g.state === 'PATROL' && dist(t.x, t.y, g.x, g.y) > 26) evRun(g, t.x, t.y, 120, dt);   // 표적에게 곧장 다가간다 (한 점짜리 길은 행인이 걷지 않는다)
       if (t && t !== P && npcAlive(t) && dist(t.x, t.y, g.x, g.y) < 34 && (ev.hitT || 0) < S.t) { ev.hitT = S.t + 1.5; ev.hits++; g.swingT = 0.35; play('thud', 0.5 * proxVol(g)); npcDown(t, g, false); gsay(g, ['비켜!', '뭘 봐!', '...'][ev.hits % 3], 1.4);
         for (const o of actorsNear(g.x, g.y)) if (o.civ && npcAlive(o) && o !== g && !o.crew && dist(o.x, o.y, g.x, g.y) < 260) civPanic(o, g.x, g.y, 8);
-        if (ev.engaged) evBanner(`묻지마 폭행 — 피해자 ${ev.hits}명`, '#ff9a86'); }
+        if (ev.engaged) evBanner(`묻지마 폭행 · 피해자 ${ev.hits}명`, '#ff9a86'); }
       if (t === P && dist(P.x, P.y, g.x, g.y) < 36 && (ev.hitT || 0) < S.t) { ev.hitT = S.t + 1.6; g.swingT = 0.35; hurtPlayer(g, '묻지마 폭행범에게 맞았다'); }
       if (ev.engaged && dist(g.x, g.y, P.x, P.y) > 1500) evEnd(ev, '(골목으로 빠졌어. 놓쳤네.)'); },
     goal: ev => `묻지마 폭행범 제압하기 (피해자 ${ev.hits || 0}명)` },
@@ -28,7 +28,7 @@ const NUISANCE = [
       ev.car = v; ev.cars.push(v); v.rage = ev; ev.t1 = S.t; return true; },
     focus: ev => ev.out || ev.car,
     update(ev, dt = 1 / 60) { const v = ev.car, P = S.player, d = ev.out || v;
-      if (!ev.honked && ev.engaged) { ev.honked = true; evBanner('보복운전 — 뒤에서 상향등 번쩍번쩍 · (붙어 보시겠다?)', '#ff9a86'); play('metal', 0.5, 2.2); }
+      if (!ev.honked && ev.engaged) { ev.honked = true; evBanner('보복운전 · 뒤에서 상향등 번쩍번쩍 · (붙어 보시겠다?)', '#ff9a86'); play('metal', 0.5, 2.2); }
       if (v.dead || ev.out && !npcAlive(ev.out)) { if (!ev.paid) { ev.paid = true; cash(100); evEnd(ev, '보복운전자 처리 · +100만', true); justiceMoment('보복운전 처리', `[속보] 도심서 보복운전하던 SUV 운전자, 되레 당해… 블랙박스 영상 "사이다" 반응`, d.x, d.y); } return; }
       // 화면 밖에서 막혀 멈춘 채 3초 → 내 뒤 다른 차로에서 다시 붙는다 (교차로·보행자에 영영 막히지 않게)
       if (!ev.out && !v.dead) { if (Math.abs(v.v || 0) < 5 && dist(v.x, v.y, P.x, P.y) > 250 && !inView(v.x, v.y, 60)) ev.stuckT = (ev.stuckT || 0) + dt; else ev.stuckT = 0;
@@ -36,7 +36,7 @@ const NUISANCE = [
       if (ev.out) { const g = ev.out; if (g.state === 'PANIC' || g.state === 'FLEE') { g.state = 'PATROL'; g.fear = null; } if (!P.car) evGo(g, P.x, P.y);
         if (!P.car && dist(P.x, P.y, g.x, g.y) < 38 && (ev.hitT || 0) < S.t) { ev.hitT = S.t + 1.8; g.swingT = 0.35; gsay(g, ['내려! 내리라고!', '운전 똑바로 해!', '죽고 싶어?'][(S.t | 0) % 3], 2); hurtPlayer(g, '보복운전자에게 맞았다'); } }
       if (dist(d.x, d.y, P.x, P.y) > 1700 || S.t - ev.t1 > 120) evEnd(ev, '(떨궈 냈어.)'); },
-    goal: ev => ev.out ? '내려서 시비 거는 운전자 제압하기' : '뒤에 붙은 보복운전 차 — 부수거나 따돌리기' },
+    goal: ev => ev.out ? '내려서 시비 거는 운전자 제압하기' : '뒤에 붙은 보복운전 차를 부수거나 따돌리기' },
 
   { key: 'kick', d: '*', villain: true, name: '킥보드 2인 질주',
     start(ev) { const c = crewSpawn('kick'); if (!c) return false; ev.crew = c; for (const m of c.members) { m.evt = ev.key; ev.actors.push(m); } gsay(c.members[0], '꽉 잡아!', 2); ev.hits = 0; return true; },
@@ -77,7 +77,7 @@ const NUISANCE = [
       if (ev.engaged && !ev.fled && dist(g.x, g.y, P.x, P.y) < 220) { ev.fled = true; gsay(g, '아, 아무것도 아니에요!', 1.6); evFlee(g, P.x, P.y, 60); if (npcAlive(ev.v)) gsay(ev.v, '방금 찍었어요?!', 2); }
       if (g.state === 'PATROL' && ev.fled) evFlee(g, P.x, P.y, 60);
       if (ev.fled && dist(g.x, g.y, P.x, P.y) > 1500) evEnd(ev, '(놓쳤어. 휴대폰째.)'); },
-    goal: ev => ev.dropped ? '떨어진 휴대폰 줍기 (증거)' : '불법 촬영범 잡기 — 달아난다' },
+    goal: ev => ev.dropped ? '떨어진 휴대폰 줍기 (증거)' : '달아나는 불법 촬영범 잡기' },
   // 스토커: 퇴근길 여성을 몇 걸음 뒤에서 계속 따라간다. 쓰러뜨리면 끝 (그녀가 고맙다고 한다)
   { key: 'stalker', d: '*', villain: true, name: '스토킹',
     start(ev) { const p = offscreenSpot(380, 700); if (!p) return false; ev.v = evPerson(ev, p.x, p.y, { body: 'fBob' }); ev.g = evPerson(ev, p.x - 70, p.y + 6, { body: 'big' }); const a = rnd(0, TAU); evGo(ev.v, p.x + Math.cos(a) * 900, p.y + Math.sin(a) * 900); gsay(ev.v, '(자꾸 뒤를 돌아본다)', 3); return true; },
@@ -108,7 +108,7 @@ const NUISANCE = [
       if (g.state === 'PANIC' || g.state === 'FLEE') { g.state = 'PATROL'; evGo(g, ev.to.x, ev.to.y); }
       if (dist(g.x, g.y, ev.to.x, ev.to.y) < 50 || S.t - ev.t1 > 70) { evGone(g); evEnd(ev, '(차 타고 튀었어. 보증금째.)'); } },
     onGive: ev => justiceMoment('보증금 되찾아 줌', `[속보] 전세사기 바지사장, 보증금 들고 달아나다 길에서 제압… 세입자 "돈 돌아올 줄 몰랐다"`, ev.tenant ? ev.tenant.x : S.player.x, ev.tenant ? ev.tenant.y : S.player.y),
-    goal: ev => ev.loot ? '보증금 가방 — 세입자에게 돌려주기 또는 챙기기' : ev.dropped ? '떨어진 가방 줍기' : '보증금 들고 튀는 바지사장 막기' },
+    goal: ev => ev.loot ? '보증금 가방을 세입자에게 돌려주거나 챙기기' : ev.dropped ? '떨어진 가방 줍기' : '보증금 들고 튀는 바지사장 막기' },
 ];
 EVENTS.push(...NUISANCE);
 function bikeDown(ev, b, byCar) { if (!b.up) return; b.up = false; b.fallA = b.a + (Math.random() < .5 ? 1.3 : -1.3); play(byCar ? 'metal' : 'thud', 0.5); ev.angry = true; fstat('bikesDown'); }

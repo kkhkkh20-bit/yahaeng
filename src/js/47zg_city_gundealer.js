@@ -3,9 +3,9 @@
 // 박씨는 건물 뒤편 골목(차도·큰 보도가 아닌 곳)에 서 있다. 강 형사가 첫 통화에서 귀띔하면 미니맵에 검은 점으로 뜬다.
 // 파는 것: 경찰 권총(+12) · 권총 탄 12발 · 방탄조끼. 박씨가 죽으면 3분 뒤 같은 자리에 '조카'가 나온다.
 const DEALER_ITEMS = [
-  { k: 'pistol', name: '경찰 권총 (+12발) — 출처는 묻지 마', price: 600, can: () => S.guns.pistol == null, buy: () => { S.guns.pistol = (S.guns.pistol || 0) + 12; if (!S.wpn) S.wpn = 'pistol'; } },
+  { k: 'pistol', name: '경찰 권총 (+12발) · 출처는 묻지 마', price: 600, can: () => S.guns.pistol == null, buy: () => { S.guns.pistol = (S.guns.pistol || 0) + 12; if (!S.wpn) S.wpn = 'pistol'; } },
   { k: 'ammo', name: '권총 탄 12발', price: 80, can: () => S.guns.pistol != null, buy: () => { S.guns.pistol = (S.guns.pistol || 0) + 12; } },
-  { k: 'knife', name: '회칼 — 소리 없이, 가깝게', price: 50, can: () => !(S.guns.knife > 0), buy: () => { S.guns.knife = 1; S.wpn = 'knife'; } },
+  { k: 'knife', name: '회칼 · 소리 없이, 가깝게', price: 50, can: () => !(S.guns.knife > 0), buy: () => { S.guns.knife = 1; S.wpn = 'knife'; } },
   { k: 'armor', name: `방탄조끼 (${typeof ARMOR_MAX !== 'undefined' ? ARMOR_MAX : 3}번 막는다)`, price: 250, can: () => (S.player.armor | 0) < ARMOR_MAX, buy: () => { S.player.armor = ARMOR_MAX; } },
 ];
 function dealerInit() {
@@ -44,7 +44,7 @@ function dealerUpdate(dt = 1 / 60) {
 }
 function dealerAction() {
   const D = S.dealer2, P = S.player, g = D && D.g; if (!g || !npcAlive(g) || g.off || g.fist || P.car || dist(g.x, g.y, D.x, D.y) > 30 || dist(P.x, P.y, D.x, D.y) > 54) return null;  /* 골목 제자리에 있을 때만 장사 */
-  if ((D.sulkUntil || 0) > S.t) return { k: 'evAct', label: '박씨 — 눈도 안 마주친다', at: { x: D.x, y: D.y - 50 }, fn: () => gsay(g, ['꺼져.', '너한텐 안 팔아.', '총 들이댄 거 안 잊었다.'][(S.t | 0) % 3], 2) };
+  if ((D.sulkUntil || 0) > S.t) return { k: 'evAct', label: '박씨 · 눈도 안 마주친다', at: { x: D.x, y: D.y - 50 }, fn: () => gsay(g, ['꺼져.', '너한텐 안 팔아.', '총 들이댄 거 안 잊었다.'][(S.t | 0) % 3], 2) };
   if (typeof wpnOn === 'function' && wpnOn()) return { k: 'evAct', label: `박씨 협박하기 (${WEAPONS[S.wpn].name})`, at: { x: D.x, y: D.y - 50 }, fn: () => dealerThreat(D) };
   return { k: 'evAct', label: '박씨와 거래', at: { x: D.x, y: D.y - 50 }, fn: openDealer2 };
 }

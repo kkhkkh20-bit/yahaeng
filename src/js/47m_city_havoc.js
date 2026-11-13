@@ -63,7 +63,7 @@ function havocAction() {
 }
 function plantBomb(x, y, target) {
   const P = S.player; doMotion({ pose: 'crouch', dur: 1.1, at: [[0.4, () => play('click', 0.4)], [0.8, () => play('switch', 0.4)]], end: () => {
-    P.bombs--; S.bombs.push({ x, y, t: S.t + BOMB_T, target, beep: 0 }); evBanner(`폭약 설치 — ${BOMB_T}초 안에 피해라!`, '#ff8a6a');
+    P.bombs--; S.bombs.push({ x, y, t: S.t + BOMB_T, target, beep: 0 }); evBanner(`폭약 설치. ${BOMB_T}초 안에 피해라!`, '#ff8a6a');
     if (witnessed(x, y, 380)) addWanted(2, '폭약을 설치하는 걸 사람들이 봤다'); } });
 }
 function bombsUpdate(dt) {

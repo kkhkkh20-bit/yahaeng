@@ -20,7 +20,7 @@ function heliUpdate(dt) {
   const P = S.player; let H = S.heli;
   // 헬기는 마지막 카드: 별 다섯을 20초 넘게 버텨야 뜬다 (그 전엔 순찰차·검문으로)
   if (S.wanted >= 5) S.w5T = (S.w5T || 0) + dt; else S.w5T = 0;
-  if (!H && S.wanted >= 5 && S.w5T > 20) { const a = Math.random() * TAU; H = S.heli = { x: P.x + Math.cos(a) * 1100, y: P.y + Math.sin(a) * 1100, a: a + Math.PI, sx: P.x, sy: P.y, leave: false }; evBanner('경찰 헬기가 떴다 — 서치라이트를 피해라', '#9fc4ff'); }
+  if (!H && S.wanted >= 5 && S.w5T > 20) { const a = Math.random() * TAU; H = S.heli = { x: P.x + Math.cos(a) * 1100, y: P.y + Math.sin(a) * 1100, a: a + Math.PI, sx: P.x, sy: P.y, leave: false }; evBanner('경찰 헬기가 떴다. 서치라이트를 피해라', '#9fc4ff'); }
   if (!H) { heliSound(0); return; }
   if (S.wanted < 4) H.leave = true;
   const tv = P.car ? P.car : null, lead = tv ? 0.6 : 0.3, tx = H.leave ? H.x + Math.cos(H.a) * 900 : P.x + (tv ? Math.cos(tv.a) * tv.v * lead : 0), ty = H.leave ? H.y + Math.sin(H.a) * 900 : P.y + (tv ? Math.sin(tv.a) * tv.v * lead : 0);
@@ -72,7 +72,7 @@ function roadblockUpdate() {
   for (let i = 0; i < n; i++) { const off = (i - (n - 1) / 2) * (span / n), x = along === 'x' ? p.x : mid + off, y = along === 'x' ? mid + off : p.y;
     const car = makeVehicle({ type: 'police', x, y, a: (along === 'x' ? Math.PI / 2 : 0) + (i % 2 ? 0.28 : -0.28), parked: true, police: true }); car.roadblock = true; car.ai = false; car.driver = false; if (carOverlap(car) === true) continue; S.vehicles.push(car); }  // 비스듬히 엇갈린 바리케이드 (벽과 겹칠 때만 뺀다)
   for (let i = 0; i < 2; i++) { const g = spawnCop(); if (g) { g.x = (along === 'x' ? p.x - 60 : mid + (i ? 60 : -60)); g.y = (along === 'x' ? mid + (i ? 60 : -60) : p.y - 60); g.path = null; } }
-  evBanner('앞에 경찰 검문 — 돌아가거나 들이받아라', '#9fc4ff');
+  evBanner('앞에 경찰 검문. 돌아가거나 들이받아라', '#9fc4ff');
 }
 // ---------- 기록 · 업적
 const FREE_ACH = [
@@ -84,7 +84,7 @@ const FREE_ACH = [
   ['road', '장거리 운전', '20km 운전', s => (s.dist || 0) / 1000 >= 20, 100], ['rich', '부자', '모두 5,000만 벌기', s => s.earned >= 5000, 300]];
 function achCheck() {
   if ((S.achT = (S.achT || 0) + 1) % 30) return; const st = S.fst;
-  for (const [id, name, desc, test, bonus] of FREE_ACH) if (!S.fach[id] && test(st)) { S.fach[id] = 1; S.cash = (S.cash || 0) + bonus; S.cashSeen = S.cash; play('bell', 0.5); evBanner(`업적 · ${name} — ${desc} · +${bonus}만`, '#ffd76a'); saveFreeProgress(true); }
+  for (const [id, name, desc, test, bonus] of FREE_ACH) if (!S.fach[id] && test(st)) { S.fach[id] = 1; S.cash = (S.cash || 0) + bonus; S.cashSeen = S.cash; play('bell', 0.5); evBanner(`업적 · ${name} (${desc}) · +${bonus}만`, '#ffd76a'); saveFreeProgress(true); }
 }
 function freeStatsPanel() {
   const s = S.fst || {}, km = ((s.dist || 0) / 1000).toFixed(1), row = (n, v) => ({ name: n, price: null, tag: String(v), ok: false, buy: () => {} });

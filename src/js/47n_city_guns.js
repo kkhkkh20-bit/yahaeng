@@ -29,7 +29,7 @@ const WPN_ORDER = ['pistol', 'silenced', 'sniper', 'grenade', 'molotov'];
 function gunsInit() { S.guns = Object.assign({}, S.gunsSaved || {}); for (const k of Object.keys(S.guns)) if (!WEAPONS[k]) delete S.guns[k];  /* 예전 저장의 없어진 총(기관단총·산탄총)은 버린다 */ S.wpn = S.wpnSaved && S.guns[S.wpnSaved] > 0 ? S.wpnSaved : null; S.gunT = 0; S.tracers = []; S.firePools = []; S.nades = []; S.kills = { n: 0, t: -9 }; gunChip(); }
 const wpnOn = () => STAGE.cityLife && S.wpn && (S.guns[S.wpn] || 0) > 0;
 function cycleWeapon() {
-  if (!STAGE.cityLife || !S.guns) return; const have = WPN_ORDER.filter(k => (S.guns[k] || 0) > 0); if (!have.length) { S.wpn = null; gunChip(); evBanner('무기가 없다 — 조직 연락책에게 산다'); return; }
+  if (!STAGE.cityLife || !S.guns) return; const have = WPN_ORDER.filter(k => (S.guns[k] || 0) > 0); if (!have.length) { S.wpn = null; gunChip(); evBanner('무기가 없다. 무기는 조직 연락책이 판다'); return; }
   const i = have.indexOf(S.wpn); S.wpn = i < 0 ? have[0] : i === have.length - 1 ? null : have[i + 1]; play('click', 0.4); gunChip(); evBanner(S.wpn ? `${WEAPONS[S.wpn].name} · ${S.guns[S.wpn]}` : '맨손', '#e8d070');
 }
 // 화면의 무기 칩 (공격 버튼 위): 누르면 바꾼다
@@ -181,7 +181,7 @@ const SHOP_GUNS = { molotov: { price: 150, need: 0 } };  /* 권총은 뒷골목 
 function weaponShop(f) {
   const st = typeof standOf === 'function' ? standOf(f) : 0;
   const rows = Object.keys(SHOP_GUNS).map(k => { const W = WEAPONS[k], G = SHOP_GUNS[k], locked = st < G.need;
-    return { name: locked ? `${W.name} — 이 조직과 더 가까워야 판다 (호감 ${G.need})` : `${W.name} (+${W.ammo})`, price: G.price, ok: !locked && (S.cash || 0) >= G.price, buy: () => { if (locked || (S.cash || 0) < G.price) return; S.cash -= G.price; S.guns[k] = (S.guns[k] || 0) + W.ammo; if (!S.wpn) S.wpn = k; play('loot', 0.5); gunChip(); saveFreeProgress(true); weaponShop(f); } }; });
+    return { name: locked ? `${W.name} · 이 조직과 더 가까워야 판다 (호감 ${G.need})` : `${W.name} (+${W.ammo})`, price: G.price, ok: !locked && (S.cash || 0) >= G.price, buy: () => { if (locked || (S.cash || 0) < G.price) return; S.cash -= G.price; S.guns[k] = (S.guns[k] || 0) + W.ammo; if (!S.wpn) S.wpn = k; play('loot', 0.5); gunChip(); saveFreeProgress(true); weaponShop(f); } }; });
   const P = S.player; rows.push({ name: `방탄조끼 (${ARMOR_MAX}번 막는다)`, price: ARMOR_PRICE, ok: (S.cash || 0) >= ARMOR_PRICE && (P.armor | 0) < ARMOR_MAX, buy: () => { if ((S.cash || 0) < ARMOR_PRICE || (P.armor | 0) >= ARMOR_MAX) return; S.cash -= ARMOR_PRICE; P.armor = ARMOR_MAX; play('loot', 0.5); gunChip(); saveFreeProgress(true); weaponShop(f); } });
   shopPanel(`${STAND_NAME[f]} 뒷거래 · 가진 돈 ${S.cash || 0}만`, rows);
 }

@@ -24,7 +24,7 @@ function cuffAction() {
   return { k: 'evAct', label: '수갑 채우기', at: { x: g.x, y: g.y - 50 }, fn: () => {
     const s = standBy(P, g, 22);
     doMotion({ x: s.x, y: s.y, face: s.face, pose: 'crouch', dur: 1.4, at: [[0.4, () => play('metal', 0.35, 1.9)], [0.9, () => play('click', 0.5)]],
-      end: () => { if (S.hit !== h) return; h.cuffed = true; g.cuffed = true; evBanner('수갑을 채웠다 — 순찰차가 데려간다', '#9fc4ff'); after(6, () => { if (S.guards.includes(g)) evGone(g); }); } });
+      end: () => { if (S.hit !== h) return; h.cuffed = true; g.cuffed = true; evBanner('수갑을 채웠다. 순찰차가 데려간다', '#9fc4ff'); after(6, () => { if (S.guards.includes(g)) evGone(g); }); } });
   } };
 }
 // 꾸러미를 든 모습 (걸을 때 가슴 앞): 일거리 꾸러미를 받은 뒤

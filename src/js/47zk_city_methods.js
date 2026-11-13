@@ -38,7 +38,7 @@ function killMethodBonus(x, y) {
 }
 // ---- 지하실
 const BASEMENT_ASK = [
-  { k: 'talk', name: '말로 겁준다 — 네 집 주소도 안다', p: 20, max: 1, say: ['...뭐, 뭘 원하는데.', ''] },
+  { k: 'talk', name: '말로 겁준다 · "네 집 주소도 안다"', p: 20, max: 1, say: ['...뭐, 뭘 원하는데.', ''] },
   { k: 'fist', name: '주먹', p: 25, max: 2, say: ['퍽. 의자째 넘어간다.', '퍽. "그, 그만..."'] },
   { k: 'water', name: '물 양동이', p: 30, max: 1, say: ['(콜록, 콜록) 살, 살려...', ''] },
   { k: 'tools', name: '공구 상자를 꺼내 하나씩 늘어놓는다', p: 40, max: 1, say: ['...잠깐, 잠깐만! 말할게!', ''] },
@@ -58,10 +58,10 @@ function basementOpen(v, c) {
 function basementName(g) { const e = String(g.evt || '').split(':')[0]; return g.skBi != null ? '용의자' : { tteot: '떴다방 사기꾼', gongal: '공갈단', knife: '흉기 난동범', animal: '학대범', assault: '폭행범', stalker: '스토커', molka: '불법 촬영범', gapjil: '진상 손님', jeonse: '바지사장', rage: '보복운전자' }[e] || (g.fac ? '조직원' : '남자'); }
 function basementAsk() {
   const C = S.cellar; if (!C) return; const opts = BASEMENT_ASK.map(a => { const n = C.used[a.k] | 0; return { name: a.name, price: null, tag: n >= a.max ? '했다' : `+${a.p}`, ok: n < a.max, buy: () => basementPick(a) }; });
-  if (C.press >= 100 || C.told) opts.push({ name: '처리한다 — 여기서 끝낸다', price: null, tag: '지하실', ok: true, buy: () => basementEnd('kill') },
+  if (C.press >= 100 || C.told) opts.push({ name: '처리한다 · 여기서 끝낸다', price: null, tag: '지하실', ok: true, buy: () => basementEnd('kill') },
     { name: '눈 가리고 먼 길에 버린다', price: null, tag: '풀어 줌', ok: true, buy: () => basementEnd('dump') },
     { name: '경찰서 앞에 묶어 둔다', price: null, tag: '넘김', ok: true, buy: () => basementEnd('cops') });
-  C.picking = false; shopPanel(`지하실 · ${C.name} — 압박 ${C.press | 0}%`, opts, () => { if (S.cellar === C && !C.picking) after(0.2, basementAsk); });  /* 나가기·Esc: 아직 끝나지 않았다 — 다시 연다 */
+  C.picking = false; shopPanel(`지하실 · ${C.name} · 압박 ${C.press | 0}%`, opts, () => { if (S.cellar === C && !C.picking) after(0.2, basementAsk); });  /* 나가기·Esc: 아직 끝나지 않았다 — 다시 연다 */
 }
 function basementPick(a) {
   const C = S.cellar; if (!C) return; C.picking = true; closeShopPanel(); const n = C.used[a.k] | 0; C.used[a.k] = n + 1; C.press = Math.min(100, C.press + a.p);

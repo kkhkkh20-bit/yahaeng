@@ -25,7 +25,7 @@ function hitFinish(h, pay) {
   h.gradeG = r.g; h.cause = cm.cause; h.ctrOk = cm.ok;
   slowMo(0.7); S.flash = 0.25; play('bell', 0.5, 0.75); S.lastContract = h.ctr;
   const cond = h.ctr && h.ctr !== 'plain' && cm.C.fail ? (cm.ok ? ` · ${cm.C.name} 성공 ×${cm.mul}` : ` · ${cm.C.name} 실패 ×${cm.mul}`) : h.ctr && h.ctr !== 'plain' ? ` · ${cm.C.name} ×${cm.mul}` : '';
-  evBanner(`표적 제거 — ${h.name || ''} · 등급 ${r.g} ${r.name}${cond} · ${out}만`, cm.ok ? r.col : '#ff9a86'); if (cm.ok && h.ctr && h.ctr !== 'plain') fstat('ctrDone');
+  evBanner(`표적 제거 · ${h.name || ''} · 등급 ${r.g} ${r.name}${cond} · ${out}만`, cm.ok ? r.col : '#ff9a86'); if (cm.ok && h.ctr && h.ctr !== 'plain') fstat('ctrDone');
   fstat('grade' + r.g); if (r.g === 'S') fstat('ghost');
   return out;
 }

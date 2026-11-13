@@ -42,7 +42,7 @@ function sceneEnd(clean) {
 function sceneLift(sc) {
   const c = sc.c, g = c.g; S.corpses = (S.corpses || []).filter(k => k !== c); sc.stretcher = { ch: c.ch, body: c };
   if (g && TEMP_ACTOR(g)) evGone(g);
-  if (dist(S.player.x, S.player.y, c.x, c.y) < 900) newsTicker(`[현장] 을지로 골목 변사체 수습 — 경찰 "주변 CCTV 확인 중"`);
+  if (dist(S.player.x, S.player.y, c.x, c.y) < 900) newsTicker(`[현장] 을지로 골목 변사체 수습… 경찰 "주변 CCTV 확인 중"`);
 }
 function sceneUpdate(dt) {
   if (!STAGE.cityLife) return; const sc = S.scene, P = S.player;

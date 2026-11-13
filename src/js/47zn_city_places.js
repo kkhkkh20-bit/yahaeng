@@ -40,7 +40,7 @@ function schoolKids() {
 // 병원: 정문 앞에서 치료 (잃은 체력 한 칸당 20만)
 function hospitalAction() {
   const b = S.hospital, P = S.player; if (!b || P.car || actionBusy(P)) return null; const p = shopFront(b); if (!p || dist(P.x, P.y, p.x, p.y) > 70) return null;
-  const lost = (P.hpMax || 3) - P.hp; if (lost <= 0) return { k: 'evAct', label: '병원 — 다친 데 없다', at: { x: p.x, y: p.y - 50 }, fn: () => evBanner('간호사: "멀쩡하신데요?"', '#c8c0b0') };
+  const lost = (P.hpMax || 3) - P.hp; if (lost <= 0) return { k: 'evAct', label: '병원 · 다친 데 없다', at: { x: p.x, y: p.y - 50 }, fn: () => evBanner('간호사: "멀쩡하신데요?"', '#c8c0b0') };
   const cost = lost * 20;
   return { k: 'evAct', label: `치료받기 (${cost}만)`, at: { x: p.x, y: p.y - 50 }, fn: () => { if (!pay(cost)) { evBanner('(...지갑이 얇네.)', '#ff8a7a'); return; }
     doMotion({ dur: 1.4, pose: 'idle', at: [[0.4, () => play('door', 0.4)]], end: () => { P.hp = P.hpMax || 3; P.hurtT = 0; evBanner(`체력 ${P.hp}/${P.hpMax || 3} · 간호사: "...어쩌다 이렇게 다치셨어요?"`, '#9fe0b0'); fstat('hospital'); } }); } };

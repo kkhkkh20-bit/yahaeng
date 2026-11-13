@@ -25,7 +25,7 @@ function stageGoal(h) {
 function stageReveal(h, k, who, line, note) {
   const o = h.opp[k]; if (!o || o.known || o.none) return; o.known = true;
   if (who && npcAlive(who)) gsay(who, line, 3.2);
-  play('bell', 0.35, 1.5); evBanner(`(들었어 — ${note})`, '#9fd8ff'); fstat('stageClue');
+  play('bell', 0.35, 1.5); evBanner(`(들었어. ${note})`, '#9fd8ff'); fstat('stageClue');
 }
 function stageUpdate(h) {
   const P = S.player, g = h.g;
@@ -34,14 +34,14 @@ function stageUpdate(h) {
   const hear = o => o && npcAlive(o) && !o.off && dist(P.x, P.y, o.x, o.y) < STAGE_HEAR && los(P.x, P.y, o.x, o.y) && o.state !== 'ALERT';
   const e = h.escorts.find(npcAlive);
   // 차: 표적이 출발 시각을 말한다 (가까이 붙어 있으면 들린다)
-  if (!h.opp.car.known && !h.opp.car.none && hear(g) && S.t - h.t0 > 6) stageReveal(h, 'car', g, '차는 시간 맞춰 빼 놔. 길가 그 자리에.', `${h.name}의 차가 길가에 서 있다 — 출발 전에 폭약을 심을 수 있다`);
+  if (!h.opp.car.known && !h.opp.car.none && hear(g) && S.t - h.t0 > 6) stageReveal(h, 'car', g, '차는 시간 맞춰 빼 놔. 길가 그 자리에.', `${h.name}의 차가 길가에 서 있다. 출발 전에 폭약을 심을 수 있다`);
   // 간판: 간판 밑을 지날 때 경호원이 투덜댄다
   if (!h.opp.sign.known && !h.opp.sign.none && h.sign && !h.sign.used) {
     const gm = signGeometry(h.sign), under = o => o && npcAlive(o) && Math.abs(o.x - gm.x) < 110 && Math.abs(o.y - (h.sign.hit[1] + .5) * TILE) < 70;
-    if ((under(g) || under(e)) && hear(e || g)) stageReveal(h, 'sign', e || g, '형님, 저 간판 언젠가 떨어집니다. 이 길로 다니지 마시죠.', '낡은 간판이 놈의 길 위에 걸려 있다 — 노란 점 배관으로 옥상에 올라가라');
+    if ((under(g) || under(e)) && hear(e || g)) stageReveal(h, 'sign', e || g, '형님, 저 간판 언젠가 떨어집니다. 이 길로 다니지 마시죠.', '낡은 간판이 놈의 길 위에 걸려 있다. 노란 점 배관으로 옥상에 올라가라');
   }
   // 담배: 담배 자리에 서면 혼자 있고 싶다고 한다
-  if (!h.opp.smoke.known && h.smoke && dist(g.x, g.y, h.smoke.x, h.smoke.y) < 40 && hear(g)) stageReveal(h, 'smoke', g, '담배 피울 땐 다들 저리 가 있어. 등 뒤에 서지 말고.', '놈은 담배를 피울 때 혼자 선다 — 등 뒤로 붙어 독침(약국)');
+  if (!h.opp.smoke.known && h.smoke && dist(g.x, g.y, h.smoke.x, h.smoke.y) < 40 && hear(g)) stageReveal(h, 'smoke', g, '담배 피울 땐 다들 저리 가 있어. 등 뒤에 서지 말고.', '놈은 담배를 피울 때 혼자 선다. 등 뒤로 붙어 독침을 찔러라(독침은 약국)');
   // 담배 피우는 동안 경호원은 떨어져 선다
   const smoking = h.smoke && dist(g.x, g.y, h.smoke.x, h.smoke.y) < 40 && !g.path && g.state === 'PATROL';
   if (smoking && !h.smokeEsc) {

@@ -52,7 +52,7 @@ function cityArrest(why) {
   // 벌을 받았으니 경찰과의 악연은 '알아보면 수배' 아래로 덜어 주고, 풀려난 뒤 90초는 얼굴만 보고 수배를 걸지 않는다 (지구대 안에서 바로 다시 잡히는 고리 방지)
   if (S.stand && (S.stand.P || 0) <= -30) S.stand.P = -20; S.releasedT = S.t + 90; S.gunHeat = 0;
   S.stats.arrests = (S.stats.arrests || 0) + 1; fstat('arrests'); play('lose', 0.35);
-  toast(why + ' — 지구대에서 풀려났다' + (fine ? ` (벌금 ${fine}만)` : ''), 3.2, 'warn');
+  toast(why + ' · 지구대에서 풀려났다' + (fine ? ` (벌금 ${fine}만)` : ''), 3.2, 'warn');
 }
 
 // 조직원의 칼: 손에 든 칼날. 나를 쫓을 때는 앞으로 내민다

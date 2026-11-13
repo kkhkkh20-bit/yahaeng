@@ -35,7 +35,7 @@ function witnessed(x, y, r) {
 function addWanted(n, why) {
   if (!STAGE.city || S.over) return;
   const was = S.wanted; S.wanted = Math.min(5, Math.max(S.wanted, 0) + n); S.wantLost = 0;
-  if (S.wanted > was) { toast(`수배 ${'★'.repeat(S.wanted)} — ${why || '경찰이 쫓는다'}`, 2.4, 'warn'); play('alarm', 0.35); S.copT = [0, 12, 7, 4, 2, 1][S.wanted] ?? 2;  /* 출동까지 걸리는 시간: 별 하나면 한참 뒤에 온다 */ hint('wanted', '수배 별만큼 경찰이 쫓아온다. 경찰 눈에서 벗어나 버티면 별이 하나씩 내려간다'); }
+  if (S.wanted > was) { toast(`수배 ${'★'.repeat(S.wanted)} · ${why || '경찰이 쫓는다'}`, 2.4, 'warn'); play('alarm', 0.35); S.copT = [0, 12, 7, 4, 2, 1][S.wanted] ?? 2;  /* 출동까지 걸리는 시간: 별 하나면 한참 뒤에 온다 */ hint('wanted', '수배 별만큼 경찰이 쫓아온다. 경찰 눈에서 벗어나 버티면 별이 하나씩 내려간다'); }
   for (const g of wantedCops()) copChase(g);
 }
 // 차로 사람을 쳤을 때: 경찰이 봤으면 바로 수배. 아니면 살짝 친 건 넘어가고, 죽였으면 본 사람이 10초 뒤 신고(뺑소니).
@@ -169,7 +169,7 @@ function cityUpdate(dt) {
     else { S.wantLost += dt; for (const g of cops) if (g.state !== 'ALERT' && g.state !== 'DEAD' && !P.hide && !P.under && !P.vent && canSee(g, P.x, P.y, Math.max(0.4, P.light || 0), P.hidden, P.mode === 'sneak', P.z, flOf(P)) > 0) copChase(g); }
     const need = WANT_COPS[S.wanted];
     if (cops.length < need && (S.copT -= dt) <= 0) { S.copT = S.wanted <= 2 ? 6 : 3; spawnCop(); }
-    if (S.wantLost > 10 + S.wanted * 3) { S.wanted--; S.wantLost = 0; toast(S.wanted ? `수배 ${'★'.repeat(S.wanted)} — 경찰이 놓쳤다` : '수배가 풀렸다', 2.2);
+    if (S.wantLost > 10 + S.wanted * 3) { S.wanted--; S.wantLost = 0; toast(S.wanted ? `수배 ${'★'.repeat(S.wanted)} · 경찰이 놓쳤다` : '수배가 풀렸다', 2.2);
       if (!S.wanted) for (const g of cops) { if (g.contact) { g.state = 'RETURN'; g.path = null; g.icon = null; continue; } g.state = 'RETURN'; g.icon = null; g.path = null; g.leaveT = 6; } }
   } else for (const g of cops) {  // 수배가 풀린 경찰: 화면 밖으로 사라진다
     if (g.state === 'ALERT') { g.state = 'RETURN'; g.leaveT = 6; }
@@ -231,22 +231,22 @@ function cityActionList() {
   if (P.car) return one({ k: 'carOut', v: P.car, label: P.car.fireT > 0 ? '뛰어내리기!' : Math.abs(P.car.v) >= 60 ? '뛰어내리기' : '차에서 내리기' });
   if (P.z || flOf(P) || P.hide) return out;
   if (STAGE.hits) { const h = hitAction(); if (h) return one(h); }
-  for (const c of S.contracts || []) if (dist(P.x, P.y, c.x, c.y) < 64) return one({ k: 'contract', c, at: { x: c.x, y: c.y - 40 }, label: '의뢰 받기 — ' + (STAGES[c.si].name) });
+  for (const c of S.contracts || []) if (dist(P.x, P.y, c.x, c.y) < 64) return one({ k: 'contract', c, at: { x: c.x, y: c.y - 40 }, label: '의뢰 받기 · ' + (STAGES[c.si].name) });
   const v = nearVehicle(); if (v && carLocked(v)) return one(carLockAction(v)); if (v) return one({ k: 'carIn', v, at: { x: v.x, y: v.y - 56 }, label: v.driver ? '운전자 끌어내고 타기' : '차 타기' });
   return out;
 }
 function cityContract(c) {
-  if (S.wanted > 0) { toast('수배 중에는 의뢰를 받을 수 없다 — 먼저 경찰을 따돌려라', 2.4, 'warn'); return; }
+  if (S.wanted > 0) { toast('수배 중에는 의뢰를 받을 수 없다 · 경찰부터 따돌려라', 2.4, 'warn'); return; }
   CITY_RET = { id: c.id }; play('bell', 0.5); start(c.si);
 }
 // 지금 할 일: 가장 가까운 안 끝낸 의뢰 장소
 function cityGoal() {
   const P = S.player, done = cityDone();
   if (STAGE.hits && S.hit) return hitGoal();  // 수배 중에도 표적은 따라간다
-  if (S.wanted > 0) return { text: `수배 ${'★'.repeat(S.wanted)} — 경찰 눈을 피해 버티기`, where: '', x: null, y: null, fl: 0 };
+  if (S.wanted > 0) return { text: `수배 ${'★'.repeat(S.wanted)} · 경찰 눈을 피해 버티기`, where: '', x: null, y: null, fl: 0 };
   if (STAGE.hits) return hitGoal() || { text: '도시를 돌아다닌다', where: '', x: null, y: null, fl: 0 };
   const c = (S.contracts || []).filter(o => !done[o.id]).sort((a, b) => dist(P.x, P.y, a.x, a.y) - dist(P.x, P.y, b.x, b.y))[0];
-  return c ? { text: '의뢰 받기 — ' + STAGES[c.si].name, where: c.name, x: c.x, y: c.y, fl: 0 } : { text: '의뢰를 모두 마쳤다 — 도시를 돌아다닌다', where: '', x: null, y: null, fl: 0 };
+  return c ? { text: '의뢰 받기 · ' + STAGES[c.si].name, where: c.name, x: c.x, y: c.y, fl: 0 } : { text: '의뢰를 모두 마쳤다 · 도시를 돌아다닌다', where: '', x: null, y: null, fl: 0 };
 }
 // 의뢰 장소 표시: 빨간 원과 이름 (끝낸 곳은 회색)
 function drawContracts() {

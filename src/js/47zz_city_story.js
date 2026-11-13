@@ -10,17 +10,17 @@
 // 메인 이야기 — 배지 뒤의 놈들 (장마다 짧게: 지령 두세 줄, 결과 한 줄)
 const STORY_MAIN = [
   { title: '불법 추심', ctr: 'plain', fac: 'A', target: '문태식', escorts: 1, pay: 400,
-    brief: [['master', '은퇴했다며. 하나만 보자. 사채업자 문태식 — 이자를 열 배로 뜯고, 못 갚으면 애 학교로 찾아간다.'], ['master', '신고가 열두 건인데 다 흐지부지. 방법은 네가 고른다.'], ['master', '총이 필요하면 뒷골목 박씨를 찾아. 경찰 권총이 거기서 돈다. 지도에 찍어 둔다 — 비밀이다.'], ['hero', '은퇴는 다음 주부터 하지.']],
+    brief: [['master', '은퇴했다며. 하나만 보자. 사채업자 문태식. 이자를 열 배로 뜯고, 못 갚으면 애 학교로 찾아간다.'], ['master', '신고가 열두 건인데 다 흐지부지. 방법은 네가 고른다.'], ['master', '총이 필요하면 뒷골목 박씨를 찾아. 경찰 권총이 거기서 돈다. 지도에 찍어 둔다. 비밀이다.'], ['hero', '은퇴는 다음 주부터 하지.']],
     debrief: [['master', '문태식 장부에 매달 "노 계장 몫"이라는 줄이 있더라. 일단 넘어가자.']] },
   { title: '상습 뺑소니', ctr: 'roadkill', fac: 'B', target: '오정길', escorts: 1, pay: 500,
     brief: [['master', '오정길. 음주 뺑소니만 세 번, 매번 합의금이랑 "아는 형님"으로 빠져나왔다.'], ['master', '같은 방식으로 돌려줘. 차로. 치고 바로 빠져.'], ['hero', '교통사고는 흔하지.']],
     debrief: [['master', '오정길 사건 세 개 다 같은 계장 결재였다. 노기석.']] },
   { title: '그의 차', ctr: 'stage', fac: 'C', target: '백상만', escorts: 1, pay: 600,
-    brief: [['master', '백상만 사장. 직원 때리고 월급 떼먹고, 신고하면 경찰이 먼저 사장한테 전화한다.'], ['master', '습관이 많은 놈이다. 곁에 붙어 엿들어 — 틈은 놈이 알려 준다. 4분 뒤엔 차 타고 뜬다. 총은 쓰지 마.'], ['hero', '사고는 원래 습관에서 난다.']],
+    brief: [['master', '백상만 사장. 직원 때리고 월급 떼먹고, 신고하면 경찰이 먼저 사장한테 전화한다.'], ['master', '습관이 많은 놈이다. 곁에 붙어 엿들어. 틈은 놈이 알려 준다. 4분 뒤엔 차 타고 뜬다. 총은 쓰지 마.'], ['hero', '사고는 원래 습관에서 난다.']],
     debrief: [['master', '백상만 차에서 수사 기록 사본이 나왔다. 누가 안에서 흘린다.']] },
   { title: '떨어지는 간판', ctr: 'sign', fac: 'D', target: '한두철', escorts: 1, pay: 700,
     brief: [['master', '한두철. 깡통전세로 세입자 마흔 명 보증금을 날리고 바지사장 뒤에 숨었다.'], ['master', '놈 도는 길에 낡은 간판이 걸려 있다. 배관 타고 옥상에 올라가 밑을 지날 때 줄을 풀어.'], ['hero', '을지로 간판은 원래 위험하지.']],
-    debrief: [['master', '한두철이 마지막으로 통화한 놈 — 사건 무마 브로커 유창배. 얼굴 사진 한 장뿐이다.']] },
+    debrief: [['master', '한두철이 마지막으로 통화한 놈은 사건 무마 브로커 유창배다. 얼굴 사진 한 장뿐이다.']] },
   { title: '얼굴 없는 브로커', ctr: 'photo', fac: 'A', target: '유창배', escorts: 2, pay: 800,
     brief: [['master', '유창배는 업자 돈 받아서 경찰 쪽에 사건을 꺼 주는 놈이다. 기록이 없어.'], ['master', '그 블록 어딘가를 돈다. 얼굴 확인하기 전엔 아무도 건드리지 마.'], ['hero', '얼굴은 한 번 보면 안 잊는다.']],
     debrief: [['master', '유창배 수첩. 돈은 결국 한 사람한테 간다. 우리 서 강력계장, 노기석.'], ['master', '…이번 건 나도 같이 묻히는 거다.']] },
@@ -30,19 +30,19 @@ const STORY_MAIN = [
 ];
 // 조직 이야기 (연락책): 조직마다 세 걸음
 const STORY_SIDE = {
-  A: { title: '조직 — 빚', steps: [
+  A: { title: '조직 · 빚', steps: [
     { title: '장부 운반', kind: 'parcel', pay: 220, intro: ['너 말 많다던데. 입 무거우면 일 하나 준다.', '장부를 사무실까지 옮겨. 열어 보면 죽는다.'], outro: ['안 열었구나. 좋아. 다음은 진짜 일이다.'] },
     { title: '건달파 수금원 처리', kind: 'hit', fac: 'B', ctr: 'blade', pay: 320, intro: ['건달파 놈 하나가 우리 빚쟁이 돈을 가로챘다.', '총 쓰지 마. 칼로 조용히. 소문 나면 안 된다.'], outro: ['깔끔하네. 회장님이 너를 보고 싶어 한다.'] },
-    { title: '회장님 차', kind: 'car', pay: 450, intro: ['회장님 차를 누가 끌고 갔다. 찾아서 본부 앞으로 가져와.', '긁히면 네 몸으로 갚는 거다.'], outro: ['회장님이 고맙다신다. 조직은 빚을 잊지 않는다 — 좋은 쪽으로도.'] }] },
-  B: { title: '건달파 — 당구장 전쟁', steps: [
+    { title: '회장님 차', kind: 'car', pay: 450, intro: ['회장님 차를 누가 끌고 갔다. 찾아서 본부 앞으로 가져와.', '긁히면 네 몸으로 갚는 거다.'], outro: ['회장님이 고맙다신다. 조직은 빚을 잊지 않는다. 좋은 쪽으로도.'] }] },
+  B: { title: '건달파 · 당구장 전쟁', steps: [
     { title: '도난차 회수', kind: 'car', pay: 200, intro: ['당구장 앞에 세워 둔 내 차를 청계파 애들이 끌고 갔다.', '찾아서 당구장 앞으로 가져와.'], outro: ['역시 손이 빠르네. 근데 이걸로 안 끝난다.'] },
     { title: '청계파 행동대장', kind: 'hit', fac: 'C', ctr: 'accident', pay: 350, intro: ['청계파 행동대장이 우리 당구장을 노린다.', '사고로 보이게. 전쟁 나는 건 싫다.'], outro: ['청계파가 조용해졌다. 근데 위에서 누가 이 판을 짜는 것 같아.'] },
     { title: '판을 짠 놈', kind: 'hit', fac: 'D', ctr: 'plain', pay: 500, intro: ['알아냈다. 종로파 중간 보스가 양쪽에 기름을 붓고 있었어.', '이번엔 방법 안 가린다. 끝내.'], outro: ['당구장 전쟁 끝. 우리 구역에선 네가 형님이다.'] }] },
-  C: { title: '청계파 — 물길', steps: [
+  C: { title: '청계파 · 물길', steps: [
     { title: '물길 상자', kind: 'parcel', pay: 220, intro: ['청계천 밑으로 물건이 다닌다. 상자 하나 옮겨 줘.', '늦으면 물이 불어. 서둘러.'], outro: ['잘 왔다. 물길을 아는 놈이 하나 늘었네.'] },
     { title: '밀고자', kind: 'hit', fac: 'A', ctr: 'roadkill', pay: 380, intro: ['우리 물길을 조직에 판 놈이 있다.', '차로. 뺑소니처럼. 그리고 사라져.'], outro: ['밀고자가 없으니 물길이 다시 흐른다.'] },
     { title: '다리 위의 간판', kind: 'hit', fac: 'B', ctr: 'sign', pay: 520, intro: ['건달파 감시꾼이 매일 같은 길로 다닌다. 그 위에 낡은 간판이 있어.', '철거 안 한 간판이 떨어지는 일, 을지로에선 흔하지.'], outro: ['청계천은 이제 우리 거다. 고맙다, 형씨.'] }] },
-  D: { title: '종로파 — 밤의 시장', steps: [
+  D: { title: '종로파 · 밤의 시장', steps: [
     { title: '돈가방 경주', kind: 'race', pay: 200, intro: ['밤 시장 판돈을 교차로마다 돌려야 한다.', '시간 안에 못 돌면 판이 깨져.'], outro: ['빠르네. 밤 시장은 빠른 놈을 좋아한다.'] },
     { title: '야간 배달', kind: 'parcel', pay: 260, intro: ['이번 물건은 깨지는 거다. 조심해서, 빨리.'], outro: ['한 병도 안 깨졌군. 이제 큰일을 맡기지.'] },
     { title: '얼굴 없는 손님', kind: 'hit', fac: 'C', ctr: 'photo', pay: 540, intro: ['시장에서 매번 판을 털어 가는 놈이 있다. 사진 한 장뿐이야.', '그 블록을 돌며 얼굴을 찾아서 끝내.'], outro: ['밤 시장이 다시 열린다. 넌 이제 이 시장의 손님이 아니라 주인이다.'] }] },
@@ -69,7 +69,7 @@ function storyMainDone(h, ok) {
   if (h.cause && !R.ways.includes(h.cause)) R.ways.push(h.cause);
   if (h.gradeG && (!R.best || 'SABC'.indexOf(h.gradeG) < 'SABC'.indexOf(R.best))) R.best = h.gradeG;
   const C = STORY_MAIN[h.story];
-  evBanner(`메인 이야기 ${h.story + 1}/${STORY_MAIN.length} 완료 — ${C.title}`, '#c9a2ff');
+  evBanner(`메인 이야기 ${h.story + 1}/${STORY_MAIN.length} 완료 · ${C.title}`, '#c9a2ff');
   storyCard(h.story, true);
   if (S.story.ch >= STORY_MAIN.length) after(2.5, () => say(C.debrief, true));  // 마지막 장: 바로 결말 무전
   S.story.nextT = S.t + 150; S.ringNext = S.t + 18; saveFreeProgress(true);
@@ -94,7 +94,7 @@ function storySideDone(chain, ok) {
   const ch = STORY_SIDE[chain.f]; if (!ch) return; const st = ch.steps[chain.n]; if (!st) return;
   S.story.side[chain.f] = Math.max(S.story.side[chain.f] | 0, chain.n + 1); fstat('storySide');
   const last = S.story.side[chain.f] >= ch.steps.length;
-  evBanner(`${ch.title} ${chain.n + 1}/${ch.steps.length} 완료${last ? ' — 이야기 끝' : ' — 연락책에게 가면 다음 이야기'}`, STAND_COL[chain.f]);
+  evBanner(`${ch.title} ${chain.n + 1}/${ch.steps.length} 완료${last ? ' · 이야기 끝' : ' · 연락책에게 가면 다음 이야기'}`, STAND_COL[chain.f]);
   after(1.6, () => say(st.outro.map(t => [{ note: `${STAND_NAME[chain.f]} 연락책` }, t]), true));
   saveFreeProgress(true);
 }
@@ -137,11 +137,11 @@ const PHISH = [
     debrief: [['master', '녹음 잘 들었다. 국내 거점 주소, 그리고 "사장" 진석호. 먼저 거점부터 치운다.']] },
   { title: '콜센터 거점', ctr: 'demolish', target: '왕재필', escorts: 2, pay: 900,
     brief: [['master', '작은 건물 한 채를 통째로 "상황실"로 쓴다. 대포폰 수백 대, 피해자 명단이 다 거기 있다.'],
-      ['master', '밤엔 현장 관리자 왕재필과 상담원 둘만 남는다. 건물 벽에 폭약을 붙여 무너뜨려. 증거째로.'], ['master', '폭약 하나는 압수품에서 빼 놨다. 모자라면 철물점. 붙이고 나면 5초 — 멀리 뛰어.'], ['hero', '전화 걸 데가 없어지겠군.']],
+      ['master', '밤엔 현장 관리자 왕재필과 상담원 둘만 남는다. 건물 벽에 폭약을 붙여 무너뜨려. 증거째로.'], ['master', '폭약 하나는 압수품에서 빼 놨다. 모자라면 철물점. 붙이고 나면 5초다. 멀리 뛰어.'], ['hero', '전화 걸 데가 없어지겠군.']],
     debrief: [['master', '거점이 무너지면서 해외 콜센터와의 연락이 끊겼다. 당황한 총책이 직접 서울로 들어왔다.']] },
   { title: '총책', ctr: 'snipe', target: '진석호', escorts: 2, pay: 1500,
     brief: [['master', '진석호. 해외에 콜센터를 차려 놓고 수천 명의 노후를 털었다. 서울엔 거래를 정리하러 들어왔다.'], ['master', '경호원이 둘이다. 멀리서 한 발로.'], ['hero', '전화는 내가 끊는다.']],
-    debrief: [['master', '상황실은 끝났다. 압수된 장부로 피해금 일부가 돌아간다 — 그 할머니 돈도.'], ['hero', '...그거면 됐다.']] },
+    debrief: [['master', '상황실은 끝났다. 압수된 장부로 피해금 일부가 돌아간다. 그 할머니 돈도.'], ['hero', '...그거면 됐다.']] },
 ];
 const PHISH_NEWS = [
   '[속보] 노인 상대 현금 수거책, 돈 받으러 나왔다 숨진 채 발견… 할머니 삼천만 원 그대로',
@@ -165,7 +165,7 @@ function phishDone(h, ok) {
   const st = S.story; if (h.phish == null || !st) return;
   if (!ok) { st.phFailed = true; return; }
   st.phFailed = false; st.ph = Math.max(st.ph || 0, h.phish + 1); st.phNextT = S.t + 120; fstat('phishCh');
-  const C = PHISH[h.phish]; evBanner(`보이스피싱 사기단 ${h.phish + 1}/${PHISH.length} 처치 — ${C.title}`, '#ffcf8a');
+  const C = PHISH[h.phish]; evBanner(`보이스피싱 사기단 ${h.phish + 1}/${PHISH.length} 처치 · ${C.title}`, '#ffcf8a');
   const g = h.g || S.player; justiceMoment(`보이스피싱 ${C.title} 처치`, PHISH_NEWS[h.phish], g.x, g.y, { thank: false });
   if (st.ph >= PHISH.length) after(2.5, () => say([...C.debrief, [{ note: '문자 메시지 · 모르는 번호' }, '"돈이 돌아왔어요. 누군지 모르지만, 고맙습니다. 손주 대학 등록금이었어요."']], true));
   S.ringNext = S.t + 18; saveFreeProgress(true);
@@ -192,17 +192,17 @@ function drawMiniDemolish(x, T) {
 // 심문: 방법을 하나씩 골라 압박을 100까지 채우면 자백. 같은 방법은 한 번만(주먹은 두 번까지, 세 번째엔 기절해서 시간만 간다).
 // 표적이 죽으면(총·차·폭발) 입을 못 연다 → 의뢰 실패(다시 받는다). 자백하면 경찰서 앞에 묶어 두고 끝 — 참교육 속보.
 const ASK = [
-  { k: 'evidence', name: '증거를 들이민다 — 장부 사본·계좌 내역', p: 30, say: ['...그, 그걸 어떻게.', '내 이름이 다 적혀 있네. 그래서 뭐.'] },
-  { k: 'gun', name: '겁을 준다 — 빈 총을 관자놀이에, 방아쇠', p: 35, say: ['찰칵—! 히, 히익... 미쳤어?!', '...다음 칸엔 들어 있을지도 모르지.'] },
-  { k: 'deal', name: '거래를 건다 — 진술하면 살려 준다', p: 20, say: ['...살려 준다는 보장 있어?', '내가 불면 그쪽이 나를 죽여.'] },
+  { k: 'evidence', name: '장부 사본과 계좌 내역을 들이민다', p: 30, say: ['...그, 그걸 어떻게.', '내 이름이 다 적혀 있네. 그래서 뭐.'] },
+  { k: 'gun', name: '빈 총을 관자놀이에 대고 방아쇠를 당긴다', p: 35, say: ['찰칵—! 히, 히익... 미쳤어?!', '...다음 칸엔 들어 있을지도 모르지.'] },
+  { k: 'deal', name: '거래를 건다 · 진술하면 살려 준다', p: 20, say: ['...살려 준다는 보장 있어?', '내가 불면 그쪽이 나를 죽여.'] },
   { k: 'fist', name: '주먹', p: 25, max: 2, say: ['퍽. 의자째 넘어간다.', '퍽. "그, 그만... 그만해..."'] },
-  { k: 'victim', name: '피해자 녹취를 틀어 준다 — 삼천만 원 할머니 목소리', p: 25, say: ['...꺼. 꺼 달라고.', '(한참 말이 없다)'] },
+  { k: 'victim', name: '피해자 녹취를 틀어 준다 (삼천만 원 할머니 목소리)', p: 25, say: ['...꺼. 꺼 달라고.', '(한참 말이 없다)'] },
 ];
 function captureUpdate(h, ko) {
   const g = h.g, P = S.player;
-  if (g.state === 'DEAD' && !ko && !h.done) { contractFail(h, `${h.name}이(가) 죽었다 — 입을 열 사람이 없다. 의뢰 실패`); return true; }
+  if (g.state === 'DEAD' && !ko && !h.done) { contractFail(h, `${h.name}이(가) 죽어 입을 열 사람이 없다 · 의뢰 실패`); return true; }
   if (!h.trunk) { const c = (S.corpses || []).find(c => c.g === g && c.inTrunk); if (c) { h.trunk = c.inTrunk; c.inTrunk.trunk = c.inTrunk.trunk.filter(o => o !== c); c.stashed = true; c.hidden = true; g.off = true; } }  /* 일반 [트렁크에 싣기]로 실어도 같다 */
-  if (h.trunk) { const v = h.trunk; if (v.dead) { contractFail(h, `트렁크째 터졌다 — ${h.name}도 끝. 의뢰 실패`); return true; }
+  if (h.trunk) { const v = h.trunk; if (v.dead) { contractFail(h, `트렁크째 터졌다. ${h.name}도 끝났다 · 의뢰 실패`); return true; }
     g.x = v.x; g.y = v.y; const home = S.safes && S.safes[0];
     if (home && !h.asking && P.car === v && dist(v.x, v.y, home.x, home.y) < 200 && Math.abs(v.v) < 40) { h.asking = true; h.press = 0; h.used = {}; askOpen(h); } }
   return true;
@@ -211,7 +211,7 @@ function captureAction() {
   const h = S.hit, P = S.player; if (!h || h.ctr !== 'capture' || h.trunk || P.car) return null; const g = h.g;
   const ko = g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko); if (!ko || dist(P.x, P.y, g.x, g.y) > 70) return null;
   const v = S.vehicles.filter(o => !o.dead && !o.ai && !o.police && dist(o.x, o.y, g.x, g.y) < 140).sort((a, b) => dist(a.x, a.y, g.x, g.y) - dist(b.x, b.y, g.x, g.y))[0];
-  if (!v) return { k: 'evAct', label: '트렁크에 실을 차가 없다 — 차를 140px 안에 세워라', fn: () => evBanner('기절한 놈 곁에 차를 세워라', '#ffb070') };
+  if (!v) return { k: 'evAct', label: '트렁크에 실을 차가 없다 (140px 안에 세워라)', fn: () => evBanner('기절한 놈 곁에 차를 세워라', '#ffb070') };
   return { k: 'evAct', label: `${h.name} 트렁크에 싣기`, at: { x: g.x, y: g.y - 50 }, fn: () => { const s = standBy(P, g, 22);
     doMotion({ x: s.x, y: s.y, face: s.face, pose: 'grab', dur: 1.6, at: [[0.5, () => play('cloth', 0.6)], [1.2, () => play('thud', 0.5)]],
       end: () => { if (S.hit !== h) return; h.trunk = v; v.unlocked = true; v.locked = false; g.off = true; for (const c of S.corpses || []) if (c.g === g) { c.hidden = true; c.stashed = true; c.carried = false; }
@@ -219,19 +219,19 @@ function captureAction() {
 }
 function captureGoal(h) {
   const g = h.g, home = S.safes && S.safes[0];
-  if (h.asking) return { text: `지하실 심문 — ${h.name} · 압박 ${h.press | 0}%`, x: home.x, y: home.y, fl: 0 };
-  if (h.trunk) return { text: `트렁크에 ${h.name} — 그 차로 내 집(초록 집)까지`, x: home.x, y: home.y, fl: 0 };
+  if (h.asking) return { text: `지하실 심문 · ${h.name} · 압박 ${h.press | 0}%`, x: home.x, y: home.y, fl: 0 };
+  if (h.trunk) return { text: `트렁크에 ${h.name} · 그 차로 내 집(초록 집)까지`, x: home.x, y: home.y, fl: 0 };
   const ko = g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko);
-  return { text: ko ? `${h.name} 기절 — 곁에 차를 세우고 트렁크에 싣기` : `${h.name} 납치 — 죽이지 말고 기절시켜라`, x: g.x, y: g.y, fl: flOf(g), g };
+  return { text: ko ? `기절한 ${h.name} 곁에 차를 세우고 트렁크에 싣기` : `${h.name} 납치 · 죽이지 말고 기절시켜라`, x: g.x, y: g.y, fl: flOf(g), g };
 }
 function askOpen(h) {
   if (S.hit !== h) return; const used = h.used;
-  shopPanel(`지하실 · ${h.name} 심문 — 압박 ${h.press | 0}%`, ASK.map(a0 => { const a = a0.k === 'victim' && h.victimLine ? { ...a0, name: h.victimLine, say: ['...그, 그 애는...', '(눈을 피한다)'] } : a0; const n = used[a.k] | 0, max = a.max || 1;
+  shopPanel(`지하실 · ${h.name} 심문 · 압박 ${h.press | 0}%`, ASK.map(a0 => { const a = a0.k === 'victim' && h.victimLine ? { ...a0, name: h.victimLine, say: ['...그, 그 애는...', '(눈을 피한다)'] } : a0; const n = used[a.k] | 0, max = a.max || 1;
     return { name: a.name, price: null, tag: n >= max ? '했다' : `+${a.p}`, ok: n < max + (a.k === 'fist' ? 1 : 0), buy: () => askPick(h, a) }; }), () => { if (S.hit === h && !h.picking && !h.done) after(0.2, () => askOpen(h)); }); h.picking = false;
 }
 function askPick(h, a) {
   h.picking = true; closeShopPanel(); const n = h.used[a.k] | 0; h.used[a.k] = n + 1; play(a.k === 'fist' ? 'thud' : a.k === 'gun' ? 'click' : 'cloth', 0.5);
-  if (a.k === 'fist' && n >= 2) { say([[{ note: h.name }, '(축 늘어진다. 기절했다 — 깨어날 때까지 기다린다)']], true, () => after(1.5, () => askOpen(h))); return; }
+  if (a.k === 'fist' && n >= 2) { say([[{ note: h.name }, '(축 늘어진다. 기절했다. 깨어날 때까지 기다린다)']], true, () => after(1.5, () => askOpen(h))); return; }
   h.press = Math.min(100, (h.press || 0) + a.p);
   const line = a.say[Math.min(n, a.say.length - 1)];
   if (h.press >= 100 && h.confess) { say([[{ note: h.name }, line], ...h.confess], true, () => captureDone(h)); return; }

@@ -30,7 +30,7 @@ function armorAbsorb() {
   const P = S.player; if (!STAGE.cityLife || !(P.armor > 0) || P.car) return false;
   P.armor--; P.hurtT = 1.2; S.flash = 0.12; S.shakeT = Math.max(S.shakeT || 0, 0.15); play('metal', 0.5, 1.3);
   const f = { x: P.x, y: P.y - 18, a: 0, len: 4 }; fireEmit(f, 'spark', 6, f); gunChip();
-  toast(P.armor ? `조끼가 막았다 — 남은 조끼 ${P.armor}` : '조끼가 다 찢어졌다', 1.6, 'warn'); return true;
+  toast(P.armor ? `조끼가 막았다 · 남은 조끼 ${P.armor}` : '조끼가 다 찢어졌다', 1.6, 'warn'); return true;
 }
 function drawPickups() {
   for (const k of S.pickups || []) { if (!inView(k.x, k.y, 20)) continue; const fade = S.t - k.t > 50 && (S.t * 6 | 0) % 2, bob = Math.sin(S.t * 3 + k.x) * 1.5; if (fade) continue;

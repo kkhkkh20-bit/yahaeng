@@ -9,7 +9,7 @@ function justiceMoment(what, news, x, y) {
   if (!STAGE.cityLife) return; fstat('justice'); const n = (S.fst && S.fst.justice) || 1;
   slowMo(0.5); S.flash = Math.max(S.flash || 0, 0.18); play('bell', 0.45, 0.45);
   const m = typeof killMethodBonus === 'function' ? killMethodBonus(x, y) : null; if (m) after(2.4, () => evBanner(`처리 방식: ${m.name}${m.bonus ? ` · 보너스 +${m.bonus}만` : ''}${m.first ? ` · 처음 써 본 방식 (${m.n}/${Object.keys(KILL_HOW).length})` : ''}`, '#e8d8a8'));
-  justiceStamp(what); after(1.0, () => newsTicker(`${news} — ${POLICE_LINE[n % POLICE_LINE.length]} (올해 ${n}번째 '그림자' 사건)`));
+  justiceStamp(what); after(1.0, () => newsTicker(`${news}… ${POLICE_LINE[n % POLICE_LINE.length]} (올해 ${n}번째 '그림자' 사건)`));
   // 시민: 그쪽을 보고 몇 걸음 물러서며 수군댄다 (박수 없음)
   let k = 0;
   for (const g of actorsNearWide(x, y, 360)) { if (k >= 5 || !g.civ || g.crew || g.evt || !npcAlive(g) || g.off || g.state === 'DEAD') continue;
