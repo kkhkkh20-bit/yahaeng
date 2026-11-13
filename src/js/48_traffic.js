@@ -330,7 +330,12 @@ function trafficStopDistance(v){
   // 신호: 빨강이면 정지선(교차로 앞 횡단보도 앞)에서 선다. 황색은 정지선에 바짝 붙었으면 그대로 지나간다
   const inside=o=>o.x>x0-STOP_GAP+3&&o.x<x1+STOP_GAP-3&&o.y>y0-STOP_GAP+3&&o.y<y1+STOP_GAP-3;
   const sig=signalState(rx,ry),light=sig&&(hor?sig.ew:sig.ns);
-  if(light&&!signalLets(light,v,x0,y0,x1,y1)&&left>-40&&!(light==='Y'&&left<45&&Math.abs(v.v)>60))return Math.max(0,left);  // 좌회전 차는 화살표를, 직진 차는 초록을 기다린다  // 정지선을 조금 넘겨 선 차도 빨간불엔 그대로 기다린다
+  if(light&&!signalLets(light,v,x0,y0,x1,y1)){
+   // 앞머리가 아직 교차로 상자에 들어가지 않았고 그 앞에서 설 수 있으면 선다 (긴 버스가 정지선을 넘어 횡단보도에 걸린 채 앞차를 따라가다 빨간불에 들어가던 것).
+   // 황색에 정지선 바로 앞을 달리던 차는 그대로 지나간다. 서게 되면 잡아 둔 교차로도 내려놓는다
+   const sp=Math.abs(v.v),noseIn=-left-(STOP_LINE-6),yellowGo=light==='Y'&&left<45&&sp>60;
+   if(!yellowGo&&(left>-40||noseIn+sp*sp/(2*CAR_BRAKE)<8)){if(locks[key]===v.id)delete locks[key];return Math.max(0,left);}
+  }  // 좌회전 차는 화살표를, 직진 차는 초록을 기다린다  // 정지선을 조금 넘겨 선 차도 빨간불엔 그대로 기다린다
   const distance=o=>{const h=o.d%2===0,s=DV[o.d][0]+DV[o.d][1];if(!(h?o.y>y0&&o.y<y1:o.x>x0&&o.x<x1))return Infinity;const g=stopGap(o);return ((h?(s>0?x0-g:x1+g):(s>0?y0-g:y1+g))-(h?o.x:o.y))*s;};
   // 이 교차로로 들어오는 차 줄: 교차로 둘레 칸의 차만 보고, 한 프레임에 한 번만 정렬한다
   let jc=JC.m.get(key);if(!jc){const near=vehiclesIn(x0-STOP_GAP-260,y0-STOP_GAP-260,x1+STOP_GAP+260,y1+STOP_GAP+260);

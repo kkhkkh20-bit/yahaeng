@@ -76,9 +76,9 @@
   // 특수 블록(조직 구역 · 본부 · 클럽 · 병원 · 지구대 · 공원 · 시장 · 공사장)은 왼쪽 위 16칸에 그대로 두고, 남은 ㄱ자 땅을 필지로 채운다
   function fillAround(m, x, y, kind) {
     const r = rng(x * 3571 + y * 7349 + 7);
-    const e = Math.round(15 * SK);   // 늘린 특수 설계의 끝 (16칸 × SK)
-    m.fill(x + e, y + 1, x + e, y + BS - 2, ','); m.fill(x + 1, y + e, x + e - 1, y + e, ',');
-    genLots(m, x + e + 1, y + 1, x + BS - 2, y + BS - 2, kind, r); genLots(m, x + 1, y + e + 1, x + e - 1, y + BS - 2, kind, r);
+    const ex = Math.round(15 * SKX), ey = Math.round(15 * SKY);   // 늘린 특수 설계의 끝 (16칸 × SKX, × SKY)
+    m.fill(x + ex, y + 1, x + ex, y + BS - 2, ','); m.fill(x + 1, y + ey, x + ex - 1, y + ey, ',');
+    genLots(m, x + ex + 1, y + 1, x + BS - 2, y + BS - 2, kind, r); genLots(m, x + 1, y + ey + 1, x + ex - 1, y + BS - 2, kind, r);
   }
   // 블록 배치 (기존 도시 종류): h 주택가 · s 상가 · w 조직 창고 · c 클럽 거리 · p 공원 · m 시장 · r 건달파 동네 · e 주택 · H 병원 · P 지구대 · k 공사장 · q 조직 본부
   // 조직 세력: A 조직(본부 q) · B 건달파(r 동네) · C 청계파(w 창고 상회) · D 종로파(c 클럽 거리 뒤 사무실)
@@ -92,9 +92,10 @@
     'hehkPefk'
   ];
   const zones = [], gangs = []; let collecting = true;
-  // 특수 블록(16칸 설계)은 SK배로 늘려 짓는다: 건물·마당·차·구역·조직원 자리를 같은 비율로 옮긴다 (가게 안이 넉넉해진다)
-  const SK = 1.5; let SC = null;
-  const scaler = (x0, y0) => ({ X: v => x0 + Math.round((v - x0) * SK), Y: v => y0 + Math.round((v - y0) * SK), X1: v => x0 + Math.round((v - x0 + 1) * SK) - 1, Y1: v => y0 + Math.round((v - y0 + 1) * SK) - 1 });
+  // 특수 블록(16칸 설계)은 가로 SKX배 · 세로 SKY배로 늘려 짓는다: 건물·마당·차·구역·조직원 자리를 같은 비율로 옮긴다 (가게 안이 넉넉해진다).
+  // 세로는 1.25배라 블록 남쪽에 9줄 필지가 남는다: 남쪽 보도를 바라보는 건물 정면이 생겨 간판 사고 의뢰를 걸 수 있다
+  const SKX = 1.5, SKY = 1.25; let SC = null;
+  const scaler = (x0, y0) => ({ X: v => x0 + Math.round((v - x0) * SKX), Y: v => y0 + Math.round((v - y0) * SKY), X1: v => x0 + Math.round((v - x0 + 1) * SKX) - 1, Y1: v => y0 + Math.round((v - y0 + 1) * SKY) - 1 });
   const scPt = p => SC ? [SC.X(p[0]), SC.Y(p[1]), ...p.slice(2)] : p;
   const Z = z => { if (!collecting) return; if (SC) z = [SC.X(z[0]), SC.Y(z[1]), SC.X1(z[2]), SC.Y1(z[3]), ...z.slice(4)]; zones.push(z); };
   const Gp = (...g) => { if (!collecting) return; gangs.push(...g.map(o => SC ? Object.assign({}, o, o.at ? { at: scPt(o.at) } : {}, o.route ? { route: o.route.map(scPt) } : {}) : o)); };
