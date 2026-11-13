@@ -14965,7 +14965,7 @@ function updatePull(dt) {
 function drawCoverFx() { const F = S.coverFx; if (!F) return; const f = (S.t - F.t) / 0.45; if (f >= 1 || f < 0) { if (f >= 1) S.coverFx = null; return; }
   const L = 18 + 40 * f; ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = `rgba(170,230,255,${(1 - f) * 0.9})`; ctx.lineWidth = 5 * (1 - f) + 1; ctx.beginPath(); ctx.moveTo(F.x - F.ny * L, F.y + F.nx * L); ctx.lineTo(F.x + F.ny * L, F.y - F.nx * L); ctx.stroke(); ctx.restore(); }
 // 벽 쪽으로 미는 동안: 발밑에 차오르는 반원 (다 차면 붙는다)
-function drawCoverPush(P) { drawCoverFx(); const f = (P.coverPush || 0) / COVER_PUSH; if (P.cover || f < 0.12) return; const k = Math.max(1, 0.9 / SCALE);
+function drawCoverPush(P) { drawCoverFx(); const f = (P.coverPush || 0) / COVER_PUSH; if (P.cover || f < 0.12 || STAGE.cityLife) return;   /* 자유 모드: 발밑 원은 그리지 않는다 */ const k = Math.max(1, 0.9 / SCALE);
   ctx.save(); ctx.lineCap = 'round'; ctx.lineWidth = 3 * k; ctx.strokeStyle = 'rgba(150,220,255,.25)'; ctx.beginPath(); ctx.arc(P.x, P.y, 26 * k, -Math.PI / 2, -Math.PI / 2 + TAU); ctx.stroke();
   ctx.strokeStyle = 'rgba(150,220,255,.9)'; ctx.beginPath(); ctx.arc(P.x, P.y, 26 * k, -Math.PI / 2, -Math.PI / 2 + TAU * Math.min(1, f)); ctx.stroke(); ctx.restore(); }
 const COVER_PUSH = 0.5;
@@ -20280,6 +20280,7 @@ drawCarriedParcel = pixWrap(drawCarriedParcel, () => { const P = S.player; retur
 drawCuffs = pixWrap(drawCuffs, () => { const P = S.player; return [P.x - 24, P.y - 34, 48, 36]; });
 drawElevDoors = pixWrap(drawElevDoors, () => { const P = S.player, inB = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)), E = S.elevs?.get(inB), D = E?.door; return D && !D.stairs ? [D.x - 32, D.y - TILE - 34, 64, 64] : null; });
 drawScene = pixWrap(drawScene, () => { const T = S.scene?.tape; return T ? [T.x0 - 40, T.y0 - 60, T.x1 - T.x0 + 80, T.y1 - T.y0 + 100] : null; });
+if (typeof drawDamageDirection === 'function') drawDamageDirection = pixWrap(drawDamageDirection, P => [P.x - 44, P.y - 62, 88, 88]);   // 맞은 방향 표시도 도트로
 drawNuisance = pixWrap(drawNuisance, () => { const B = S.ev?.bikes; if (!B?.length) return null; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const b of B) { x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x); y1 = Math.max(y1, b.y); } return x1 - x0 < 300 && y1 - y0 < 300 ? [x0 - 30, y0 - 30, x1 - x0 + 60, y1 - y0 + 60] : null; });
 // 바닥 핏자국 (도트): 1.5px 격자에 맞춘 덩어리 몇 개 — 크기·모양은 자국마다 정해진 씨앗으로 (매 프레임 같은 모양)
 function drawPixelBlood(d) {
@@ -21733,7 +21734,7 @@ function drawCorpseRisk() {
   const selected=envAction().c;
   for (const c of S.corpses) {
     if (c.skillAnimating || c.stashed || flOf(c) !== flOf(S.player)) continue;
-    if (c.risk && !c.carried && dist(c.x, c.y, S.player.x, S.player.y) < 700) { const pu = 0.45 + 0.35 * Math.sin(S.t * 6); ctx.strokeStyle = `rgba(240,90,70,${pu})`; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.ellipse(c.x, c.y + 4, 26, 15, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+    if (c.risk && !c.carried && !STAGE.cityLife && dist(c.x, c.y, S.player.x, S.player.y) < 700) { const pu = 0.45 + 0.35 * Math.sin(S.t * 6); ctx.strokeStyle = `rgba(240,90,70,${pu})`; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.ellipse(c.x, c.y + 4, 26, 15, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
       if(selected===c||!guideFull())continue;  // 최소: 깜빡이는 빨간 원만 남긴다
       ctx.font = uiFont(12); ctx.textAlign = 'center';const label=bodyRiskText(c),width=ctx.measureText(label).width+12; ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.fillRect(c.x-width/2,c.y-34,width,15); ctx.fillStyle = '#ff9a86'; ctx.fillText(label, c.x, c.y - 23); ctx.textAlign = 'left'; hint('corpseRisk', '붉은 점선은 노출된 시체·기절자를 뜻한다. 경비가 발견하기 전에 [행동]으로 운반해 숨길 수 있다'); }
   }
