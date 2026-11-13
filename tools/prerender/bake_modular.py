@@ -82,7 +82,7 @@ async def main():
  threading.Thread(target=server.serve_forever, daemon=True).start()
  try:
   async with async_playwright() as p:
-   browser = await p.chromium.launch(executable_path='/usr/bin/chromium', args=['--enable-unsafe-swiftshader'])
+   browser = await p.chromium.launch(executable_path=__import__('os').environ.get('CHROMIUM','/usr/bin/chromium'), args=['--enable-unsafe-swiftshader'])
    page = await browser.new_page(); errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
    await page.goto(f'http://127.0.0.1:{server.server_port}/render.html?modular')
    await page.evaluate('window.__ready')

@@ -147,6 +147,10 @@ function planInterior(g, b, bi, f) {
     const use = STAGE.cityLife && ['store', 'food', 'office', 'pc', 'billiards', 'karaoke', 'gym', 'academy'].includes(use0) ? (signUseOf((b.signs || [])[f]) || use0) : use0;
     const sx0 = ix0, sx1 = open ? ix1 - 1 : cx0 - 2; fill(sx0, iy0, sx1, iy1, use === 'store' || use === 'food' ? 't' : use === 'pc' ? 'h' : 'w');
     rec.store = { x0: sx0, y0: iy0, x1: sx1, y1: iy1, use };
+    // 아주 좁은 가게(3칸 남짓): 길을 막지 않는 빈칸을 찾아 작은 식탁·책상 하나와 그 옆 의자 하나 (손님·직원이 앉을 자리)
+    const tinySeat = (tt, ct) => { for (let y = iy1 - 1; y >= iy0; y--) for (let x = sx0; x <= sx1; x++) { const c0 = g[y][x]; if (!furn(x, y, 1, 1, tt, true, 0)) continue;
+        for (const [dx, dy, r] of [[0, -1, 2], [-1, 0, 1], [1, 0, 3], [0, 1, 0]]) if (furn(x + dx, y + dy, 1, 1, ct, true, r)) return true;
+        FURN.pop(); g[y][x] = c0; } return false; };
     if (f === 0) { const dx = sx0 + 2; g[b.y1][dx] = 't'; K(dx, iy1); K(dx, iy1 - 1); }
     if (open) { K(sx0, iy0); K(sx0, iy0 + 1); }  // 자유 모드: 왼쪽 위 구석은 엘리베이터 문 앞 (47zs)
     for (let x = sx0; x <= sx1; x++) K(x, iy1);  // 앞줄 비움(창문 쪽 통로)
@@ -246,9 +250,18 @@ function planInterior(g, b, bi, f) {
       for (let y = iy0 + 2; y + 1 < iy1; y += 3) for (let x = sx0 + (sx1 - sx0 >= 4 ? 1 : 0); x + 1 <= sx1; x += 4) furn(x, y, 2, 1, 'pool', true, 0);
       furn(sx0, iy1 - 1, 2, 1, 'counter', true, 0);
     }
-    else if (use === 'food') { furn(sx0, iy0, 2, 1, 'sink', true, 0, [[sx0, iy0 + 1], [sx0 + 1, iy0 + 1]]); for (let y = iy0 + 2; y + 1 < iy1; y += 3) for (let x = sx0 + 1; x + 1 <= sx1; x += 4) if (furn(x, y, 2, 1, 'table', true, 0)) { furn(x - 1, y, 1, 1, 'chair', true, 1); furn(x + 2, y, 1, 1, 'chair', true, 3); } }  // 식당: 주방 싱크대, 양 끝에 의자 놓인 식탁
+    else if (use === 'food' && !open) { furn(sx0, iy0, 2, 1, 'sink', true, 0, [[sx0, iy0 + 1], [sx0 + 1, iy0 + 1]]); for (let y = iy0 + 2; y + 1 < iy1; y += 3) for (let x = sx0 + 1; x + 1 <= sx1; x += 4) if (furn(x, y, 2, 1, 'table', true, 0)) { furn(x - 1, y, 1, 1, 'chair', true, 1); furn(x + 2, y, 1, 1, 'chair', true, 3); } }  // 스토리 모드 식당 (판 지도가 바뀌지 않게 그대로)
+    else if (use === 'food') {  // 자유 모드 식당·포차: 안쪽 벽 주방(싱크대·냉장고), 식탁 줄(양 끝 의자, 줄 사이 한 칸 통로). 좁은 1층 가게는 작은 식탁+의자 둘
+      const kx = open ? sx0 + 2 : sx0; furn(kx, iy0, 2, 1, 'sink', true, 0, [[kx, iy0 + 1], [kx + 1, iy0 + 1]]) || furn(sx0, iy0, 2, 1, 'sink', true, 0, [[sx0, iy0 + 1], [sx0 + 1, iy0 + 1]]);
+      furn(kx + 2, iy0, 1, 1, 'fridge', true, 0, [[kx + 2, iy0 + 1]]);
+      let n = 0; const y0 = iy0 + 2, step = iy1 - y0 >= 5 ? 3 : 2;
+      for (let y = y0; y <= iy1 - 1; y += step) for (let x = sx0 + 1; x + 2 <= sx1; x += 4) if (furn(x, y, 2, 1, 'table', true, 0)) { n++; furn(x - 1, y, 1, 1, 'chair', true, 1); furn(x + 2, y, 1, 1, 'chair', true, 3); }
+      if (!n) for (let y = y0; y <= iy1 - 1; y += 2) for (let x = sx0 + 1; x + 1 <= sx1; x += 3) { const c0 = g[y][x]; if (furn(x, y, 1, 1, 'tableS', true, 0)) { const a = furn(x - 1, y, 1, 1, 'chair', true, 1), b2 = furn(x + 1, y, 1, 1, 'chair', true, 3); if (a || b2) n++; else { FURN.pop(); g[y][x] = c0; } } }
+      if (!n) tinySeat('tableS', 'chair');
+    }
     else { furn(sx0, iy0, 1, 1, 'locker'); furn(sx0 + 1, iy0, 1, 1, 'cab'); furn(sx1 - 1, iy0, 2, 1, 'sofa', true, 0, [[sx1 - 1, iy0 + 1], [sx1, iy0 + 1]]);  // 사무실: 벽에 사물함·서류장·소파, 가운데 책상 줄(책상마다 의자, 줄 사이 통로)
-      for (let y = iy0 + 2; y + 1 < iy1; y += 3) for (let x = sx0 + 1; x + 1 <= sx1 - 1; x += 3) if (furn(x, y, 2, 1, 'desk2', true, 0)) furn(x, y + 1, 1, 1, 'chairD', true, 2); furn(sx0, iy1 - 1, 1, 1, 'locker'); }
+      let n = 0; for (const y0 of open ? [iy0 + 2, iy0 + 1] : [iy0 + 2]) { if (n) break; for (let y = y0; open ? y + 1 <= iy1 - 1 : y + 1 < iy1; y += 3) for (let x = sx0 + 1; x + 1 <= sx1 - 1; x += 3) if (furn(x, y, 2, 1, 'desk2', true, 0)) { n++; furn(x, y + 1, 1, 1, 'chairD', true, 2); } }   // 좁은 층은 한 줄 위에서 다시
+      furn(sx0, iy1 - 1, 1, 1, 'locker'); if (!n && open) tinySeat('desk', 'chairD'); }
     if (use !== 'club') lampAt(sx0, iy0, sx1, iy1, f === 0 ? 0.9 : 0.5);
   } else if (kind === 'villa' && (W >= 20 || b.piloti)) {  // 두 세대: 한 세대가 8칸은 되어야 방·거실이 제대로 들어간다
     const xs = ix0 + Math.floor((W - 2) / 2);

@@ -101,5 +101,6 @@ function furnitureOcclusionMask(f,b){
 }
 function withFurnitureOcclusion(actor,paint){
  if(!S||actor.z||actor.under||actor.vent||actor.wire||actor.climb||actor.trav||actor.jump)return paint();
- ctx.save();try{for(const f of FURN){if(flOf(f)!==flOf(actor)||!['desk','desk2','pc','table','tableS','counter','chair','chairD'].includes(f.t)||actor.y>=(f.y+f.h)*TILE-5||actor.x+25<f.x*TILE||actor.x-25>(f.x+f.w)*TILE||actor.y+12<f.y*TILE-40)continue;const b=purchasedPropFurnBounds(f)||officeFurnBounds(f);if(!b||actor.x+25<b.x||actor.x-25>b.x+b.w||actor.y+12<b.y||actor.y-75>b.y+b.h)continue;ctx.clip(furnitureOcclusionMask(f,b),'evenodd');}return paint();}finally{ctx.restore();}
+ const seatF=actor.seat&&Math.sin(actor.a||0)>-0.5?FURN.find(f=>(f.t==='chair'||f.t==='chairD')&&flOf(f)===flOf(actor)&&actor.x>=f.x*TILE&&actor.x<(f.x+f.w)*TILE&&actor.y+8>=f.y*TILE&&actor.y-8<(f.y+f.h)*TILE):null;  // 앉은 사람: 등받이가 뒤·옆에 있으면 제 의자에 가리지 않는다
+ ctx.save();try{for(const f of FURN){if(f===seatF||flOf(f)!==flOf(actor)||!['desk','desk2','pc','table','tableS','counter','chair','chairD'].includes(f.t)||actor.y>=(f.y+f.h)*TILE-5||actor.x+25<f.x*TILE||actor.x-25>(f.x+f.w)*TILE||actor.y+12<f.y*TILE-40)continue;const b=purchasedPropFurnBounds(f)||officeFurnBounds(f);if(!b||actor.x+25<b.x||actor.x-25>b.x+b.w||actor.y+12<b.y||actor.y-75>b.y+b.h)continue;ctx.clip(furnitureOcclusionMask(f,b),'evenodd');}return paint();}finally{ctx.restore();}
 }

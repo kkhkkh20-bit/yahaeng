@@ -9,12 +9,18 @@ const PR_PAL = {
   civ1: ['#c48961', '#85543b', '#d6ae48', '#5a5040', '#3a2a1a'], civ2: ['#e6b68e', '#756c63', '#3a8a8a', '#6a6a72', '#c8c8c0'], civ3: ['#f2caa6', '#783e4e', '#d27a9e', '#20222a', '#202020'],
   civ4: ['#e8b890', '#222a31', '#2f5a8a', '#2a2a2e', '#e0e0dc'], civ5: ['#d9a47e', '#929593', '#ececec', '#3c4c6c', '#2a2a2a'], civ6: ['#f0c8a4', '#a66339', '#7a3a8a', '#2a2a30', '#1a1a1a'],
   civ7: ['#c99068', '#252426', '#2a2a2a', '#2a2a2a', '#d0d0c8'], strip: ['#ddaa80', '#2a2a2a', '#d8d4c8', '#4a4a52', '#2a2a2a'], civ8: ['#eabd96', '#9d9483', '#c8b48a', '#5a4a3a', '#3a2a1a'], civ9: ['#e2b088', '#423d38', '#4a7a4a', '#c8c0b0', '#2a2a2a'],
+  // 자유 모드 거리 (을지로 밤): 베이지 트렌치 · 검정 롱패딩 · 회색 후드 · 남색 패딩 · 카키 야상 · 청자켓 · 흰 셔츠 슬랙스 · 겨자 니트 · 버건디 코트 · 하늘색 셔츠
+  civ10: ['#eec29c', '#1c1a1a', '#c8ad84', '#2e2c2e', '#5a4632'], civ11: ['#e4b48c', '#121214', '#1c1d21', '#1a1a1e', '#e8e8e4'], civ12: ['#f0c6a0', '#3a2a22', '#8a8c90', '#30343c', '#f0f0ec'],
+  civ13: ['#d8a882', '#1a1818', '#26324e', '#2a2c34', '#bcbcb8'], civ14: ['#e8ba92', '#4a3426', '#5a6040', '#3a3a34', '#2c2620'], civ15: ['#f2cba8', '#6a4430', '#4c6a92', '#262a36', '#e6e2da'],
+  civ16: ['#e6b890', '#18181a', '#e8e6e0', '#3a3c44', '#1e1e20'], civ17: ['#eec4a0', '#5a3a2a', '#c8962e', '#4a4038', '#2a2420'], civ18: ['#dcae86', '#2a1e1c', '#6a2430', '#24242a', '#141416'],
+  civ19: ['#f0c8a2', '#322620', '#8ab0d0', '#504a44', '#d8d4cc'],
   ...OUTFIT_PAL,
   ...Object.fromEntries(Object.values(TARGET_CAST).map(p=>[p.key.split('@')[0],p.palette])),
 };
 // Rank changes the model and behaviour, not the faction's uniform. Keep the
 // legacy keys: corpses, old saves and the player's stolen clothes use them too.
 for (const key of ['samB','samR','hunter']) PR_PAL[key] = [...PR_PAL[key].slice(0,2), ...PR_PAL.sam.slice(2)];
+if (PR && PR.looks) for (let i = 10; i < 20; i++) if (!PR.looks['civ' + i] && PR.looks['civ' + (i - 10)]) PR.looks['civ' + i] = PR.looks['civ' + (i - 10)];   // 자유 모드 새 옷 색(civ10~19)도 같은 체형 실루엣을 쓴다
 PR_PAL.agent=['#e6b38a','#252b39','#2e425f','#252c3b','#171c25','#a1495c'];
 const prImg = PR ? new Image() : null, prVar = {};
 // 시트는 한 장이 가로 9536px(149칸)이라 옷마다 통째로 칠해 두면 한 장에 20MB, 판 하나에 수백 MB가 된다 (휴대폰이 버벅이고 해상도가 떨어지던 원인).

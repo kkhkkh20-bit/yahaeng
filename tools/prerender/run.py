@@ -37,7 +37,8 @@ ANIMS = [  # 이름, 클립, 시간들, 웅크림
   ('openBin', 'Idle', [i/16 for i in range(17)], 0, ('access', 'bin')),
   ('vaultPass','Idle',[i/16 for i in range(17)],0,('hide','pass')),
   ('handleLift','Idle',[i/24 for i in range(25)],0,('handling','a')),
-  ('handledLift','Idle',[i/24 for i in range(25)],0,('handling','b'))]
+  ('handledLift','Idle',[i/24 for i in range(25)],0,('handling','b')),
+  ('sit', 'Idle', [0], 0, ('pose', 'sit'))]  # 의자에 앉기 (자유 모드 가게 손님)
 TALK = [0, 1, 0.45, 1.25]
 def js_for(an, t, ti, a, hg='undefined'):
     name, clip, ts, cr = an[:4]; pr = an[4] if len(an) > 4 else None

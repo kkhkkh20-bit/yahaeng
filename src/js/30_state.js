@@ -392,7 +392,9 @@ function floorCanvas(bi, f) {
 }
 // 주민 체형 자동 배정 (어른만): 남자 기본 3 · 여자 셋 6 · 덩치·노인·코트·백팩 각 1
 const BODY_MIX = [null, 'vest', 'jacket', 'fLong', 'femaleBlazer', 'fBob', 'femaleCoat', 'fTail', 'workApron', 'big', 'old', 'coat', 'pack', 'hoodieCasual'];
-const autoBody = i => BODY_MIX[((i * 7919 + 13) >>> 0) % BODY_MIX.length];
+// 자유 모드 거리는 더 북적이고 다양하다: 정장 회사원(남녀)·작업복·여성 작업복을 더 섞는다 (스토리 모드 판은 그대로)
+const CITY_BODY_MIX = BODY_MIX.concat(['suit', 'femaleSuit', 'worker', 'femaleWorker', 'jacket', 'fLong']);
+const autoBody = i => { const M = STAGE?.cityLife ? CITY_BODY_MIX : BODY_MIX; return M[((i * 7919 + 13) >>> 0) % M.length]; };
 function makeGuard(d, i) {
   let sx, sy;
   if (d.at) { sx = d.at[0]; sy = d.at[1]; }
