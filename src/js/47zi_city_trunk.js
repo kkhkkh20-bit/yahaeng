@@ -26,7 +26,7 @@ function trunkLoad(v, c) {
 }
 function trunkUnload(v) {
   const P = S.player, T = v.trunk || []; const c = T.pop(); if (!c) return; const p = carRear(v);
-  c.stashed = false; c.inTrunk = null; c.x = p.x; c.y = p.y; c.hidden = false; c.carried = true; P.carrying = c; if (c.g) c.g.inTrunk = null;
+  c.stashed = false; c.inTrunk = null; c.x = p.x; c.y = p.y; c.hidden = false; c.carried = true; P.carrying = c; if (c.g) { c.g.inTrunk = null; c.g.keep = false; }
   play('thud', 0.4); evBanner('트렁크에서 꺼내 들쳐 멨다', '#9fc4ff');
   if (witnessed(P.x, P.y, 260)) addWanted(1, '트렁크에서 시체를 꺼내는 걸 봤다');
 }
@@ -61,5 +61,5 @@ function trunkUpdate() {
   if (!STAGE.cityLife) return; const P = S.player; if (P.car) P.lastCar = P.car;
   for (const v of S.vehicles) { if (!v.dead) continue;
     if (v.riders?.length) { for (const g of v.riders) { g.off = false; g.x = v.x; g.y = v.y; npcDown(g, null, true); } v.riders = []; }
-    if (v.trunk?.length) { for (const c of v.trunk) { c.stashed = false; c.x = v.x - 10; c.y = v.y + 6; c.inTrunk = null; } v.trunk = []; } }
+    if (v.trunk?.length) { for (const c of v.trunk) { c.stashed = false; c.hidden = false; c.x = v.x - 10; c.y = v.y + 6; c.inTrunk = null; if (c.g) { c.g.keep = false; c.g.inTrunk = null; } } v.trunk = []; } }
 }

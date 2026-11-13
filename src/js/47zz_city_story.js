@@ -201,6 +201,7 @@ const ASK = [
 function captureUpdate(h, ko) {
   const g = h.g, P = S.player;
   if (g.state === 'DEAD' && !ko && !h.done) { contractFail(h, `${h.name}이(가) 죽었다 — 입을 열 사람이 없다. 의뢰 실패`); return true; }
+  if (!h.trunk) { const c = (S.corpses || []).find(c => c.g === g && c.inTrunk); if (c) { h.trunk = c.inTrunk; c.inTrunk.trunk = c.inTrunk.trunk.filter(o => o !== c); c.stashed = true; c.hidden = true; g.off = true; } }  /* 일반 [트렁크에 싣기]로 실어도 같다 */
   if (h.trunk) { const v = h.trunk; if (v.dead) { contractFail(h, `트렁크째 터졌다 — ${h.name}도 끝. 의뢰 실패`); return true; }
     g.x = v.x; g.y = v.y; const home = S.safes && S.safes[0];
     if (home && !h.asking && P.car === v && dist(v.x, v.y, home.x, home.y) < 200 && Math.abs(v.v) < 40) { h.asking = true; h.press = 0; h.used = {}; askOpen(h); } }
@@ -226,10 +227,10 @@ function captureGoal(h) {
 function askOpen(h) {
   if (S.hit !== h) return; const used = h.used;
   shopPanel(`지하실 · ${h.name} 심문 — 압박 ${h.press | 0}%`, ASK.map(a => { const n = used[a.k] | 0, max = a.max || 1;
-    return { name: a.name, price: null, tag: n >= max ? '했다' : `+${a.p}`, ok: n < max + (a.k === 'fist' ? 1 : 0), buy: () => askPick(h, a) }; }), () => {});
+    return { name: a.name, price: null, tag: n >= max ? '했다' : `+${a.p}`, ok: n < max + (a.k === 'fist' ? 1 : 0), buy: () => askPick(h, a) }; }), () => { if (S.hit === h && !h.picking && !h.done) after(0.2, () => askOpen(h)); }); h.picking = false;
 }
 function askPick(h, a) {
-  closeShopPanel(); const n = h.used[a.k] | 0; h.used[a.k] = n + 1; play(a.k === 'fist' ? 'thud' : a.k === 'gun' ? 'click' : 'cloth', 0.5);
+  h.picking = true; closeShopPanel(); const n = h.used[a.k] | 0; h.used[a.k] = n + 1; play(a.k === 'fist' ? 'thud' : a.k === 'gun' ? 'click' : 'cloth', 0.5);
   if (a.k === 'fist' && n >= 2) { say([[{ note: h.name }, '(축 늘어진다. 기절했다 — 깨어날 때까지 기다린다)']], true, () => after(1.5, () => askOpen(h))); return; }
   h.press = Math.min(100, (h.press || 0) + a.p);
   const line = a.say[Math.min(n, a.say.length - 1)];

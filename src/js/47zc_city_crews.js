@@ -67,8 +67,9 @@ function crewsUpdate() {
     if (down || shot) { crewBreak(crew, down || P); continue; }
     for (const m of crew.members) if (m.state !== 'PATROL') { m.state = 'PATROL'; m.meter = 0; m.fear = null; m.panicT = 0; m.icon = null; m.rep = null; m.path = null; }
     {
-      const L = crew.members[0], v = S.player.car; crew.slow = v && Math.abs(v.v) < 40 && dist(v.x, v.y, L.x, L.y) < 90 ? 0.3 : 1; }  /* 길을 막고 선 차 앞에선 속도를 줄인다 */
+      const L = crew.members[0], v = S.player.car; if (!CREW_KINDS[crew.kind].event) crew.slow = v && Math.abs(v.v) < 40 && dist(v.x, v.y, L.x, L.y) < 90 ? 0.3 : 1; }  /* 길을 막고 선 차 앞에선 속도를 줄인다 */
   }
+  S.crews = S.crews.filter(c => { if (!CREW_KINDS[c.kind].event || (S.ev && S.ev.crew === c && !S.ev.done)) return true; for (const m of c.members) { m.crew = null; if (npcAlive(m) && !m.off) { m.route = [{ x: m.x, y: m.y, pause: 999 }]; m.path = null; } } return false; });  /* 끝난 킥보드 사건의 무리는 내린다 */
   for (const k of Object.keys(CREW_KINDS)) { if (CREW_KINDS[k].event) continue;
     const live = S.crews.some(c => c.kind === k && !c.broken);
     if (!live && S.t > (S.crewNext[k] || 0)) { S.crews = S.crews.filter(c => !(c.kind === k && c.broken && c.members.every(m => !npcAlive(m) || m.off || !inView(m.x, m.y, 200)))); if (crewSpawn(k, true)) S.crewNext[k] = 0; else S.crewNext[k] = S.t + 10; }

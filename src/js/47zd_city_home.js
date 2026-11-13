@@ -30,7 +30,7 @@ function openHome() {
 // 집에서 쉴 때 (47u safeLeave)
 function homeRest(s) {
   if (s.i !== 0 || !homeHas('locker') || !S.guns) return '';
-  let n = 0; for (const k of Object.keys(S.guns)) { const W = WEAPONS[k]; if (W && S.guns[k] < W.ammo * 3) { S.guns[k] = W.ammo * 3; n++; } }
+  let n = 0; if (S.guns.pistol != null && S.guns.pistol < 12) { S.guns.pistol = 12; n++; }  /* 경찰 권총 한 탄창만 (총은 귀하다) */
   return n ? ' · 탄약 보충' : '';
 }
 // 문 앞 꾸밈 (땅 위, 사람보다 먼저)

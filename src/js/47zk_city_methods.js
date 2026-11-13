@@ -26,7 +26,7 @@ function killHowOf(g) {
 }
 // 처리 보너스 (justiceMoment 에서): 가까이 쓰러진 악당 하나를 골라 방식을 읽는다
 function killMethodBonus(x, y) {
-  let g = null, bd = 140; for (const o of S.guards) { if (o.state !== 'DEAD' || o.methodPaid || !(o.evt || o.skReal || o.assailant || o.knifeman || o.hit || o.basementKill || (o.fac && o.envKill))) continue; const d = dist(o.x, o.y, x, y); if (d < bd) { bd = d; g = o; } }
+  let g = null, bd = 140; for (const o of S.guards) { if (o.state !== 'DEAD' || o.methodPaid || o.killHow === 'npc' || o.police || !(o.evt || o.skReal || o.assailant || o.knifeman || o.hit || o.basementKill || (o.fac && o.envKill))) continue; const d = dist(o.x, o.y, x, y); if (d < bd) { bd = d; g = o; } }
   if (!g) return null; g.methodPaid = true; const k = killHowOf(g), [name, bonus] = KILL_HOW[k];
   const seen = S.methods || (S.methods = {}); const first = !seen[k]; seen[k] = (seen[k] || 0) + 1; fstat('method_' + k);
   if (bonus) cash(bonus);
@@ -44,7 +44,7 @@ function basementAction() {
   if (!STAGE.cityLife || S.cellar) return null; const P = S.player, home = basementHome(); if (!home || P.car || P.carrying || actionBusy(P)) return null;
   if (dist(P.x, P.y, home.x, home.y) > 260) return null;
   const v = typeof nearRear === 'function' ? nearRear(60) : null; if (!v || !v.trunk?.length) return null;
-  const c = v.trunk.find(c => c.ko && c.g); if (!c) return null; const p = carRear(v);
+  const c = v.trunk.find(c => c.ko && c.g && !(S.hit && S.hit.g === c.g)); if (!c) return null; const p = carRear(v);
   return { k: 'evAct', label: '지하실로 끌고 내려가기', at: { x: p.x, y: p.y - 40 }, fn: () => doMotion({ dur: 1.4, pose: 'grab', at: [[0.5, () => play('cloth', 0.5)], [1.1, () => play('door', 0.5)]], end: () => basementOpen(v, c) }) };
 }
 function basementOpen(v, c) {
@@ -57,10 +57,10 @@ function basementAsk() {
   if (C.press >= 100 || C.told) opts.push({ name: '처리한다 — 여기서 끝낸다', price: null, tag: '지하실', ok: true, buy: () => basementEnd('kill') },
     { name: '눈 가리고 먼 길에 버린다', price: null, tag: '풀어 줌', ok: true, buy: () => basementEnd('dump') },
     { name: '경찰서 앞에 묶어 둔다', price: null, tag: '넘김', ok: true, buy: () => basementEnd('cops') });
-  shopPanel(`지하실 · ${C.name} — 압박 ${C.press | 0}%`, opts, () => {});
+  C.picking = false; shopPanel(`지하실 · ${C.name} — 압박 ${C.press | 0}%`, opts, () => { if (S.cellar === C && !C.picking) after(0.2, basementAsk); });  /* 나가기·Esc: 아직 끝나지 않았다 — 다시 연다 */
 }
 function basementPick(a) {
-  closeShopPanel(); const C = S.cellar; if (!C) return; const n = C.used[a.k] | 0; C.used[a.k] = n + 1; C.press = Math.min(100, C.press + a.p);
+  const C = S.cellar; if (!C) return; C.picking = true; closeShopPanel(); const n = C.used[a.k] | 0; C.used[a.k] = n + 1; C.press = Math.min(100, C.press + a.p);
   play(a.k === 'fist' ? 'thud' : a.k === 'tools' ? 'metal' : 'cloth', 0.5); const line = a.say[n] || a.say[0];
   if (C.press >= 100 && !C.told) { C.told = true; const [what, fx] = basementTruth(C.g); say([[{ note: C.name }, line || '...'], [{ note: C.name }, what]], true, () => { fx(); basementAsk(); }); return; }
   say([[{ note: C.name }, line || '...']], true, () => basementAsk());
@@ -77,16 +77,16 @@ function basementTruth(g) {
 }
 function C_note(t) { evBanner(t, '#ffd066'); }
 function basementEnd(how) {
-  closeShopPanel(); const C = S.cellar; if (!C) return; S.cellar = null; const g = C.g, c = C.c, home = basementHome();
+  const C = S.cellar; if (!C) return; C.picking = true; closeShopPanel(); S.cellar = null; const g = C.g, c = C.c, home = basementHome();
   S.corpses = (S.corpses || []).filter(o => o !== c); if (g.skBi != null) g.skChecked = true;  /* 용의자: 엉뚱한 사람 판정은 여기서 끝낸다 */
   if (how === 'kill') { g.basementKill = true; g.state = 'PATROL'; g.off = false; g.x = home.x; g.y = home.y; g.keep = false; npcDown(g, null, true);
     const k = (S.corpses || []).find(o => o.g === g); if (k) { k.stashed = true; k.hidden = true; }  /* 지하실에 남는다 — 아무도 못 본다 */
     g.off = true; play('thud', 0.4);
     if (g.skReal && S.sk && !S.sk.done) skSolved(g);
     else if (g.skBi != null) evBanner('엉뚱한 사람이었다 — 아무도 모르게 끝났지만, 진범은 아직 밖에 있다', '#ff8a7a');
-    else { const m = killMethodBonus(g.x, g.y) || { name: '지하실', bonus: 0 }; evBanner(`지하실에서 끝냈다 · 처리 방식 ${m.name}${m.bonus ? ' +' + m.bonus + '만' : ''}`, '#c8c0b0'); }
+    else { g.methodPaid = false; const m = killMethodBonus(g.x, g.y) || { name: '지하실', bonus: 0 }; evBanner(`지하실에서 끝냈다 · 처리 방식 ${m.name}${m.bonus ? ' +' + m.bonus + '만' : ''}`, '#c8c0b0'); }
     return; }
   g.off = true; g.state = 'DEAD'; g.x = -9999; g.y = -9999;
-  if (how === 'dump') { evBanner('눈을 가려 먼 길에 내다 버렸다 — 다신 이 동네에 안 나타난다', '#c8c0b0'); return; }
+  if (how === 'dump') { evBanner('눈을 가려 먼 길에 내다 버렸다 — 다신 이 동네에 안 나타난다', '#c8c0b0'); if (g.skReal && S.sk && !S.sk.done) skSolved(g); return; }
   cash(40); evBanner('경찰서 앞 기둥에 묶어 뒀다 · 강 형사가 40만을 보냈다', '#9fc4ff'); if (g.skReal && S.sk && !S.sk.done) skSolved(g);
 }

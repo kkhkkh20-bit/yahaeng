@@ -1,5 +1,5 @@
 """Free mode home: at my first safehouse door a [집 꾸미기] menu sells one-off upgrades that persist in the save —
-pots/neon (looks), new bed (+1 max HP), weapon locker (rest refills ammo), CCTV (enter home while police watch),
+pots/neon (looks), new bed (+1 max HP), weapon locker (rest refills the police pistol to one clip), CCTV (enter home while police watch),
 wall safe (arrest takes half as much money)."""
 import asyncio, json
 from pathlib import Path
@@ -35,7 +35,7 @@ async def main():
         ok(r['rows'] == 6, 'home menu items: %s' % r['rows'])
         ok(r['home'] == ['bed', 'cctv', 'locker', 'pots', 'safe'] and r['cash'] == 5000 - 150 - 250 - 300 - 400 - 30, 'buying failed: %s' % r)
         ok(r['hp'][1] == r['hp'][0] + 1, 'bed does not add max hp: %s' % r['hp'])
-        ok(r['ammo'] >= 24, 'locker does not refill ammo: %s' % r['ammo'])
+        ok(r['ammo'] == 12, 'locker does not refill ammo: %s' % r['ammo'])
         ok(r['entered'] and r['wanted'] == 0, 'cctv home entry while wanted: %s' % r)
         ok(r['saved'] and r['saved'].get('cctv') == 1, 'home not saved: %s' % r['saved'])
         ok(not errs, errs); await b.close()

@@ -189,7 +189,6 @@ function weaponShop(f) {
   const st = typeof standOf === 'function' ? standOf(f) : 0;
   const rows = Object.keys(SHOP_GUNS).map(k => { const W = WEAPONS[k], G = SHOP_GUNS[k], locked = st < G.need;
     return { name: locked ? `${W.name} — 이 조직과 더 가까워야 판다 (호감 ${G.need})` : `${W.name} (+${W.ammo})`, price: G.price, ok: !locked && (S.cash || 0) >= G.price, buy: () => { if (locked || (S.cash || 0) < G.price) return; S.cash -= G.price; S.guns[k] = (S.guns[k] || 0) + W.ammo; if (!S.wpn) S.wpn = k; play('loot', 0.5); gunChip(); saveFreeProgress(true); weaponShop(f); } }; });
-  if (false) WPN_ORDER.map(k => { const W = WEAPONS[k]; return { name: `${W.name} (+${W.ammo})`, price: W.price, ok: (S.cash || 0) >= W.price, buy: () => { if ((S.cash || 0) < W.price) return; S.cash -= W.price; S.guns[k] = (S.guns[k] || 0) + W.ammo; if (!S.wpn) S.wpn = k; play('loot', 0.5); gunChip(); saveFreeProgress(true); weaponShop(f); } }; });
   const P = S.player; rows.push({ name: `방탄조끼 (${ARMOR_MAX}번 막는다)`, price: ARMOR_PRICE, ok: (S.cash || 0) >= ARMOR_PRICE && (P.armor | 0) < ARMOR_MAX, buy: () => { if ((S.cash || 0) < ARMOR_PRICE || (P.armor | 0) >= ARMOR_MAX) return; S.cash -= ARMOR_PRICE; P.armor = ARMOR_MAX; play('loot', 0.5); gunChip(); saveFreeProgress(true); weaponShop(f); } });
   shopPanel(`${STAND_NAME[f]} 뒷거래 · 가진 돈 ${S.cash || 0}만`, rows);
 }

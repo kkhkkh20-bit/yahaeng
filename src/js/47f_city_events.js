@@ -233,7 +233,7 @@ function evCleanup(ev) {
   const P = S.player;
   for (const g of ev.actors) if (!g.off && g.state !== 'DEAD' && !(g.state === 'ALERT' && g.fac) && !inView(g.x, g.y, 80)) evGone(g);
   if (S.evItems) S.evItems = S.evItems.filter(i => i.evt !== ev.key);
-  for (const v of ev.cars) v.fireHold = false;
+  for (const v of ev.cars) { v.fireHold = false; if (v.rage) { v.rage = false; v.chase = false; } }
   if (ev.loot && !ev.loot.resolved) {}  // evEnd 전에 처리됨
   S.ev = null;
 }
