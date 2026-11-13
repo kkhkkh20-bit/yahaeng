@@ -54,7 +54,7 @@ function draw() {
     ctx.strokeStyle = 'rgba(232,71,60,.7)'; ctx.lineWidth = 3; ctx.setLineDash([6, 6]); ctx.beginPath(); ctx.arc(fx, fy, 40, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
   }
   if (showRoutes || tactical) drawRoutes(P);
-  drawCityEntryThresholds();drawTrapsGround(); drawProps();
+  drawCityEntryThresholds();drawTrapsGround(); drawProps(); if (STAGE.cityLife && typeof drawElevDoors === 'function') drawElevDoors();   // 엘리베이터 문은 벽 그림 — 사람보다 먼저(아래) 그린다
   for (const d of S.decals) { if (!onGround(d)) continue; ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.arc(d.r * 0.8, d.r * 0.4, d.r * 0.3, 0, TAU); ctx.fill(); ctx.restore(); }
   if (STAGE.cityLife) drawBloodParts();
   for (const it of S.items) if (!it.got && onGround(it)) drawLootItem(it);
