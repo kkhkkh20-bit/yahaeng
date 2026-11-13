@@ -14,7 +14,7 @@ function carbombStart(h, plan) {
   h.car = v; h.leaveAt = S.t + CB_LEAVE; P.bombs = (P.bombs || 0) + 1;
 }
 function carbombAction() {
-  const h = S.hit, P = S.player; if (!h || h.ctr !== 'carbomb' || !h.car || h.car.dead || h.car.bombed || h.cbGone || P.car || P.trav) return null;
+  const h = S.hit, P = S.player; if (!h || !['carbomb', 'stage'].includes(h.ctr) || !h.car || h.car.dead || h.car.bombed || h.cbGone || P.car || P.trav) return null;
   if (dist(P.x, P.y, h.car.x, h.car.y) > 64) return null;
   if (!(P.bombs > 0)) return { k: 'evAct', label: '폭약이 없다 — 철물점·공구점', fn: () => evBanner('폭약이 없다 — 철물점이나 공구점에서 산다') };
   return { k: 'evAct', label: `${h.name}의 차에 폭약 설치`, fn: () => carbombPlant(h) };
@@ -27,7 +27,7 @@ function carbombPlant(h) {
       evBanner(`폭약 설치 — ${h.name}이(가) 차에 타면 터진다. 멀리 떨어져라`, '#ff8a6a'); if (witnessed(v.x, v.y, 300)) addWanted(1, '차 밑에 뭘 붙이는 걸 누가 봤다'); } });
 }
 function carbombUpdate() {
-  const h = S.hit; if (!h || h.ctr !== 'carbomb' || !h.car) return; const g = h.g, v = h.car;
+  const h = S.hit; if (!h || !['carbomb', 'stage'].includes(h.ctr) || !h.car) return; const g = h.g, v = h.car;
   if (v.dead) { if (h.cbIn && npcAlive(g)) carbombKill(h); return; }
   if (!npcAlive(g) || h.cbIn) return;
   if (!h.cbWalk && S.t >= h.leaveAt && ['PATROL', 'RETURN'].includes(g.state)) {
@@ -42,6 +42,6 @@ function carbombUpdate() {
 // 차가 터지면 안에 탄 표적도 끝 (폭발 사인)
 function carbombKill(h) { const g = h.g; g.off = false; g.hiddenInCar = false; g.x = h.car.x + 20; g.y = h.car.y + 10; (S.booms || (S.booms = [])).push({ x: g.x, y: g.y, t: S.t }); npcDown(g, null, true); }
 function drawMiniCarbomb(x, T) {
-  const h = S.hit; if (!h || h.ctr !== 'carbomb' || !h.car || h.car.dead) return;
+  const h = S.hit; if (!h || !['carbomb', 'stage'].includes(h.ctr) || !h.car || h.car.dead || h.ctr === 'stage' && !h.opp.car.known) return;
   x.fillStyle = h.car.bombed ? '#ff5a3a' : '#ffa040'; x.fillRect(T(h.car.x) - 3, T(h.car.y) - 3, 6, 6);
 }

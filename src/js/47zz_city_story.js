@@ -16,9 +16,9 @@ const STORY_MAIN = [
     brief: [['master', '장미 도장 돈을 실어 나르는 운반책, 오정길.'], ['master', '이번엔 총도 칼도 안 된다. 길에서 차에 치인 사고여야 해.'],
       ['master', '치고 나서 그 자리에 서 있지 마라. 목격자가 번호판을 외우기 전에 빠져.'], ['hero', '운전은 자신 있다.']],
     debrief: [['master', '오정길 휴대폰에서 이름이 하나 나왔다. 청계파 간부 백상만. 장미 쪽 돈줄을 쥐고 있다.']] },
-  { title: '그의 차', ctr: 'carbomb', fac: 'C', target: '백상만', escorts: 1, pay: 600,
-    brief: [['master', '백상만은 늘 같은 차를 탄다. 그 블록 길가에 세워 둔다.'], ['master', '폭약 하나 줬다. 그놈이 시동을 거는 순간 끝나게 해.'],
-      ['master', '타기 전에 터지면 안 된다. 그놈이 탈 때까지 멀리서 기다려.'], ['hero', '기다리는 건 일도 아니지.']],
+  { title: '그의 차', ctr: 'stage', fac: 'C', target: '백상만', escorts: 1, pay: 600,
+    brief: [['master', '백상만은 습관이 많은 놈이다. 같은 블록을 돌고, 같은 모퉁이에서 담배를 피우고, 같은 차를 탄다.'], ['master', '4분 뒤엔 차를 타고 그 블록을 뜬다. 그 전에 끝내.'],
+      ['master', '총은 쓰지 마. 놈 곁에 붙어서 말을 엿들어. 틈은 놈이 직접 알려 줄 거다. 폭약 하나 넣어 뒀다.'], ['hero', '사고는 원래 습관에서 난다.']],
     debrief: [['master', '백상만 차 트렁크에서 경찰 수사 기록 사본이 나왔다. 누가 안에서 흘리고 있어.'], ['master', '경찰은 여전히 우리를 모른다. 그런데 장미는 경찰을 안다.']] },
   { title: '떨어지는 간판', ctr: 'sign', fac: 'D', target: '한두철', escorts: 1, pay: 700,
     brief: [['master', '한두철. 종로파 쪽 해결사인데, 경찰 수사 기록을 장미에게 넘기는 통로다.'], ['master', '이놈이 죽으면 경찰이 들쑤신다. 사고여야 한다 — 철거 안 한 낡은 간판이 떨어진 사고.'],
@@ -57,7 +57,9 @@ const storyMainLeft = () => STAGE.cityLife && S.story && S.story.ch < STORY_MAIN
 // 전화 한 통: 메인 이야기가 남았으면 그 장 (앞 장 결과 보고 + 이번 지령). 없으면 null → 평소 일거리
 function storyCall() {
   if (!storyMainLeft() || S.t < (S.story.nextT || 0)) return null;  /* 장과 장 사이엔 평소 일거리 전화가 온다 */
-  const n = S.story.ch, C = STORY_MAIN[n], plan = planHit(); if (!plan) return null;
+  const n = S.story.ch, C = STORY_MAIN[n];
+  let plan = planHit(); if (!plan) return null;
+  if (C.ctr === 'stage') for (let k = 0; k < 12 && !signCands(plan.route).length; k++) plan = planHit() || plan;  /* 무대: 간판을 걸 수 있는 블록을 고른다 */
   Object.assign(plan, { kind: 'hit', name: C.target, fac: C.fac, escorts: C.escorts, ctr: C.ctr, pay: C.pay, story: n });
   const prev = n > 0 ? STORY_MAIN[n - 1].debrief : [], retry = S.story.failed ? [['master', '지난번 일은 틀어졌다. 한 번 더 기회를 주지.']] : [];
   const head = [[{ note: '야행 지령' }, `메인 이야기 ${n + 1}/${STORY_MAIN.length} · ${C.title}`]];
@@ -67,6 +69,9 @@ function storyMainDone(h, ok) {
   if (h.story == null || !S.story) return;
   if (!ok) { S.story.failed = true; return; }
   S.story.failed = false; S.story.ch = Math.max(S.story.ch, h.story + 1); fstat('storyCh');
+  const R = (S.story.rec || (S.story.rec = {}))[h.story] || (S.story.rec[h.story] = { ways: [], best: null });
+  if (h.cause && !R.ways.includes(h.cause)) R.ways.push(h.cause);
+  if (h.gradeG && (!R.best || 'SABC'.indexOf(h.gradeG) < 'SABC'.indexOf(R.best))) R.best = h.gradeG;
   const C = STORY_MAIN[h.story];
   evBanner(`메인 이야기 ${h.story + 1}/${STORY_MAIN.length} 완료 — ${C.title}`, '#c9a2ff');
   storyCard(h.story, true);
@@ -108,6 +113,9 @@ function storyCard(n, done) {
   const last = done && n === STORY_MAIN.length - 1, K = CONTRACTS[C.ctr];
   el.querySelector('[data-k]').textContent = last ? '야행 · 끝' : `제 ${n + 1} 장${done ? ' · 완료' : ''}`;
   el.querySelector('[data-t]').textContent = C.title;
-  el.querySelector('[data-s]').textContent = done ? (last ? '흑장미는 졌다. 을지로의 밤은 계속된다.' : '다음 지령은 공중전화로 온다.') : `표적 ${C.target}${K && C.ctr !== 'plain' ? ' · ' + K.name : ''}`;
+  const R = S.story && S.story.rec && S.story.rec[n], how = R && R.ways.length ? ` · 처리: ${R.ways.map(storyWayName).join(', ')}${R.best ? ' · 최고 ' + R.best : ''}` : '';
+  el.querySelector('[data-s]').textContent = done ? (last ? '흑장미는 졌다. 을지로의 밤은 계속된다.' : '다음 지령은 공중전화로 온다.') + how : `표적 ${C.target}${K && C.ctr !== 'plain' ? ' · ' + K.name : ''}`;
   el.style.opacity = '1'; clearTimeout(el._t); el._t = setTimeout(() => { el.style.opacity = '0'; }, last ? 5200 : 2800);
 }
+const STORY_WAY = { blast: '차량 폭탄', sign: '간판 사고', poison: '독침', car: '차로 침', fire: '불', gun: '총', blade: '칼' };
+function storyWayName(c) { return STORY_WAY[c] || c; }
