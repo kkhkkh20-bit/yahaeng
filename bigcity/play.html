@@ -16067,7 +16067,7 @@ function hitGoal() {
   const g = h.g;
   if (h.ctr === 'capture') { const c = captureGoal(h); c.text += ` · ${money}`; return c; }
   if (STAGE.cityLife && contractHides(h)) return { text: `표시된 블록을 돌며 사진 속 ${h.name} 찾기 · ${money}`, where: '', x: h.cx, y: h.cy, fl: 0 };
-  return { text: (h.ko ? (g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko) ? `기절한 ${h.name}에게 수갑 채우기` : `${h.name}을(를) 기절시켜 검거하기`) : g.unconscious ? `기절한 ${h.name}의 숨통을 끊어라` : `${h.name} 처치`) + (STAGE.cityLife ? contractGoal(h) : '') + ` · ${money}`, where: '', x: g.x, y: g.y, fl: flOf(g), g };
+  return { text: (h.ko ? (g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko) ? `기절한 ${h.name}에게 수갑 채우기` : `${withJosa(h.name, '을/를')} 기절시켜 검거하기`) : g.unconscious ? `기절한 ${h.name}의 숨통을 끊어라` : `${h.name} 처치`) + (STAGE.cityLife ? contractGoal(h) : '') + ` · ${money}`, where: '', x: g.x, y: g.y, fl: flOf(g), g };
 }
 // 공중전화 부스 (위에서 비스듬히 본 유리 상자: 은색 기둥 · 유리벽 · 안쪽 벽의 파란 전화기 · 빨간 지붕 띠)와 표적 표시
 // layer 'world': 조명을 받는 부스 · 'ui': 어둠 위 — 안에 든 나를 덮는 앞 유리, 부스 안 불빛, 표적 고리
@@ -17992,7 +17992,7 @@ function pickupsUpdate(dt) {
     if (P.car || flOf(P) || S.t - k.t < 0.4 || dist(P.x, P.y, k.x, k.y) > 26) continue;
     S.pickups.splice(i, 1); play('loot', 0.45);
     if (k.kind === 'cash') { S.cash = (S.cash || 0) + k.n; fstat('earned', k.n); toast(`돈 +${k.n}만`, 1.2, 'good'); }
-    else { S.guns[k.wpn] = (S.guns[k.wpn] || 0) + k.n; if (!S.wpn) S.wpn = k.wpn; gunChip(); toast(`${WEAPONS[k.wpn].name}을(를) 주웠다 · 탄 +${k.n}`, 1.4, 'good'); play('click', 0.4, 0.8); } }
+    else { S.guns[k.wpn] = (S.guns[k.wpn] || 0) + k.n; if (!S.wpn) S.wpn = k.wpn; gunChip(); toast(`${withJosa(WEAPONS[k.wpn].name, '을/를')} 주웠다 · 탄 +${k.n}`, 1.4, 'good'); play('click', 0.4, 0.8); } }
 }
 function dropPickup(x, y, kind, wpn, n) { if (solidAt(Math.floor(x / TILE), Math.floor(y / TILE))) return; S.pickups.push({ x, y, kind, wpn, n, t: S.t, rot: rnd(-0.6, 0.6) }); if (S.pickups.length > 40) S.pickups.shift(); }
 // 방탄조끼: hurtPlayer가 먼저 부른다. 막으면 true
@@ -18191,7 +18191,7 @@ function contractMul(h, g) {
 // 매 프레임 (의뢰 중): 시간 제한 · 사진 의뢰 얼굴 확인
 function contractUpdate() {
   const h = S.hit; if (!h || !h.ctr || h.ko) return; const g = h.g, P = S.player;
-  if (h.ctr === 'timed' && npcAlive(g) && S.t > h.deadline) { contractFail(h, `${h.name}이(가) 서울을 떴다 · 의뢰 실패`); return; }
+  if (h.ctr === 'timed' && npcAlive(g) && S.t > h.deadline) { contractFail(h, `${withJosa(h.name, '이/가')} 서울을 떴다 · 의뢰 실패`); return; }
   if (h.ctr === 'timed' && !h.warned && h.deadline - S.t < 30) { h.warned = true; evBanner('30초 남았다', '#ffb070'); play('click', 0.5, 0.8); }
   if (h.ctr === 'carbomb' || h.ctr === 'stage') carbombUpdate();
   if (h.ctr === 'stage') stageUpdate(h);
@@ -18242,14 +18242,14 @@ function intelUpdate() {
   const h = S.hit, B = h && h.brk; if (!B || B.done) return; const g = h.g;
   if (!npcAlive(g)) { B.done = true; return; }
   if (!B.on && S.t >= B.at && !['PATROL', 'RETURN'].includes(g.state) && g.state !== 'ALERT') { g.state = 'RETURN'; g.meter = 0; g.icon = null; g.poi = null; }  /* 거리 소음에 잠깐 두리번거린 정도면 담배는 그대로 */
-  if (!B.on && S.t >= B.at && g.state === 'ALERT') { B.done = true; evBanner(`${h.name}이(가) 경계 중이다. 빈틈이 없다`, '#c8c0b0'); return; }  // 이미 들켰으면 담배는 없다
+  if (!B.on && S.t >= B.at && g.state === 'ALERT') { B.done = true; evBanner(`${withJosa(h.name, '이/가')} 경계 중이다. 빈틈이 없다`, '#c8c0b0'); return; }  // 이미 들켰으면 담배는 없다
   if (!B.on && S.t >= B.at) {
     B.on = true; B.route = g.route; B.ri = g.ri;
     { let bd = 1e9; for (const q of g.route || []) { const d = dist(q.x, q.y, g.x, g.y); if (d < bd) { bd = d; B.x = q.x; B.y = q.y; } } if (bd > 260) { B.x = g.x; B.y = g.y; } }  // 그때 가장 가까운 모퉁이 (멀면 그 자리에서)
     g.route = [{ x: B.x, y: B.y, pause: 999 }]; g.ri = 0; g.wait = 0; g.path = null;
     B.esc = h.escorts.map(e => ({ e, follow: e.follow, route: e.route }));
     h.escorts.forEach((e, i) => { if (!npcAlive(e)) return; if (e.state !== 'ALERT') { e.state = 'PATROL'; e.meter = 0; e.poi = null; e.icon = null; } const a = Math.atan2(e.y - B.y, e.x - B.x) + i * Math.PI;  /* 둘은 서로 반대쪽으로 (한 보도에서 앞사람에게 막히지 않게) */ e.follow = null; const to = walkableNear(B.x + Math.cos(a) * 520, B.y + Math.sin(a) * 520, B); e.route = [{ x: to.x, y: to.y, pause: 999 }]; e.ri = 0; e.wait = 0; e.path = null; });
-    B.t0 = S.t; gsay(g, '먼저 가 있어. 한 대 피우고 간다.', 2.4); evBanner(`빈틈! ${h.name}이(가) 혼자 담배를 피운다 · ${B.dur}초`, '#ffd76a'); play('click', 0.5, 0.8);
+    B.t0 = S.t; gsay(g, '먼저 가 있어. 한 대 피우고 간다.', 2.4); evBanner(`빈틈! ${withJosa(h.name, '이/가')} 혼자 담배를 피운다 · ${B.dur}초`, '#ffd76a'); play('click', 0.5, 0.8);
   }
   // 차 가지러 간 경호원: 떠난 지 4초가 지나 내 눈에 안 보이면 차가 있는 곳(물러날 자리)에서 기다린다 — 길에 걸려 어정쩡하게 남지 않게
   if (B.on && !B.done && S.t - (B.t0 ?? S.t) > 4) for (const o of B.esc || []) { const e = o.e, to = e.route && e.route[0];
@@ -18352,7 +18352,7 @@ function safeWatched() {
 }
 function safeEnter(s) {
   const P = S.player;
-  if (S.wanted && !(s.i === 0 && homeHas('cctv'))) { const w = safeWatched(); if (w) { evBanner(`${w}이(가) 보고 있다. 지금 들어가면 문을 부순다. 따돌려라`, '#ff9a86'); play('thud', 0.4); return; } }
+  if (S.wanted && !(s.i === 0 && homeHas('cctv'))) { const w = safeWatched(); if (w) { evBanner(`${withJosa(w, '이/가')} 보고 있다. 지금 들어가면 문을 부순다. 따돌려라`, '#ff9a86'); play('thud', 0.4); return; } }
   S.safeIn = s; P.hide = null; P.cover = null; input.aiming = null;
   startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: s.x, y: s.y - 14, f: 0.12 }, { x: s.x, y: s.y - 14, f: 1 }], dur: SAFE_HIDE, phases: [{ to: 1, pose: 'walk' }], face: -Math.PI / 2 });
   play('click', 0.6); after(0.3, () => { S.fade = SAFE_HIDE - 0.4; P.hidden = true; });
@@ -18534,20 +18534,20 @@ function carbombPlant(h) {
   doMotion({ x: v.x + Math.cos(v.a + Math.PI / 2) * 30, y: v.y + Math.sin(v.a + Math.PI / 2) * 30, pose: 'crouch', dur: CB_PLANT, face: Math.atan2(v.y - P.y, v.x - P.x),
     at: [[0.5, () => play('click', 0.4)], [1.2, () => play('switch', 0.4)]],
     end: () => { if (!S.hit || S.hit !== h || v.dead) return; P.bombs--; v.bombed = true; fstat('carBombs'); play('click', 0.6, 0.7);
-      evBanner(`폭약 설치. ${h.name}이(가) 차에 타면 터진다. 멀리 떨어져라`, '#ff8a6a'); if (witnessed(v.x, v.y, 300)) addWanted(1, '차 밑에 뭘 붙이는 걸 누가 봤다'); } });
+      evBanner(`폭약 설치. ${withJosa(h.name, '이/가')} 차에 타면 터진다. 멀리 떨어져라`, '#ff8a6a'); if (witnessed(v.x, v.y, 300)) addWanted(1, '차 밑에 뭘 붙이는 걸 누가 봤다'); } });
 }
 function carbombUpdate() {
   const h = S.hit; if (!h || !['carbomb', 'stage'].includes(h.ctr) || !h.car) return; const g = h.g, v = h.car;
   if (v.dead) { if (h.cbIn && npcAlive(g)) carbombKill(h); return; }
   if (!npcAlive(g) || h.cbIn) return;
   if (!h.cbWalk && S.t >= h.leaveAt && ['PATROL', 'RETURN'].includes(g.state)) {
-    h.cbWalk = true; g.route = [{ x: v.x, y: v.y, pause: 999 }]; g.ri = 0; g.wait = 0; g.path = null; gsay(g, '차 빼. 간다.', 2); evBanner(`${h.name}이(가) 차로 간다`, '#ffb070'); }
+    h.cbWalk = true; g.route = [{ x: v.x, y: v.y, pause: 999 }]; g.ri = 0; g.wait = 0; g.path = null; gsay(g, '차 빼. 간다.', 2); evBanner(`${withJosa(h.name, '이/가')} 차로 간다`, '#ffb070'); }
   if (h.cbWalk && dist(g.x, g.y, v.x, v.y) < 66) {  /* 차체에 막혀 46 안쪽까지는 못 온다 */
     h.cbIn = true; play('click', 0.5 * proxVol(g)); g.hiddenInCar = true; g.x = v.x; g.y = v.y; g.off = true; g.route = [{ x: v.x, y: v.y, pause: 999 }];
     if (v.bombed) { after(0.9, () => { if (!v.dead) carExplode(v); }); }
-    else { v.parked = false; v.driver = true; v.ai = true; v.locked = false; evBanner(`${h.name}이(가) 차를 몰고 떠난다. 쫓아가 차를 터뜨려라`, '#ffb070'); h.cbDrive = S.t; }
+    else { v.parked = false; v.driver = true; v.ai = true; v.locked = false; evBanner(`${withJosa(h.name, '이/가')} 차를 몰고 떠난다. 쫓아가 차를 터뜨려라`, '#ffb070'); h.cbDrive = S.t; }
   }
-  if (h.cbIn && !v.dead) { g.x = v.x; g.y = v.y; if (h.cbDrive && S.t - h.cbDrive > 120 && dist(v.x, v.y, S.player.x, S.player.y) > 1500) { h.cbGone = true; contractFail(h, `${h.name}이(가) 도시를 빠져나갔다 · 의뢰 실패`); if (!v.dead) { v.ai = false; v.parked = true; } } }
+  if (h.cbIn && !v.dead) { g.x = v.x; g.y = v.y; if (h.cbDrive && S.t - h.cbDrive > 120 && dist(v.x, v.y, S.player.x, S.player.y) > 1500) { h.cbGone = true; contractFail(h, `${withJosa(h.name, '이/가')} 도시를 빠져나갔다 · 의뢰 실패`); if (!v.dead) { v.ai = false; v.parked = true; } } }
 }
 // 차가 터지면 안에 탄 표적도 끝 (폭발 사인)
 function carbombKill(h) { const g = h.g; g.off = false; g.hiddenInCar = false; g.x = h.car.x + 20; g.y = h.car.y + 10; (S.booms || (S.booms = [])).push({ x: g.x, y: g.y, t: S.t }); npcDown(g, null, true); }
@@ -20053,7 +20053,7 @@ function civTalkUpdate() {
   if (!STAGE.cityLife || !S.guards) return; const P = S.player, pf = flOf(P);
   // 내가 방금 쏜 총 (소음 권총은 빼고): S.gunT가 바뀐 순간
   const W = S.wpn && typeof WEAPONS !== 'undefined' ? WEAPONS[S.wpn] : null;
-  const shot = W && !W.throw && !W.silent && S.gunT !== S.civShotGunT && S.gunT > S.t - 1; S.civShotGunT = S.gunT;
+  const shot = W && !W.throw && !W.silent && S.civShotGunT !== undefined && S.gunT !== S.civShotGunT && S.gunT > S.t - 1; S.civShotGunT = S.gunT;   // 불러온 직후(처음 확인)는 총소리로 치지 않는다
   const armed = !P.car && (typeof wpnOn === 'function' && wpnOn());
   const lp = S.civLP || { x: P.x, y: P.y }, walking = !P.car && dist(lp.x, lp.y, P.x, P.y) > 8; S.civLP = { x: P.x, y: P.y };   // 지난 확인(0.5초) 뒤로 걸었나
   let near = null, nd = 1e9;
@@ -20109,7 +20109,7 @@ function staffUpdate(dt) {
 //  · 가까이: 매장 안에서 그 직원 곁에 1초 넘게 멈춰 있을 때만 일 얘기 ("라면 드릴까요?")
 //  · 나감: 매장에 있다가 나갈 때 · 무기: 매장 안에서 총·칼을 꺼내 들었을 때 (겁먹고 뒤로)
 function staffInShop(g) {
-  const P = S.player, A = g.shopA; if (!A || P.car || P.z || flOf(P) !== g.shopF) return false; const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE);
+  const P = S.player, A = g.shopA; if (!A || P.car || P.z || P.hide || flOf(P) !== g.shopF) return false; const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE);
   if (tx < A.x0 || tx > A.x1 || ty < A.y0 || ty > A.y1) return false;
   const D = S.elevs?.get(g.shopB)?.door; if (D && dist(P.x, P.y, D.x, D.y) < 52) return false;
   const st = PLANS[g.shopB]?.[g.shopF]?.stair; if (st && dist(P.x, P.y, tc(st[0]), tc(st[1])) < 56) return false;
@@ -20126,6 +20126,7 @@ function staffTalk(dt) {
     if (!armed) g.scared = false;
     g.stillT = d < 80 && !P.moving ? (g.stillT || 0) + 0.5 : 0;   // staffUpdate는 0.5초마다
     if (g.stillT >= 1 && (!g.nearT || S.t - g.nearT > 12)) { g.nearT = S.t; g.want = Math.atan2(P.y - g.y, P.x - g.x); saysLine(g, g.staff, 'near'); }
+    else if (d > 120 && S.t - Math.max(g.custIn, g.nearT || 0, g.idleT || 0) > 18) { g.idleT = S.t; saysLine(g, g.staff, 'idle', 2.4); }   // 손님이 멀리 둘러보는 동안 혼잣말
   }
 }
 
@@ -20368,7 +20369,7 @@ const ASK = [
 ];
 function captureUpdate(h, ko) {
   const g = h.g, P = S.player;
-  if (g.state === 'DEAD' && !ko && !h.done) { contractFail(h, `${h.name}이(가) 죽어 입을 열 사람이 없다 · 의뢰 실패`); return true; }
+  if (g.state === 'DEAD' && !ko && !h.done) { contractFail(h, `${withJosa(h.name, '이/가')} 죽어 입을 열 사람이 없다 · 의뢰 실패`); return true; }
   if (!h.trunk) { const c = (S.corpses || []).find(c => c.g === g && c.inTrunk); if (c) { h.trunk = c.inTrunk; c.inTrunk.trunk = c.inTrunk.trunk.filter(o => o !== c); c.stashed = true; c.hidden = true; g.off = true; } }  /* 일반 [트렁크에 싣기]로 실어도 같다 */
   if (h.trunk) { const v = h.trunk; if (v.dead) { contractFail(h, `트렁크째 터졌다. ${h.name}도 끝났다 · 의뢰 실패`); return true; }
     g.x = v.x; g.y = v.y; const home = S.safes && S.safes[0];
@@ -20408,7 +20409,7 @@ function askPick(h, a) {
 }
 function captureDone(h) {
   if (S.hit !== h) return; h.done = true; const g = h.g; evGone(g); fstat('confessions');
-  S.cash = (S.cash || 0) + h.pay; S.hitN++; S.hit = null; evBanner(`자백 확보 · +${h.pay}만 · ${h.name}은(는) 경찰서 앞 기둥에`, '#9fe0b0');
+  S.cash = (S.cash || 0) + h.pay; S.hitN++; S.hit = null; evBanner(`자백 확보 · +${h.pay}만 · ${withJosa(h.name, '은/는')} 경찰서 앞 기둥에`, '#9fe0b0');
   if (h.phish != null) phishDone(h, true); if (h.dtr != null) dtrDone(h, true); saveFreeProgress(true);
 }
 
