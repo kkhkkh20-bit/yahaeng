@@ -60,7 +60,7 @@ async def main():
         print('villainy', json.dumps(r, ensure_ascii=False))
         ok(r['down'] >= 1 and r['slap'], 'villainy before I arrive: %s' % r)
         # 다가가면 주인공이 한마디 (거슬려서 치운다)
-        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.ev=null;const e=EV('animal');e.engaged=false;P.x=e.g.x+60;P.y=e.g.y;tick(.3);return{engaged:!!e.engaged,banner:(document.getElementById('evBanner')||{}).textContent||''}}''')
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.ev=null;let e=null;for(let k=0;k<8&&!e;k++){P.x=(G.STAGE.roadsX[2]+2)*48+k*400;P.y=(G.STAGE.roadsY[2]+2)*48;P.fl=0;P.z=0;e=EV('animal');}/* 앞 장면이 나를 지도 끝에 두고 갈 수 있다 — 거리 한복판에서 */if(!e)return{engaged:false,banner:'nostart'};e.engaged=false;P.x=e.g.x+60;P.y=e.g.y;tick(.3);return{engaged:!!e.engaged,banner:(document.getElementById('evBanner')||{}).textContent||''}}''')
         print('engage', json.dumps(r, ensure_ascii=False))
         ok(r['engaged'] and '(' in r['banner'], 'engage line: %s' % r)
         ok(not errs, 'page errors: %s' % errs)

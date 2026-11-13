@@ -121,7 +121,11 @@ function rageCar() {
       if (!inMap(Math.floor(x / TILE), Math.floor(y / TILE)) || (Math.abs(x - cam.x) < vw && Math.abs(y - cam.y) < vh)) continue;
       if ((hor ? RX : RY).some(r => (hor ? x : y) > r * TILE - 60 && (hor ? x : y) < (r + 4) * TILE + 60)) continue;
       if (deckSpawnZ(x, y) !== 0) continue; c.push({ x, y, d }); } }
-  if (!c.length) return null; const o = c[(Math.random() * c.length) | 0];
+  if (!c.length) return null;
+  // 바로 뒤에서 붙는다: 내가 달리는 방향과 같은 차로 · 내 차로에 가장 가까운 줄을 먼저 (다른 길에서 돌아오다 30초 넘게 헤매지 않게)
+  const car = P.car, ca = car ? Math.cos(car.a) : 1, sa = car ? Math.sin(car.a) : 0;
+  const score = o => { const along = DV[o.d][0] * ca + DV[o.d][1] * sa, hor = o.d === 0 || o.d === 2; return (along > 0.7 ? 0 : 5000) + Math.abs(hor ? o.y - P.y : o.x - P.x) + Math.hypot(o.x - P.x, o.y - P.y) * 0.1; };
+  c.sort((p, q) => score(p) - score(q)); const o = c[0];
   const v = makeVehicle({ type: 'suv', x: o.x, y: o.y, d: o.d, a: Math.atan2(DV[o.d][1], DV[o.d][0]), v: AI_SPD, ai: true, driver: true, chase: true }); planTurn(v); S.vehicles.push(v); return v;
 }
 // 보복운전 차가 내 곁에 서면: 운전자가 내린다 (47_city copCarArrive에서 부른다)
