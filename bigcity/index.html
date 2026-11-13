@@ -15644,7 +15644,7 @@ function cityGuardRefs() {
 function cityGuardSlot() {
   if (!STAGE.cityLife) return S.guards.length;
   let used = null;
-  for (let i = 0; i < S.guards.length; i++) { const o = S.guards[i]; if (!o.off || !TEMP_ACTOR(o) || o.contact || o.beat) continue;
+  for (let i = 0; i < S.guards.length; i++) { const o = S.guards[i]; if (!o.off || !TEMP_ACTOR(o) || o.contact || o.beat || o.rideIn || o.rideTo) continue;  /* 차에 탄 사람 자리는 비어 있지 않다 */
     used = used || cityGuardRefs(); if (!used.has(i) && !used.has(o)) return i; }
   return S.guards.length;
 }
@@ -15672,7 +15672,7 @@ function cityListsCleanup() {
     if (!far(g)) { g._deadAt = null; continue; } g._deadAt = g._deadAt || S.t;
     if (S.t - g._deadAt > 45) { S.corpses = (S.corpses || []).filter(c => c.g !== g && c.guardId !== g.id); evGone(g); } }
   // 새로 생긴 차(사건·추격·조직 차): 멀리 있고 아무도 쓰지 않으면 뺀다
-  const busy = new Set([P.car, P.lastCar, ...S.vehicles.filter(v => v.trunk?.length || v.riders?.length), S.job?.v, ...(S.ev && !S.ev.done ? S.ev.cars || [] : [])]);
+  const busy = new Set([P.car, P.lastCar, ...S.vehicles.filter(v => v.trunk?.length || v.riders?.length), S.hit?.trunk, S.job?.v, ...(S.ev && !S.ev.done ? S.ev.cars || [] : [])]);
   // 오래 켜 둬도 쌓이지 않게 (10분 실험: 터진 차·시체가 계속 늘었다):
   //  · 원래 있던 차가 부서져 멀리 60초 → 치우고, 화면 밖 길 차로에 새 차를 한 대 넣는다 (교통량 유지)
   //  · 원래 있던 행인이 죽어 멀리 90초 → 시체를 치우고, 같은 길을 도는 새 행인을 화면 밖에 세운다 (인구 유지). 조직원은 시체만 치운다
@@ -18000,7 +18000,7 @@ function pickupsUpdate(dt) {
   if ((S.dropScan -= dt) <= 0) { S.dropScan = 0.3;
     for (let i = Math.max(0, S.corpses.length - 40); i < S.corpses.length; i++) { const c = S.corpses[i]; if (c.dropped || c.fl || c.civ) continue; c.dropped = true;
       const g = c.g; if (!g || g.evt && g.evt !== 'war' || dist(c.x, c.y, P.x, P.y) > 1000) continue;  // 구역 이벤트 사람은 이벤트가 따로 떨군다
-      if (g.police) { if (S.wanted >= 2 || Math.random() < 0.3) dropPickup(c.x + rnd(-14, 14), c.y + rnd(8, 16), 'ammo', 'pistol', 6 + (Math.random() * 7 | 0)); }
+      if (g.police) { if (S.guns?.pistol != null && (S.wanted >= 2 || Math.random() < 0.3)) dropPickup(c.x + rnd(-14, 14), c.y + rnd(8, 16), 'ammo', 'pistol', 6 + (Math.random() * 7 | 0)); }
       else if (c.fac && c.fac !== 'P') { const r = Math.random();
         if (r < 0.1) dropPickup(c.x + rnd(-14, 14), c.y + rnd(8, 16), 'ammo', 'pistol', 3 + (Math.random() * 4 | 0));  /* 조직원도 총은 드물다 */
         else if (r < 0.75) dropPickup(c.x + rnd(-14, 14), c.y + rnd(8, 16), 'cash', null, 10 + (Math.random() * 40 | 0)); } } }
@@ -18684,7 +18684,9 @@ function stageReveal(h, k, who, line, note) {
   play('bell', 0.35, 1.5); evBanner(`(들었어 — ${note})`, '#9fd8ff'); fstat('stageClue');
 }
 function stageUpdate(h) {
-  const P = S.player, g = h.g; if (!npcAlive(g) || h.cbIn || flOf(P) || P.car) return;
+  const P = S.player, g = h.g;
+  if (!npcAlive(g) && h.smokeEsc) { for (const k of h.smokeEsc) if (npcAlive(k.o)) { k.o.follow = k.follow; k.o.route = k.route; k.o.path = null; k.o.wait = 0; } h.smokeEsc = null; }  // 담배 피우다 쓰러졌다: 비켜 섰던 경호원도 원래대로
+  if (!npcAlive(g) || h.cbIn || flOf(P) || P.car) return;
   const hear = o => o && npcAlive(o) && !o.off && dist(P.x, P.y, o.x, o.y) < STAGE_HEAR && los(P.x, P.y, o.x, o.y) && o.state !== 'ALERT';
   const e = h.escorts.find(npcAlive);
   // 차: 표적이 출발 시각을 말한다 (가까이 붙어 있으면 들린다)
@@ -18901,7 +18903,7 @@ const NUISANCE = [
       if (c.broken) { if (dist(c.members[0].x, c.members[0].y, P.x, P.y) > 1400) evEnd(ev, '(킥보드 놓쳤어.)'); return; }
       // 보도를 질주하며 앞에 있는 행인을 치고 지나간다 (뺑소니)
       const L = c.members[0];
-      for (const o of actorsNear(L.x, L.y)) { if (!o.civ || o.crew || o.evt || !npcAlive(o) || o.off || dist(o.x, o.y, L.x, L.y) > 22) continue; npcDown(o, null, false); ev.hits++; play('thud', 0.4 * proxVol(o)); gsay(L, ['아 죄송~', '비켜요!', 'ㅋㅋ 가자'][ev.hits % 3], 1.6); for (const k of actorsNear(o.x, o.y)) if (k.civ && npcAlive(k) && !k.crew && dist(k.x, k.y, o.x, o.y) < 200) civPanic(k, o.x, o.y, 6); }
+      for (const o of actorsNear(L.x, L.y)) { if (!o.civ || o.crew || o.evt || !npcAlive(o) || o.off || dist(o.x, o.y, L.x, L.y) > 22) continue; o.downNpc = true; npcDown(o, null, false); ev.hits++; play('thud', 0.4 * proxVol(o)); gsay(L, ['아 죄송~', '비켜요!', 'ㅋㅋ 가자'][ev.hits % 3], 1.6); for (const k of actorsNear(o.x, o.y)) if (k.civ && npcAlive(k) && !k.crew && dist(k.x, k.y, o.x, o.y) < 200) civPanic(k, o.x, o.y, 6); }
       if (!P.car && dist(P.x, P.y, L.x, L.y) < 140 && !ev.boost) { ev.boost = true; c.slow = 1.25; gsay(L, '튀어!', 1.4); }
       if (ev.engaged && dist(L.x, L.y, P.x, P.y) > 1800) evEnd(ev, '(어디로 샜지... 놓쳤네.)'); },
     goal: ev => `보도 질주 킥보드 멈추기 (친 사람 ${ev.hits || 0}명)` },
@@ -19039,8 +19041,8 @@ function newsTicker(text) {
 // 박씨는 건물 뒤편 골목(차도·큰 보도가 아닌 곳)에 서 있다. 강 형사가 첫 통화에서 귀띔하면 미니맵에 검은 점으로 뜬다.
 // 파는 것: 경찰 권총(+12) · 권총 탄 12발 · 방탄조끼. 박씨가 죽으면 3분 뒤 같은 자리에 '조카'가 나온다.
 const DEALER_ITEMS = [
-  { k: 'pistol', name: '경찰 권총 (+12발) — 출처는 묻지 마', price: 600, can: () => !(S.guns.pistol > 0), buy: () => { S.guns.pistol = (S.guns.pistol || 0) + 12; if (!S.wpn) S.wpn = 'pistol'; } },
-  { k: 'ammo', name: '권총 탄 12발', price: 80, can: () => S.guns.pistol > 0 || S.wpn === 'pistol', buy: () => { S.guns.pistol = (S.guns.pistol || 0) + 12; } },
+  { k: 'pistol', name: '경찰 권총 (+12발) — 출처는 묻지 마', price: 600, can: () => S.guns.pistol == null, buy: () => { S.guns.pistol = (S.guns.pistol || 0) + 12; if (!S.wpn) S.wpn = 'pistol'; } },
+  { k: 'ammo', name: '권총 탄 12발', price: 80, can: () => S.guns.pistol != null, buy: () => { S.guns.pistol = (S.guns.pistol || 0) + 12; } },
   { k: 'knife', name: '회칼 — 소리 없이, 가깝게', price: 50, can: () => !(S.guns.knife > 0), buy: () => { S.guns.knife = 1; S.wpn = 'knife'; } },
   { k: 'armor', name: `방탄조끼 (${typeof ARMOR_MAX !== 'undefined' ? ARMOR_MAX : 3}번 막는다)`, price: 250, can: () => (S.player.armor | 0) < ARMOR_MAX, buy: () => { S.player.armor = ARMOR_MAX; } },
 ];
@@ -19224,7 +19226,7 @@ function trunkUnload(v) {
 }
 // ---- 사람 태우기
 const RIDE_MAX = 3;
-function rideOk(g) { return g && npcAlive(g) && !g.off && g.civ && !g.police && !g.fac && !g.crew && !g.dog && !g.child && !['PANIC', 'FLEE', 'TERROR', 'REPORT'].includes(g.state) && !g.assailant && !g.knifeman; }
+function rideOk(g) { return g && npcAlive(g) && !g.off && g.civ && !g.police && !g.fac && !g.crew && !g.dog && !g.child && !['PANIC', 'FLEE', 'TERROR', 'REPORT'].includes(g.state) && !g.assailant && !g.knifeman && !g.evt && g.skBi == null && !g.criminal && !g.cfight && !g.fist; }  /* 사건 인물·용의자·싸우는 사람은 안 탄다 */
 function rideAction() {
   if (!STAGE.cityLife) return null; const P = S.player; if (P.car || P.carrying || P.captive || actionBusy(P)) return null;
   const v = P.lastCar && !P.lastCar.dead && dist(P.x, P.y, P.lastCar.x, P.lastCar.y) < 160 ? P.lastCar : null; if (!v) return null;
@@ -19238,7 +19240,7 @@ function rideAction() {
 }
 function rideBoard(v, g) {
   if (!rideOk(g)) return; const R = v.riders || (v.riders = []);
-  faceEachOther(g); gsay(g, g.evt ? '네, 태워 주세요.' : ['...어디로 가는데요?', '태워 주시는 거예요?', '아, 네... 감사합니다.'][g.id % 3], 2);
+  faceEachOther(g); gsay(g, ['...어디로 가는데요?', '태워 주시는 거예요?', '아, 네... 감사합니다.'][g.id % 3], 2);
   doMotion({ dur: 0.5, pose: 'idle', end: () => { if (!npcAlive(g)) return; g.rideTo = v; g.rideT0 = S.t; R.push(g); fstat('riders');  /* 차 문까지 걸어가서 탄다 (trunkUpdate) */
     evBanner(`조수석 ${R.length}/${RIDE_MAX} · (벨트 매. 어디까지 가?)`, '#9fc4ff'); } });
 }
@@ -19390,7 +19392,7 @@ function killHowNow(o) {
 }
 // 손맛: 내가 쓰러뜨린 순간 아주 짧게 멈칫 (히트스톱) + 흔들림 — 방식마다 세기가 다르다
 const HIT_FEEL = { melee: [0.06, 0.12], car: [0.08, 0.3], gun: [0.035, 0.08], boom: [0.1, 0.45], fire: [0.05, 0.15], crush: [0.1, 0.4], basement: [0, 0], env_booth: [0.14, 0.3], env_cardoor: [0.14, 0.3], env_traffic: [0.12, 0.35], env_river: [0.08, 0.1], env_wall: [0.12, 0.25] };
-if (typeof npcDown === 'function') { const _npcDown = npcDown; npcDown = function (o, by, lethal) { if (STAGE.cityLife && o && npcAlive(o)) { o.killHow = by && by !== S.player ? 'npc' : killHowNow(o);
+if (typeof npcDown === 'function') { const _npcDown = npcDown; npcDown = function (o, by, lethal) { if (STAGE.cityLife && o && npcAlive(o)) { o.killHow = by && by !== S.player || o.downNpc ? 'npc' : killHowNow(o);
     const f = o.killHow !== 'npc' && dist(o.x, o.y, S.player.x, S.player.y) < 700 && HIT_FEEL[o.killHow]; if (f) { S.hitStop = Math.max(S.hitStop || 0, f[0]); S.shakeT = Math.max(S.shakeT || 0, f[1]); } }
   return _npcDown(o, by, lethal); }; }
 // 쓰러진 놈의 방식 (사고·독은 시체 기록에 남는다)
@@ -19647,7 +19649,7 @@ function brawlTarget() {
 }
 // [공격] 한 번 = 한 방. 맞힐 사람이 없어도 헛손질은 한다 (모션)
 function brawlStrike() {
-  if (!STAGE.cityLife) return false; const P = S.player; if (P.car || P.captive || P.carrying || P.z || flOf(P)) return false;
+  if (!STAGE.cityLife) return false; const P = S.player; if (P.car || P.captive || P.carrying || P.z || flOf(P) || P.hide || P.cover || P.booth) return false;  /* 숨은 채로는 주먹을 못 뻗는다 */
   const knife = knifeOn(), g = brawlTarget(); if (g) P.a = Math.atan2(g.y - P.y, g.x - P.x);
   if (S.t - (P.comboT || -9) > 0.8) P.combo = 0; P.combo = (P.combo || 0) + 1; P.comboT = S.t; const heavy = !knife && P.combo % 3 === 0;
   P.strikeT = knife ? 0.26 : heavy ? 0.42 : 0.3; P.killAnim = null; P.brawling = true; P.brawlQueued = false; play(knife ? 'cloth' : 'cloth', 0.35, knife ? 1.6 : 1.1);
@@ -19707,7 +19709,8 @@ function copTookDown(o, cop) {
   after(3.5, () => { if (o.state === 'DEAD' && !o.off) { const c = (S.corpses || []).find(k => k.g === o); if (c && c.ko && !c.carried && !c.inTrunk) { S.corpses = S.corpses.filter(k => k !== c); evGone(o); } } });
 }
 // npcDown 을 한 겹 더: 범죄자가 사람을 해치면 신고 / 경찰이 범죄자를 쓰러뜨리면 연행
-if (typeof npcDown === 'function') { const _nd = npcDown; npcDown = function (o, by, lethal) { const r = _nd(o, by, lethal); if (o) o.downBy = by && by !== S.player ? (by.police ? 'police' : 'npc') : (o.downNpc ? 'npc' : 'me'); if (o) o.downNpc = false;
+if (typeof npcDown === 'function') { const _nd = npcDown; npcDown = function (o, by, lethal) { const was = !o || !npcAlive(o); const r = _nd(o, by, lethal); if (was) { if (o) o.downNpc = false; return r; }  /* 이미 쓰러진 사람에게 또 온 호출: 누가 쓰러뜨렸는지 덮어쓰지 않는다 */
+  if (o) o.downBy = by && by !== S.player ? (by.police ? 'police' : 'npc') : (o.downNpc ? 'npc' : 'me'); if (o) o.downNpc = false;
   if (STAGE.cityLife && by && by !== S.player && o) {
     if (by.police && (o.criminal || o.cfight) && !o.knifeman) copTookDown(o, by);
     else if (!by.police && !by.fac && o.civ && !by.knifeman) {  /* 흉기 난동범은 경찰도 못 막는다 (그 사건 몫은 내 것) */ by.criminal = true; policeCall(o.x, o.y, by); } }
@@ -27387,7 +27390,7 @@ function padButton(el, key, a, idle) {
   const quiet=key==='actH'&&subduedAction(a);
   const ic = quiet?'ko':a.k === 'cap' ? (a.hold ? 'ko' : 'kill') : a.k === 'none' && a.stalk ? (koTap(a.stalk) ? 'ko' : 'kill') : actIcon(a), v = quiet?'기절 상태':actVerb(a, ic) || idle, hold = quiet?'<small>길게 살해</small>':a.skillLocked ? '<small>배워야 사용</small>' : a.hold ? `<small>${holdHint(a)}</small>` : '';
   // Share the authored action symbols with world prompts; keep the verb and accessible label.
-  const shortV=key==='actH'&&a.k==='none'?(STAGE.cityLife?(S.player.car&&!wpnOn()?'경적':wpnOn()?(WEAPONS[S.wpn].throw?'던지기':'사격'):'공격'):'제압'):a.k==='dress'?'옷 입기':a.k==='camroom'?(S.camsOff?'기록 삭제':'감시 정지'):v;
+  const shortV=key==='actH'&&a.k==='none'?(STAGE.cityLife?(S.player.car&&!(wpnOn()&&!WEAPONS[S.wpn].melee)?'경적':wpnOn()&&!WEAPONS[S.wpn].melee?(WEAPONS[S.wpn].throw?'던지기':'사격'):'공격'):'제압'):a.k==='dress'?'옷 입기':a.k==='camroom'?(S.camsOff?'기록 삭제':'감시 정지'):v;
   const html = hudArt(key==='actH'?(ic==='kill'?'blade':'attack'):key==='dressH'?'dress':'action')+`<b>${shortV}</b>` + hold;
   if (hudCache[key] !== html) { hudCache[key] = html; el.innerHTML = html; }
   // A shortened visible verb can stay identical while distance/availability changes.
@@ -27563,7 +27566,7 @@ function actAttack() {if(S?.player?.cuffed)return;
   if (STAGE.cityLife && gunAttack()) return;  // 자유 모드: 손 닿는 처치가 없으면 든 무기로 쏜다
   const a = attackAction();
   if (a.k === 'none') {
-    if (STAGE.cityLife && ((a.stalk && queueApproachAttack(a.stalk)) || brawlStrike())) return;  // 등 뒤로 다가가는 중이면 처치 예약이 먼저. 아니면: 정면·들킴 → 주먹질·칼질 (47zp)
+    if (STAGE.cityLife && !a.skillLocked && ((a.stalk && queueApproachAttack(a.stalk)) || brawlStrike())) return;  // 등 뒤로 다가가는 중이면 처치 예약이 먼저. 아니면: 정면·들킴 → 주먹질·칼질 (47zp)
     if(a.skillLocked)toast(abilityLockText(a.skillLocked),2);
     else if(a.stalk){if(!queueApproachAttack(a.stalk))toast('아직 손이 닿지 않는다 · 등 뒤로 더 가까이',1.5,'warn');}  // 입력 실패 반응: 최소 모드에서도 사실만 남는다
     else toast('공격할 사람의 등 뒤 가까이 접근하기',1.5);
