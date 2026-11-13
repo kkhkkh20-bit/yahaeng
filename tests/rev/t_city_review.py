@@ -19,6 +19,9 @@ CHECK = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));w
   // 4) 경찰 앞에서 살짝 스친 행인 → 별 없음
   S.wanted=0;const cop=S.guards.find(o=>o.police&&!o.off&&o.state!=='DEAD');const w=S.guards.find(o=>o.civ&&o.state==='PATROL'&&!o.evt&&!o.off&&o!==g);
   if(cop&&w){cop.x=w.x+80;cop.y=w.y;cop.fl=0;w.fl=0;E.carHitReport(w,false);out.bumpStars=S.wanted;}
+  // 5) 2층 창문 → 옆 1층 옥상으로 건너뛰기
+  let hop=null;for(const w of S.fwindows||[]){if(hop||w.fl!==1||!w.out||!w.inn)continue;w.st='open';P.car=null;P.fl=1;P.z=0;G.setLayer(1);P.x=w.inn.x;P.y=w.inn.y;P.trav=null;P.jump=null;tick(.02);const a=G.primaryAction();if(a&&a.k==='winRoof'){G.actPrimary();tick(1.6);hop={fl:P.fl,z:P.z};}}
+  out.roofHop=hop;
   return out}'''
 
 async def main():
@@ -36,6 +39,7 @@ async def main():
         ok(r['inv'] and r['inv'].get('picks') == 4 and r['inv'].get('bombs') == 2 and r['inv'].get('coins') == 7, 'shop items not saved: %s' % r)
         ok(r['carried'] is False and not r['held'], 'body stays "carried" after going down: %s' % r)
         ok(r.get('bumpStars', 0) == 0, 'light bump in front of police gave stars: %s' % r)
+        ok(r['roofHop'] and r['roofHop']['z'] == 1 and r['roofHop']['fl'] == 0, 'cannot hop from a 2nd-floor window onto the next roof: %s' % r.get('roofHop'))
         ok(not errs, 'page errors: %s' % errs)
         await b.close()
     print('통과' if not bad else '문제', bad); sys.exit(1 if bad else 0)

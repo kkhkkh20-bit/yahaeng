@@ -36,6 +36,14 @@ function nearWinDrop() {
   for (const w of S.fwindows || []) { if (ACT_SKIP.has(w) || w.fl !== 1 || w.st !== 'open' || !w.out || !w.inn) continue; const d = dist(P.x, P.y, w.inn.x, w.inn.y); if (d < bd) { bd = d; best = w; } }
   return best;
 }
+// 자유 모드: 2층 열린 창문 밖으로 몇 칸 안에 낮은 건물(1층) 옥상이 붙어 있으면 그 옥상으로 건너뛴다 (옥상끼리 이어 달리기)
+function nearWinRoof() {
+  if (!STAGE.cityLife) return null; const w = nearWinDrop(); if (!w) return null; const o = w.out, [dx, dy] = o.d, ox = Math.floor(o.x / TILE), oy = Math.floor(o.y / TILE);
+  for (let n = 0; n <= 3; n++) { const tx = ox + dx * n, ty = oy + dy * n; if (!inMap(tx, ty)) return null; const lv = rLv(tx, ty);
+    if (lv === 1 && !robAt(tx, ty) && !solidFor(1)(tx, ty)) return { w, tx, ty, z: 1 };
+    if (lv > 1) return null; }
+  return null;
+}
 // 벽 타고 2층 열린 창문으로: 창문 바로 밑(바깥 땅 칸)에서. 열린 창문만 (매달린 채로는 락픽을 못 쓴다)
 function nearWinClimb() {
   if (groundedWorld()) return null;

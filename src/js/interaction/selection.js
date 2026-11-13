@@ -99,6 +99,7 @@ function primaryActionRaw() {
   if (cu) return { k: 'up', l: cu, at: cu.kind === 'fstair' || cu.kind === 'stair' ? stairLower(cu).up.marker : undefined, label: cu.kind === 'balc' ? '베란다 타고 2층으로' : cu.gas ? '가스관 타고 옥상으로' : cu.kind === 'pipe' ? '배관 오르기' : cu.kind === 'fstair' ? `오르기 · ${cu.tfl + 1}층` : cu.kind === 'stair' ? '오르기 · 옥상' : cu.kind === 'chimney' ? '굴뚝으로 오르기' : '오르기' };
   const gv = nearVent(); if (gv) return { k: 'ventIn', v: gv, label: withJosa(ventName(gv),'으로/로')+' 들어가기' };
   const fd = nearFloorDown(); if (fd) return { k: 'fdown', l: fd, at: fd.kind === 'balc' ? null : downMark(fd), label: fd.kind === 'balc' ? '내려가기 · 베란다로' : `내려가기 · ${fd.bfl + 1}층` };
+  { const wr = nearWinRoof(); if (wr) return { k: 'winRoof', r: wr, w: wr.w, at: { x: wr.w.x, y: wr.w.y }, label: '창문에서 옆 옥상으로 건너뛰기' }; }
   { const wd = nearWinDrop(); if (wd) return { k: 'winDrop', w: wd, at: { x: wd.x, y: wd.y }, label: '창문 넘어 내려가기' }; }
   const nw = nearWindow(); if (nw) {
     const ws = winSt(nw.w);
