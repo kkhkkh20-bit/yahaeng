@@ -1,6 +1,6 @@
 """Free mode revenge events (vigilante, a necessary evil): a fraud seller fleecing the elderly with two bodyguards,
 an animal abuser kicking a dog, a staged-accident gang shaking down a new driver. Taking them down pays from their
-wallets, stamps 응징, runs a news ticker where the police call it a crime, and bystanders whisper instead of cheering.
+wallets, stamps 처리, runs a news ticker where the police call it a crime, and bystanders whisper instead of cheering.
 District standing never goes up."""
 import asyncio, json
 from pathlib import Path
@@ -27,12 +27,12 @@ async def main():
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;const e=EV('tteot');if(!e)return{start:false};P.x=e.g.x;P.y=e.g.y+150;tick(.5);const hot=!!e.hot,chase=e.thugs.map(g=>g.state);
           G.killGuard(e.g);tick(1.6);const d=DONE();const it=(S.evItems||[]).find(i=>i.evt===e.key);if(it){P.x=it.x;P.y=it.y;tick(.4);}return{start:true,hot,chase,dropped:!!e.dropped,loot:!!e.loot,stamp:d.stamp,news:d.news}}''')
         print('tteot', json.dumps(r, ensure_ascii=False))
-        ok(r['start'] and r['hot'] and all(s == 'ALERT' for s in r['chase']) and r['dropped'] and '응징' in r['stamp'] and '경찰' in r['news'], 'tteot: %s' % r)
+        ok(r['start'] and r['hot'] and all(s == 'ALERT' for s in r['chase']) and r['dropped'] and '처리' in r['stamp'] and '경찰' in r['news'], 'tteot: %s' % r)
         # 동물 학대범
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.ev=null;S.copT=1e9;S.wanted=0;const c0=S.cash;const e=EV('animal');if(!e)return{start:false};P.x=e.g.x+500;P.y=e.g.y;tick(5);const kicks=e.kicks;const ch=G.events.charOf(e.dog);
           G.killGuard(e.g);tick(1.6);const civ=[];return{start:true,kicks,ch,paid:S.cash-c0,...DONE()}}''')
         print('animal', json.dumps(r, ensure_ascii=False))
-        ok(r['start'] and r['kicks'] >= 2 and r['ch'] == 'dog' and r['paid'] == 30 and r['done'] and '응징' in r['stamp'], 'animal: %s' % r)
+        ok(r['start'] and r['kicks'] >= 2 and r['ch'] == 'dog' and r['paid'] == 30 and r['done'] and '처리' in r['stamp'], 'animal: %s' % r)
         # 자해공갈단: 셋 다 쓰러뜨려야 끝
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.ev=null;S.wanted=0;const c0=S.cash;const e=EV('gongal');if(!e)return{start:false};const n=e.thugs.length;P.x=e.x;P.y=e.y;P.x=e.thugs[1].x+120;P.y=e.thugs[1].y;tick(.4);const hot=!!e.hot;
           G.killGuard(e.thugs[0]);G.killGuard(e.thugs[1]);tick(.3);const mid=!!e.done;G.killGuard(e.thugs[2]);tick(1.6);return{start:true,n,hot,mid,paid:S.cash-c0,car:!!e.car,...DONE()}}''')
@@ -46,6 +46,10 @@ async def main():
           G.killGuard(e.g);const says=[];for(let k=0;k<180;k++){G.update(1/60);for(const g of L)if(g.say&&!says.includes(g.say))says.push(g.say);}return{says}}''')
         print('crowd', json.dumps(r, ensure_ascii=False))
         ok(r['says'] and not any(w in ''.join(r['says']) for w in ['고마', '박수', '잘했다']), 'crowd: %s' % r)
+        # 다가가면 주인공이 한마디 (거슬려서 치운다)
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.ev=null;const e=EV('animal');e.engaged=false;P.x=e.g.x+60;P.y=e.g.y;tick(.3);return{engaged:!!e.engaged,banner:(document.getElementById('evBanner')||{}).textContent||''}}''')
+        print('engage', json.dumps(r, ensure_ascii=False))
+        ok(r['engaged'] and '(' in r['banner'], 'engage line: %s' % r)
         ok(not errs, 'page errors: %s' % errs)
         await b.close()
     print('통과' if not bad else '문제', bad)

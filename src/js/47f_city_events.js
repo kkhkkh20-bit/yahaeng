@@ -54,6 +54,8 @@ function evLoot(ev, owner, val, reward, what) {
   if (npcAlive(owner)) { owner.state = 'PATROL'; evGo(owner, owner.x, owner.y); gsay(owner, '제 ' + what + '이에요! 돌려주세요!', 3); }
   evBanner(`${what}을 주웠다 — 주인에게 돌려주거나 챙긴다`);
 }
+// 나는 선인도 악인도 아니다. 눈앞에서 알짱대는 놈이 거슬려서 치우고, 돈을 챙길 뿐
+const ANNOYED = ['...거슬리네.', '눈에 띈 게 네 운이다.', '시끄럽네.', '하필 내 앞에서.', '돈은 좀 있겠지.', '귀찮게 하네.'];
 function evKeep(ev) { const L = ev.loot; if (!L || ev.done) return; cash(L.val); addRep(ev.d, -3); evEnd(ev, `${L.what}을 챙겼다 · ${L.val}만`); }
 function evGive(ev) { const L = ev.loot; if (!L || ev.done) return; cash(L.reward); if (npcAlive(L.owner)) gsay(L.owner, '...가, 감사합니다.', 3); evEnd(ev, `돌려줬다 · ${L.reward}만은 수고비로`, true); if (ev.def.onGive) ev.def.onGive(ev); }
 
@@ -202,7 +204,7 @@ const EVENTS = [
       if (ev.race === 'count' && S.t > ev.goT) { ev.race = 'run'; play('bell', 0.5); evBanner('출발!'); }
       if (ev.race === 'run') { o.v = Math.min(500, (o.v || 0) + 290 * dt); o.x += Math.cos(ev.a) * o.v * dt; o.y += Math.sin(ev.a) * o.v * dt; o.a = ev.a;
         const me = P.car && dist(P.x, P.y, ev.fin.x, ev.fin.y) < 130, him = dist(o.x, o.y, ev.fin.x, ev.fin.y) < 60;
-        if (me) { cash(200); addRep(ev.d, 1); evEnd(ev, '드래그 레이스 승리 · 200만', true); o.v = 0; }
+        if (me) { cash(200); evEnd(ev, '드래그 레이스 승리 · 200만', true); o.v = 0; }
         else if (him) { o.v = 0; evEnd(ev, '드래그 레이스 패배 — 판돈을 잃었다'); } } },
     action(ev) { const P = S.player; if (ev.race || !P.car || dist(P.x, P.y, ev.start.x, ev.start.y) > 160) return null; return { label: '레이스 참가 · 판돈 100만', at: { x: ev.start.x, y: ev.start.y - 60 }, fn: () => {
       if ((S.cash || 0) < 100) { evBanner('판돈 100만이 없다'); return; } S.cash -= 100; play('loot', 0.5); ev.race = 'count'; ev.goT = S.t + 3; P.car.v = 0; evBanner('3… 2… 1…'); } }; },
@@ -215,11 +217,11 @@ const EVENTS = [
     action(ev) { const P = S.player; if (P.car || dist(P.x, P.y, ev.p.x, ev.p.y) > 90) return null; return { label: '폐공장 도박장', at: { x: ev.p.x, y: ev.p.y - 56 }, fn: () => openDen(ev) }; },
     goal: () => '폐공장 도박장 — 걸기 · 신고 · 털기' },
 ];
-function evHelpVendor(ev) { if (ev.done) return; for (const g of ev.enf) evFlee(g, S.player.x, S.player.y, 20); if (npcAlive(ev.vendor)) gsay(ev.vendor, '고맙수! 다음에 오면 싸게 해 주지.', 3); cash(30); addRep(ev.d, 5); evEnd(ev, '상인 편을 들었다 · 30만', true); }
+function evHelpVendor(ev) { if (ev.done) return; for (const g of ev.enf) evFlee(g, S.player.x, S.player.y, 20); if (npcAlive(ev.vendor)) gsay(ev.vendor, '고맙수! 다음에 오면 싸게 해 주지.', 3); cash(30); evEnd(ev, '상인 편을 들었다 · 30만', true); }
 function openDen(ev) {
   const show = () => shopPanel('폐공장 도박장', [
     { name: '판돈 50만 걸기 (반반)', price: 50, ok: (S.cash || 0) >= 50, buy: () => { if (ev.done) { closeShopPanel(); return; } S.cash -= 50; const win = Math.random() < 0.48; if (win) cash(100); else play('click', 0.4); evBanner(win ? '땄다! +100만' : '잃었다'); show(); } },
-    { name: '경찰에 신고 (평판 +3)', price: null, tag: '사례 80만', ok: true, buy: () => { closeShopPanel(); if (ev.done) return; cash(80); addRep(ev.d, 3); for (const g of ev.players) evFlee(g, ev.p.x, ev.p.y, 20); for (let k = 0; k < 2; k++) { const g = spawnCop(true); if (g) evGo(g, ev.p.x, ev.p.y); } evEnd(ev, '도박장을 신고했다 · 80만', true); } },
+    { name: '경찰에 넘기기', price: null, tag: '+80만', ok: true, buy: () => { closeShopPanel(); if (ev.done) return; cash(80); for (const g of ev.players) evFlee(g, ev.p.x, ev.p.y, 20); for (let k = 0; k < 2; k++) { const g = spawnCop(true); if (g) evGo(g, ev.p.x, ev.p.y); } evEnd(ev, '도박장을 신고했다 · 80만', true); } },
     { name: '판 털기 (수배 2, 평판 -4)', price: null, tag: '+300만', ok: true, buy: () => { closeShopPanel(); if (ev.done) return; cash(300); addWanted(2, '도박장을 털었다'); addRep(ev.d, -4); for (const g of [ev.bouncer, ...ev.players]) evFlee(g, S.player.x, S.player.y, 20); evEnd(ev, '도박장 판돈을 털었다 · 300만'); } }]);
   show();
 }
@@ -242,7 +244,7 @@ function cityEventsUpdate(dt) {
   if (ev) {
     const f = ev.def.focus(ev); if (f) { ev.x = f.x; ev.y = f.y; }
     if (!ev.done) {
-      if (!ev.engaged && dist(P.x, P.y, ev.x, ev.y) < EV_REACH) { ev.engaged = true; evBanner(`${ev.d} · ${ev.def.name}`, '#ffd066'); play('click', 0.4); }
+      if (!ev.engaged && dist(P.x, P.y, ev.x, ev.y) < EV_REACH) { ev.engaged = true; evBanner(ev.def.villain ? `${ev.def.name} — (${ANNOYED[(S.t * 7 | 0) % ANNOYED.length]})` : `${ev.d} · ${ev.def.name}`, '#ffd066'); play('click', 0.4); }
       ev.def.update.call(ev.def, ev, dt);
       evItemsUpdate();
       const L = ev.loot; if (L && !ev.done && S.t > L.until) evKeep(ev);

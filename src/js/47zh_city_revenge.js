@@ -1,4 +1,4 @@
-// ---------------------------------------------------------------- 자유 모드 응징 사건 (비질란테)
+// ---------------------------------------------------------------- 자유 모드 처리 사건 (비질란테)
 // 법이 손 놓은 놈들을 내가 정리한다. 영웅 놀음이 아니다: 평판은 오르지 않고, 시민은 나를 무서워하며,
 // 경찰은 '사적 제재'로 쫓는다 (47zf justiceMoment). 돈은 놈들 지갑에서 나온다.
 //   tteot   떴다방 사기꾼: 가게 앞에서 노인들에게 가짜 건강식품을 수백만 원에 판다. 덩치 둘이 지킨다
@@ -32,7 +32,7 @@ function revengeBeg(g, lines) { if (npcAlive(g) && !g.begged && dist(g.x, g.y, S
 // 덩치들은 조직원처럼 덤빈다 (행인 AI는 쫓지 않으므로 조직원으로 바꿔 단다 — 옷은 그대로)
 const thugsOn = L => { for (const g of L) if (npcAlive(g) && !g.off) { if (!g.fac) { g.fac = 'D'; g.rival = true; } g.civ = false; copChase(g); } };
 const REVENGE = [
-  { key: 'tteot', d: '*', name: '떴다방 사기꾼',
+  { key: 'tteot', d: '*', villain: true, name: '떴다방 사기꾼',
     start(ev) { const f = districtFront(ev.d, b => b.kind === 'shop', 380, 1000); if (!f) return false; const p = f.p;
       ev.g = evPerson(ev, p.x, p.y + 6, { body: 'coat' }); ev.olds = [evPerson(ev, p.x - 40, p.y + 30, { body: 'old' }), evPerson(ev, p.x + 40, p.y + 34, { body: 'old' })];
       ev.thugs = [evPerson(ev, p.x - 70, p.y + 4, { fac: 'C', body: 'big' }), evPerson(ev, p.x + 70, p.y + 4, { fac: 'C', body: 'big' })];
@@ -40,25 +40,25 @@ const REVENGE = [
     focus: ev => ev.loot ? ev.loot.owner : ev.g,
     update(ev) { const g = ev.g, P = S.player;
       if (ev.engaged && !ev.hot && dist(g.x, g.y, P.x, P.y) < 220) { ev.hot = true; gsay(ev.thugs[0], '뭘 봐? 장사 방해하지 말고 꺼져.', 2.2); thugsOn(ev.thugs); }
-      if (!npcAlive(g)) { if (!ev.dropped) { ev.dropped = true; justiceMoment('떴다방 사기꾼 응징', `[속보] ${ev.d} 노인 상대 '만병통치약' 떴다방 업자, 가게 앞에서 쓰러진 채 발견… 피해 노인 수십 명`, g.x, g.y);
+      if (!npcAlive(g)) { if (!ev.dropped) { ev.dropped = true; justiceMoment('떴다방 사기꾼 처리', `[속보] ${ev.d} 노인 상대 '만병통치약' 떴다방 업자, 가게 앞에서 쓰러진 채 발견… 피해 노인 수십 명`, g.x, g.y);
           evItem(ev, g.x + 14, g.y + 8, 'bag', 200, () => evLoot(ev, ev.olds.find(npcAlive) || null, 200, 30, '노인들 돈 가방')); } return; }
       revengeBeg(g, ['자, 잠깐! 돈 돌려드릴게요!', '이거 다 합법이에요! 합법!']);
       if (g.state === 'PANIC' || g.state === 'FLEE') { if (dist(g.x, g.y, P.x, P.y) > 900) { evGone(g); evEnd(ev, '사기꾼이 돈 가방을 들고 달아났다'); } }
       if (ev.engaged && dist(ev.x, ev.y, P.x, P.y) > 1600) evEnd(ev, '그냥 지나쳤다'); },
-    goal: ev => ev.loot ? '노인들 돈 가방 — 돌려주거나 챙기기' : ev.dropped ? '떨어진 돈 가방 줍기' : '노인 등치는 떴다방 사기꾼 응징 (덩치 둘)' },
-  { key: 'animal', d: '*', name: '동물 학대범',
+    goal: ev => ev.loot ? '노인들 돈 가방 — 돌려주거나 챙기기' : ev.dropped ? '떨어진 돈 가방 줍기' : '노인 등치는 떴다방 사기꾼 처리 (덩치 둘)' },
+  { key: 'animal', d: '*', villain: true, name: '동물 학대범',
     start(ev) { const p = offscreenSpot(380, 700); if (!p) return false; ev.g = evPerson(ev, p.x, p.y, { body: 'big' });
       const d = ev.dog = evPerson(ev, p.x + 30, p.y + 6, {}); d.dog = true; d.body = null; d.outfit = null; d.civ = true; ev.kicks = 0; gsay(ev.g, '짖지 말라고 했지!', 2.4); return true; },
     focus: ev => ev.g,
     update(ev) { const g = ev.g, d = ev.dog, P = S.player;
-      if (!npcAlive(g)) { if (!ev.paid) { ev.paid = true; cash(30); evEnd(ev, '학대범 정리 · 놈의 지갑 30만', true); justiceMoment('동물 학대범 응징', `[속보] 골목서 개 상습 학대하던 남성, 같은 자리에서 쓰러진 채 발견… 주민 "몇 달째 비명 들렸다"`, g.x, g.y);
+      if (!npcAlive(g)) { if (!ev.paid) { ev.paid = true; cash(30); evEnd(ev, '학대범 정리 · 놈의 지갑 30만', true); justiceMoment('동물 학대범 처리', `[속보] 골목서 개 상습 학대하던 남성, 같은 자리에서 쓰러진 채 발견… 주민 "몇 달째 비명 들렸다"`, g.x, g.y);
           if (npcAlive(d)) { d.dogFree = true; evFlee(d, g.x, g.y, 30); } } return; }
       if (npcAlive(d) && dist(g.x, g.y, P.x, P.y) > 120 && (ev.kickT = (ev.kickT || 0) - 1 / 60) <= 0) { ev.kickT = 2.2; ev.kicks++; g.swingT = 0.3; g.a = Math.atan2(d.y - g.y, d.x - g.x); play('thud', 0.4 * proxVol(g)); gsay(d, '깨갱!', 1); }
       if (ev.engaged && !ev.warned && dist(g.x, g.y, P.x, P.y) < 120) { ev.warned = true; gsay(g, '내 개 내 맘대로 하는데 뭔 상관이야?', 2.6); g.a = Math.atan2(P.y - g.y, P.x - g.x); }
       revengeBeg(g, ['아, 알았어! 안 때릴게!', '신고할 거야! 이거 폭행이야!']);
       if (ev.engaged && dist(g.x, g.y, P.x, P.y) > 1500) evEnd(ev, '그냥 지나쳤다'); },
-    goal: () => '골목에서 개를 걷어차는 학대범 응징' },
-  { key: 'gongal', d: '*', name: '자해공갈단',
+    goal: () => '골목에서 개를 걷어차는 학대범 처리' },
+  { key: 'gongal', d: '*', villain: true, name: '자해공갈단',
     start(ev) { const p = roadSpot(420, 800); if (!p) return false; const tx = Math.floor(p.x / TILE), ty = Math.floor(p.y / TILE), hor = G0[ty][tx - 2] === '=' && G0[ty][tx + 2] === '=', a = hor ? 0 : Math.PI / 2;
       ev.car = evCar(ev, 'sedan', p.x, p.y, a, {}); const ox = Math.cos(a), oy = Math.sin(a);
       ev.driver = evPerson(ev, p.x - oy * 34, p.y + ox * 34, { body: 'fBob' }); ev.lie = evPerson(ev, p.x + ox * 50, p.y + oy * 50, {}); ev.lie.wait = 999;
@@ -66,11 +66,11 @@ const REVENGE = [
       gsay(ev.lie, '아이고 다리야! 사람 쳤다!', 3); after(1.5, () => npcAlive(ev.thugs[1]) && gsay(ev.thugs[1], '합의금 500. 안 주면 보험 처리에 경찰 부른다?', 3)); after(3.5, () => npcAlive(ev.driver) && gsay(ev.driver, '저 진짜 안 박았어요... 서 있었는데...', 2.6)); return true; },
     focus: ev => ev.thugs.find(npcAlive) || ev.lie,
     update(ev) { const P = S.player, up = ev.thugs.filter(npcAlive);
-      if (!up.length) { if (!ev.paid) { ev.paid = true; cash(120); evEnd(ev, '공갈단 정리 · 놈들 지갑 120만', true); justiceMoment('자해공갈단 응징', `[속보] 초보 운전자 노린 자해공갈단 셋, 도로 한복판서 모두 쓰러진 채 발견… 블랙박스엔 "다리 다쳤다"던 남성이 뛰는 장면`, ev.x, ev.y);
+      if (!up.length) { if (!ev.paid) { ev.paid = true; cash(120); evEnd(ev, '공갈단 정리 · 놈들 지갑 120만', true); justiceMoment('자해공갈단 처리', `[속보] 초보 운전자 노린 자해공갈단 셋, 도로 한복판서 모두 쓰러진 채 발견… 블랙박스엔 "다리 다쳤다"던 남성이 뛰는 장면`, ev.x, ev.y);
           if (npcAlive(ev.driver)) after(1.6, () => gsay(ev.driver, '...', 2)); } return; }
       if (ev.engaged && !ev.hot && up.some(g => dist(g.x, g.y, P.x, P.y) < 200)) { ev.hot = true; if (npcAlive(ev.lie)) gsay(ev.lie, '...뭐야 저 새끼.', 1.8); ev.lie.wait = 0; thugsOn(up); }
       for (const g of up) revengeBeg(g, ['자, 잠깐! 장난이었어!', '다리 멀쩡해요! 멀쩡하다고!']);
       if (ev.engaged && dist(ev.x, ev.y, P.x, P.y) > 1600) evEnd(ev, '그냥 지나쳤다'); },
-    goal: ev => `초보 운전자 등치는 자해공갈단 응징 (${ev.thugs.filter(npcAlive).length}명)` },
+    goal: ev => `초보 운전자 등치는 자해공갈단 처리 (${ev.thugs.filter(npcAlive).length}명)` },
 ];
 EVENTS.push(...REVENGE);

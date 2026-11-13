@@ -22,7 +22,7 @@ async def main():
         ok = lambda c, m: c or bad.append(m)
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player,e=EV('assault');if(!e)return{start:false};const g=e.g;
           const c=S.guards.find(o=>o.civ&&o.state==='PATROL'&&!o.evt&&!o.crew&&!o.off);g.x=c.x+120;g.y=c.y;P.x=g.x+600;P.y=g.y;
-          for(let k=0;k<900&&!e.hits;k++)tick(1/30);const hits=e.hits,victim=c.state;const c0=S.cash;G.killGuard(g);tick(.5);const st=document.getElementById('justiceStamp');tick(1.2);const nt=document.getElementById('newsTicker');return{start:true,hits,victim,paid:S.cash-c0,stamp:!!st&&st.textContent.includes('응징'),news:nt?nt.textContent:'',...DONE()}}''')
+          for(let k=0;k<900&&!e.hits;k++)tick(1/30);const hits=e.hits,victim=c.state;const c0=S.cash;G.killGuard(g);tick(.5);const st=document.getElementById('justiceStamp');tick(1.2);const nt=document.getElementById('newsTicker');return{start:true,hits,victim,paid:S.cash-c0,stamp:!!st&&st.textContent.includes('처리'),news:nt?nt.textContent:'',...DONE()}}''')
         print('assault', json.dumps(r, ensure_ascii=False))
         ok(r['start'] and r['hits'] >= 1 and r['paid'] == 80 and r['done'], 'assault: %s' % r)
         ok(r['stamp'] and '속보' in r['news'] and '묻지마' in r['news'], 'justice beat (stamp/news) missing: %s' % r)

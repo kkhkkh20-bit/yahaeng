@@ -63,7 +63,7 @@ async def main():
         ok(s['done'] and s['cash'] == s0['cash'] + 400 and al >= 2, 'bridge deal: %s %s' % (al, s))
         # 8 stall: take the vendor's side
         await spawn('stall'); s0 = await st(); await ev("()=>{const S=__game.S,p=S.ev.p;S.player.x=p.x;S.player.y=p.y+10;tick(.05)}"); lab = await q.evaluate(ACT, 0); s = await st(); print('stall', lab, s)
-        ok(s['done'] and s['cash'] == s0['cash'] + 30 and s['rep'].get('청계천 상가', 0) - s0['rep'].get('청계천 상가', 0) == 5, 'stall vendor side: %s' % s)
+        ok(s['done'] and s['cash'] == s0['cash'] + 30 and s['rep'].get('청계천 상가', 0) == s0['rep'].get('청계천 상가', 0), 'stall vendor side: %s' % s)
         # 9 burglar: knock out, return the bundle
         await spawn('burglar'); s0 = await st(); await ev("()=>{const S=__game.S;__game.npcDown(S.ev.thief,null,false);tick(.1)}"); await ev(PICK)
         await ev("()=>{const S=__game.S,o=S.ev.loot.owner;S.player.x=o.x+20;S.player.y=o.y;tick(.05)}"); await q.evaluate(ACT, 0); s = await st(); print('burglar', s)

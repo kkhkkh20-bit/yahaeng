@@ -6,7 +6,7 @@
 //   delivery 배달 오토바이 인도 점령 + 주차 빌런: 상가 앞 보도에 오토바이 여러 대, 차도엔 칸을 가로질러 세운 차.
 //            오토바이를 하나씩 넘어뜨리거나(옆에서 [오토바이 치우기]) 차로 밀어 치우면 끝. 기사 둘이 와서 따진다
 const NUISANCE = [
-  { key: 'assault', d: '*', name: '묻지마 폭행',
+  { key: 'assault', d: '*', villain: true, name: '묻지마 폭행',
     start(ev) { const p = offscreenSpot(380, 700); if (!p) return false; const g = ev.g = evPerson(ev, p.x, p.y, { body: 'big' }); g.assailant = true; ev.hits = 0; gsay(g, '...다 짜증나.', 2.5); return true; },
     focus: ev => ev.g,
     update(ev) { const g = ev.g, P = S.player;
@@ -23,19 +23,19 @@ const NUISANCE = [
       if (ev.engaged && dist(g.x, g.y, P.x, P.y) > 1500) evEnd(ev, '폭행범이 골목으로 사라졌다'); },
     goal: ev => `묻지마 폭행범 제압하기 (피해자 ${ev.hits || 0}명)` },
 
-  { key: 'rage', d: '*', name: '보복운전',
+  { key: 'rage', d: '*', villain: true, name: '보복운전',
     start(ev) { const P = S.player; if (!P.car || Math.abs(P.car.v) < 60) return false; const v = rageCar(); if (!v) return false;
       ev.car = v; ev.cars.push(v); v.rage = ev; ev.t1 = S.t; return true; },
     focus: ev => ev.out || ev.car,
     update(ev) { const v = ev.car, P = S.player, d = ev.out || v;
       if (!ev.honked && ev.engaged) { ev.honked = true; evBanner('보복운전 — 뒤에서 상향등을 번쩍이며 붙는다', '#ff9a86'); play('metal', 0.5, 2.2); }
-      if (v.dead || ev.out && !npcAlive(ev.out)) { if (!ev.paid) { ev.paid = true; cash(100); evEnd(ev, '보복운전자를 막았다 · 놈의 지갑 100만', true); justiceMoment('보복운전 응징', `[속보] 도심서 보복운전하던 SUV 운전자, 되레 당해… 블랙박스 영상 "사이다" 반응`, d.x, d.y); } return; }
+      if (v.dead || ev.out && !npcAlive(ev.out)) { if (!ev.paid) { ev.paid = true; cash(100); evEnd(ev, '보복운전자를 막았다 · 놈의 지갑 100만', true); justiceMoment('보복운전 처리', `[속보] 도심서 보복운전하던 SUV 운전자, 되레 당해… 블랙박스 영상 "사이다" 반응`, d.x, d.y); } return; }
       if (ev.out) { const g = ev.out; if (g.state === 'PANIC' || g.state === 'FLEE') { g.state = 'PATROL'; g.fear = null; } if (!P.car) evGo(g, P.x, P.y);
         if (!P.car && dist(P.x, P.y, g.x, g.y) < 38 && (ev.hitT || 0) < S.t) { ev.hitT = S.t + 1.8; g.swingT = 0.35; gsay(g, ['내려! 내리라고!', '운전 똑바로 해!', '죽고 싶어?'][(S.t | 0) % 3], 2); hurtPlayer(g, '보복운전자에게 맞았다'); } }
       if (dist(d.x, d.y, P.x, P.y) > 1700 || S.t - ev.t1 > 120) evEnd(ev, '보복운전자를 따돌렸다'); },
     goal: ev => ev.out ? '내려서 시비 거는 운전자 제압하기' : '뒤에 붙은 보복운전 차 — 부수거나 따돌리기' },
 
-  { key: 'kick', d: '*', name: '킥보드 2인 질주',
+  { key: 'kick', d: '*', villain: true, name: '킥보드 2인 질주',
     start(ev) { const c = crewSpawn('kick'); if (!c) return false; ev.crew = c; for (const m of c.members) { m.evt = ev.key; ev.actors.push(m); } gsay(c.members[0], '꽉 잡아!', 2); ev.hits = 0; return true; },
     focus: ev => ev.crew.members[0],
     update(ev) { const c = ev.crew, P = S.player;
@@ -48,7 +48,7 @@ const NUISANCE = [
       if (ev.engaged && dist(L.x, L.y, P.x, P.y) > 1800) evEnd(ev, '킥보드가 사라졌다'); },
     goal: ev => `보도 질주 킥보드 멈추기 (친 사람 ${ev.hits || 0}명)` },
 
-  { key: 'delivery', d: '*', name: '인도 점령·주차 빌런',
+  { key: 'delivery', d: '*', villain: true, name: '인도 점령·주차 빌런',
     start(ev) { const f = districtFront(ev.d, b => b.kind === 'shop', 380, 900); if (!f) return false;
       ev.bikes = []; for (let i = 0; i < 6; i++) ev.bikes.push({ x: f.p.x - 110 + i * 44, y: f.p.y + 18, a: Math.PI / 2 + (i % 2 ? .12 : -.12), up: true });
       const r = roadNear(f.p.x, f.p.y + 120, 6); if (r) { const v = ev.car = evCar(ev, 'luxury', r.x, r.y, Math.PI / 4); v.locked = true; v.villain = true; }
@@ -66,7 +66,7 @@ const NUISANCE = [
     goal: ev => `인도 점령 배달 오토바이 치우기 (${ev.bikes.filter(b => b.up).length}대 남음)${ev.car && !ev.car.dead ? ' · 칸 가로지른 빌런 차' : ''}` },
 
   // 몰카범: 횡단보도 앞에서 치마 밑을 찍다가 눈이 마주치면 달아난다. 쓰러뜨리면 휴대폰이 떨어지고, 주워서 증거를 챙기면 끝
-  { key: 'molka', d: '*', name: '불법 촬영범',
+  { key: 'molka', d: '*', villain: true, name: '불법 촬영범',
     start(ev) { const p = offscreenSpot(380, 700); if (!p) return false; ev.g = evPerson(ev, p.x, p.y, {}); ev.v = evPerson(ev, p.x + 26, p.y - 4, { body: 'fLong' }); gsay(ev.g, '(휴대폰을 낮게 든다)', 3); return true; },
     focus: ev => ev.g,
     update(ev) { const g = ev.g, P = S.player;
@@ -76,7 +76,7 @@ const NUISANCE = [
       if (ev.fled && dist(g.x, g.y, P.x, P.y) > 1500) evEnd(ev, '불법 촬영범이 달아났다'); },
     goal: ev => ev.dropped ? '떨어진 휴대폰 줍기 (증거)' : '불법 촬영범 잡기 — 달아난다' },
   // 스토커: 퇴근길 여성을 몇 걸음 뒤에서 계속 따라간다. 쓰러뜨리면 끝 (그녀가 고맙다고 한다)
-  { key: 'stalker', d: '*', name: '스토킹',
+  { key: 'stalker', d: '*', villain: true, name: '스토킹',
     start(ev) { const p = offscreenSpot(380, 700); if (!p) return false; ev.v = evPerson(ev, p.x, p.y, { body: 'fBob' }); ev.g = evPerson(ev, p.x - 70, p.y + 6, { body: 'big' }); const a = rnd(0, TAU); evGo(ev.v, p.x + Math.cos(a) * 900, p.y + Math.sin(a) * 900); gsay(ev.v, '(자꾸 뒤를 돌아본다)', 3); return true; },
     focus: ev => ev.g,
     update(ev) { const g = ev.g, v = ev.v, P = S.player;
@@ -86,16 +86,16 @@ const NUISANCE = [
       if (ev.engaged && dist(g.x, g.y, P.x, P.y) > 1500) evEnd(ev, '둘 다 시야에서 사라졌다'); },
     goal: () => '퇴근길 여성을 따라붙는 스토커 떼어 내기' },
   // 진상 손님: 편의점 앞에서 알바생에게 반말·폭언, 물건을 집어 던진다. 쓰러뜨리거나 밀어내면 끝
-  { key: 'gapjil', d: '*', name: '진상 손님',
+  { key: 'gapjil', d: '*', villain: true, name: '진상 손님',
     start(ev) { const f = districtFront(ev.d, b => b.kind === 'shop', 380, 900); if (!f) return false; ev.clerk = evPerson(ev, f.p.x, f.p.y + 8, { outfit: 'staff' }); ev.g = evPerson(ev, f.p.x + 34, f.p.y + 18, { body: 'big' }); gsay(ev.g, '야! 내가 누군 줄 알아? 사장 나오라 그래!', 3); return true; },
     focus: ev => ev.g,
     update(ev) { const g = ev.g, c = ev.clerk, P = S.player;
-      if (!npcAlive(g)) { if (!ev.paid) { ev.paid = true; cash(40); evEnd(ev, '진상 손님 정리 · 놈의 지갑 40만', true); justiceMoment('진상 손님 응징', `[속보] 편의점 알바생에 폭언·물건 투척한 손님, 지나가던 시민에게 제압… 영상 조회수 폭발`, g.x, g.y); } return; }
+      if (!npcAlive(g)) { if (!ev.paid) { ev.paid = true; cash(40); evEnd(ev, '진상 손님 정리 · 놈의 지갑 40만', true); justiceMoment('진상 손님 처리', `[속보] 편의점 알바생에 폭언·물건 투척한 손님, 지나가던 시민에게 제압… 영상 조회수 폭발`, g.x, g.y); } return; }
       if (npcAlive(c) && g.state === 'PATROL' && (ev.yellT = (ev.yellT || 0) - 1 / 60) <= 0) { ev.yellT = 3; gsay(g, ['반말? 너 몇 살이야!', '이거 환불해! 먹던 거라도!', '카드 안 받아? 장사 접어!'][(S.t | 0) % 3], 2.4); g.swingT = 0.3; play('thud', 0.3 * proxVol(g)); if (Math.random() < 0.4) gsay(c, '...죄송합니다.', 1.6); }
       if (ev.engaged && dist(g.x, g.y, P.x, P.y) > 1500) evEnd(ev, '진상 손님이 씩씩대며 떠났다'); },
     goal: () => '편의점 알바생에게 행패 부리는 진상 손님 정리하기' },
   // 전세사기 바지사장: 세입자 보증금이 든 가방을 들고 차로 뛴다. 차에 타기 전에 쓰러뜨리면 가방 — 세입자에게 돌려줄지 챙길지
-  { key: 'jeonse', d: '*', name: '전세사기 바지사장',
+  { key: 'jeonse', d: '*', villain: true, name: '전세사기 바지사장',
     start(ev) { const f = districtFront(ev.d, b => b.kind !== 'shop', 380, 900); if (!f) return false; ev.g = evPerson(ev, f.p.x, f.p.y + 10, { body: 'pack' }); ev.tenant = evPerson(ev, f.p.x - 60, f.p.y + 20, {});
       const r = roadNear(f.p.x + 400, f.p.y + 120, 8); ev.to = r || { x: f.p.x + 500, y: f.p.y + 150 }; evGo(ev.g, ev.to.x, ev.to.y); gsay(ev.tenant, '저 사람이에요! 보증금 들고 튀어요!', 3); ev.t1 = S.t; return true; },
     focus: ev => ev.loot ? ev.tenant : ev.g,

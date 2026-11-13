@@ -1,5 +1,5 @@
-// ---------------------------------------------------------------- 자유 모드 응징 연출
-// 나는 영웅이 아니다 — 필요악이다. 악당을 끝냈을 때: 잠깐 느려지고(슬로모션) 붉은 "응징" 도장이 찍히고,
+// ---------------------------------------------------------------- 자유 모드 처리 연출 (선인도 악인도 아니다)
+// 나는 영웅이 아니다 — 필요악이다. 악당을 끝냈을 때: 잠깐 느려지고(슬로모션) 붉은 "처리" 도장이 찍히고,
 // 화면 아래로 뉴스 속보가 흐르는데 경찰은 '사적 제재'로 수사한다고 한다. 근처 시민들은 박수 치지 않는다 —
 // 겁먹고 물러서며 수군댄다. 평판은 오르지 않는다 (속은 시원해도 사람들은 나를 무서워한다).
 //   justiceMoment(제목, 속보 문구, x, y)
@@ -19,7 +19,7 @@ function justiceStamp(what) {
   let el = document.getElementById('justiceStamp');
   if (!el) { el = document.createElement('div'); el.id = 'justiceStamp'; el.setAttribute('aria-live', 'polite');
     el.style.cssText = 'position:fixed;left:50%;top:38%;z-index:42;pointer-events:none;text-align:center;color:#ff3b2f;font-family:"Yahaeng Title",var(--f-body);opacity:0;transition:opacity .4s,transform .25s cubic-bezier(.2,1.6,.4,1)';
-    el.innerHTML = '<div data-t style="font-size:64px;line-height:1;padding:6px 18px;border:6px solid #ff3b2f;border-radius:10px;text-shadow:0 2px 0 #000;box-shadow:0 0 0 3px rgba(0,0,0,.35)">응징</div><div data-s style="margin-top:8px;font:600 17px/1.3 var(--f-body);color:#f2e7c8;text-shadow:0 2px 0 #000"></div>';
+    el.innerHTML = '<div data-t style="font-size:64px;line-height:1;padding:6px 18px;border:6px solid #ff3b2f;border-radius:10px;text-shadow:0 2px 0 #000;box-shadow:0 0 0 3px rgba(0,0,0,.35)">처리</div><div data-s style="margin-top:8px;font:600 17px/1.3 var(--f-body);color:#f2e7c8;text-shadow:0 2px 0 #000"></div>';
     document.body.appendChild(el); }
   el.querySelector('[data-s]').textContent = what; el.style.transform = 'translate(-50%,-50%) rotate(-9deg) scale(1.8)'; el.style.opacity = '1';
   requestAnimationFrame && setTimeout(() => { el.style.transform = 'translate(-50%,-50%) rotate(-9deg) scale(1)'; play('thud', 0.6, 0.7); }, 30);
