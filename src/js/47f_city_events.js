@@ -254,7 +254,7 @@ function cityEventsUpdate(dt) {
     if (n) {
       if (S.evNext[n] == null) S.evNext[n] = S.t + rnd(20, 40);
       if (S.t >= S.evNext[n]) {
-        const defs = EVENTS.filter(e => e.d === n); S.evPick = S.evPick || {}; const k0 = S.evPick[n] || 0; let made = null;
+        const defs = EVENTS.filter(e => e.d === n || e.d === '*');  /* '*': 어느 구역에서나 (47ze 민폐 인물) */ S.evPick = S.evPick || {}; const k0 = S.evPick[n] || 0; let made = null;
         for (let k = 0; k < defs.length && !made; k++) { const def = defs[(k0 + k) % defs.length], e = { def, key: def.key + ':' + ((S.evSeq = (S.evSeq || 0) + 1)), d: n, t0: S.t, actors: [], cars: [], x: P.x, y: P.y };
           if (def.start(e)) { made = e; S.evPick[n] = (k0 + k + 1) % defs.length; } else { for (const g of e.actors) evGone(g); S.vehicles = S.vehicles.filter(v => !e.cars.includes(v)); } }
         if (made) { S.ev = made; const f = made.def.focus(made); if (f) { made.x = f.x; made.y = f.y; } play('metal', 0.2, 1.4); } else S.evNext[n] = S.t + 15;

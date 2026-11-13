@@ -35,7 +35,7 @@ function drawHeldBox(x, y, a, s, front) {
   ctx.fillStyle = '#e8d9b8'; ctx.fillRect(-1.2 * s, -h / 2, 2.4 * s, h); ctx.restore();
 }
 function guardAnim(g) {
-  if (g.crew && g.moving) return g.crew.kind === 'bike' ? (PR && PR.anims.crouch ? 'crouch' : 'walk') : 'run';  // 무리 (47zc)
+  if (g.crew && g.moving) return g.crew.kind === 'kick' ? 'idleC' : g.crew.kind === 'bike' ? (PR && PR.anims.crouch ? 'crouch' : 'walk') : 'run';  // 무리 (47zc)
   if(g.act==='pickup')return 'workLow';
   if(g.act==='smoke')return 'workHigh';
   if (g.state === 'BODY' && g.bodyWork) return 'crouch';

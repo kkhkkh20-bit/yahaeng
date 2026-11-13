@@ -7,6 +7,7 @@
 const CREW_KINDS = {
   run: { n: 10, spd: 150, gap: 30, cols: 2, side: 17, outfit: 'runner', name: '러닝 크루' },
   bike: { n: 8, spd: 250, gap: 46, cols: 2, side: 19, outfit: 'cyclist', name: '자전거 동호회' },
+  kick: { n: 2, spd: 260, gap: 0, cols: 2, side: 5, outfit: null, name: '킥보드', side_walk: true, event: true },
 };
 function crewsInit() { S.crews = []; S.crewNext = {}; if (!STAGE.cityLife || !STAGE.hits) return; crewSpawn('run'); crewSpawn('bike'); }
 function crewBlock(far) {
@@ -17,13 +18,13 @@ function crewBlock(far) {
 }
 function crewSpawn(kind, far) {
   const K = CREW_KINDS[kind], b = crewBlock(far); if (!b) return null;
-  const [bx, by] = b, pts = crewRoadRing(bx, by, Math.random() < 0.5);
+  const [bx, by] = b, pts = K.side_walk ? hitRing(bx, by, Math.random() < 0.5).map(([x, y]) => ({ x: tc(x), y: tc(y) })) : crewRoadRing(bx, by, Math.random() < 0.5);
   const segs = [], L = []; let tot = 0;
   for (let i = 0; i < pts.length; i++) { const a = pts[i], q = pts[(i + 1) % pts.length], l = dist(a.x, a.y, q.x, q.y); segs.push({ a, q, l, s0: tot }); tot += l; }
   const crew = { kind, bx, by, segs, len: tot, s: Math.random() * tot, members: [], broken: false };
   for (let i = 0; i < K.n; i++) {
     const at = crewSpot(crew, i), gi = cityGuardSlot(), g = makeGuard({ kind: 'civ', at: [Math.floor(at.x / TILE), Math.floor(at.y / TILE)], radio: false }, gi);
-    g.x = at.x; g.y = at.y; g.route = [{ x: at.x, y: at.y, pause: 999 }]; g.ri = 0; g.wait = 999; g.crew = crew; g.crewI = i; g.outfit = K.outfit; g.torch = false;
+    g.x = at.x; g.y = at.y; g.route = [{ x: at.x, y: at.y, pause: 999 }]; g.ri = 0; g.wait = 999; g.crew = crew; g.crewI = i; if (K.outfit) g.outfit = K.outfit; g.torch = false;
     placeGuard(g, gi); crew.members.push(g);
   }
   setLayer(0); if (PR) prWarm(crew.members.map(charOf), true);
@@ -68,7 +69,7 @@ function crewsUpdate() {
     {
       const L = crew.members[0], v = S.player.car; crew.slow = v && Math.abs(v.v) < 40 && dist(v.x, v.y, L.x, L.y) < 90 ? 0.3 : 1; }  /* 길을 막고 선 차 앞에선 속도를 줄인다 */
   }
-  for (const k of Object.keys(CREW_KINDS)) {
+  for (const k of Object.keys(CREW_KINDS)) { if (CREW_KINDS[k].event) continue;
     const live = S.crews.some(c => c.kind === k && !c.broken);
     if (!live && S.t > (S.crewNext[k] || 0)) { S.crews = S.crews.filter(c => !(c.kind === k && c.broken && c.members.every(m => !npcAlive(m) || m.off || !inView(m.x, m.y, 200)))); if (crewSpawn(k, true)) S.crewNext[k] = 0; else S.crewNext[k] = S.t + 10; }
   }
@@ -80,6 +81,7 @@ function crewBreak(crew, why) {
 }
 // 자전거: 사람 밑에 깔리는 바퀴 두 개와 몸체 (사람 그리기 바로 전)
 function drawCrewBike(g) {
+  if (g.crew && g.crew.kind === 'kick' && g.crewI === 0 && npcAlive(g)) { const c = Math.cos(g.a), s = Math.sin(g.a); ctx.save(); ctx.strokeStyle = '#1d2026'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(g.x - c * 16, g.y + 6 - s * 10); ctx.lineTo(g.x + c * 16, g.y + 6 + s * 10); ctx.stroke(); ctx.strokeStyle = '#39c0a8'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(g.x + c * 15, g.y + 4 + s * 10); ctx.lineTo(g.x + c * 15, g.y - 22 + s * 10); ctx.stroke(); ctx.restore(); return; }
   if (!g.crew || g.crew.kind !== 'bike' || !npcAlive(g)) return;
   const c = Math.cos(g.a), s = Math.sin(g.a), x = g.x, y = g.y + 2, w = 19;
   ctx.save(); ctx.lineWidth = 3.5;

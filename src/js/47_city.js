@@ -286,6 +286,7 @@ function spawnCopCar() {
 }
 // 가까이 왔으면 세우고 경찰을 내린다. true = 이번 프레임 끝
 function copCarArrive(v, dt) {
+  if (v.rage) { const P = S.player; return dist(v.x, v.y, P.x, P.y) < 220 && (!P.car || Math.abs(P.car.v) < 60) ? rageArrive(v, dt) : false; }  // 보복운전 (47ze)
   const P = S.player, d = dist(v.x, v.y, P.x, P.y), slowMe = !P.car || Math.abs(P.car.v) < 80;
   if (!(d < 300 && slowMe)) return false;
   v.v = Math.max(0, v.v - CAR_BRAKE * dt); if (v.v > 5) { v.x += Math.cos(v.a) * v.v * dt; v.y += Math.sin(v.a) * v.v * dt; return true; }
