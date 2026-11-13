@@ -21,7 +21,8 @@ function civTalkUpdate() {
   for (const g of S.guards) {
     if (!civTalkOk(g) || flOf(g) !== pf) continue; const d = dist(g.x, g.y, P.x, P.y); if (d > 520) continue;
     if (shot && d < 480 && civSay(g, 'gunshot', 1.6, 10)) continue;
-    if (P.car) { const v = P.car; if (Math.abs(v.v || 0) > 100 && dist(v.x, v.y, g.x, g.y) < 90 && civSay(g, 'car', 1.8, 8)) continue; }
+    if (P.car) { const v = P.car; const dd = dist(v.x, v.y, g.x, g.y), toward = ((g.x - v.x) * Math.cos(v.a) + (g.y - v.y) * Math.sin(v.a)) / Math.max(1, dd);
+      if (Math.abs(v.v || 0) > 100 && dd < 70 && toward > 0.3 && civSay(g, 'car', 1.8, 8)) continue; }   // 나를 향해 바짝 달려들 때만 (옆 차로로 지나가는 건 말하지 않는다)
     else if (d < 28 && walking && !P.hide && civSay(g, 'bump', 1.6, 8)) continue;
     if (armed && d < 170 && !g.sawArmed && g.state !== 'PANIC' && los(g.x, g.y - 10, P.x, P.y - 10) && civSay(g, 'weapon', 1.8, 8)) { g.sawArmed = true; continue; }
     if (!armed) g.sawArmed = false;

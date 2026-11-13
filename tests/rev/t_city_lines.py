@@ -31,7 +31,7 @@ CIV = '''()=>{const G=__game,S=G.S,P=S.player,E=G.events,out={};const tick=s=>{f
   S.guns.pistol=12;S.wpn='pistol';g=put(120,0);tick(.6);out.weapon=said(g,'weapon');g.x+=3000;
   g=put(-300,40);P.a=0;S.civTalkT=0;E.fireWeapon(false);tick(.6);out.gunshot=said(g,'gunshot');g.x+=3000;S.wpn=null;
   const v=put(60,60),w=put(140,60);G.npcDown?G.npcDown(v,null,true):G.killGuard(v);S.civTalkT=0;tick(.8);out.corpse=said(w,'corpse');w.x+=3000;
-  const car=G.traffic.makeVehicle({type:'sedan',x:P.x,y:P.y,a:0,parked:true});S.vehicles.push(car);P.car=car;g=put(50,40);S.civTalkT=0;for(let k=0;k<36;k++){car.v=200;G.update(1/60);}out.car=said(g,'car');P.car=null;car.v=0;g.x+=3000;
+  const car=G.traffic.makeVehicle({type:'sedan',x:P.x,y:P.y,a:0,parked:true});S.vehicles.push(car);P.car=car;g=put(130,44);S.civTalkT=0;for(let k=0;k<36;k++){car.v=200;G.update(1/60);}out.car=said(g,'car');P.car=null;car.v=0;g.x+=3000;
   g=put(40,30);g.say='';P.moving=false;S.civTalkT=0;tick(1.2);out.quiet=g.say||'';
   return out}'''
 

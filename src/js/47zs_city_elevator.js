@@ -7,19 +7,21 @@ function elevStack(tx, ty) {
   if (!L.length) return null; const fl = L.filter(l => l.kind === 'fstair'), roof = L.find(l => l.kind === 'stair');
   const top = Math.max(0, ...fl.map(l => l.tfl)); return { tx, ty, top, roof, fl };
 }
+// 집(세대) 안 칸인가: 빌라 위층의 남의 집 거실·방에 엘리베이터 문을 내면 잠긴 현관을 건너뛴다 → 공용 복도·계단참에만
+const inUnitAt = (bi, f, tx, ty) => ((PLANS[bi] || [])[f]?.units || []).some(u => [u.living, ...(u.rooms || []), u.bath].some(r => r && tx >= r.x0 && tx <= r.x1 && ty >= r.y0 && ty <= r.y1));
 // 엘리베이터 문: 건물마다 모든 층에서 걸을 수 있고 위가 벽인 칸 하나 (계단에서 두 칸 넘게 떨어진 곳). 그 벽에 철문을 그린다
 function elevDoorOf(E) {
   if (E.door !== undefined) return E.door; const bi = bldAt(E.tx, E.ty), b = BLD[bi]; let best = null, bd = 1e9; const old = CUR_F;
   if (b) for (let ty = b.y0 + 1; ty < b.y1; ty++) for (let tx = b.x0 + 1; tx < b.x1; tx++) {
     if (Math.abs(tx - E.tx) + Math.abs(ty - E.ty) < 3) continue; let ok = true;
-    for (let f = 0; f <= E.top && ok; f++) { setLayer(f); if (solidAt(tx, ty) || !solidAt(tx, ty - 1) || furnAt(f, tx, ty) || furnAt(f, tx, ty + 1) || bldAt(tx, ty) !== bi) ok = false; }
+    for (let f = 0; f <= E.top && ok; f++) { setLayer(f); if (solidAt(tx, ty) || !solidAt(tx, ty - 1) || furnAt(f, tx, ty) || furnAt(f, tx, ty + 1) || bldAt(tx, ty) !== bi || inUnitAt(bi, f, tx, ty)) ok = false; }
     if (!ok) continue; const d = (ty - b.y0) * 10 + Math.abs(tx - E.tx); if (d < bd) { bd = d; best = { tx, ty, x: tc(tx), y: tc(ty) }; } }
   setLayer(old); return E.door = best || { tx: E.tx, ty: E.ty + 1, x: tc(E.tx), y: tc(E.ty + 1), stairs: true };   // 문 낼 벽이 없으면 계단 앞에서
 }
 function nearElevator() {
   const P = S.player; if (P.z || P.car || P.carrying?.fly) return null; const inB = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)); if (inB < 0) return null;
   const E = (S.elevs || (S.elevs = new Map())).get(inB) ?? (() => { const l = (S.ladders || []).find(k => (k.kind === 'fstair' || k.kind === 'stair') && bldAt(k.tx, k.ty) === inB); const e = l ? elevStack(l.tx, l.ty) : null; S.elevs.set(inB, e); return e; })();
-  if (!E || flOf(P) > E.top) return null; const D = elevDoorOf(E); if (!D || dist(P.x, P.y, D.x, D.y) > 34) return null; return E;
+  if (!E || flOf(P) > E.top) return null; const D = elevDoorOf(E); if (!D || D.stairs || dist(P.x, P.y, D.x, D.y) > 34) return null; return E;   // 공용 복도가 없는 빌라·주택은 실내 엘리베이터 없이 계단으로
 }
 function elevatorAction() {
   if (!STAGE.cityLife) return null; const P = S.player; if (P.car || P.trav || P.hide || P.vent || P.wire || P.captive || actionBusy(P)) return null;
@@ -60,7 +62,7 @@ function liftAction() {
 }
 // 엘리베이터 철문 (내가 그 건물 안에 있을 때만): 벽 칸 아래쪽에 두 짝 문 · 위에 층 표시등 · 탈 때 문이 열렸다 닫힌다
 function drawElevDoors() {
-  const P = S.player; if (!S.elevs || P.z || P.car) return; const inB = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)); const E = S.elevs.get(inB); if (!E || !E.door) return;
+  const P = S.player; if (!S.elevs || P.z || P.car) return; const inB = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)); const E = S.elevs.get(inB); if (!E || !E.door || E.door.stairs) return;
   const D = E.door, x = D.x - 20, y = D.y - TILE - 18 + 6, open = E.door.openT && S.t - E.door.openT < 0.8 ? Math.sin(Math.min(1, (S.t - E.door.openT) / 0.8) * Math.PI) : 0;
   ctx.save(); ctx.fillStyle = '#2b2f37'; ctx.fillRect(x - 3, y - 6, 46, 48); ctx.fillStyle = '#121418'; ctx.fillRect(x, y, 40, 42);
   const w = 20 * (1 - open * 0.85); ctx.fillStyle = '#a3abb6'; ctx.fillRect(x, y, w, 42); ctx.fillRect(x + 40 - w, y, w, 42);
