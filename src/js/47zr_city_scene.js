@@ -10,7 +10,7 @@ const sceneActor = g => g && g.evt === '__scene';
 function sceneCorpse() {
   const P = S.player, hitG = S.hit?.g; let best = null, bd = 1e9;
   for (const c of S.corpses || []) { const g = c.g;
-    if (c.ko || c.fl || c.z || c.carried || c.stashed || c.hidden || c.inTrunk || c.fly || c.scened || !g || g.keep || g === hitG || g.dog || sceneActor(g)) continue;
+    if (c.ko || c.fl || c.z || c.carried || c.stashed || c.hidden || c.inTrunk || c.fly || c.scened || !g || g.keep || g === hitG || g.dog || sceneActor(g) || bldAt(Math.floor(c.x / TILE), Math.floor(c.y / TILE)) >= 0) continue;   /* 구급차는 길가 시신만 (건물 안은 들것이 못 들어간다) */
     if (c.seenAt == null) c.seenAt = S.t; if (S.t - c.seenAt < SCENE_AFTER) continue;
     const d = dist(c.x, c.y, P.x, P.y); if (d > 1400 || d < 160) continue; if (d < bd) { bd = d; best = c; } }
   return best;

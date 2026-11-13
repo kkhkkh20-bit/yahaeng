@@ -32,7 +32,7 @@ function dealerUpdate(dt = 1 / 60) {
   // 박씨는 총을 찬다: 맞서기 시작하면(협박이 틀어졌거나 내가 먼저 때렸다) 주먹 대신 권총을 뽑는다. 내가 멀어지거나 놈이 쓰러질 때까지
   if (g && npcAlive(g) && !g.off && g.fist) { D.sulkUntil = Math.max(D.sulkUntil || 0, S.t + 600); const P = S.player, d = dist(g.x, g.y, P.x, P.y);
     if (!g.drew) { g.drew = true; g.drawT = S.t + 0.9; gsay(g, ['내 골목에서?', '...후회하게 될 거다.', '총은 너만 있는 줄 알았냐.'][(D.threats || 0) % 3], 1.8); play('click', 0.6 * proxVol(g)); }
-    if (d < 420 && (g.shootT || 0) < S.t && S.t > (g.drawT || 0) && los(g.x, g.y, P.x, P.y)) { g.shootT = S.t + 1.1; npcShoot(g, P); }
+    if (d < 420 && (g.shootT || 0) < S.t && S.t > (g.drawT || 0) && flOf(g) === flOf(P) && !P.hide && !P.booth && !S.safeIn && los(g.x, g.y, P.x, P.y)) { g.shootT = S.t + 1.1; npcShoot(g, P); }
     g.aim = 1;
     g.fistT = Math.max(g.fistT || 0, S.t + 0.5); }   /* 주먹 대신 총 (47zp 의 주먹질은 미룬다) */
   else if (g) { g.drew = false; if (g.aim) g.aim = 0; }
