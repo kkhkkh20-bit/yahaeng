@@ -5,6 +5,7 @@
 const DEALER_ITEMS = [
   { k: 'pistol', name: '경찰 권총 (+12발) — 출처는 묻지 마', price: 600, can: () => !(S.guns.pistol > 0), buy: () => { S.guns.pistol = (S.guns.pistol || 0) + 12; if (!S.wpn) S.wpn = 'pistol'; } },
   { k: 'ammo', name: '권총 탄 12발', price: 80, can: () => S.guns.pistol > 0 || S.wpn === 'pistol', buy: () => { S.guns.pistol = (S.guns.pistol || 0) + 12; } },
+  { k: 'knife', name: '회칼 — 소리 없이, 가깝게', price: 50, can: () => !(S.guns.knife > 0), buy: () => { S.guns.knife = 1; S.wpn = 'knife'; } },
   { k: 'armor', name: `방탄조끼 (${typeof ARMOR_MAX !== 'undefined' ? ARMOR_MAX : 3}번 막는다)`, price: 250, can: () => (S.player.armor | 0) < ARMOR_MAX, buy: () => { S.player.armor = ARMOR_MAX; } },
 ];
 function dealerInit() {

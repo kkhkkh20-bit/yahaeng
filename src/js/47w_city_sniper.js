@@ -40,7 +40,7 @@ function carHintUpdate() {
 // 무기를 고르면 0.32초 동안 허리에서 꺼내 든다(gunDraw). 든 동안: 서면 겨누기(Aim) · 걸으면 겨누고 걷기 · 뛰면 뛰기.
 // 쏠 때마다 0.22초 반동(Shoot). 맨손으로 바꾸면 꺼내기를 거꾸로(집어넣기). 던지는 무기는 기존 던지기 동작(punch)
 const GUN_DRAW_T = 0.32, GUN_SHOT_T = 0.22;
-const gunFamily = k => !k || WEAPONS[k]?.throw ? null : ['pistol', 'silenced'].includes(k) ? 'gun' : 'rifle';
+const gunFamily = k => !k || WEAPONS[k]?.throw || WEAPONS[k]?.melee ? null : ['pistol', 'silenced'].includes(k) ? 'gun' : 'rifle';
 function gunPose(P, moving, running) {
   if (P.car || P.hide || P.trav || P.climb || P.z && !STAGE.cityLife) return null;
   const now = wpnOn() ? gunFamily(S.wpn) : null, G = P.gunVis || (P.gunVis = { fam: null, t: -9, out: null, tOut: -9 });

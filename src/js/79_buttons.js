@@ -139,12 +139,14 @@ function actAttack() {if(S?.player?.cuffed)return;
   if (!S || S.over || paused || !running || tactical || S.amb) { if (S && DLG.modal) advanceDialog(); return; }
   if (DLG.modal) { advanceDialog(); return; }
   const P = S.player;
+  if (STAGE.cityLife && P.brawling && P.strikeT > 0 && !P.killAnim) { P.brawlQueued = true; return; }  // 난타 중 연타: 지금 동작이 끝나면 바로 다음 주먹 (47zp)
   if (actionBusy(P)) { if(!queueFollowupAttack())queueGrabAttack(); return; }
   if (P.car) { if (STAGE.cityLife && driveBy()) return; honk(); return; }  // 자유 모드: 무기를 들었으면 창밖으로 쏜다
   if (P.captive) { actPrimary({ k: 'execute', viaZ: true, inputGroup: 'atk' }); return; }  // 기절 → 계속 누르면 처치 (updateKoHold)
   if (STAGE.cityLife && gunAttack()) return;  // 자유 모드: 손 닿는 처치가 없으면 든 무기로 쏜다
   const a = attackAction();
   if (a.k === 'none') {
+    if (STAGE.cityLife && brawlStrike()) return;  // 자유 모드: 정면·들킴 → 주먹질·칼질 (47zp)
     if(a.skillLocked)toast(abilityLockText(a.skillLocked),2);
     else if(a.stalk){if(!queueApproachAttack(a.stalk))toast('아직 손이 닿지 않는다 · 등 뒤로 더 가까이',1.5,'warn');}  // 입력 실패 반응: 최소 모드에서도 사실만 남는다
     else toast('공격할 사람의 등 뒤 가까이 접근하기',1.5);
@@ -152,6 +154,7 @@ function actAttack() {if(S?.player?.cuffed)return;
   }
   // 끌어당기기·끌어들이기·위에서 덮치기도 조직원은 먼저 기절 (계속 누르고 있으면 updateKoHold 가 처치)
   // 제압 의도는 대상에 묶는다. 비동기 끌어당기기가 다른 사람을 처치로 바꾸지 않는다.
+  if (STAGE.cityLife && knifeOn()) S.lethalNext = true;  // 칼을 든 등 뒤 처치는 죽인다
   const choice=assassinOpportunity();
   if(a.k!=='pull'&&choice&&choice.ids[0]===(a.g||a.list?.[0])?.id&&combatSource('atk')){beginAssassinSkill('atk',a);return;}
   actPrimary(Object.assign({}, a, { viaZ: true, inputGroup: 'atk' }));

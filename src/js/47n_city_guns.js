@@ -62,7 +62,7 @@ function gunChip() {
 }
 // [공격]이 총을 쏠 차례인가: 붙잡을 사람이 손 닿는 데 없을 때
 function gunAttack() {
-  const P = S.player; if (!wpnOn() || P.car || P.trav || P.captive || P.hide || flOf(P) || S.downing || S.cuffs) return false;
+  const P = S.player; if (WEAPONS[S.wpn]?.melee) return false; if (!wpnOn() || P.car || P.trav || P.captive || P.hide || flOf(P) || S.downing || S.cuffs) return false;
   const a = attackAction(); if (a && a.k !== 'none') return false;  // 손 닿는 처치가 먼저 (암살 게임)
   fireWeapon(); return true;
 }
