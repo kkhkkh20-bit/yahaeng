@@ -214,7 +214,7 @@ function captureAction() {
   if (!v) return { k: 'evAct', label: '트렁크에 실을 차가 없다 — 차를 140px 안에 세워라', fn: () => evBanner('기절한 놈 곁에 차를 세워라', '#ffb070') };
   return { k: 'evAct', label: `${h.name} 트렁크에 싣기`, at: { x: g.x, y: g.y - 50 }, fn: () => { const s = standBy(P, g, 22);
     doMotion({ x: s.x, y: s.y, face: s.face, pose: 'grab', dur: 1.6, at: [[0.5, () => play('cloth', 0.6)], [1.2, () => play('thud', 0.5)]],
-      end: () => { if (S.hit !== h) return; h.trunk = v; v.unlocked = true; v.locked = false; g.off = true; for (const c of S.corpses || []) if (c.g === g) c.hidden = true;
+      end: () => { if (S.hit !== h) return; h.trunk = v; v.unlocked = true; v.locked = false; g.off = true; for (const c of S.corpses || []) if (c.g === g) { c.hidden = true; c.stashed = true; c.carried = false; }
         evBanner(`${h.name} 트렁크로 · (집 지하실까지 조용히.)`, '#9fc4ff'); if (witnessed(g.x, g.y, 300)) addWanted(1, '사람을 트렁크에 싣는 걸 봤다'); } }); } };
 }
 function captureGoal(h) {

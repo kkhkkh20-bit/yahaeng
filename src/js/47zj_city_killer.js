@@ -17,7 +17,7 @@ function killerStart() {
 // 현장: 쓰러진 여성 시신 + 지키는 순경 하나
 function skScene() {
   const K = S.sk; const p = offscreenSpot(520, 900); if (!p) { K.retryT = S.t + 3; return; }
-  const v = evPerson(K.px, p.x, p.y, { body: ['fLong', 'fBob', 'fTail'][K.clues.length % 3] }); v.keep = true; npcDown(v, null, true);
+  const v = evPerson(K.px, p.x, p.y, { body: ['fLong', 'fBob', 'fTail'][K.clues.length % 3] }); v.keep = true; v.downNpc = true; npcDown(v, null, true);
   const c = S.corpses.find(o => o.g === v); if (c) { c.civSeen = true; c.discovered = true; c.skScene = true; }
   const cop = evPerson(K.px, p.x + 46, p.y - 10, { police: true }); cop.civ = true; cop.beat = true; cop.keep = true;
   K.scene = { x: p.x, y: p.y, v, c, cop }; (K.held || (K.held = [])).push(v, cop); K.retryT = 0;
@@ -74,7 +74,7 @@ function killerUpdate(dt) {
         newsTicker(SK_VICTIM_NEWS[(K.victims) % SK_VICTIM_NEWS.length].replace('세 번째', `${K.victims}번째`)); evBanner(`피해자 ${K.victims}명 · (또야... 놈이 자리를 옮긴다.)`, '#ff8a7a');
         const w = walkableNear(k.x + rnd(-500, 500), k.y + rnd(-500, 500), { x: P.x, y: P.y }); k.x = w.x; k.y = w.y; skWander(k); } } }
   // 들킨 걸 알면 칼을 꺼내 덤빈다
-  if (!P.car && dist(P.x, P.y, k.x, k.y) < 44 && (K.hitT || 0) < S.t && k.skSeen) { K.hitT = S.t + 1.4; k.swingT = 0.35; play('knife', 0.6); hurtPlayer(k, '살인마 칼에 찔렸다.'); if (!K.bared) { K.bared = true; gsay(k, '알아챘어? 너도 똑같이 해 줄게.', 2.4); } }
+  if (!P.car && !P.hide && !P.booth && !S.safeIn && flOf(P) === flOf(k) && !P.z && dist(P.x, P.y, k.x, k.y) < 44 && (K.hitT || 0) < S.t && k.skSeen) { K.hitT = S.t + 1.4; k.swingT = 0.35; play('knife', 0.6); hurtPlayer(k, '살인마 칼에 찔렸다.'); if (!K.bared) { K.bared = true; gsay(k, '알아챘어? 너도 똑같이 해 줄게.', 2.4); } }
 }
 // 누가 쓰러뜨렸나: 경찰·다른 사람(추격 차 포함)이 아니면 나 (등 뒤 처치 killGuard 는 npcDown 을 거치지 않는다)
 const skMine = g => g.downBy !== 'police' && g.downBy !== 'npc';
@@ -87,10 +87,12 @@ function skLost(g) {
   for (const o of K.suspects) if (o !== g && npcAlive(o)) after(4, () => { if (!inView(o.x, o.y, 80)) evGone(o); else o.keep = false; });
   S.skNext = S.t + 900;
 }
-function skSolved(g) {
-  const K = S.sk; K.done = true; K.stage = 'done'; cash(500); fstat('skSolved');
+function skSolved(g, how) {
+  const K = S.sk, P = S.player; K.done = true; K.stage = 'done'; cash(500); fstat('skSolved');
+  const x = g.x > -9000 ? g.x : P.x, y = g.x > -9000 ? g.y : P.y;  /* 지하실에서 끝나면 내 자리에서 */
   evBanner(`연쇄 살인마 처리 · 품속에 사원증 ${K.victims}장 · +500만`, '#9fe0b0');
-  justiceMoment('연쇄 살인마 처리', `[속보] ${K.area} 연쇄살인 용의자, 길에서 숨진 채 발견… 품에서 피해자 ${K.victims}명 소지품 나와`, g.x, g.y);
+  const news = how === 'cops' ? `[속보] ${K.area} 연쇄살인 용의자, 경찰서 앞 기둥에 묶인 채 발견… 품에서 피해자 ${K.victims}명 소지품` : how === 'dump' ? `[속보] ${K.area} 연쇄살인 석 달 만에 멈춰… 경찰 "용의자 행방 묘연"` : `[속보] ${K.area} 연쇄살인 용의자, 숨진 채 발견… 품에서 피해자 ${K.victims}명 소지품 나와`;
+  justiceMoment('연쇄 살인마 처리', news, x, y);
   for (const o of K.held || []) o.keep = false;  /* 현장 시신·경찰도 이제 치워도 된다 */
   for (const o of K.suspects) if (o !== g && npcAlive(o)) after(4, () => { if (!inView(o.x, o.y, 80)) evGone(o); else o.keep = false; });
   S.skNext = S.t + 900;

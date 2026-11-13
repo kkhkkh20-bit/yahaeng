@@ -32,7 +32,7 @@ function trunkUnload(v) {
 }
 // ---- 사람 태우기
 const RIDE_MAX = 3;
-function rideOk(g) { return g && npcAlive(g) && !g.off && g.civ && !g.police && !g.fac && !g.crew && !g.dog && !g.child && !['PANIC', 'FLEE', 'TERROR', 'REPORT'].includes(g.state) && !g.assailant && !g.knifeman && !g.evt && g.skBi == null && !g.criminal && !g.cfight && !g.fist; }  /* 사건 인물·용의자·싸우는 사람은 안 탄다 */
+function rideOk(g) { return g && npcAlive(g) && !g.off && g.civ && !g.police && !g.fac && !g.crew && !g.dog && !g.child && !['PANIC', 'FLEE', 'TERROR', 'REPORT'].includes(g.state) && !g.assailant && !g.knifeman && !g.evt && !g.rideTo && !g.rideIn && !g.dealer && g.skBi == null && !g.criminal && !g.cfight && !g.fist; }  /* 사건 인물·용의자·싸우는 사람은 안 탄다 */
 function rideAction() {
   if (!STAGE.cityLife) return null; const P = S.player; if (P.car || P.carrying || P.captive || actionBusy(P)) return null;
   const v = P.lastCar && !P.lastCar.dead && dist(P.x, P.y, P.lastCar.x, P.lastCar.y) < 160 ? P.lastCar : null; if (!v) return null;
@@ -52,7 +52,7 @@ function rideBoard(v, g) {
 }
 function rideDrop(v) {
   const R = v.riders || []; if (!R.length) return; play('door', 0.4);
-  R.forEach((g, i) => { g.rideTo = null; const a = v.a + Math.PI / 2 + i * 0.5, w = walkableNear(v.x + Math.cos(a) * 34, v.y + Math.sin(a) * 34, { x: -1e5, y: -1e5 });
+  R.filter(g => g.rideIn || npcAlive(g)).forEach((g, i) => { g.rideTo = null; if (!npcAlive(g) && !g.rideIn) return; const a = v.a + Math.PI / 2 + i * 0.5, w = walkableNear(v.x + Math.cos(a) * 34, v.y + Math.sin(a) * 34, { x: -1e5, y: -1e5 });
     g.off = false; g.state = 'PATROL'; g.x = w.x; g.y = w.y; g.route = [{ x: w.x, y: w.y, pause: 999 }]; g.ri = 0; g.path = null; g.rideIn = null; if (g.onDrop) g.onDrop(g, v); });
   evBanner(`(다 왔어. 내려.)`, '#9fc4ff'); v.riders = [];
 }
@@ -60,9 +60,10 @@ function rideDrop(v) {
 function trunkUpdate(dt = 1 / 60) {
   if (!STAGE.cityLife) return; const P = S.player; if (P.car) P.lastCar = P.car;
   // 태운 사람: 조수석 문 앞까지 걸어가 문을 열고 탄다 (2.5초 넘게 못 가면 그냥 탄 것으로)
-  for (const v of S.vehicles) for (const g of v.riders || []) { if (!g.rideTo || g.off) continue; const dx = v.x + Math.cos(v.a + Math.PI / 2) * 22, dy = v.y + Math.sin(v.a + Math.PI / 2) * 22;
+  for (const v of S.vehicles) { if (v.riders?.some(g => !npcAlive(g) && !g.rideIn)) v.riders = v.riders.filter(g => npcAlive(g) || g.rideIn);  /* 문까지 가다 쓰러진 사람은 안 탄 것 */
+    for (const g of v.riders || []) { if (!g.rideTo || g.off) continue; const dx = v.x + Math.cos(v.a + Math.PI / 2) * 22, dy = v.y + Math.sin(v.a + Math.PI / 2) * 22;
     if (dist(g.x, g.y, dx, dy) > 16 && S.t - g.rideT0 < 2.5) evRun(g, dx, dy, 110, dt);
-    else { g.rideTo = null; g.rideIn = v; g.off = true; g.x = -9999; g.y = -9999; g.path = null; play('door', 0.4 * proxVol(v)); } }
+    else { g.rideTo = null; g.rideIn = v; g.off = true; g.x = -9999; g.y = -9999; g.path = null; play('door', 0.4 * proxVol(v)); } } }
   for (const v of S.vehicles) { if (!v.dead) continue;
     if (v.riders?.length) { for (const g of v.riders) { g.off = false; g.x = v.x; g.y = v.y; npcDown(g, null, true); } v.riders = []; }
     if (v.trunk?.length) { for (const c of v.trunk) { c.stashed = false; c.hidden = false; c.x = v.x - 10; c.y = v.y + 6; c.inTrunk = null; if (c.g) { c.g.keep = c.g.skBi != null; c.g.inTrunk = null; } } v.trunk = []; } }

@@ -15,6 +15,7 @@ function carbombStart(h, plan) {
 }
 function carbombAction() {
   const h = S.hit, P = S.player; if (!h || !['carbomb', 'stage'].includes(h.ctr) || !h.car || h.car.dead || h.car.bombed || h.cbGone || P.car || P.trav) return null;
+  if (h.ctr === 'stage' && !h.opp?.car?.known) return null;  // 무대형 의뢰: 엿들어서 그 차인 줄 알아야 심는다 (간판과 같은 규칙)
   if (dist(P.x, P.y, h.car.x, h.car.y) > 64) return null;
   if (!(P.bombs > 0)) return { k: 'evAct', label: '폭약이 없다 — 철물점·공구점', fn: () => evBanner('폭약이 없다 — 철물점이나 공구점에서 산다') };
   return { k: 'evAct', label: `${h.name}의 차에 폭약 설치`, fn: () => carbombPlant(h) };

@@ -10,7 +10,7 @@ const STAGE_OPP_NAME = { car: '차량 폭탄', sign: '간판 사고', smoke: '�
 const STAGE_LEAVE = 240, STAGE_SMOKE = 16, STAGE_HEAR = 230;
 function stageStart(h, plan) {
   h.opp = { car: { known: false }, sign: { known: false }, smoke: { known: false } };
-  carbombStart(h, plan); h.leaveAt = S.t + STAGE_LEAVE;      // 차: 4분 뒤 떠난다
+  carbombStart(h, plan); if (!h.car) h.opp.car.none = true; h.leaveAt = S.t + STAGE_LEAVE;      // 차: 4분 뒤 떠난다
   if (!signStart(h)) h.opp.sign.none = true;                 // 간판을 걸 길이 없으면 그 기회는 없다
   const r = h.g.route || [], i = r.reduce((b, p, k) => (p.pause || 0) > (r[b].pause || 0) ? k : b, 0);
   if (r[i]) { r[i].pause = STAGE_SMOKE; h.smoke = { x: r[i].x, y: r[i].y }; }   // 가장 오래 서는 모퉁이가 담배 자리
@@ -34,7 +34,7 @@ function stageUpdate(h) {
   const hear = o => o && npcAlive(o) && !o.off && dist(P.x, P.y, o.x, o.y) < STAGE_HEAR && los(P.x, P.y, o.x, o.y) && o.state !== 'ALERT';
   const e = h.escorts.find(npcAlive);
   // 차: 표적이 출발 시각을 말한다 (가까이 붙어 있으면 들린다)
-  if (!h.opp.car.known && hear(g) && S.t - h.t0 > 6) stageReveal(h, 'car', g, '차는 시간 맞춰 빼 놔. 길가 그 자리에.', `${h.name}의 차가 길가에 서 있다 — 출발 전에 폭약을 심을 수 있다`);
+  if (!h.opp.car.known && !h.opp.car.none && hear(g) && S.t - h.t0 > 6) stageReveal(h, 'car', g, '차는 시간 맞춰 빼 놔. 길가 그 자리에.', `${h.name}의 차가 길가에 서 있다 — 출발 전에 폭약을 심을 수 있다`);
   // 간판: 간판 밑을 지날 때 경호원이 투덜댄다
   if (!h.opp.sign.known && !h.opp.sign.none && h.sign && !h.sign.used) {
     const gm = signGeometry(h.sign), under = o => o && npcAlive(o) && Math.abs(o.x - gm.x) < 110 && Math.abs(o.y - (h.sign.hit[1] + .5) * TILE) < 70;

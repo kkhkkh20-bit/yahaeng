@@ -91,6 +91,6 @@ function basementEnd(how) {
     else { g.methodPaid = false; const m = killMethodBonus(g.x, g.y) || { name: '지하실', bonus: 0 }; evBanner(`지하실 처리 · ${m.name}${m.bonus ? ' +' + m.bonus + '만' : ''} · (아무도 몰라.)`, '#c8c0b0'); }
     return; }
   g.off = true; g.state = 'DEAD'; g.x = -9999; g.y = -9999;
-  if (how === 'dump') { evBanner('(눈 가리고 먼 길에 버렸어. 이 동네에 다시 보이면, 그땐 없다.)', '#c8c0b0'); if (g.skReal && S.sk && !S.sk.done) skSolved(g); return; }
-  cash(40); evBanner('경찰서 앞 기둥에 꽁꽁 · 강 형사 송금 +40만', '#9fc4ff'); if (g.skReal && S.sk && !S.sk.done) skSolved(g);
+  if (how === 'dump') { evBanner('(눈 가리고 먼 길에 버렸어. 이 동네에 다시 보이면, 그땐 없다.)', '#c8c0b0'); if (g.skReal && S.sk && !S.sk.done) skSolved(g, 'dump'); return; }
+  cash(40); evBanner('경찰서 앞 기둥에 꽁꽁 · 강 형사 송금 +40만', '#9fc4ff'); if (g.skReal && S.sk && !S.sk.done) skSolved(g, 'cops');
 }
