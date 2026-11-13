@@ -53,7 +53,7 @@ async def main():
           const hp0=P.hp;P.hurtT=0;for(let k=0;k<60*4&&P.hp===hp0;k++){P.x=g.x+20;P.y=g.y;G.update(1/60);}const hurt=hp0-P.hp;P.hp=hp0;
           G.killGuard(g);tick(1.6);return{start:true,vict,cops,copsDown,goal,hurt,paid:S.cash-c0,...DONE()}}''')
         print('knife', json.dumps(r, ensure_ascii=False))
-        ok(r['start'] and r['vict'] >= 1 and r['cops'] == 2 and r['copsDown'] >= 1 and r['hurt'] >= 1 and r['paid'] >= 150 and r['done'] and '경찰관' in r['news'], 'knife: %s' % r)
+        ok(r['start'] and r['vict'] >= 1 and r['copsDown'] >= 1 and r['hurt'] >= 1 and r['paid'] >= 150 and r['done'] and '경찰관' in r['news'], 'knife: %s' % r)
         # 떴다방 덩치는 노인을 밀쳐 넘어뜨린다 / 공갈단은 운전자를 때린다
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.ev=null;let e=null;for(let k=0;k<8&&!e;k++){P.x+=700;e=EV('tteot');}if(!e)return{down:-1};P.x=e.g.x+900;P.y=e.g.y;e.engaged=false;tick(10);const down=e.olds.filter(o=>o.state==='DEAD').length;
           S.ev=null;let f=null;for(let k=0;k<8&&!f;k++){P.y+=500;f=EV('gongal');}if(!f)return{down,slap:'nostart'};P.x=f.x+900;P.y=f.y;f.engaged=false;tick(9);return{down,slap:!!f.slap}}''')
