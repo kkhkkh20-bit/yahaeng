@@ -18420,7 +18420,7 @@ function hunterSpawn() {
   g.x = p.x; g.y = p.y; g.route = [{ x: p.x, y: p.y, pause: 999 }]; g.civ = true; g.hunter = true; g.huntCd = 0; g.aimH = 0;
   placeGuard(g, gi); setLayer(0); if (PR) prWarm([charOf(g)], true);
   S.hunter = { g, t0: S.t }; fstat('hunters');
-  play('click', 0.4, 0.6); evBanner('까마귀: "네 목에 돈이 걸렸다. 누가 오고 있다 — 행인 얼굴을 잘 봐."', '#ffb070');
+  play('click', 0.4, 0.6); evBanner('강 형사: "네 목에 돈이 걸렸다. 누가 오고 있다 — 행인 얼굴을 잘 봐."', '#ffb070');
   return true;
 }
 function hunterEnd(killed) {
@@ -18979,40 +18979,35 @@ function newsTicker(text) {
   clearTimeout(el._t); el._t = setTimeout(() => { el.style.opacity = '0'; }, 9200);
 }
 
-// ---------------------------------------------------------------- 자유 모드 이야기: 극비 요원 '올빼미'
-// 설정: 올빼미는 어느 기관에도 이름이 없는 처리반 '야행'의 요원이다. 경찰도 그 존재를 모른다 — 경찰 눈에는 그냥 범죄자다.
-// 담당관 '까마귀'가 공중전화로 지령을 준다.
-//   · 메인 이야기(공중전화): 장(章)이 차례로 이어진다. 한 장을 끝내야 다음 전화가 온다. 장마다 처치 방법이 정해져 있다.
-//     실패하면 같은 장을 다시 준다. 마지막 장을 끝내면 그 뒤로는 평소 일거리(무작위 의뢰)가 온다.
-//   · 조직 이야기(연락책): 조직마다 세 걸음짜리 이야기. 연락책 메뉴 맨 위에 '[이야기 n/3]'. 한 걸음을 끝내야 다음 걸음이 열린다.
+// ---------------------------------------------------------------- 자유 모드 이야기: 은퇴한 전직 요원 '올빼미'
+// 설정: 올빼미는 국가 비밀 처리반에서 은퇴한 요원이다. 지금은 아무 소속도 없다 — 경찰 눈에는 그냥 범죄자다.
+// 광역수사대 강 형사가 공중전화로 연락한다. 법으로는 못 잡는 놈들, 위에서 사건을 덮어 주는 놈들을 넘긴다.
+// 강 형사가 제일 싫어하는 건 배지 단 쓰레기다 — 마지막 장의 표적.
+//   · 메인 이야기(공중전화): 짧은 장(에피소드)이 차례로. 한 장 = 표적 하나. 장마다 처치 방법이 정해져 있다. 실패하면 다시.
+//   · 조직 이야기(연락책): 조직마다 세 걸음. 연락책 메뉴 맨 위에 '[이야기 n/3]'.
+//   · 보이스피싱 사기단(공중전화, 메인 장 사이): 아래 PHISH.
 // 진행은 자유 모드 저장에 함께 남는다 (47e saveFreeProgress · loadFreeProgress).
 
-// 메인 이야기 — 흑장미
+// 메인 이야기 — 배지 뒤의 놈들 (장마다 짧게: 지령 두세 줄, 결과 한 줄)
 const STORY_MAIN = [
-  { title: '첫 지령', ctr: 'plain', fac: 'A', target: '문태식', escorts: 1, pay: 400,
-    brief: [['master', '올빼미. 오늘부터 을지로는 네 구역이다.'], ['master', '경찰은 우리를 모른다. 들키면 너는 그냥 살인범이다. 도와줄 사람은 없어.'],
-      ['master', '첫 표적은 문태식. 조직의 돈을 세탁하는 놈이다. 방법은 네가 고른다.'], ['hero', '이름 없는 일이 체질이라서.']],
-    debrief: [['master', '문태식 장부를 털었다. 돈이 한 군데로 모인다 — 장부마다 검은 장미 도장이 찍혀 있어.']] },
-  { title: '교통사고', ctr: 'roadkill', fac: 'B', target: '오정길', escorts: 1, pay: 500,
-    brief: [['master', '장미 도장 돈을 실어 나르는 운반책, 오정길.'], ['master', '이번엔 총도 칼도 안 된다. 길에서 차에 치인 사고여야 해.'],
-      ['master', '치고 나서 그 자리에 서 있지 마라. 목격자가 번호판을 외우기 전에 빠져.'], ['hero', '운전은 자신 있다.']],
-    debrief: [['master', '오정길 휴대폰에서 이름이 하나 나왔다. 청계파 간부 백상만. 장미 쪽 돈줄을 쥐고 있다.']] },
+  { title: '불법 추심', ctr: 'plain', fac: 'A', target: '문태식', escorts: 1, pay: 400,
+    brief: [['master', '은퇴했다며. 하나만 보자. 사채업자 문태식 — 이자를 열 배로 뜯고, 못 갚으면 애 학교로 찾아간다.'], ['master', '신고가 열두 건인데 다 흐지부지. 방법은 네가 고른다.'], ['hero', '은퇴는 다음 주부터 하지.']],
+    debrief: [['master', '문태식 장부에 매달 "노 계장 몫"이라는 줄이 있더라. 일단 넘어가자.']] },
+  { title: '상습 뺑소니', ctr: 'roadkill', fac: 'B', target: '오정길', escorts: 1, pay: 500,
+    brief: [['master', '오정길. 음주 뺑소니만 세 번, 매번 합의금이랑 "아는 형님"으로 빠져나왔다.'], ['master', '같은 방식으로 돌려줘. 차로. 치고 바로 빠져.'], ['hero', '교통사고는 흔하지.']],
+    debrief: [['master', '오정길 사건 세 개 다 같은 계장 결재였다. 노기석.']] },
   { title: '그의 차', ctr: 'stage', fac: 'C', target: '백상만', escorts: 1, pay: 600,
-    brief: [['master', '백상만은 습관이 많은 놈이다. 같은 블록을 돌고, 같은 모퉁이에서 담배를 피우고, 같은 차를 탄다.'], ['master', '4분 뒤엔 차를 타고 그 블록을 뜬다. 그 전에 끝내.'],
-      ['master', '총은 쓰지 마. 놈 곁에 붙어서 말을 엿들어. 틈은 놈이 직접 알려 줄 거다. 폭약 하나 넣어 뒀다.'], ['hero', '사고는 원래 습관에서 난다.']],
-    debrief: [['master', '백상만 차 트렁크에서 경찰 수사 기록 사본이 나왔다. 누가 안에서 흘리고 있어.'], ['master', '경찰은 여전히 우리를 모른다. 그런데 장미는 경찰을 안다.']] },
+    brief: [['master', '백상만 사장. 직원 때리고 월급 떼먹고, 신고하면 경찰이 먼저 사장한테 전화한다.'], ['master', '습관이 많은 놈이다. 곁에 붙어 엿들어 — 틈은 놈이 알려 준다. 4분 뒤엔 차 타고 뜬다. 총은 쓰지 마.'], ['hero', '사고는 원래 습관에서 난다.']],
+    debrief: [['master', '백상만 차에서 수사 기록 사본이 나왔다. 누가 안에서 흘린다.']] },
   { title: '떨어지는 간판', ctr: 'sign', fac: 'D', target: '한두철', escorts: 1, pay: 700,
-    brief: [['master', '한두철. 종로파 쪽 해결사인데, 경찰 수사 기록을 장미에게 넘기는 통로다.'], ['master', '이놈이 죽으면 경찰이 들쑤신다. 사고여야 한다 — 철거 안 한 낡은 간판이 떨어진 사고.'],
-      ['master', '그놈 도는 길에 간판이 매달려 있다. 배관을 타고 옥상에 올라가 고정줄을 풀어. 밑을 지날 때.'], ['hero', '을지로 간판은 원래 위험하지.']],
-    debrief: [['master', '한두철이 마지막으로 통화한 번호를 추적했다. 장미의 회계사, 유창배.'], ['master', '그런데 얼굴 기록이 없다. 사진 한 장뿐이야.']] },
-  { title: '얼굴 없는 회계사', ctr: 'photo', fac: 'A', target: '유창배', escorts: 2, pay: 800,
-    brief: [['master', '유창배는 장부를 머리에 넣고 다닌다. 기록이 없는 놈이야.'], ['master', '그 블록 어딘가를 돈다. 사진 속 얼굴을 직접 찾아서 확인해.'],
-      ['master', '경호원이 둘이다. 얼굴을 확인하기 전엔 아무도 건드리지 마.'], ['hero', '얼굴은 한 번 보면 안 잊는다.']],
-    debrief: [['master', '유창배가 남긴 메모. 장미의 주인은 노기석 — 표면상 을지로 상가 번영회장이다.'], ['master', '마지막이다, 올빼미.']] },
-  { title: '흑장미', ctr: 'snipe', fac: 'B', target: '노기석', escorts: 2, pay: 1200,
-    brief: [['master', '노기석은 사람 많은 곳에서만 움직인다. 가까이 가면 경호원이 먼저 너를 본다.'], ['master', '멀리서 한 발로 끝내라. 500미터… 아니 500픽셀 밖에서. 저격총은 조직 연락책이 판다.'],
-      ['master', '끝나면 이 번호는 잊어. 한동안 전화하지 않겠다.'], ['hero', '…한 발이면 된다.']],
-    debrief: [['master', '흑장미는 끝났다. 수고했다, 올빼미.'], ['master', '…야행에는 은퇴가 없다. 다음 전화를 기다려.'], ['hero', '언제나 그랬지.']] },
+    brief: [['master', '한두철. 깡통전세로 세입자 마흔 명 보증금을 날리고 바지사장 뒤에 숨었다.'], ['master', '놈 도는 길에 낡은 간판이 걸려 있다. 배관 타고 옥상에 올라가 밑을 지날 때 줄을 풀어.'], ['hero', '을지로 간판은 원래 위험하지.']],
+    debrief: [['master', '한두철이 마지막으로 통화한 놈 — 사건 무마 브로커 유창배. 얼굴 사진 한 장뿐이다.']] },
+  { title: '얼굴 없는 브로커', ctr: 'photo', fac: 'A', target: '유창배', escorts: 2, pay: 800,
+    brief: [['master', '유창배는 업자 돈 받아서 경찰 쪽에 사건을 꺼 주는 놈이다. 기록이 없어.'], ['master', '그 블록 어딘가를 돈다. 얼굴 확인하기 전엔 아무도 건드리지 마.'], ['hero', '얼굴은 한 번 보면 안 잊는다.']],
+    debrief: [['master', '유창배 수첩. 돈은 결국 한 사람한테 간다. 우리 서 강력계장, 노기석.'], ['master', '…이번 건 나도 같이 묻히는 거다.']] },
+  { title: '배지 단 놈', ctr: 'snipe', fac: 'B', target: '노기석', escorts: 2, pay: 1200,
+    brief: [['master', '노기석 계장. 지금까지 네가 치운 놈들 전부 이 사람이 덮어 줬다.'], ['master', '사람 많은 데서만 다니고 조직 애들이 붙어 다닌다. 500픽셀 밖에서 한 발로. 저격총은 조직 연락책이 판다.'], ['hero', '배지는 방탄이 아니지.']],
+    debrief: [['master', '감찰이 움직이기 시작했다. 덮였던 사건들이 다시 열린다.'], ['master', '…고맙다. 이 번호는 당분간 꺼 둔다.'], ['hero', '은퇴는 다음 주에 다시 하지.']] },
 ];
 // 조직 이야기 (연락책): 조직마다 세 걸음
 const STORY_SIDE = {
@@ -19043,7 +19038,7 @@ function storyCall() {
   if (C.ctr === 'stage') for (let k = 0; k < 12 && !signCands(plan.route).length; k++) plan = planHit() || plan;  /* 무대: 간판을 걸 수 있는 블록을 고른다 */
   Object.assign(plan, { kind: 'hit', name: C.target, fac: C.fac, escorts: C.escorts, ctr: C.ctr, pay: C.pay, story: n });
   const prev = n > 0 ? STORY_MAIN[n - 1].debrief : [], retry = S.story.failed ? [['master', '지난번 일은 틀어졌다. 한 번 더 기회를 주지.']] : [];
-  const head = [[{ note: '야행 지령' }, `메인 이야기 ${n + 1}/${STORY_MAIN.length} · ${C.title}`]];
+  const head = [[{ note: '제보' }, `메인 이야기 ${n + 1}/${STORY_MAIN.length} · ${C.title}`]];
   return { plan, lines: [...head, ...(S.story.failed ? retry : prev), ...C.brief] };
 }
 function storyMainDone(h, ok) {
@@ -19092,10 +19087,10 @@ function storyCard(n, done) {
     el.innerHTML = '<div data-k style="font-size:15px;font-weight:600;letter-spacing:.3em;color:#c9a2ff"></div><div data-t style="font-size:40px;font-weight:700;line-height:1.3;margin:.2em 0"></div><div data-s style="font-size:16px;color:#cfc6b2;max-width:86vw"></div>';
     document.body.appendChild(el); }
   const last = done && n === STORY_MAIN.length - 1, K = CONTRACTS[C.ctr];
-  el.querySelector('[data-k]').textContent = last ? '야행 · 끝' : `제 ${n + 1} 장${done ? ' · 완료' : ''}`;
+  el.querySelector('[data-k]').textContent = last ? '이야기 · 끝' : `제 ${n + 1} 장${done ? ' · 완료' : ''}`;
   el.querySelector('[data-t]').textContent = C.title;
   const R = S.story && S.story.rec && S.story.rec[n], how = R && R.ways.length ? ` · 처리: ${R.ways.map(storyWayName).join(', ')}${R.best ? ' · 최고 ' + R.best : ''}` : '';
-  el.querySelector('[data-s]').textContent = done ? (last ? '흑장미는 졌다. 을지로의 밤은 계속된다.' : '다음 지령은 공중전화로 온다.') + how : `표적 ${C.target}${K && C.ctr !== 'plain' ? ' · ' + K.name : ''}`;
+  el.querySelector('[data-s]').textContent = done ? (last ? '배지 뒤에 숨은 놈까지 끝났다. 을지로의 밤은 계속된다.' : '다음 지령은 공중전화로 온다.') + how : `표적 ${C.target}${K && C.ctr !== 'plain' ? ' · ' + K.name : ''}`;
   el.style.opacity = '1'; clearTimeout(el._t); el._t = setTimeout(() => { el.style.opacity = '0'; }, last ? 5200 : 2800);
 }
 const STORY_WAY = { blast: '차량 폭탄', sign: '간판 사고', poison: '독침', car: '차로 침', fire: '불', gun: '총', blade: '칼' };
@@ -19107,7 +19102,7 @@ function storyWayName(c) { return STORY_WAY[c] || c; }
 // 아래에서 위로 거슬러 올라가 끝에 총책을 처치한다. 피해자 사연이 각 장의 이유다.
 const PHISH = [
   { title: '수거책', ctr: 'photo', target: '문광호', escorts: 0, pay: 400,
-    brief: [[{ note: '야행 지령 · 부업' }, '보이스피싱 사기단 "상황실" 1/5 · 수거책'], ['master', '오늘 오후, 일흔여섯 할머니가 "검찰 수사관"에게 현금 삼천만 원을 건넨다. 평생 모은 돈이다.'],
+    brief: [[{ note: '제보' }, '보이스피싱 사기단 "상황실" 1/5 · 수거책'], ['master', '오늘 오후, 일흔여섯 할머니가 "검찰 수사관"에게 현금 삼천만 원을 건넨다. 평생 모은 돈이다.'],
       ['master', '받으러 나오는 놈은 수거책. 얼굴 사진뿐이다. 그 블록에서 찾아.'], ['hero', '심부름꾼부터 시작이군.']],
     debrief: [['master', '수거책 휴대폰에 "통장 삽니다" 연락처가 남아 있었다. 대포통장 모집책, 석재민.']] },
   { title: '모집책', ctr: 'accident', target: '석재민', escorts: 1, pay: 500,
@@ -19118,11 +19113,11 @@ const PHISH = [
     debrief: [['master', '관리자 차 트렁크에서 환전 영수증이 나왔다. 돈을 해외로 빼는 세탁책 곽도윤이 오늘 밤 출국한다.']] },
   { title: '세탁책 납치·심문', ctr: 'capture', target: '곽도윤', escorts: 1, pay: 800,
     brief: [['master', '세탁책 곽도윤. 피해자 돈을 해외로 빼돌리는 놈이다. 이번엔 죽이지 마.'], ['master', '총책이 어디 숨었는지, 거점이 어딘지 아는 건 이놈뿐이다. 기절시켜서 근처 차 트렁크에 싣고 네 집 지하실로 데려와.'],
-      ['master', '입을 열게 만드는 건 네 몫이다. 경찰은 우리를 모른다 — 다 끝나면 경찰서 앞에 묶어 두고 와.'], ['hero', '오늘 밤은 대화가 길어지겠군.']],
+      ['master', '입을 열게 만드는 건 네 몫이다. 다 끝나면 우리 서 앞에 묶어 두고 가. 나머진 내가 처리한다.'], ['hero', '오늘 밤은 대화가 길어지겠군.']],
     debrief: [['master', '녹음 잘 들었다. 국내 거점 주소, 그리고 "사장" 진석호. 먼저 거점부터 치운다.']] },
   { title: '콜센터 거점', ctr: 'demolish', target: '왕재필', escorts: 2, pay: 900,
     brief: [['master', '작은 건물 한 채를 통째로 "상황실"로 쓴다. 대포폰 수백 대, 피해자 명단이 다 거기 있다.'],
-      ['master', '밤엔 현장 관리자 왕재필과 상담원 둘만 남는다. 건물 벽에 폭약을 붙여 무너뜨려. 증거째로.'], ['master', '폭약 하나 넣어 뒀다. 모자라면 철물점. 붙이고 나면 5초 — 멀리 뛰어.'], ['hero', '전화 걸 데가 없어지겠군.']],
+      ['master', '밤엔 현장 관리자 왕재필과 상담원 둘만 남는다. 건물 벽에 폭약을 붙여 무너뜨려. 증거째로.'], ['master', '폭약 하나는 압수품에서 빼 놨다. 모자라면 철물점. 붙이고 나면 5초 — 멀리 뛰어.'], ['hero', '전화 걸 데가 없어지겠군.']],
     debrief: [['master', '거점이 무너지면서 해외 콜센터와의 연락이 끊겼다. 당황한 총책이 직접 서울로 들어왔다.']] },
   { title: '총책', ctr: 'snipe', target: '진석호', escorts: 2, pay: 1500,
     brief: [['master', '진석호. 해외에 콜센터를 차려 놓고 수천 명의 노후를 털었다. 서울엔 거래를 정리하러 들어왔다.'], ['master', '경호원이 둘이다. 멀리서 한 발로.'], ['hero', '전화는 내가 끊는다.']],
@@ -19143,7 +19138,7 @@ function phishCall() {
   Object.assign(plan, { kind: 'hit', name: C.target, fac: 'X', escorts: C.escorts, ctr: C.ctr, pay: C.pay, phish: n });
   if (C.ctr === 'demolish' && !demolishPlan(plan)) return null;
   const prev = n > 0 ? PHISH[n - 1].debrief : [], retry = st.phFailed ? [['master', '상황실 일이 틀어졌다. 놈들이 더 숨기 전에 다시 가.']] : [];
-  const brief = n === 0 ? C.brief : [[{ note: '야행 지령 · 부업' }, `보이스피싱 사기단 "상황실" ${n + 1}/${PHISH.length} · ${C.title}`], ...C.brief];
+  const brief = n === 0 ? C.brief : [[{ note: '제보' }, `보이스피싱 사기단 "상황실" ${n + 1}/${PHISH.length} · ${C.title}`], ...C.brief];
   return { plan, lines: [...(st.phFailed ? retry : prev), ...brief] };
 }
 function phishDone(h, ok) {
@@ -25918,10 +25913,10 @@ const DLG = { q: [], cur: null, modal: false, onEnd: null };
 const DLG_COL = { aide: '#8fe3c9', hero: '#7fd6ff', guard: '#ff7a66', elite: '#ff9a3c', target: '#f2c46b', civ: '#9fd8a8', master: '#c9a2ff', note: '#e8e3d6', dog: '#c8a27a' };
 function speakerOf(w) {
   if(w?.recorded){const sp=speakerOf(w.recorded);return{...sp,name:sp.name+' · 녹음',role:'무전기에 남은 음성'};}
-  if (w === 'hero') return { name: '올빼미', col: DLG_COL.hero, key: STAGE?.agentStudy?'agent@heroAgent':'ninja', portrait:'hero', role: STAGE?.cityLife ? '당신 · 야행 극비 요원' : '당신 · 잠입 암살자', face: 'fc_ninja' };
+  if (w === 'hero') return { name: '올빼미', col: DLG_COL.hero, key: STAGE?.agentStudy?'agent@heroAgent':'ninja', portrait:'hero', role: STAGE?.cityLife ? '당신 · 은퇴한 전직 요원' : '당신 · 잠입 암살자', face: 'fc_ninja' };
   if (w && w.note) return { name: w.note, col: DLG_COL.note, key: null, role: '', face: null };
   if (w === 'aide') return { name: '제비', col: DLG_COL.aide, key: 'civ3@fBob', portrait:'aide', role: '현장 지원', face: 'fc_aide' };
-  if (w === 'master') return { name: '까마귀', col: DLG_COL.master, key: 'old', portrait:'crow', role: STAGE?.cityLife ? '야행 담당관' : '의뢰인', face: 'fc_master' };
+  if (w === 'master') return { name: STAGE?.cityLife ? '강 형사' : '까마귀', col: DLG_COL.master, key: 'old', portrait:'crow', role: STAGE?.cityLife ? '광역수사대 · 비공식 제보' : '의뢰인', face: 'fc_master' };
   if (w && w.doc) return { name: '한 선생', col: DLG_COL.civ, key: charOf(w), portrait:'doc', role: '의사', face: 'fc_doc' };
   if (w && w.civ) return { name: w.child ? '아이' : '주민', col: DLG_COL.civ, key: charOf(w), portrait:w.child?'legacyChild':null, role: w.outfit && w.outfit !== 'crew' ? outfitName(w.outfit) : '', face: 'fc_civ' + (w.look || 0) };
   if (w && w.kind) { const k = w.dog ? 'dog' : w.target ? 'target' : w.elite ? 'elite' : 'guard';
