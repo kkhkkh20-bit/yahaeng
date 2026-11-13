@@ -33,3 +33,13 @@ function drawPixelBlood(d) {
   for (let k = 0; k < n; k++) { const a = seed + k * 2.3, rr = r * (0.5 + 0.4 * Math.abs(Math.sin(a * 1.7))), ox = Math.round(Math.cos(a) * r * 0.8 / q) * q, oy = Math.round(Math.sin(a) * r * 0.5 / q) * q;
     ctx.fillRect(cx + ox - Math.round(rr / q) * q, cy + oy - Math.round(rr * 0.6 / q) * q, Math.round(rr * 2 / q) * q, Math.round(rr * 1.2 / q) * q); }
 }
+// 그을음·탄 자국 같은 반투명 얼룩: 부드러운 그라데이션 대신 3px 칸 세 단계 농도(디더)로 (도트 느낌을 유지한 채 가장자리가 옅어진다)
+function pixBlob(x, y, rx, ry, rot, a0, col = '10,8,8', cell = 3) {
+  const c = Math.cos(rot), s = Math.sin(rot), R = Math.ceil(Math.max(rx, ry) / cell) * cell, gx = Math.round(x / cell) * cell, gy = Math.round(y / cell) * cell, L = [[], [], []];
+  for (let yy = -R; yy <= R; yy += cell) for (let xx = -R; xx <= R; xx += cell) {
+    const u = (xx * c + yy * s) / rx, v = (-xx * s + yy * c) / ry, d = Math.sqrt(u * u + v * v); if (d >= 1) continue;
+    const bay = (((xx / cell) & 1) * 2 + ((yy / cell) & 1)) / 4, lv = (1 - d) * 3 + bay * 0.9; const k = lv > 2.2 ? 0 : lv > 1.3 ? 1 : lv > 0.6 ? 2 : -1; if (k >= 0) L[k].push(xx, yy); }
+  [1, 0.6, 0.3].forEach((m, k) => { const P = L[k]; if (!P.length) return; ctx.fillStyle = `rgba(${col},${a0 * m})`; for (let i = 0; i < P.length; i += 2) ctx.fillRect(gx + P[i], gy + P[i + 1], cell, cell); });
+}
+// 돌 부스러기·고가 조각처럼 돌려 그린 사각형은 조각마다 도트로 (화면 전체를 한 번에 감싸면 너무 크다)
+const pixPiece = (x, y, R, fn) => STAGE.cityLife ? pixelize(x - R, y - R, R * 2, R * 2, fn) : fn();

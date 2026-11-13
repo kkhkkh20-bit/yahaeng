@@ -245,6 +245,14 @@ function planInterior(g, b, bi, f) {
       if (W >= 7) for (let x = sx0 + 3; x < sx1; x += 4) for (let y = iy0; y <= yb; y++) g[y][x] = '#';
       for (let x = sx0; x + 1 <= sx1; x += step) { furn(x, iy0, 2, 1, 'sofa', true, 0); furn(x, iy0 + 1, 1, 1, 'tableS', true, 0); furn(x + 1, Math.max(iy0 + 2, yb), 1, 1, 'kscreen', true, 0); }
     }
+    else if (use === 'billiards' && open) {  // 자유 모드 당구장: 벽에 큐 걸이, 당구대 줄(사이 통로), 앞쪽 카운터, 옆벽 구경꾼 의자, 구석 화분
+      for (let x = sx0 + 2; x <= sx1 - 1; x += 3) furn(x, iy0, 1, 1, 'cues', false);
+      let n = 0; for (let y = iy0 + 2; y + 1 <= iy1 - 1; y += 3) for (let x = sx0 + 1; x + 1 <= sx1 - 1; x += 4) if (furn(x, y, 2, 1, 'pool', true, 0)) n++;
+      if (!n) for (let y = iy0 + 1; y <= iy1 - 1 && !n; y++) for (let x = sx0; x + 1 <= sx1 && !n; x++) if (furn(x, y, 2, 1, 'pool', true, 0)) n++;
+      furn(sx1 - 1, iy1 - 1, 2, 1, 'counter', true, 0) || furn(sx0 + 1, iy1 - 1, 2, 1, 'counter', true, 0) || furn(sx1 - 1, iy0 + 1, 2, 1, 'counter', true, 0);
+      for (let y = iy0 + 2; y <= iy1 - 2; y += 2) furn(sx1, y, 1, 1, 'chairD', true, 3);
+      furn(sx0, iy0 + 3, 1, 1, 'plant'); furn(sx1, iy0 + 1, 1, 1, 'fridge', true, 0);
+    }
     else if (use === 'billiards') {  // 당구장: 초록 당구대 줄, 벽에 큐 걸이, 앞쪽 카운터
       for (let x = sx0; x <= sx1 - 1; x += 3) furn(x, iy0, 1, 1, 'cues', false);
       for (let y = iy0 + 2; y + 1 < iy1; y += 3) for (let x = sx0 + (sx1 - sx0 >= 4 ? 1 : 0); x + 1 <= sx1; x += 4) furn(x, y, 2, 1, 'pool', true, 0);
@@ -262,6 +270,15 @@ function planInterior(g, b, bi, f) {
     else { furn(sx0, iy0, 1, 1, 'locker'); furn(sx0 + 1, iy0, 1, 1, 'cab'); furn(sx1 - 1, iy0, 2, 1, 'sofa', true, 0, [[sx1 - 1, iy0 + 1], [sx1, iy0 + 1]]);  // 사무실: 벽에 사물함·서류장·소파, 가운데 책상 줄(책상마다 의자, 줄 사이 통로)
       let n = 0; for (const y0 of open ? [iy0 + 2, iy0 + 1] : [iy0 + 2]) { if (n) break; for (let y = y0; open ? y + 1 <= iy1 - 1 : y + 1 < iy1; y += 3) for (let x = sx0 + 1; x + 1 <= sx1 - 1; x += 3) if (furn(x, y, 2, 1, 'desk2', true, 0)) { n++; furn(x, y + 1, 1, 1, 'chairD', true, 2); } }   // 좁은 층은 한 줄 위에서 다시
       furn(sx0, iy1 - 1, 1, 1, 'locker'); if (!n && open) tinySeat('desk', 'chairD'); }
+    // 자유 모드 넓은 층 채우기: 주된 배치 뒤에 남은 3×3 빈자리마다 식탁·책상 한 벌(의자 포함, 줄 사이 통로), 벽가엔 화분·서류장을 띄엄띄엄
+    if (open && ['food', 'office'].includes(use)) {
+      const free3 = (x, y) => { for (let yy = y - 1; yy <= y + 1; yy++) for (let xx = x - 1; xx <= x + 1; xx++) if (xx < sx0 || xx > sx1 || yy < iy0 + 1 || yy >= iy1 || !floorCh(g[yy][xx]) || keep.has(xx + ',' + yy)) return false; return true; };
+      for (let y = iy0 + 2; y <= iy1 - 2; y++) for (let x = sx0 + 1; x <= sx1 - 1; x++) { if (!free3(x, y)) continue; const c0 = g[y][x];
+        if (use === 'food') { if (!furn(x, y, 1, 1, 'tableS', true, 0)) continue; const a = furn(x - 1, y, 1, 1, 'chair', true, 1), b2 = furn(x + 1, y, 1, 1, 'chair', true, 3); if (!a && !b2) { FURN.pop(); g[y][x] = c0; } }
+        else { if (!furn(x, y - 1, 1, 1, 'desk', true, 0)) continue; if (!furn(x, y, 1, 1, 'chairD', true, 2)) { FURN.pop(); g[y - 1][x] = c0; } } }
+      const deco = use === 'food' ? ['plant', 'fridge'] : ['plant', 'cab', 'locker'];
+      let k = 0; for (let y = iy0 + 2; y <= iy1 - 2; y += 2) for (const x of [sx0, sx1]) { const t = deco[k++ % deco.length]; const sideOk = x === sx0 ? !floorCh(g[y][x - 1] || '#') : !floorCh(g[y][x + 1] || '#'); if (sideOk) furn(x, y, 1, 1, t, true, 0); }
+    }
     if (use !== 'club') lampAt(sx0, iy0, sx1, iy1, f === 0 ? 0.9 : 0.5);
   } else if (kind === 'villa' && (W >= 20 || b.piloti)) {  // 두 세대: 한 세대가 8칸은 되어야 방·거실이 제대로 들어간다
     const xs = ix0 + Math.floor((W - 2) / 2);

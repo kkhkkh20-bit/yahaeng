@@ -78,6 +78,7 @@ function carExplode(v) {
 function drawCarScorch() {
   drawCharred(); if (!S.scorch) return;
   for (const s of S.scorch) { if (!inView(s.x, s.y, s.r * 2)) continue;
+    if (STAGE.cityLife) { pixBlob(s.x, s.y, s.r, s.r * .78, s.rot, .75, '8,6,6'); continue; }   // 자유 모드: 도트 얼룩
     const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r); g.addColorStop(0, 'rgba(8,6,6,.75)'); g.addColorStop(.6, 'rgba(14,10,8,.45)'); g.addColorStop(1, 'rgba(14,10,8,0)');
     ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(s.x, s.y, s.r, s.r * .78, s.rot, 0, TAU); ctx.fill(); }
 }
@@ -122,7 +123,7 @@ function fxFrame(kind, t, x, y, sc, alpha, flip) {
 function drawCharred() {
   if (S.gibs) { if (S.gibs.length > 240) S.gibs.splice(0, S.gibs.length - 240); for (const b of S.gibs) { if (S.t - b.t > 120 || !inView(b.x, b.y, 10)) continue; ctx.fillStyle = '#4a0a0a'; ctx.fillRect(b.x - 1 | 0, b.y | 0, b.s + 3, b.s + 1); ctx.fillStyle = '#7a1212'; ctx.fillRect(b.x | 0, b.y | 0, b.s, b.s); } }
   for (const g of S.guards) { if (!g.charred || g.state !== 'DEAD' || !inView(g.x, g.y, 40)) continue;
-    ctx.fillStyle = 'rgba(10,8,8,.55)'; ctx.beginPath(); ctx.ellipse(g.x, g.y - 2, 22, 11, 0, 0, TAU); ctx.fill();
+    if (STAGE.cityLife) pixBlob(g.x, g.y - 2, 22, 11, 0, .55); else { ctx.fillStyle = 'rgba(10,8,8,.55)'; ctx.beginPath(); ctx.ellipse(g.x, g.y - 2, 22, 11, 0, 0, TAU); ctx.fill(); }
     ctx.fillStyle = 'rgba(30,26,24,.8)'; for (let k = 0; k < 7; k++) { const a = (g.id || 0) * 1.7 + k * 0.9; ctx.fillRect(g.x + Math.cos(a) * 16 | 0, g.y - 2 + Math.sin(a) * 8 | 0, 3, 2); } }
 }
 // 불 · 연기 · 폭발: 어둠 위에 그린다 (불은 스스로 빛난다). 불길·폭발은 PixelFX 픽셀 스프라이트, 연기는 4px 칸에 맞춘 덩어리
