@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------- 자유 모드 킬러 (내 목에 붙은 현상금)
-// 의뢰를 세 건 끝내면 소문이 돈다. 그 뒤로 4~6분마다(의뢰·수배·광란 중이 아닐 때) 행인 차림의 킬러 하나가 화면 밖에서 나를 향해 걸어온다.
+// 의뢰를 세 건 끝내면 소문이 돈다. 그 뒤로 4~6분마다(의뢰·수배 중이 아닐 때) 행인 차림의 킬러 하나가 화면 밖에서 나를 향해 걸어온다.
 //   · 겉모습은 행인. 티: 똑바로 나에게 걸어온다 · 300px 안에선 가끔 품에서 쇠붙이가 번쩍인다.
 //   · 170px 안에서 나를 보면 총을 꺼내 1초 겨눈다(붉은 조준선) → 쏜다. 벽·차 뒤로 시야를 끊거나 먼저 처리하라.
 //   · 처리하면 현상금 사냥꾼의 품에서 돈(200만). 2600px 넘게 따돌리면 포기한다.
@@ -8,7 +8,7 @@ function hunterInit() { S.hunter = null; S.huntNext = S.t + rnd(...HUNT_GAP); }
 function hunterUpdate(dt) {
   if (!STAGE.cityLife || !S.player) return; const P = S.player;
   if (!S.hunter) {
-    if ((S.hitN || 0) < HUNT_AFTER || S.t < S.huntNext || S.hit || S.wanted || S.ramp || S.downing || S.cuffs || S.safeIn) return;
+    if ((S.hitN || 0) < HUNT_AFTER || S.t < S.huntNext || S.hit || S.wanted || S.downing || S.cuffs || S.safeIn) return;
     if (!hunterSpawn()) S.huntNext = S.t + 30; return;
   }
   const H = S.hunter, g = H.g;

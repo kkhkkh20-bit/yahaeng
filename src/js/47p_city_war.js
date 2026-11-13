@@ -17,7 +17,7 @@ function driveBy() {
 // ---- 총격전
 function warUpdate(dt) {
   if (!STAGE.cityLife || !S.player) return; const P = S.player;
-  if (!S.war) { if (S.t < S.warNext || (S.wanted || 0) >= 2 || S.downing || S.cuffs || S.ramp || S.hit || S.ev || S.side) return; /* 다른 일이 벌어지는 중엔 안 생긴다 */ if (!warStart()) S.warNext = S.t + 20; return; }
+  if (!S.war) { if (S.t < S.warNext || (S.wanted || 0) >= 2 || S.downing || S.cuffs || S.hit || S.ev || S.side) return; /* 다른 일이 벌어지는 중엔 안 생긴다 */ if (!warStart()) S.warNext = S.t + 20; return; }
   const Wr = S.war; Wr.t += dt;
   if (Wr.over) { if (S.t - Wr.over > 20) warCleanup(); return; }
   const all = Wr.sides[0].concat(Wr.sides[1]);

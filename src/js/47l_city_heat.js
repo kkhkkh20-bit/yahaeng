@@ -78,7 +78,7 @@ const FREE_ACH = [
   ['cabbie', '택시 기사', '택시 손님 5명', s => s.taxi >= 5, 80], ['medic', '생명의 은인', '환자 3명을 병원으로', s => s.patients >= 3, 100],
   ['busman', '버스 운전사', '버스 승객 20명', s => s.busRiders >= 20, 80], ['vigil', '정의의 사도', '도주 차량 3대 검거', s => s.perps >= 3, 120],
   ['boom', '불꽃놀이', '차 5대 폭발', s => s.explosions >= 5, 50], ['five', '공공의 적', '수배 ★★★★★', s => s.maxWanted >= 5, 100],
-  ['pro', '청부업자', '조건 의뢰 5건 성공', s => s.ctrDone >= 5, 200], ['hunted', '사냥꾼 사냥', '킬러 3명 처리', s => s.huntersDown >= 3, 150], ['ghost', '유령', '의뢰 등급 S 3번', s => s.ghost >= 3, 200], ['rampage', '광란', '광란 도전 3번 성공', s => s.rampages >= 3, 150], ['gunner', '총잡이', '총으로 50명', s => s.gunKills >= 50, 100],
+  ['pro', '청부업자', '조건 의뢰 5건 성공', s => s.ctrDone >= 5, 200], ['hunted', '사냥꾼 사냥', '킬러 3명 처리', s => s.huntersDown >= 3, 150], ['ghost', '유령', '의뢰 등급 S 3번', s => s.ghost >= 3, 200], ['gunner', '총잡이', '총으로 50명', s => s.gunKills >= 50, 100],
   ['road', '장거리 운전', '20km 운전', s => (s.dist || 0) / 1000 >= 20, 100], ['rich', '부자', '모두 5,000만 벌기', s => s.earned >= 5000, 300]];
 function achCheck() {
   if ((S.achT = (S.achT || 0) + 1) % 30) return; const st = S.fst;
@@ -89,6 +89,6 @@ function freeStatsPanel() {
   const done = FREE_ACH.filter(a => S.fach[a[0]]).length;
   shopPanel(`자유 모드 기록 · 업적 ${done}/${FREE_ACH.length}`, [
     row('번 돈', `${s.earned || 0}만`), row('훔친 차', s.carsStolen || 0), row('운전 거리', `${km}km`), row('택시 손님 · 환자 · 버스 승객', `${s.taxi || 0} · ${s.patients || 0} · ${s.busRiders || 0}`),
-    row('도주 차량 검거', s.perps || 0), row('폭발시킨 차', s.explosions || 0), row('총으로 쓰러뜨림 · 광란 성공', `${s.gunKills || 0} · ${s.rampages || 0}/${RAMPS.length}`), row('체포 · 쓰러짐', `${s.arrests || 0} · ${s.downs || 0}`), row('최고 수배', '★'.repeat(s.maxWanted || 0) || '없음'),
+    row('도주 차량 검거', s.perps || 0), row('폭발시킨 차', s.explosions || 0), row('총으로 쓰러뜨림', s.gunKills || 0), row('체포 · 쓰러짐', `${s.arrests || 0} · ${s.downs || 0}`), row('최고 수배', '★'.repeat(s.maxWanted || 0) || '없음'),
     ...FREE_ACH.map(([id, name, desc, , bonus]) => ({ name: `${S.fach[id] ? '✔' : '○'} ${name} — ${desc}`, price: null, tag: S.fach[id] ? '달성' : `+${bonus}만`, ok: false, buy: () => {} }))]);
 }

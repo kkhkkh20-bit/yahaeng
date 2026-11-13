@@ -1,4 +1,4 @@
-// ---------------------------------------------------------------- 자유 모드 무기: 권총 · 기관단총 · 산탄총 · 수류탄 · 화염병
+// ---------------------------------------------------------------- 자유 모드 무기: 권총 · 소음 권총 · 산탄총 · 저격총 · 수류탄 · 화염병 (기관단총은 뺐다 — 이 도시에서 총은 귀하다)
 // 조직 연락책(호감도 0 이상)에게 산다. L(또는 화면의 무기 칩)로 바꾼다. [공격]은 붙잡을 사람이 손 닿는 데 없을 때 쏜다.
 // 조준: 앞쪽 70° 안, 420px 안의 가장 가까운 사람(경찰·조직원 먼저)을 자동으로 노린다. 없으면 바라보는 쪽으로.
 // 총알은 즉시 맞는 선(벽에서 멈춤): 사람은 한 방(산탄은 퍼짐), 차는 내구성을 깎아 터지기도 한다. 총소리는 멀리 들려 신고·경찰을 부른다.
@@ -16,7 +16,6 @@ function drawItem(name, x, y, k = 1, rot = 0, alpha = 1, flipY = false) {
 const WEAPONS = {
   pistol: { name: '권총', rate: 0.28, dmg: 1, spread: 0.03, pellets: 1, range: 520, sound: 1, ammo: 24, price: 300 },
   silenced: { name: '소음 권총', rate: 0.45, dmg: 1, spread: 0.015, pellets: 1, range: 460, sound: 0.3, ammo: 12, price: 700, silent: true },  // 암살용: 140px 밖에선 안 들린다
-  smg: { name: '기관단총', rate: 0.09, dmg: 1, spread: 0.08, pellets: 1, range: 460, sound: 0.8, ammo: 60, price: 800, burst: 3 },
   shotgun: { name: '산탄총', rate: 0.8, dmg: 1, spread: 0.22, pellets: 6, range: 300, sound: 1.4, ammo: 16, price: 600 },
   sniper: { name: '저격총', rate: 1.3, dmg: 1, spread: 0.004, pellets: 1, range: 1000, sound: 1.3, ammo: 6, price: 1200, sniper: true },  // 멈춰 서야 조준경 (47w)
   grenade: { name: '수류탄', rate: 0.9, throw: true, ammo: 3, price: 250 },
@@ -25,12 +24,11 @@ const WEAPONS = {
 const GUN_FX = {
   pistol:   { muzzle: 'muzzle', ms: 0.7, speed: 2600, ts: 0.55, ta: 0.95, wall: 'bulletHit', ws: 0.7, metal: 'ricochet', mts: 0.55, body: 'impact', bs: 0.6, snd: 'gPistol', vol: 0.55, shake: 0.06, casing: 1 },
   silenced: { muzzle: 'muzzle', ms: 0.3, ma: 0.5, speed: 2300, ts: 0.4, ta: 0.5, wall: 'bulletHit', ws: 0.45, metal: 'ricochet', mts: 0.4, body: 'impact', bs: 0.45, snd: 'gSilenced', vol: 0.45, shake: 0.02, casing: 1 },
-  smg:      { muzzle: 'muzzleSmg', ms: 0.6, speed: 2900, ts: 0.48, ta: 0.85, wall: 'bulletHit', ws: 0.55, metal: 'ricochet', mts: 0.45, body: 'impact', bs: 0.5, snd: 'gSmg', vol: 0.42, shake: 0.04, casing: 1 },
   shotgun:  { muzzle: 'muzzleShot', ms: 0.75, speed: 2100, ts: 0.32, ta: 0.75, wall: 'dart', ws: 0.7, metal: 'ricochet', mts: 0.35, body: 'impact', bs: 0.75, snd: 'gShotgun', vol: 0.75, shake: 0.16, casing: 0, pump: 0.38 },
   sniper:   { muzzle: 'muzzleShot', ms: 0.55, speed: 4400, ts: 1.0, ta: 1, wall: 'bulletHit', ws: 1.0, metal: 'ricochet', mts: 0.8, body: 'critHit', bs: 0.75, snd: 'gSniper', vol: 0.8, shake: 0.2, casing: 1, bolt: 0.55 },
   npc:      { muzzle: 'muzzle', ms: 0.55, speed: 2500, ts: 0.5, ta: 0.85, wall: 'bulletHit', ws: 0.6, metal: 'ricochet', mts: 0.5, body: 'impact', bs: 0.55, snd: 'gPistol', vol: 0.4, shake: 0, casing: 0 } };
-const WPN_ORDER = ['pistol', 'silenced', 'smg', 'shotgun', 'sniper', 'grenade', 'molotov'];
-function gunsInit() { S.guns = Object.assign({}, S.gunsSaved || {}); S.wpn = S.wpnSaved && S.guns[S.wpnSaved] > 0 ? S.wpnSaved : null; S.gunT = 0; S.tracers = []; S.firePools = []; S.nades = []; S.kills = { n: 0, t: -9 }; gunChip(); }
+const WPN_ORDER = ['pistol', 'silenced', 'shotgun', 'sniper', 'grenade', 'molotov'];
+function gunsInit() { S.guns = Object.assign({}, S.gunsSaved || {}); for (const k of Object.keys(S.guns)) if (!WEAPONS[k]) delete S.guns[k];  /* 예전 저장의 없어진 총(기관단총)은 버린다 */ S.wpn = S.wpnSaved && S.guns[S.wpnSaved] > 0 ? S.wpnSaved : null; S.gunT = 0; S.tracers = []; S.firePools = []; S.nades = []; S.kills = { n: 0, t: -9 }; gunChip(); }
 const wpnOn = () => STAGE.cityLife && S.wpn && (S.guns[S.wpn] || 0) > 0;
 function cycleWeapon() {
   if (!STAGE.cityLife || !S.guns) return; const have = WPN_ORDER.filter(k => (S.guns[k] || 0) > 0); if (!have.length) { S.wpn = null; gunChip(); evBanner('무기가 없다 — 조직 연락책에게 산다'); return; }
@@ -42,14 +40,14 @@ function cycleWeapon() {
 const itemIcon = (() => { const cache = {}; return name => { if (cache[name]) return cache[name]; const f = itemArt?.frames?.[name]; if (!f || !itemReady()) return null;
   const k = Math.max(1, Math.min(3, Math.floor(30 / Math.max(f[2], f[3] * 1.6)))), c = document.createElement('canvas'); c.width = f[2] * k; c.height = f[3] * k; const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
   x.drawImage(itemAtlas, f[0], f[1], f[2], f[3], 0, 0, c.width, c.height); return cache[name] = c.toDataURL(); }; })();
-function selectWeapon(k) { if (!STAGE.cityLife || !S.guns) return; if (k && !((S.guns[k] || 0) > 0)) return; if (S.ramp && k !== S.ramp.wpn) return; S.wpn = k; play('click', 0.4); gunChip(); }
+function selectWeapon(k) { if (!STAGE.cityLife || !S.guns) return; if (k && !((S.guns[k] || 0) > 0)) return; S.wpn = k; play('click', 0.4); gunChip(); }
 function gunChip() {
   let el = document.getElementById('wpnChip'); if (!STAGE.cityLife) { if (el) el.remove(); return; }
   if (!el) { el = document.createElement('div'); el.id = 'wpnChip'; el.setAttribute('role', 'toolbar'); el.setAttribute('aria-label', '무기');
     el.style.cssText = 'position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 214px);z-index:35;display:flex;flex-direction:column;align-items:flex-end;gap:4px;pointer-events:none;font:600 12px "Yahaeng UI",sans-serif;color:#efe6cf';
     el.addEventListener('click', e => { const b = e.target.closest('button[data-w]'); if (!b) return; e.stopPropagation(); selectWeapon(b.dataset.w || null); });
     document.body.appendChild(el); }
-  const P = S.player, have = WPN_ORDER.filter(k => (S.guns[k] || 0) > 0), inf = k => S.ramp && S.ramp.wpn === k;
+  const P = S.player, have = WPN_ORDER.filter(k => (S.guns[k] || 0) > 0), inf = () => false;
   const slot = (k, i) => { const on = (S.wpn || null) === k, ic = k ? itemIcon(k) : null, n = k ? (inf(k) ? '∞' : S.guns[k]) : '';
     return `<button type="button" data-w="${k || ''}" title="${k ? WEAPONS[k].name : '맨손'} (${i + 1})" style="pointer-events:auto;display:flex;align-items:center;gap:5px;min-width:44px;height:34px;padding:2px 7px;background:rgba(12,14,20,${on ? .92 : .7});color:inherit;border:${on ? 2 : 1}px solid ${on ? '#ffd76a' : '#4a5160'};border-radius:6px;font:inherit;cursor:pointer">`
       + `<small style="color:#8a90a0">${i + 1}</small>` + (ic ? `<img src="${ic}" alt="" style="image-rendering:pixelated;max-height:24px">` : `<span>${k ? WEAPONS[k].name : '맨손'}</span>`) + (n !== '' ? `<b>${n}</b>` : '') + '</button>'; };
@@ -183,7 +181,7 @@ function drawGuns() {
 }
 // 조직 연락책의 무기 거래 (호감도 0 이상)
 // 총은 귀하다: 조직 연락책은 화염병·방탄조끼만 판다. 권총은 뒷골목 밀매상(비밀 루트, 47zg)에서.
-// 기관단총·산탄총·수류탄은 팔지 않는다 — 저격총은 이야기에서 강 형사가 압수품을 빌려줄 때만.
+// 산탄총·수류탄은 팔지 않는다 — 저격총은 이야기에서 강 형사가 압수품을 빌려줄 때만.
 const SHOP_GUNS = { molotov: { price: 150, need: 0 } };  /* 권총은 뒷골목 밀매상(47zg)에서만 */
 function weaponShop(f) {
   const st = typeof standOf === 'function' ? standOf(f) : 0;

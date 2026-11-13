@@ -128,7 +128,7 @@ function boothBlock() {
 function hitsUpdate(dt) {
   boothBlock(); updatePhoneRing(dt || 1 / 60);
   const P = S.player; if (P.booth) { P.x = P.booth.x; P.y = P.booth.y + 2; P.moving = false; }
-  jobsUpdate(dt || 1 / 60); cityEventsUpdate(dt || 1 / 60); factionsUpdate(dt || 1 / 60); carTheftUpdate(dt || 1 / 60); sideUpdate(dt || 1 / 60); garageUpdate(dt || 1 / 60); weatherUpdate(dt || 1 / 60); wpUpdate(dt || 1 / 60); heatUpdate(dt || 1 / 60); havocUpdate(dt || 1 / 60); gunsUpdate(dt || 1 / 60); rampageUpdate(dt || 1 / 60); warUpdate(dt || 1 / 60); disguiseUpdate(); hunterUpdate(dt || 1 / 60); sniperUpdate(dt || 1 / 60); carHintUpdate(); cityListsCleanup();
+  jobsUpdate(dt || 1 / 60); cityEventsUpdate(dt || 1 / 60); factionsUpdate(dt || 1 / 60); carTheftUpdate(dt || 1 / 60); sideUpdate(dt || 1 / 60); garageUpdate(dt || 1 / 60); weatherUpdate(dt || 1 / 60); wpUpdate(dt || 1 / 60); heatUpdate(dt || 1 / 60); havocUpdate(dt || 1 / 60); gunsUpdate(dt || 1 / 60); pickupsUpdate(dt || 1 / 60); warUpdate(dt || 1 / 60); disguiseUpdate(); hunterUpdate(dt || 1 / 60); sniperUpdate(dt || 1 / 60); carHintUpdate(); cityListsCleanup();
   if (S.sniperLent && !S.hit) { S.sniperLent = false; delete S.guns.sniper; if (S.wpn === 'sniper') S.wpn = null; if (typeof gunChip === 'function') gunChip(); evBanner('(빌린 총은 강 형사한테 돌려줬어.)', '#c8c0b0'); }  // 이야기 저격 장이 끝나면 빌린 저격총은 돌려준다
   saveFreeProgress();
   const h = S.hit; if (!h) return;
@@ -232,7 +232,7 @@ function drawHits(layer) {
     drawBooth(p, false);
   }
   if (layer !== 'ui') return;
-  drawEvents(); drawContacts(); drawJobs(); drawCarPickProgress(); drawCarriedParcel(); drawWpRoute(); drawSide(); drawSafes(); drawHome(); drawNuisance(); drawSlashes(); drawHunter(); drawScope(); drawPoison(); drawRampage(); drawGuns(); drawIntel(); drawHeli(); drawRain();
+  drawEvents(); drawContacts(); drawJobs(); drawCarPickProgress(); drawCarriedParcel(); drawWpRoute(); drawSide(); drawSafes(); drawHome(); drawNuisance(); drawSlashes(); drawHunter(); drawScope(); drawPoison(); drawPickups(); drawGuns(); drawIntel(); drawHeli(); drawRain();
   const h = S.hit; if (!h || h.g.state === 'DEAD' && !h.g.unconscious || contractHides(h)) return;
   const g = h.g; if (flOf(g) !== flOf(S.player) || !inView(g.x, g.y, 60)) return;
   const pu = .55 + .35 * Math.sin(S.t * 5);
