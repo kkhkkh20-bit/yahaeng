@@ -111,17 +111,15 @@ EVENTS.push(...NUISANCE);
 function bikeDown(ev, b, byCar) { if (!b.up) return; b.up = false; b.fallA = b.a + (Math.random() < .5 ? 1.3 : -1.3); play(byCar ? 'metal' : 'thud', 0.5); ev.angry = true; fstat('bikesDown'); }
 // 보복운전 차: 경찰차처럼 차로 위에 세워 나를 쫓는다 (화면 밖 500~1100px)
 function rageCar() {
-  const P = S.player, RX = STAGE.roadsX, RY = STAGE.roadsY, vw = W / SCALE / 2 + 80, vh = H / SCALE / 2 + 80;
-  for (let k = 0; k < 200; k++) {
-    const hor = Math.random() < 0.5, d = hor ? (Math.random() < 0.5 ? 0 : 2) : (Math.random() < 0.5 ? 1 : 3), road = hor ? RY[(Math.random() * RY.length) | 0] : RX[(Math.random() * RX.length) | 0];
-    const along = rnd(2, (hor ? MW : MH) - 2) * TILE, x = hor ? along : laneOf(road, d), y = hor ? laneOf(road, d) : along, dd = dist(x, y, P.x, P.y);
-    if (dd < 500 || dd > 1100 || (Math.abs(x - cam.x) < vw && Math.abs(y - cam.y) < vh)) continue;
-    if ((hor ? (P.x - x) * DV[d][0] : (P.y - y) * DV[d][1]) <= 0) continue;  /* 나를 향해 달리는 차로 */
-    if ((hor ? RX : RY).some(r => (hor ? x : y) > r * TILE - 60 && (hor ? x : y) < (r + 4) * TILE + 60)) continue;
-    if (deckSpawnZ(x, y) !== 0) continue;
-    const v = makeVehicle({ type: 'suv', x, y, d, a: Math.atan2(DV[d][1], DV[d][0]), v: AI_SPD, ai: true, driver: true, chase: true }); planTurn(v); S.vehicles.push(v); return v;
-  }
-  return null;
+  const P = S.player, RX = STAGE.roadsX, RY = STAGE.roadsY, vw = W / SCALE / 2 + 80, vh = H / SCALE / 2 + 80, c = [];
+  for (const hor of [true, false]) for (const road of hor ? RY : RX) for (const d of hor ? [0, 2] : [1, 3]) {
+    const lane = laneOf(road, d); if (Math.abs(lane - (hor ? P.y : P.x)) > 1000) continue;
+    for (const back of [600, 800, 1000]) { const sg = DV[d][0] + DV[d][1], along = (hor ? P.x : P.y) - sg * back, x = hor ? along : lane, y = hor ? lane : along;  /* 나를 향해 달리는 차로, 내 뒤쪽 */
+      if (!inMap(Math.floor(x / TILE), Math.floor(y / TILE)) || (Math.abs(x - cam.x) < vw && Math.abs(y - cam.y) < vh)) continue;
+      if ((hor ? RX : RY).some(r => (hor ? x : y) > r * TILE - 60 && (hor ? x : y) < (r + 4) * TILE + 60)) continue;
+      if (deckSpawnZ(x, y) !== 0) continue; c.push({ x, y, d }); } }
+  if (!c.length) return null; const o = c[(Math.random() * c.length) | 0];
+  const v = makeVehicle({ type: 'suv', x: o.x, y: o.y, d: o.d, a: Math.atan2(DV[o.d][1], DV[o.d][0]), v: AI_SPD, ai: true, driver: true, chase: true }); planTurn(v); S.vehicles.push(v); return v;
 }
 // 보복운전 차가 내 곁에 서면: 운전자가 내린다 (47_city copCarArrive에서 부른다)
 function rageArrive(v, dt) {

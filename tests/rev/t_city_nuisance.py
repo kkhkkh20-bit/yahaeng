@@ -48,7 +48,7 @@ async def main():
           run('molka',e=>{P.x=e.g.x+150;P.y=e.g.y;tick(.5);const fled=e.fled;G.killGuard(e.g);tick(.5);const it=(S.evItems||[]).find(i=>i.kind==='phone');if(it){P.x=it.x;P.y=it.y;}tick(.5);out.molkaFled=fled;});
           run('stalker',e=>{tick(2);out.stalkDist=Math.round(Math.hypot(e.g.x-e.v.x,e.g.y-e.v.y));G.killGuard(e.g);tick(.5);});
           run('gapjil',e=>{P.x=e.g.x+300;P.y=e.g.y;tick(3.5);G.killGuard(e.g);tick(.5);});
-          run('jeonse',e=>{G.killGuard(e.g);tick(.5);const it=(S.evItems||[]).find(i=>i.kind==='bag');if(it){P.x=it.x;P.y=it.y;}tick(.5);const t=e.tenant;P.x=t.x+20;P.y=t.y;tick(.1);const a=E.eventAction?E.eventAction():null;out.giveLabel=a&&a.label;if(a)a.fn();tick(.5);});
+          run('jeonse',e=>{G.killGuard(e.g);tick(.5);const it=(S.evItems||[]).find(i=>i.kind==='bag');if(it){P.x=it.x;P.y=it.y;}tick(.5);const t=e.tenant;P.x=t.x+20;P.y=t.y;tick(.1);const a=E.eventAction?E.eventAction():null;out.giveLabel=a&&a.label;if(a){a.fn();const gb=[...document.querySelectorAll('#shopPanel button')].find(b=>b.textContent.includes('주인에게 돌려주기'));if(gb)gb.click();}tick(1.5);});
           return out}''')
         print('sub-stories', json.dumps(r, ensure_ascii=False))
         for k, pay in (('molka', 50), ('stalker', 60), ('gapjil', 40)):
