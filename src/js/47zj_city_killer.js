@@ -57,9 +57,9 @@ function killerUpdate(dt) {
   if (K.stage !== 'hunt') return;
   // 용의자: 가까이 가면 생김새가 보인다 / 엉뚱한 사람을 죽였다
   for (const g of K.suspects) {
-    if (!npcAlive(g) && !g.skChecked && (S.corpses || []).some(c => c.g === g && c.ko && !c.stashed)) { if (!g.koNoted && g.downBy === 'me') { g.koNoted = true; evBanner(`기절 · ${skDesc(g)} · (여기서 끝낼까, 지하실로 데려갈까.)`, '#e8d8a8'); } continue; }
+    if (!npcAlive(g) && !g.skChecked && (S.corpses || []).some(c => c.g === g && c.ko && !c.stashed)) { if (!g.koNoted && skMine(g)) { g.koNoted = true; evBanner(`기절 · ${skDesc(g)} · (여기서 끝낼까, 지하실로 데려갈까.)`, '#e8d8a8'); } continue; }
     if (!npcAlive(g) && !g.skChecked && (S.corpses || []).some(c => c.g === g && c.ko)) continue;  /* 트렁크 속 기절자 */
-    if (!npcAlive(g)) { if (!g.skChecked) { g.skChecked = true; if (g === K.killer) { if (g.downBy === 'me') skSolved(g); else skLost(g); } else if (g.downBy !== 'me') newsTicker(`[속보] ${K.area} 길에서 남성 숨진 채 발견… 연쇄살인과 별개 사건으로 추정`); else { addWanted(2, '죄 없는 사람을 죽였다'); evBanner(`(${skDesc(g)}... 아니었어. 진범은 아직 돌아다닌다.)`, '#ff8a7a'); newsTicker(`[속보] ${K.area} 길에서 남성 숨진 채 발견… 연쇄살인과 별개 사건으로 추정`); } } continue; }
+    if (!npcAlive(g)) { if (!g.skChecked) { g.skChecked = true; if (g === K.killer) { if (skMine(g)) skSolved(g); else skLost(g); } else if (!skMine(g)) newsTicker(`[속보] ${K.area} 길에서 남성 숨진 채 발견… 연쇄살인과 별개 사건으로 추정`); else { addWanted(2, '죄 없는 사람을 죽였다'); evBanner(`(${skDesc(g)}... 아니었어. 진범은 아직 돌아다닌다.)`, '#ff8a7a'); newsTicker(`[속보] ${K.area} 길에서 남성 숨진 채 발견… 연쇄살인과 별개 사건으로 추정`); } } continue; }
     if (!g.skSeen && !P.car && dist(P.x, P.y, g.x, g.y) < 90) { g.skSeen = true; gsay(g, g === K.killer ? '...뭘 봐요.' : ['네?', '무슨 일이세요?', '...'][g.id % 3], 1.8); evBanner(`용의자: ${skDesc(g)}`, '#e8d8a8'); }
     if (g !== K.stalking && g.state === 'PATROL' && g.route.length > 1 && dist(g.x, g.y, g.route[1].x, g.route[1].y) < 20 && Math.random() < 0.01) skWander(g); }
   const k = K.killer; if (!npcAlive(k)) return;
@@ -76,6 +76,8 @@ function killerUpdate(dt) {
   // 들킨 걸 알면 칼을 꺼내 덤빈다
   if (!P.car && dist(P.x, P.y, k.x, k.y) < 44 && (K.hitT || 0) < S.t && k.skSeen) { K.hitT = S.t + 1.4; k.swingT = 0.35; play('knife', 0.6); hurtPlayer(k, '살인마 칼에 찔렸다.'); if (!K.bared) { K.bared = true; gsay(k, '알아챘어? 너도 똑같이 해 줄게.', 2.4); } }
 }
+// 누가 쓰러뜨렸나: 경찰·다른 사람(추격 차 포함)이 아니면 나 (등 뒤 처치 killGuard 는 npcDown 을 거치지 않는다)
+const skMine = g => g.downBy !== 'police' && g.downBy !== 'npc';
 // 놈이 내 손이 아닌 데서 끝났다 (경찰·사고): 돈도 도장도 없다
 function skLost(g) {
   const K = S.sk; K.done = true; K.stage = 'done'; fstat('skLost');

@@ -19,7 +19,7 @@ function placesInit() {
   let f = 0; for (const { b } of shops) if (!signOf(b) && !b.school && !b.hospital) setSign(b, FILL_SHOPS[(f++) % FILL_SHOPS.length]);
   // 같은 이름 여럿: 둘째부터 상호를 붙인다 (편의점·PC방 같은 체인은 '○○점'). 이미 쓴 이름은 피한다
   const used = new Set(), seen = {};
-  for (const { b, i } of shops) { const t = signOf(b); if (!t || shopBld.has(i) || /CLUB/.test(t)) continue;  /* CLUB 은 사건이 그 이름으로 찾는다 */ const n = seen[t] = (seen[t] || 0) + 1; if (n === 1 && !used.has(t)) { used.add(t); continue; }
+  for (const { b, i } of shops) { const t = signOf(b); if (!t) continue;  /* CLUB 둘째부터는 'CLUB ○○점' (사건은 /^CLUB/ 로 찾는다). 물건 파는 가게는 상호만 붙는다 (메뉴는 S.shops 의 업종 이름으로 연다) */ const n = seen[t] = (seen[t] || 0) + 1; if (n === 1 && !used.has(t)) { used.add(t); continue; }
     const chain = /편의점|PC방|CLUB|약국/.test(t), base = t.replace(/^\S+\s/, '');
     for (let k = 0; k < SHOP_PREFIX.length * 2; k++) { const pf = SHOP_PREFIX[(i + n + k) % SHOP_PREFIX.length], nm = chain ? `${t} ${pf.replace('네', '')}점` : `${pf}${k >= SHOP_PREFIX.length ? ' 2호' : ''} ${base}`; if (!used.has(nm)) { setSign(b, nm); used.add(nm); break; } } }
   // 문패

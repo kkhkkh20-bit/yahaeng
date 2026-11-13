@@ -74,7 +74,7 @@ const EVENTS = [
     goal: ev => ev.dropped ? '취객이 떨어뜨린 지갑 줍기' : '취객 시비 — 피하거나 때려눕히기' },
   // 종로 유흥가 ② VIP 출차: 클럽 앞 리무진에 간부가 탄다. 떠나기 전에 차를 빼앗으면 현금, 대신 조직이 덤빈다
   { key: 'vip', d: '종로 유흥가', name: 'VIP 출차',
-    start(ev) { let f = null, r = null; for (let k = 0; k < 10 && !r; k++) { f = (k < 3 && districtFront(ev.d, b => signOf(b) === 'CLUB')) || districtFront(ev.d, b => b.kind === 'shop'); r = f && roadNear(f.p.x, f.p.y + TILE * 2, 10); } if (!r) return false;  // 클럽(없으면 아무 가게) 앞 · 차 세울 도로가 가까운 곳
+    start(ev) { let f = null, r = null; for (let k = 0; k < 10 && !r; k++) { f = (k < 3 && districtFront(ev.d, b => /^CLUB/.test(signOf(b)))) || districtFront(ev.d, b => b.kind === 'shop'); r = f && roadNear(f.p.x, f.p.y + TILE * 2, 10); } if (!r) return false;  // 클럽(없으면 아무 가게) 앞 · 차 세울 도로가 가까운 곳
       ev.car = evCar(ev, 'limo', r.x, r.y, 0); ev.car.driver = true; ev.vip = evPerson(ev, f.p.x, f.p.y, { kind: 'g2', fac: 'D' }); ev.guards = [-1, 1].map(s => evPerson(ev, r.x + s * 34, r.y - 40, { kind: 'g1', fac: 'D' })); ev.phase = 'wait'; ev.t = S.t; return true; },
     focus: ev => ev.car,
     update(ev, dt = 1 / 60) { const v = ev.car, P = S.player;
