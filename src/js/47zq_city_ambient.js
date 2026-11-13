@@ -17,8 +17,8 @@ function copTookDown(o, cop) {
 // npcDown 을 한 겹 더: 범죄자가 사람을 해치면 신고 / 경찰이 범죄자를 쓰러뜨리면 연행
 if (typeof npcDown === 'function') { const _nd = npcDown; npcDown = function (o, by, lethal) { const r = _nd(o, by, lethal); if (o) o.downBy = by && by !== S.player ? (by.police ? 'police' : 'npc') : (o.downNpc ? 'npc' : 'me'); if (o) o.downNpc = false;
   if (STAGE.cityLife && by && by !== S.player && o) {
-    if (by.police && (o.criminal || o.cfight)) copTookDown(o, by);
-    else if (!by.police && !by.fac && o.civ) { by.criminal = true; policeCall(o.x, o.y, by); } }
+    if (by.police && (o.criminal || o.cfight) && !o.knifeman) copTookDown(o, by);
+    else if (!by.police && !by.fac && o.civ && !by.knifeman) {  /* 흉기 난동범은 경찰도 못 막는다 (그 사건 몫은 내 것) */ by.criminal = true; policeCall(o.x, o.y, by); } }
   return r; }; }
 // ---- 주민끼리 시비
 function quarrelStart() {
