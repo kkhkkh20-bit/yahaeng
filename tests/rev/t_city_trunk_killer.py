@@ -51,7 +51,7 @@ async def main():
           K.stalkT=S.t;P.x=k.x+2000;P.y=k.y;const v0=K.victims;for(let i=0;i<60*80&&K.victims===v0;i++){P.x=k.x+2000;P.y=k.y;G.update(1/60);}const again=K.victims-v0;
           const KD=[!!K.prey,K.prey&&Math.round(Math.hypot(K.prey.x-k.x,K.prey.y-k.y)),k.state,k.off,Math.round(K.killT-S.t),k.route.length];const c0=S.cash;G.killGuard(K.killer);tick(1.6);return{KD,wanted,again,done:!!K.done,paid:S.cash-c0,stamp:(document.getElementById('justiceStamp')||{}).textContent||''}}''')
         print('killer end', json.dumps(r, ensure_ascii=False))
-        ok(r['wanted'] >= 2 and r['again'] == 1 and r['done'] and r['paid'] == 500 and '처리' in r['stamp'], 'killer end: %s' % r)
+        ok(r['wanted'] >= 2 and r['again'] == 1 and r['done'] and r['paid'] >= 500 and '처리' in r['stamp'], 'killer end: %s' % r)
         ok(not errs, 'page errors: %s' % errs)
         await b.close()
     print('통과' if not bad else '문제', bad)

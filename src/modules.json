@@ -446,6 +446,10 @@
       "group": "city"
     },
     {
+      "path": "47zk_city_methods.js",
+      "group": "city"
+    },
+    {
       "path": "47zz_city_story.js",
       "group": "city"
     },

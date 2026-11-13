@@ -215,7 +215,7 @@ function cityAction() {
 function cityActionList() {
   const P = S.player, out = [];
   if (STAGE.cityLife) { const a = shopAction(); if (a) out.push(a); }
-  for (const f of [cuffAction, captureAction, killerAction, trunkAction, rideAction, homeAction, dealerAction, carbombAction, poisonAction, havocAction, sideAction, eventAction, factionAction]) { const e = f(); if (e) out.push(e); }  // 구역 이벤트·부업 (차 안에서도: 드래그 레이스·택시)
+  for (const f of [cuffAction, captureAction, basementAction, killerAction, trunkAction, rideAction, homeAction, dealerAction, carbombAction, poisonAction, havocAction, sideAction, eventAction, factionAction]) { const e = f(); if (e) out.push(e); }  // 구역 이벤트·부업 (차 안에서도: 드래그 레이스·택시)
   const one = a => { if (a) out.push(a); return out; };
   if (P.car) return one({ k: 'carOut', v: P.car, label: P.car.fireT > 0 ? '뛰어내리기!' : Math.abs(P.car.v) >= 60 ? '뛰어내리기' : '차에서 내리기' });
   if (P.z || flOf(P) || P.hide) return out;

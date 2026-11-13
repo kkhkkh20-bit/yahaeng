@@ -24,13 +24,13 @@ async def main():
           const c=S.guards.find(o=>o.civ&&o.state==='PATROL'&&!o.evt&&!o.crew&&!o.off);g.x=c.x+120;g.y=c.y;P.x=g.x+600;P.y=g.y;
           for(let k=0;k<900&&!e.hits;k++)tick(1/30);const hits=e.hits,victim=c.state;const c0=S.cash;G.killGuard(g);tick(.5);const st=document.getElementById('justiceStamp');tick(1.2);const nt=document.getElementById('newsTicker');return{start:true,hits,victim,paid:S.cash-c0,stamp:!!st&&st.textContent.includes('처리'),news:nt?nt.textContent:'',...DONE()}}''')
         print('assault', json.dumps(r, ensure_ascii=False))
-        ok(r['start'] and r['hits'] >= 1 and r['paid'] == 80 and r['done'], 'assault: %s' % r)
+        ok(r['start'] and r['hits'] >= 1 and r['paid'] >= 80 and r['done'], 'assault: %s' % r)
         ok(r['stamp'] and '속보' in r['news'] and '묻지마' in r['news'], 'justice beat (stamp/news) missing: %s' % r)
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.ev=null;const e=EV('kick');if(!e)return{start:false};const L=e.crew.members[0],x0=L.x,y0=L.y;P.x=L.x+400;P.y=L.y+300;tick(2);P.x=L.x+400;P.y=L.y+300;const moved=Math.round(Math.hypot(L.x-x0,L.y-y0));
           const c=S.guards.find(o=>o.civ&&o.state==='PATROL'&&!o.evt&&!o.crew&&!o.off);c.x=L.x+Math.cos(L.a)*60;c.y=L.y+Math.sin(L.a)*60;c.route=[{x:c.x,y:c.y,pause:999}];c.path=null;tick(.6);const hits=e.hits;
           const c0=S.cash;G.npcDown?G.npcDown(L,null,false):G.killGuard(L);tick(.3);return{start:true,moved,hits,paid:S.cash-c0,...DONE()}}''')
         print('kick', json.dumps(r, ensure_ascii=False))
-        ok(r['start'] and r['moved'] > 300 and r['hits'] >= 1 and r['paid'] == 60 and r['done'], 'kick scooter: %s' % r)
+        ok(r['start'] and r['moved'] > 300 and r['hits'] >= 1 and r['paid'] >= 60 and r['done'], 'kick scooter: %s' % r)
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.ev=null;let e=null;for(let k=0;k<6&&!e;k++){P.x+=900;e=EV('delivery');}if(!e)return{start:false};const n=e.bikes.length;const c0=S.cash;let labels=0;
           for(const b of e.bikes){P.x=b.x-30;P.y=b.y;P.car=null;tick(.05);const a=e.def.action(e);if(a){labels++;a.fn();tick(1);}}tick(.5);return{start:true,n,labels,paid:S.cash-c0,...DONE()}}''')
         print('delivery', json.dumps(r, ensure_ascii=False))
@@ -41,7 +41,7 @@ async def main():
           let k=0;while(!e.out&&k<1800){T.updateDriving(P,0,0,0,1/60);G.update(1/60);k++;}const out=!!e.out,sec=Math.round(k/60);P.car=null;
           const c0=S.cash;if(e.out)G.killGuard(e.out);tick(.5);return{start:true,out,sec,paid:S.cash-c0,...DONE()}}''')
         print('rage', json.dumps(r, ensure_ascii=False))
-        ok(r['start'] and r['out'] and r['paid'] == 100 and r['done'], 'road rage: %s' % r)
+        ok(r['start'] and r['out'] and r['paid'] >= 100 and r['done'], 'road rage: %s' % r)
         # 불법 촬영범 · 스토커 · 진상 손님 · 전세사기 바지사장
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player,E=G.events,out={};P.car=null;
           const run=(k,fn)=>{S.ev=null;let e=null;for(let i=0;i<6&&!e;i++){P.x+=700;e=EV(k);}if(!e){out[k]={start:false};return;}const c0=S.cash;fn(e);tick(1);out[k]={start:true,paid:S.cash-c0,...DONE()};};

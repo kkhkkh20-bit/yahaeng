@@ -57,6 +57,8 @@ function killerUpdate(dt) {
   if (K.stage !== 'hunt') return;
   // 용의자: 가까이 가면 생김새가 보인다 / 엉뚱한 사람을 죽였다
   for (const g of K.suspects) {
+    if (!npcAlive(g) && !g.skChecked && (S.corpses || []).some(c => c.g === g && c.ko && !c.stashed)) { if (!g.koNoted) { g.koNoted = true; evBanner(`기절시켰다 (${skDesc(g)}) — 끝내거나, 트렁크에 실어 지하실로`, '#e8d8a8'); } continue; }
+    if (!npcAlive(g) && !g.skChecked && (S.corpses || []).some(c => c.g === g && c.ko)) continue;  /* 트렁크 속 기절자 */
     if (!npcAlive(g)) { if (!g.skChecked) { g.skChecked = true; if (g === K.killer) skSolved(g); else { addWanted(2, '죄 없는 사람을 죽였다'); evBanner(`엉뚱한 사람이었다 (${skDesc(g)}) — 진범은 아직 돌아다닌다`, '#ff8a7a'); newsTicker(`[속보] ${K.area} 길에서 남성 숨진 채 발견… 연쇄살인과 별개 사건으로 추정`); } } continue; }
     if (!g.skSeen && !P.car && dist(P.x, P.y, g.x, g.y) < 90) { g.skSeen = true; gsay(g, g === K.killer ? '...뭘 봐요.' : ['네?', '무슨 일이세요?', '...'][g.id % 3], 1.8); evBanner(`용의자: ${skDesc(g)}`, '#e8d8a8'); }
     if (g !== K.stalking && g.state === 'PATROL' && g.route.length > 1 && dist(g.x, g.y, g.route[1].x, g.route[1].y) < 20 && Math.random() < 0.01) skWander(g); }
