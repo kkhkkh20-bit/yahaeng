@@ -6362,7 +6362,11 @@ function planInterior(g, b, bi, f) {
     // 자유 모드: 계단 복도 벽을 없애고 한 층을 통째로 가게로 (계단은 오른쪽 위 구석 한 칸)
     const open = !!STAGE.cityLife, cx0 = ix1 - 1; if (!open) for (let y = iy0; y <= iy1; y++) g[y][cx0 - 1] = '#'; fill(open ? ix1 : cx0, iy0, ix1, iy1, 'h'); g[iy0][ix1] = 'Y'; rec.stair = [ix1, iy0]; K(ix1, iy0 + 1); K(ix1 - 1, iy0); if (!open) K(cx0, iy0);
     if (!open) gap(cx0 - 1, iy1 - 1, 'h'); if (f === 0) { g[b.y1][cx0] = 'h'; K(cx0, iy1); if (b.backDoor) { g[b.y0][cx0] = 'h'; K(cx0, iy0); } }
-    const use = (b.floorsUse || [])[f] || (f === 0 ? 'store' : 'office');
+    const use0 = (b.floorsUse || [])[f] || (f === 0 ? 'store' : 'office');
+    // 자유 모드 빈 1층 간판: 실내를 짓기 전에 그 층 쓰임새에 맞는 업종 이름을 정한다 (그래야 꽃집엔 화분, 세탁소엔 옷걸이가 놓인다)
+    if (STAGE.cityLife && f === 0 && b.signs && !(b.signs[0] || '').trim() && typeof FILL_BY_USE !== 'undefined') { const L = FILL_BY_USE[use0] || FILL_BY_USE.store; b.signs[0] = L[BLD.indexOf(b) % L.length]; }
+    // 자유 모드: 간판 글자대로 실내를 고른다 (꽃집이 사무실 책상, 치킨집이 잡화 진열대로 나오던 것)
+    const use = STAGE.cityLife && ['store', 'food', 'office', 'pc', 'billiards', 'karaoke', 'gym', 'academy'].includes(use0) ? (signUseOf((b.signs || [])[f]) || use0) : use0;
     const sx0 = ix0, sx1 = open ? ix1 - 1 : cx0 - 2; fill(sx0, iy0, sx1, iy1, use === 'store' || use === 'food' ? 't' : use === 'pc' ? 'h' : 'w');
     rec.store = { x0: sx0, y0: iy0, x1: sx1, y1: iy1, use };
     if (f === 0) { const dx = sx0 + 2; g[b.y1][dx] = 't'; K(dx, iy1); K(dx, iy1 - 1); }
@@ -6383,15 +6387,32 @@ function planInterior(g, b, bi, f) {
       for (let x = sx0 + 1; x + 2 <= sx1 - 1; x += 4) furn(x, vy + 2, 3, 1, 'disp');
       furn(sx1 - 2, vy + 2, 2, 1, 'disp');
     }
-    else if (use === 'store' && open) {  // 자유 모드 가게(넓힌 층): 안쪽 벽(편의점 냉장고 · 약국·철물 벽 선반), 계산대, 폭에 맞춘 진열대
-      const sign = (b.signs || [])[f] || '', cs = /편의점|마트|슈퍼|시장|상회/.test(sign), ph = /약국/.test(sign), W = sx1 - sx0 + 1;
-      for (let x = sx0 + 1, n = 0; x <= sx1 && n < 5; x++) if (furn(x, iy0, 1, 1, cs ? 'fridge' : 'shelfS', true, 0)) n++;
-      // 계산대: 편의점은 앞쪽 오른편, 약국은 안쪽(약사 뒤로 약 선반). 문 앞 칸에 걸리면 다음 자리
+    else if (use === 'store' && open) {  // 자유 모드 가게(넓힌 층): 업종대로 꽉 채운다 — 안쪽 벽 · 옆벽 선반 · 진열대 줄 · 계산대 · 업종 소품
+      const sign = (b.signs || [])[f] || '', cs = /편의점|마트|슈퍼|시장|상회/.test(sign), ph = /약국/.test(sign), hw = /철물|공구|타일|조명|전파|지물|자재|열쇠/.test(sign), W = sx1 - sx0 + 1;
+      const flower = /꽃집/.test(sign), cold = /정육|반찬/.test(sign), laundry = /세탁|수선/.test(sign), salon = /미용|헤어/.test(sign);
+      if (salon) {   // 미용실: 안쪽 벽 거울·선반, 그 앞 의자 줄, 앞쪽 계산대
+        for (let x = sx0 + 1; x <= sx1; x++) furn(x, iy0, 1, 1, 'shelfS', true, 0);
+        for (let x = sx0 + 1; x <= sx1 - 1; x += 2) furn(x, iy0 + 1, 1, 1, 'chairD', true, 0);
+        if (furn(sx1 - 1, iy1 - 1, 2, 1, 'counter', true, 0)) rec.counter = { x: sx1 - 1, y: iy1 - 1 }; else if (furn(sx1 - 1, iy1 - 2, 2, 1, 'counter', true, 0)) rec.counter = { x: sx1 - 1, y: iy1 - 2 };
+        for (let y = iy0 + 3; y <= iy1 - 2; y += 2) furn(sx0, y, 1, 1, 'plant');
+      } else {
+      for (let x = sx0 + 1; x <= sx1; x++) furn(x, iy0, 1, 1, cs || cold ? 'fridge' : laundry ? 'wardrobe' : flower ? 'plant' : 'shelfS', true, 0);   // 안쪽 벽 전체: 편의점 음료 냉장고 · 약국 약장 · 철물점 공구 벽
+      // 계산대: 편의점·철물은 앞쪽 오른편(입구 보며), 약국은 안쪽(약사 뒤로 약장). 문 앞 칸에 걸리면 다음 자리
       const ctr = ph ? [[sx1 - 1, iy0 + 2], [sx1 - 1, iy0 + 3], [sx1 - 1, iy1 - 2], [sx1 - 1, iy1 - 1]] : [[sx1 - 1, iy1 - 1], [sx1 - 1, iy1 - 2], [sx1 - 1, iy0 + 2]];
       let cy = -1; for (const [x, y] of ctr) if (y > iy0 && y < iy1 && furn(x, y, 2, 1, 'counter', true, 0)) { cy = y; rec.counter = { x, y }; break; }
-      const sw = W >= 7 ? 3 : W >= 5 ? 2 : 1;   // 좁은 가게는 한 칸짜리 진열대
-      for (let y = iy0 + 2; y <= iy1 - 1; y += 2) { if (y === cy) continue; for (let x = sx0 + 1; x + sw - 1 <= sx1 - (cy >= 0 ? 2 : 1); x += sw + 1) furn(x, y, sw, 1, 'shelf'); }
-      if (cs) { if (iy0 + 4 < iy1 - 1) furn(sx0 + 1, iy0 + 4, 2, 1, 'csfood', true, 0); furn(sx0, iy1 - 1, 1, 1, 'plant'); }  // 편의점: 반찬·도시락 진열대, 입구 화분 (47zu 그림)
+      // 옆벽(왼쪽) 낮은 선반 줄: 엘리베이터 문 앞 두 칸과 앞쪽 창가 칸은 비운다
+      const side = W >= 3; if (side) for (let y = iy0 + 2; y <= iy1 - 2; y++) furn(sx0, y, 1, 1, flower ? 'plant' : laundry ? 'wardrobe' : hw && (y % 2) ? 'boxes' : 'shelf');
+      // 가운데 진열대 줄: 두 줄마다 통로 한 줄
+      const x0 = side ? sx0 + 2 : sx0 + 1, sw = W >= 8 ? 3 : W >= 5 ? 2 : 1;
+      for (let y = iy0 + 2; y <= iy1 - 1; y += 2) { if (y === cy) continue; const xEnd = sx1 - (cy >= 0 && Math.abs(y - cy) <= 1 ? 2 : 1); for (let x = x0; x + sw - 1 <= xEnd;) x += furn(x, y, sw, 1, hw && ((x + y) % 3 === 0) ? 'boxes' : flower ? 'plant' : laundry ? 'wardrobe' : cold ? 'fridge' : 'shelf') ? sw + 1 : 1; }   /* 문 앞 통로 칸에 걸리면 한 칸 옆에서 다시 */
+      // 업종 소품
+      if (cs) {   // 편의점: 도시락·반찬 냉장 진열대, 입구 ATM, 화분
+        for (const [x, y] of [[x0, iy0 + 2], [x0, iy0 + 4], [x0 + 1, iy1 - 2]]) if (furn(x, y, 2, 1, 'csfood', true, 0)) break;
+        for (const [x, y] of [[sx0 + 1, iy1 - 1], [sx1, iy1 - 2], [sx0 + 1, iy1 - 2]]) if (furn(x, y, 1, 1, 'atm', true, 0)) break;
+        for (const [x, y] of [[sx1, iy1 - 1], [sx1, iy0 + 2], [sx0 + 1, iy1 - 1]]) if (furn(x, y, 1, 1, 'plant')) break;
+      }
+      if (ph) for (const [x, y] of [[sx1, iy1 - 1], [sx0 + 1, iy1 - 1]]) if (furn(x, y, 1, 1, 'plant')) break;   // 약국 입구 화분
+      }
     }
     else if (use === 'store') { furn(sx0, iy0, 1, 1, 'fridge'); furn(sx0 + 1, iy0, 1, 1, 'fridge'); for (let y = iy0 + 2; y < iy1 - 1; y += 2) for (let x = sx0 + 1; x + 2 <= sx1 - 1; x += 4) furn(x, y, 3, 1, 'shelf'); if (furn(sx1 - 1, iy1 - 1, 2, 1, 'counter', true, 0)) furn(sx1, iy1 - 2, 1, 1, 'chairD', true, 0); }  // 가게: 안쪽 벽 음료 냉장고, 진열대 줄, 계산대와 점원 의자
     else if (use === 'pc') { for (let y = iy0; y + 1 < iy1; y += 3) for (let x = sx0; x <= sx1; x++) if ((x - sx0) % 4 !== 3 && furn(x, y, 1, 1, 'pc', true, 0)) furn(x, y + 1, 1, 1, 'chairD', true, 2); }  // 줄마다 컴퓨터 + 의자, 그 아래 통로
@@ -6493,6 +6514,12 @@ function planInterior(g, b, bi, f) {
     if (floorCh(g[sy][ix1])) { g[sy][b.x1] = 'N'; K(ix1, sy); }
   }
 }
+// 간판 글자 → 실내 종류 (자유 모드)
+const SIGN_USE = [[/PC방|피시방|오락실/, 'pc'], [/당구/, 'billiards'], [/노래/, 'karaoke'], [/헬스|휘트니스|태권도/, 'gym'], [/학원|교습/, 'academy'],
+  [/호프|포차|곱창|골뱅이|노가리|국밥|백반|분식|순댓국|치킨|식당|반점|중국집|족발|횟집|주점/, 'food'],
+  [/편의점|마트|슈퍼|시장|상회|약국|철물|공구|자재|타일|조명|지물|인쇄|문구|복권|반찬|빵집|꽃집|정육|안경|사진|수선|세탁|열쇠|전파|미용|헤어|떡집|휴대폰|전당포/, 'store'],
+  [/부동산|법무|세무|회계|한의원|의원|인력/, 'office']];
+function signUseOf(sign) { if (!sign) return null; for (const [re, u] of SIGN_USE) if (re.test(sign)) return u; return null; }
 const USE_NAME = { store: '가게', food: '식당', pc: 'PC방', academy: '학원', office: '사무실' };
 function drawRoomLabels(x, f, rx0, ry0, rx1, ry1) {
   x.font = uiFont(13); x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = 'rgba(232,227,214,.3)';
@@ -9061,7 +9088,7 @@ const skillDetection=(g,light,sneak,d)=>!g.dog&&sneak&&light<.45&&d>=48&&skillOn
 const projectileRange=()=>skillOn('precision')?325:250;
 
 // Concealment remains a basic movement state; attacking from it is learned separately.
-const abilityOn=id=>!!STAGE.artSlice||skillOn(id);
+const abilityOn=id=>!!STAGE.artSlice||!!STAGE.cityLife||skillOn(id);  // 자유 모드: 은퇴한 요원은 기술을 다 안다 (풀숲·은신처 기습 암살 등)
 function concealedAttackSource(P=S.player){
  return !!(P.hide||P.vent||P.under||P.ledge||P.cover||P.hidden||!P.z&&P.mode==='sneak'&&tileAt(P.x,P.y)==='B');
 }
@@ -9451,7 +9478,7 @@ function restoreContractLayout() {
 
 // ---------------------------------------------------------------- 상태
 const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+let ctx = canvas.getContext('2d');  // let: 자유 모드 도트화(47zv)가 작은 캔버스로 잠시 바꿔 그린다
 const darkC = document.createElement('canvas'); const dctx = darkC.getContext('2d', {willReadFrequently:true});
 let mapC = null, ugC = null, ventC = null, S_ugC = null, stripePat = {};
 // 큰 지도 그림(가로 4000px 넘는 것도 있다)은 휴대폰 그래픽 칩이 한 장으로 못 다뤄 매 프레임 느린 길로 그려졌다.
@@ -15212,7 +15239,7 @@ function updatePlayer(dt) {
   autoStairs(P, mx, my, mag); autoTraverse(P, mx, my, mag, mode, dt);
   { const c = P.carrying; if (c && c.bleed && !P.z && !c.ko) {  // 처치한 시체를 메고 가면 핏방울이 길게 남는다 (기절시킨 사람은 피를 흘리지 않는다)
     const L = c.lastDrop; if (!L || dist(L.x, L.y, P.x, P.y) > 42) { const d = { x: P.x + rnd(-5, 5), y: P.y + rnd(-5, 5), r: rnd(4, 7), rot: rnd(0, TAU), fl: flOf(P), trail: c.bleed, k: (L ? L.k : 0) + 1 }; S.decals.push(d); c.lastDrop = d; } } }  // 시체마다 마지막 핏방울을 기억 (다른 시체를 옮겨도 번호가 이어진다)
-  { const inBush = P.z === 0 && tileAt(P.x, P.y) === 'B'; P.hidden = inBush && P.mode === 'sneak';  // 화단은 웅크려야 숨는다 — 서 있으면 머리가 보인다
+  { const inBush = P.z === 0 && tileAt(P.x, P.y) === 'B'; P.hidden = inBush && (P.mode === 'sneak' || (STAGE.cityLife && P.mode !== 'run'));  /* 자유 모드: 풀숲에서는 뛰지만 않으면 숨는다 (웅크리기를 몰라도 숨어서 기습할 수 있게) */  // 화단은 웅크려야 숨는다 — 서 있으면 머리가 보인다
     if (inBush && !P.hidden) hint('bushStand', '화단에서는 웅크려야 숨을 수 있다. 서 있으면 경비에게 보인다'); }
   if (P.hidden !== !!S._wasBush) { S._wasBush = P.hidden; S.bushShake = { x: tc(Math.floor(P.x / TILE)), y: tc(Math.floor(P.y / TILE)), t: S.t }; spawnEffect('leaf',P); play('cloth', 0.12); }  // 화단에 드나들면 잎이 흔들린다
   P.light = lightAt(P.x, P.y, P.z > 0);
@@ -15630,6 +15657,7 @@ function addWanted(n, why) {
   if (!STAGE.city || S.over) return;
   const was = S.wanted; S.wanted = Math.min(5, Math.max(S.wanted, 0) + n); S.wantLost = 0;
   if (S.wanted > was) { toast(`수배 ${'★'.repeat(S.wanted)} · ${why || '경찰이 쫓는다'}`, 2.4, 'warn'); play('alarm', 0.35); S.copT = [0, 12, 7, 4, 2, 1][S.wanted] ?? 2;  /* 출동까지 걸리는 시간: 별 하나면 한참 뒤에 온다 */ hint('wanted', '수배 별만큼 경찰이 쫓아온다. 경찰 눈에서 벗어나 버티면 별이 하나씩 내려간다'); }
+  S.wantSpot = pSpot();   // 신고된 곳 = 지금 범행 자리. 경찰은 여기서부터 찾는다 (이후 내 위치는 누가 봐야 갱신된다)
   for (const g of wantedCops()) copChase(g);
 }
 // 차로 사람을 쳤을 때: 경찰이 봤으면 바로 수배. 아니면 살짝 친 건 넘어가고, 죽였으면 본 사람이 10초 뒤 신고(뺑소니).
@@ -15650,7 +15678,9 @@ function wantedCops() {
   const R = S.wanted <= 2 ? 750 : 1e9;  // 별 한두 개: 근처에 있던 경찰만 바로 온다 (나머지는 출동해서 온다)
   return near.filter((g, i) => (i < n && dist(g.x, g.y, P.x, P.y) < R) || g.state === 'ALERT' && g.seen);
 }
-function copChase(g) { if (g.state === 'ALERT') { g.lastSeen = pSpot(); return; } g.state = 'ALERT'; g.icon = '!'; g.iconT = 99; g.lastSeen = pSpot(); g.lostT = 0; g.path = null; g.repath = 0; g.meter = 1; g.shootT = 0; g.aim = 0; }
+// 경찰이 아는 내 위치: 직접 본 경찰은 지금 자리, 아니면 무전으로 받은 마지막 목격·신고 자리 (예전엔 모두 내 실제 위치를 알아 귀신같이 쫓았다)
+const copKnows = g => (!STAGE.cityLife || g.seen || !S.wantSpot) ? pSpot() : { ...S.wantSpot };
+function copChase(g) { if (g.state === 'ALERT') { g.lastSeen = copKnows(g); return; } g.state = 'ALERT'; g.icon = '!'; g.iconT = 99; g.lastSeen = copKnows(g); g.lostT = 0; g.path = null; g.repath = 0; g.meter = 1; g.shootT = 0; g.aim = 0; }
 // 화면 밖 길(도로·보도) 칸 하나: 나에게서 r0~r1 떨어진 곳
 function offscreenSpot(r0, r1) {
   const P = S.player, vw = W / SCALE / 2 + 60, vh = H / SCALE / 2 + 60;
@@ -15765,8 +15795,8 @@ function cityUpdate(dt) {
   if (S.wanted > 0) {
     // 경찰끼리 무전: 하나라도 나를 보면 모두 그 자리로
     const seen = !(S.crowdT > S.t) && cops.some(g => g.state === 'ALERT' && g.seen);  // 시위대 속에 섞이면 눈에 안 띈다
-    if (seen) { S.wantLost = 0; for (const g of wantedCops()) copChase(g); }
-    else { S.wantLost += dt; for (const g of cops) if (g.state !== 'ALERT' && g.state !== 'DEAD' && !P.hide && !P.under && !P.vent && canSee(g, P.x, P.y, Math.max(0.4, P.light || 0), P.hidden, P.mode === 'sneak', P.z, flOf(P)) > 0) copChase(g); }
+    if (seen) { S.wantLost = 0; S.wantSpot = pSpot(); for (const g of wantedCops()) copChase(g); }   // 누가 봤다: 무전으로 그 자리를 알린다
+    else { S.wantLost += dt; for (const g of cops) if (g.state !== 'ALERT' && g.state !== 'DEAD' && !P.hide && !P.under && !P.vent && canSee(g, P.x, P.y, Math.max(0.4, P.light || 0), P.hidden, P.mode === 'sneak', P.z, flOf(P)) > 0) { S.wantSpot = pSpot(); g.seen = true; copChase(g); } }   // 직접 본 경찰
     const need = WANT_COPS[S.wanted];
     if (cops.length < need && (S.copT -= dt) <= 0) { S.copT = S.wanted <= 2 ? 6 : 3; spawnCop(); }
     if (S.wantLost > 10 + S.wanted * 3) { S.wanted--; S.wantLost = 0; toast(S.wanted ? `수배 ${'★'.repeat(S.wanted)} · 경찰이 놓쳤다` : '수배가 풀렸다', 2.2);
@@ -15798,12 +15828,12 @@ function cityDown(why) {
 function updateDowning() {
   if (!S.downing) return false;
   if (S.t - S.downing.t < 2.6) return true;
-  const why = S.downing.why; S.downing = null; S.player.defeat = null; cityRespawn(why); return false;
+  const why = S.downing.why, arrest = S.downing.arrest; S.downing = null; S.player.defeat = null; if (arrest) cityArrest(why); else cityRespawn(why); return false;
 }
 function drawDowning() {
   if (!S.downing) return; const f = clamp((S.t - S.downing.t) / 2.6, 0, 1);
   ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = `rgba(40,0,0,${Math.min(0.55, f * 1.2)})`; ctx.fillRect(0, 0, canvas.width, canvas.height);
-  if (f > 0.2) { const a = Math.min(1, (f - 0.2) * 3); ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.fillStyle = '#e0453a'; ctx.font = uiFont(42 * DPR).replace('400 ', '700 '); ctx.fillText('쓰러졌다', canvas.width / 2, canvas.height * 0.42);
+  if (f > 0.2) { const a = Math.min(1, (f - 0.2) * 3); ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.fillStyle = '#e0453a'; ctx.font = uiFont(42 * DPR).replace('400 ', '700 '); ctx.fillText(S.downing.arrest ? '제압됐다' : '쓰러졌다', canvas.width / 2, canvas.height * 0.42);
     ctx.fillStyle = '#f0e6dc'; ctx.font = uiFont(16 * DPR); ctx.fillText(S.downing.why || '', canvas.width / 2, canvas.height * 0.42 + 34 * DPR); }
   if (f > 0.8) { ctx.globalAlpha = (f - 0.8) * 5; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
   ctx.restore();
@@ -15911,8 +15941,9 @@ function spawnCopCar() {
 // 가까이 왔으면 세우고 경찰을 내린다. true = 이번 프레임 끝
 function copCarArrive(v, dt) {
   if (v.rage) { const P = S.player; return dist(v.x, v.y, P.x, P.y) < 220 && (!P.car || Math.abs(P.car.v) < 60) ? rageArrive(v, dt) : false; }  // 보복운전 (47ze)
-  const P = S.player, d = dist(v.x, v.y, P.x, P.y), slowMe = !P.car || Math.abs(P.car.v) < 80;
-  if (!(d < 300 && slowMe)) return false;
+  const P = S.player, d = dist(v.x, v.y, P.x, P.y), slowMe = !P.car || Math.abs(P.car.v) < 80, W = STAGE.cityLife && S.wanted > 0 && S.wantSpot;
+  if (STAGE.cityLife && d < 380 && los(v.x, v.y, P.x, P.y) && !P.hide && !P.hidden) S.wantSpot = pSpot();   // 경찰차가 나를 봤다
+  if (!((d < 300 && slowMe) || (W && dist(v.x, v.y, W.x, W.y) < 170))) return false;   /* 내 곁이거나, 신고·목격 자리에 닿으면 내려서 찾는다 */
   v.v = Math.max(0, v.v - CAR_BRAKE * dt); if (v.v > 5) { v.x += Math.cos(v.a) * v.v * dt; v.y += Math.sin(v.a) * v.v * dt; return true; }
   v.chase = false; v.ai = false; v.parked = true; v.driver = false; v.deployed = true; play('switch', 0.5);
   if (STAGE.cityLife) deployFromCar(v);  // 경찰차는 경찰, 조직 차는 그 조직원 둘
@@ -16064,7 +16095,7 @@ function hitsUpdate(dt) {
   if (!S.guards.includes(g)) { S.hit = null; return; }
   const ko = g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko);
   if (h.ctr === 'capture' && captureUpdate(h, ko)) return;  // 납치·심문 (47zz)
-  if (h.ko && ko && !h.cuffed) return;  // 검거: 기절시킨 뒤 수갑을 채워야 끝난다 (47h cuffAction)
+  if (h.ko && ko && !h.cuffed) { h.cuffed = true; g.cuffed = true; evBanner('제압했다. 순찰차가 데려간다', '#9fc4ff'); after(6, () => { if (S.guards.includes(g)) evGone(g); }); }  // 검거: 쓰러뜨리면 끝 (수갑 채우는 단계는 뺐다)
   if (g.state === 'DEAD' && (!ko || h.ko)) {
     // 경찰 검거 미션(h.ko): 기절시키면 제값, 죽이면 3분의 1. 조직 미션: 보수와 호감도 변화가 따로 정해져 있다
     const quiet = !S.wanted, pay = h.ko ? (ko ? h.pay : Math.round(h.pay / 3)) : h.pay != null ? h.pay + (quiet ? 50 : 0) : HIT_PAY + (quiet ? HIT_QUIET_BONUS : 0);
@@ -16184,6 +16215,7 @@ function updateArrest(dt) {
 const CUFF_T = 1.6;
 function startCuffs(why, cop) {
   const P = S.player; if (S.cuffs || S.downing) return;
+  if (STAGE.cityLife && typeof cityDown === 'function') { cityDown(why || '경찰에게 제압됐다'); if (S.downing) S.downing.arrest = true; return; }   // 자유 모드: 수갑 장면 없이 제압돼 쓰러진다 → 지구대
   P.trav = null; clearCarScripts();  // 하던 동작(문 따기·차 타기)은 끊긴다
   if (P.car) { const v = P.car; P.car = null; v.parked = true; v.v = 0; }
   cop = cop || S.guards.filter(g => g.police && !g.off && g.state !== 'DEAD').sort((a, b) => dist(a.x, a.y, P.x, P.y) - dist(b.x, b.y, P.x, P.y))[0];
@@ -16474,6 +16506,10 @@ function shopAction() {
   }
   if (P.z || flOf(P) || P.hide) return null;
   for (const s of S.shops || []) if (dist(P.x, P.y, s.x, s.y) < 56) return { k: 'shop', s, at: { x: s.x, y: s.y - 40 }, label: s.name };
+  // 가게 안 계산대 앞에서도 산다 (예전엔 문 앞에서만 열려, 들어가서 [행동]을 누르면 '더 가까이' 안내만 떴다)
+  const pb = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE));
+  for (const s of S.shops || []) { if (s.b !== pb) continue; const C = PLANS[s.b]?.[0]?.counter; if (!C) continue; const cx = tc(C.x) + TILE / 2, cy = tc(C.y);
+    if (dist(P.x, P.y, cx, cy) < 78) return { k: 'shop', s, at: { x: cx, y: cy - 40 }, label: s.name + ' 계산대' }; }
   if (S.dealer && dist(P.x, P.y, S.dealer.office.x, S.dealer.office.y) < 70) return { k: 'dealer', at: { x: S.dealer.office.x, y: S.dealer.office.y - 40 }, label: '중고차 매매' };
   return null;
 }
@@ -17148,7 +17184,7 @@ function standBy(a, b, r = 28) { const k = Math.atan2(a.y - b.y, a.x - b.x); ret
 function faceEachOther(g) { const P = S.player; if (!g) return; P.a = Math.atan2(g.y - P.y, g.x - P.x); g.a = Math.atan2(P.y - g.y, P.x - g.x); }
 // 경찰 검거 미션: 기절시킨 수배자 옆에서 [행동] → 무릎 꿇고 수갑 (1.4초). 그 뒤 순찰차가 데려간 것으로 친다
 function cuffAction() {
-  const h = S.hit, P = S.player; if (!h || !h.ko || h.cuffed || P.car) return null; const g = h.g;
+  const h = S.hit, P = S.player; if (STAGE.cityLife || !h || !h.ko || h.cuffed || P.car) return null;   /* 자유 모드: 쓰러뜨리면 바로 검거 (47b) */ const g = h.g;
   const ko = g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko); if (!ko || dist(P.x, P.y, g.x, g.y) > 70) return null;
   return { k: 'evAct', label: '수갑 채우기', at: { x: g.x, y: g.y - 50 }, fn: () => {
     const s = standBy(P, g, 22);
@@ -18987,7 +19023,7 @@ function rageCar() {
   const car = P.car, ca = car ? Math.cos(car.a) : 1, sa = car ? Math.sin(car.a) : 0;
   const score = o => { const along = DV[o.d][0] * ca + DV[o.d][1] * sa, hor = o.d === 0 || o.d === 2; return (along > 0.7 ? 0 : 5000) + Math.abs(hor ? o.y - P.y : o.x - P.x) + Math.hypot(o.x - P.x, o.y - P.y) * 0.1; };
   c.sort((p, q) => score(p) - score(q)); const o = c[0];
-  const v = makeVehicle({ type: 'suv', x: o.x, y: o.y, d: o.d, a: Math.atan2(DV[o.d][1], DV[o.d][0]), v: AI_SPD, ai: true, driver: true, chase: true }); planTurn(v); S.vehicles.push(v); return v;
+  const v = makeVehicle({ type: 'suv', x: o.x, y: o.y, d: o.d, a: Math.atan2(DV[o.d][1], DV[o.d][0]), v: AI_SPD, ai: true, driver: true, chase: true }); v.rageCar = true; planTurn(v); S.vehicles.push(v); return v;
 }
 // 보복운전 차가 내 곁에 서면: 운전자가 내린다 (47_city copCarArrive에서 부른다)
 function rageArrive(v, dt) {
@@ -19433,7 +19469,9 @@ function killHowNow(o) {
 // 손맛: 내가 쓰러뜨린 순간 아주 짧게 멈칫 (히트스톱) + 흔들림 — 방식마다 세기가 다르다
 const HIT_FEEL = { melee: [0.06, 0.12], car: [0.08, 0.3], gun: [0.035, 0.08], boom: [0.1, 0.45], fire: [0.05, 0.15], crush: [0.1, 0.4], basement: [0, 0], env_booth: [0.14, 0.3], env_cardoor: [0.14, 0.3], env_traffic: [0.12, 0.35], env_river: [0.08, 0.1], env_wall: [0.12, 0.25] };
 if (typeof npcDown === 'function') { const _npcDown = npcDown; npcDown = function (o, by, lethal) { if (STAGE.cityLife && o && npcAlive(o)) { o.killHow = by && by !== S.player || o.downNpc ? 'npc' : killHowNow(o);
-    const f = o.killHow !== 'npc' && dist(o.x, o.y, S.player.x, S.player.y) < 700 && HIT_FEEL[o.killHow]; if (f) { S.hitStop = Math.max(S.hitStop || 0, f[0]); S.shakeT = Math.max(S.shakeT || 0, f[1]); } }
+    const f = o.killHow !== 'npc' && dist(o.x, o.y, S.player.x, S.player.y) < 700 && HIT_FEEL[o.killHow]; if (f) { S.hitStop = Math.max(S.hitStop || 0, f[0]); S.shakeT = Math.max(S.shakeT || 0, f[1]);
+      const P = S.player, k = o.killHow, pw = k === 'melee' ? 1.8 : k === 'gun' ? 1.1 : k === 'car' ? 0 : k === 'boom' || k === 'crush' ? 2.2 : k.startsWith('env_') ? 1.9 : 1.2;   /* 쓰러뜨리는 한 방 (차는 원래 충돌 연출로 충분) */
+      if (pw && o.hitT !== S.t && typeof hitJuice === 'function') hitJuice(o, Math.atan2(o.y - P.y, o.x - P.x), pw, true, k === 'gun'); } }   /* 주먹 마무리는 47zp 가 이미 했다 · 총에 맞으면 뒤로 밀린다 */
   return _npcDown(o, by, lethal); }; }
 // 쓰러진 놈의 방식 (사고·독은 시체 기록에 남는다)
 function killHowOf(g) {
@@ -19620,6 +19658,8 @@ const FILL_SHOPS = ['세탁소', '미용실', '부동산', '안경점', '꽃집'
 const SHOP_PREFIX = ['을지', '청계', '삼정', '대성', '우리', '동원', '한일', '제일', '신진', '금성', '영미네', '할매', '종로', '왕', '원조', '서울', '중앙', '새마을', '현대', '명동'];
 const VILLA_NAMES = ['을지', '청계', '은행나무', '해오름', '대명', '삼성', '진주', '목련', '한빛', '소망', '우정', '태평', '장미', '수정', '동아', '그린', '로얄', '하나', '보람', '금호'];
 const HOUSE_NAMES = ['김', '이', '박', '최', '정', '강', '조', '윤', '장', '임', '한', '오', '서', '신', '권', '황', '안', '송', '류', '홍'];
+const FILL_BY_USE = { store: ['세탁소', '미용실', '안경점', '꽃집', '빵집', '정육점', '반찬가게', '수선집', '열쇠', '복권방', '문구점', '사진관', '떡집', '휴대폰', '전당포'],
+  office: ['부동산', '세무사', '법무사', '한의원', '인력사무소'], food: ['치킨', '중국집'], karaoke: ['노래방'], billiards: ['당구장'], gym: ['헬스', '태권도'], academy: ['학원'], pc: ['오락실'] };
 const KEEP_SIGNS = /PC방|119|지구대|편의점|CLUB|중고차/;  // 이미 의미가 정해진 곳 (사건·장소에서 찾는 이름)
 function placesInit() {
   if (!STAGE.cityLife) return; const shops = BLD.map((b, i) => ({ b, i })).filter(o => o.b.kind === 'shop' && !o.b.vacant);
@@ -19630,7 +19670,8 @@ function placesInit() {
   if (big[0]) { setSign(big[0].b, '을지초등학교'); big[0].b.school = true; big[0].b.plate = big[0].b.plateName = '교무실 · 행정실'; }
   if (big[1]) { setSign(big[1].b, '을지 중앙병원'); big[1].b.hospital = true; big[1].b.plate = big[1].b.plateName = '응급실 24시'; }
   // 빈 간판 채우기
-  let f = 0; for (const { b } of shops) if (!signOf(b) && !b.school && !b.hospital) setSign(b, FILL_SHOPS[(f++) % FILL_SHOPS.length]);
+  // 1층 실내가 이미 지어져 있으니 그 실내에 맞는 업종 이름만 고른다 (사무실 책상이 놓인 층에 '꽃집' 간판이 붙던 것)
+  const fillN = {}; for (const { b } of shops) if (!signOf(b) && !b.school && !b.hospital) { const u = (b.floorsUse || [])[0] || 'store', L = FILL_BY_USE[u] || FILL_BY_USE.store; fillN[u] = (fillN[u] || 0) + 1; setSign(b, L[(fillN[u] - 1) % L.length]); }
   // 같은 이름 여럿: 둘째부터 상호를 붙인다 (편의점·PC방 같은 체인은 '○○점'). 이미 쓴 이름은 피한다
   const used = new Set(), seen = {};
   for (const { b, i } of shops) { const t = signOf(b); if (!t) continue;  /* CLUB 둘째부터는 'CLUB ○○점' (사건은 /^CLUB/ 로 찾는다). 물건 파는 가게는 상호만 붙는다 (메뉴는 S.shops 의 업종 이름으로 연다) */ const n = seen[t] = (seen[t] || 0) + 1; if (n === 1 && !used.has(t)) { used.add(t); continue; }
@@ -19703,7 +19744,7 @@ function brawlHit(g, knife, heavy) {
   const kb = heavy ? 24 : knife ? 8 : 13, nx = g.x + Math.cos(a) * kb, ny = g.y + Math.sin(a) * kb; if (!solidAt(Math.floor(nx / TILE), Math.floor(ny / TILE))) { g.x = nx; g.y = ny; }
   g.a = a + Math.PI; g.path = null;
   if (knife) { bloodBurst(g.x, g.y - 12, a, 3); play('knife', 0.6); } else { play('thud', heavy ? 0.85 : 0.6, heavy ? 0.7 : 1); spawnEffect('impact', { x: g.x, y: g.y - 18, fl: 0, z: 0 }, { scale: heavy ? 0.75 : 0.5 }); }
-  S.hitStop = Math.max(S.hitStop || 0, heavy ? 0.09 : knife ? 0.05 : 0.04); S.shakeT = Math.max(S.shakeT || 0, heavy ? 0.22 : 0.1);
+  hitJuice(g, a, heavy ? 1.4 : knife ? 1 : 0.7, g.bhp <= 0);   // 타격감 (47zw)
   // 수배: 행인·경찰을 때리는 걸 봤다
   if ((g.civ || g.police) && !g.evt && g.skBi == null && witnessed(P.x, P.y, 300)) { if (g.police) addWanted(1, '경찰을 폭행했다'); else if (!S.wanted) addWanted(1, knife ? '칼로 사람을 찔렀다' : '사람을 때리는 걸 봤다'); }
   if (g.bhp <= 0) { g.fist = false; npcDown(g, null, !!knife); if (!knife) gsay(g, '...', 1); return; }
@@ -20198,6 +20239,61 @@ function cornerStoreFurn(x, it) {
   return false;
 }
 
+// ---------------------------------------------------------------- 자유 모드 도트화: 캔버스 도형(원·선·사각형)으로 그린 소품을 도트로
+// 그 그림을 작은 캔버스에 도트 한 칸(PIX 월드 px) 크기로 그린 뒤, 반투명 가장자리를 잘라(알파 0/255) 또렷한 픽셀로 만들고
+// 흐림 없이 확대해 찍는다. 사람·차·건물 같은 도트 그림과 같은 굵기의 픽셀이 된다. 그리는 코드는 그대로 두고 감싸기만 한다.
+const PIX = 1.5;
+const pixC = document.createElement('canvas'), pixX = pixC.getContext('2d', { willReadFrequently: true });
+function pixelize(x0, y0, w, h, fn) {
+  if (!STAGE.cityLife) return fn();
+  x0 = Math.floor(x0 / PIX) * PIX; y0 = Math.floor(y0 / PIX) * PIX;   // 화면이 움직여도 픽셀 격자가 흔들리지 않게
+  const n = Math.max(1, Math.ceil(w / PIX)), m = Math.max(1, Math.ceil(h / PIX)); if (n * m > 90000) return fn();
+  if (pixC.width !== n || pixC.height !== m) { pixC.width = n; pixC.height = m; } else { pixX.setTransform(1, 0, 0, 1, 0, 0); pixX.clearRect(0, 0, n, m); }
+  pixX.setTransform(1 / PIX, 0, 0, 1 / PIX, -x0 / PIX, -y0 / PIX); pixX.imageSmoothingEnabled = false; pixX.globalAlpha = 1; pixX.globalCompositeOperation = 'source-over';
+  const main = ctx; ctx = pixX; let r; try { r = fn(); } finally { ctx = main; }
+  const im = pixX.getImageData(0, 0, n, m), d = im.data; let any = false;
+  for (let i = 3; i < d.length; i += 4) { const a = d[i]; if (!a) continue; any = true; d[i] = a < 100 ? 0 : 255; }
+  if (!any) return r; pixX.putImageData(im, 0, 0);
+  ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(pixC, x0, y0, n * PIX, m * PIX); ctx.restore(); return r;
+}
+const pixWrap = (f, box) => function (...a) { const b = STAGE.cityLife && box(...a); return b ? pixelize(b[0], b[1], b[2], b[3], () => f.apply(this, a)) : f.apply(this, a); };
+// 감쌀 그림: 경찰 모자·경광봉 · 동호회 자전거 · 폴리스라인·들것 · 꾸러미 · 엘리베이터 문 · 수갑 · 배달 오토바이
+drawCopGear = pixWrap(drawCopGear, g => [g.x - 36, g.y - 62, 72, 84]);
+drawCrewBike = pixWrap(drawCrewBike, g => [g.x - 44, g.y - 44, 88, 88]);
+drawCarriedParcel = pixWrap(drawCarriedParcel, () => { const P = S.player; return [P.x - 30, P.y - 50, 60, 50]; });
+drawCuffs = pixWrap(drawCuffs, () => { const P = S.player; return [P.x - 24, P.y - 34, 48, 36]; });
+drawElevDoors = pixWrap(drawElevDoors, () => { const P = S.player, inB = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)), E = S.elevs?.get(inB), D = E?.door; return D && !D.stairs ? [D.x - 32, D.y - TILE - 34, 64, 64] : null; });
+drawScene = pixWrap(drawScene, () => { const T = S.scene?.tape; return T ? [T.x0 - 40, T.y0 - 60, T.x1 - T.x0 + 80, T.y1 - T.y0 + 100] : null; });
+drawNuisance = pixWrap(drawNuisance, () => { const B = S.ev?.bikes; if (!B?.length) return null; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const b of B) { x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x); y1 = Math.max(y1, b.y); } return x1 - x0 < 300 && y1 - y0 < 300 ? [x0 - 30, y0 - 30, x1 - x0 + 60, y1 - y0 + 60] : null; });
+
+// ---------------------------------------------------------------- 자유 모드 타격감: 주먹·칼·암살·총도 차 충돌만큼 시원하게
+// 한 번 맞힐 때마다: 아주 짧은 멈칫(히트스톱) · 맞은 쪽으로 화면이 툭 밀리는 반동 · 살짝 당겨지는 줌 · 충격 파편 · 겹친 소리.
+// 쓰러뜨리는 마지막 한 방은 더 세게: 느린 화면 0.2초 · 몸이 뒤로 밀려 쓰러짐 · 흙먼지 · 번쩍임.
+// power: 0.6 가벼운 주먹 · 1 칼/총 · 1.4 무거운 주먹 · 1.8 암살·환경 처치 · 2.2 폭발
+function hitJuice(o, a, power = 1, finish = false, push = true) {
+  if (!STAGE.cityLife || !o) return; const p = power * (finish ? 1.35 : 1);
+  S.hitStop = Math.max(S.hitStop || 0, Math.min(0.16, 0.035 + 0.045 * p));
+  S.shakeT = Math.max(S.shakeT || 0, Math.min(0.5, 0.08 + 0.12 * p));
+  S.kick = { x: Math.cos(a) * 7 * p, y: Math.sin(a) * 7 * p, t: S.t };   // 맞은 방향으로 화면이 밀렸다 돌아온다
+  S.zoomKick = Math.max(S.zoomKick || 0, 0.018 * p);
+  const at = { x: o.x, y: o.y - 18, fl: flOf(o), z: o.z || 0 };
+  spawnEffect('impact', at, { scale: Math.min(1.3, 0.45 + 0.28 * p) });
+  if (p >= 1.2) spawnEffect('strike', at, { scale: Math.min(1.2, 0.4 + 0.25 * p) });
+  play('thud', Math.min(1, 0.45 + 0.2 * p), finish ? 0.7 : 0.95);
+  if (finish) {
+    slowMo(0.12 + 0.06 * Math.min(2, p)); S.flash = Math.max(S.flash || 0, 0.06 + 0.03 * p);
+    spawnEffect('dust', { x: o.x, y: o.y + 4, fl: flOf(o), z: 0 }, { scale: 0.7 });
+    if (p >= 1.6) { spawnEffect('shock', { x: o.x, y: o.y - 8, fl: flOf(o), z: 0 }, { scale: 0.6 }); play('metal', 0.25, 0.6); }
+    // 마지막 한 방에 몸이 뒤로 밀려난다 (벽 앞에서는 멈춘다 · 끌어들인 암살처럼 몸을 둘 자리가 정해진 처치는 밀지 않는다)
+    if (push) { const kb = 10 + 8 * p; for (let k = kb; k > 0; k -= 4) { const nx = o.x + Math.cos(a) * k, ny = o.y + Math.sin(a) * k; if (!solidAt(Math.floor(nx / TILE), Math.floor(ny / TILE))) { o.x = nx; o.y = ny; break; } } }
+  }
+}
+// 화면 반동은 0.18초에 걸쳐 되돌아온다 (render/icons.js worldTransform 이 읽는다)
+function juiceOffset() {
+  const K = S.kick; if (!K) return [0, 0, 0]; const f = 1 - (S.t - K.t) / 0.18; if (f <= 0) { S.kick = null; S.zoomKick = 0; return [0, 0, 0]; }
+  return [K.x * f * f, K.y * f * f, (S.zoomKick || 0) * f];
+}
+
 // ---------------------------------------------------------------- 자유 모드 이야기: 은퇴한 전직 요원 '올빼미'
 // 설정: 올빼미는 국가 비밀 처리반에서 은퇴한 요원이다. 지금은 아무 소속도 없다 — 경찰 눈에는 그냥 범죄자다.
 // 광역수사대 강 형사가 공중전화로 연락한다. 법으로는 못 잡는 놈들, 위에서 사건을 덮어 주는 놈들을 넘긴다.
@@ -20527,7 +20623,7 @@ function planTurn(v) {
   for (const nd of [right, left]) { const s2 = DV[nd][0] + DV[nd][1]; if (myRoad == null || deckBlocksTurn(!hor, r, myRoad)) continue;  // 고가 아래 교차로에서 고가 도로로는 못 꺾는다
     if (s2 > 0 ? myRoad + 4 < rLim : myRoad > 0) opts.push(nd); }
   let nd = opts.length ? opts[(v.id * 7 + r * 3 + Math.floor(S.t)) % opts.length] : (v.d + 2) % 4;
-  if (v.chase && opts.length) { const P = S.player, ix = hor ? (r + 2) * TILE : v.x, iy = hor ? v.y : (r + 2) * TILE;  // 경찰차: 나에게 가까워지는 쪽
+  if (v.chase && opts.length) { const P = !v.rage && !v.rageCar && STAGE.cityLife && S.wanted > 0 && S.wantSpot ? S.wantSpot : S.player, ix = hor ? (r + 2) * TILE : v.x, iy = hor ? v.y : (r + 2) * TILE;  // 경찰차: 나에게 가까워지는 쪽
     nd = opts.slice().sort((a, b) => ((P.x - ix) * DV[b][0] + (P.y - iy) * DV[b][1]) - ((P.x - ix) * DV[a][0] + (P.y - iy) * DV[a][1]))[0]; }
   v.turn = nd === v.d ? null : { nd, at: laneOf(r, nd) };
   v.crossEnd = sgn > 0 ? (r + 4) * TILE + 4 : r * TILE - 4;  // 직진이면 이 지점을 지나서 다음 교차로를 고른다
@@ -25174,7 +25270,9 @@ function drawHeightVision(P){
   }
 }
 
-function worldTransform(c, scale) { let sx = 0, sy = 0; if (S && S.shakeT > 0 && !reducedFxMotion.matches) { const a = S.shakeT * 22 * DPR; sx = Math.sin(S.t * 91) * a; sy = Math.cos(S.t * 73) * a * 0.7; } c.setTransform(scale, 0, 0, scale, W / 2 * DPR - cam.x * scale + sx, H / 2 * DPR - cam.y * scale + sy); }
+function worldTransform(c, scale) { let sx = 0, sy = 0; if (S && S.shakeT > 0 && !reducedFxMotion.matches) { const a = S.shakeT * 22 * DPR; sx = Math.sin(S.t * 91) * a; sy = Math.cos(S.t * 73) * a * 0.7; }
+  if (S && S.kick && typeof juiceOffset === 'function' && !reducedFxMotion.matches) { const [kx, ky, kz] = juiceOffset(); sx += kx * scale; sy += ky * scale; scale *= 1 + kz; }   // 자유 모드 타격 반동·줌 (47zw)
+  c.setTransform(scale, 0, 0, scale, W / 2 * DPR - cam.x * scale + sx, H / 2 * DPR - cam.y * scale + sy); }
 // Actual small objects rest on their surface. Highlights appear only within reach
 // or while inspecting; the mission HUD and existing pickup rules remain unchanged.
 function drawPickupHint(x,y,col='#d4c59f') {
