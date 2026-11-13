@@ -42,6 +42,19 @@ async def main():
           const c0=S.cash;if(e.out)G.killGuard(e.out);tick(.5);return{start:true,out,sec,paid:S.cash-c0,...DONE()}}''')
         print('rage', json.dumps(r, ensure_ascii=False))
         ok(r['start'] and r['out'] and r['paid'] == 100 and r['done'], 'road rage: %s' % r)
+        # 불법 촬영범 · 스토커 · 진상 손님 · 전세사기 바지사장
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player,E=G.events,out={};P.car=null;
+          const run=(k,fn)=>{S.ev=null;let e=null;for(let i=0;i<6&&!e;i++){P.x+=700;e=EV(k);}if(!e){out[k]={start:false};return;}const c0=S.cash;fn(e);tick(1);out[k]={start:true,paid:S.cash-c0,...DONE()};};
+          run('molka',e=>{P.x=e.g.x+150;P.y=e.g.y;tick(.5);const fled=e.fled;G.killGuard(e.g);tick(.5);const it=(S.evItems||[]).find(i=>i.kind==='phone');if(it){P.x=it.x;P.y=it.y;}tick(.5);out.molkaFled=fled;});
+          run('stalker',e=>{tick(2);out.stalkDist=Math.round(Math.hypot(e.g.x-e.v.x,e.g.y-e.v.y));G.killGuard(e.g);tick(.5);});
+          run('gapjil',e=>{P.x=e.g.x+300;P.y=e.g.y;tick(3.5);G.killGuard(e.g);tick(.5);});
+          run('jeonse',e=>{G.killGuard(e.g);tick(.5);const it=(S.evItems||[]).find(i=>i.kind==='bag');if(it){P.x=it.x;P.y=it.y;}tick(.5);const t=e.tenant;P.x=t.x+20;P.y=t.y;tick(.1);const a=E.eventAction?E.eventAction():null;out.giveLabel=a&&a.label;if(a)a.fn();tick(.5);});
+          return out}''')
+        print('sub-stories', json.dumps(r, ensure_ascii=False))
+        for k, pay in (('molka', 50), ('stalker', 60), ('gapjil', 40)):
+            ok(r[k].get('start') and r[k].get('paid') == pay and r[k].get('done'), '%s: %s' % (k, r[k]))
+        ok(r.get('molkaFled'), 'hidden-camera man does not run: %s' % r)
+        ok(r['jeonse'].get('start') and r['jeonse'].get('done') and r['jeonse'].get('paid', 0) >= 120, 'jeonse fraud bag return: %s' % r)
         ok(not errs, 'page errors: %s' % errs)
         await b.close()
     print('통과' if not bad else '문제', bad)

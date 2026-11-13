@@ -55,7 +55,7 @@ function evLoot(ev, owner, val, reward, what) {
   evBanner(`${what}을 주웠다 — 주인에게 돌려주거나 챙긴다`);
 }
 function evKeep(ev) { const L = ev.loot; if (!L || ev.done) return; cash(L.val); addRep(ev.d, -3); evEnd(ev, `${L.what}을 챙겼다 · ${L.val}만`); }
-function evGive(ev) { const L = ev.loot; if (!L || ev.done) return; cash(L.reward); addRep(ev.d, 4); if (npcAlive(L.owner)) gsay(L.owner, '고맙습니다! 정말 고마워요!', 3); evEnd(ev, `돌려줬다 · 사례 ${L.reward}만`, true); }
+function evGive(ev) { const L = ev.loot; if (!L || ev.done) return; cash(L.reward); addRep(ev.d, 4); if (npcAlive(L.owner)) gsay(L.owner, '고맙습니다! 정말 고마워요!', 3); evEnd(ev, `돌려줬다 · 사례 ${L.reward}만`, true); if (ev.def.onGive) ev.def.onGive(ev); }
 
 // ---------------------------------------------------------------- 이벤트 14개
 // start(ev): 자리를 잡고 사람·차를 세운다 (못 하면 false). update(ev,dt). goal(ev): 목표 줄. action(ev): [행동] 후보. x,y: 표시할 곳(ev.focus())
