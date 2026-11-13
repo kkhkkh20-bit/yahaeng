@@ -35,7 +35,7 @@ function safeWatched() {
 }
 function safeEnter(s) {
   const P = S.player;
-  if (S.wanted) { const w = safeWatched(); if (w) { evBanner(`${w}이(가) 보고 있다 — 지금 들어가면 문을 부순다. 따돌려라`, '#ff9a86'); play('thud', 0.4); return; } }
+  if (S.wanted && !(s.i === 0 && homeHas('cctv'))) { const w = safeWatched(); if (w) { evBanner(`${w}이(가) 보고 있다 — 지금 들어가면 문을 부순다. 따돌려라`, '#ff9a86'); play('thud', 0.4); return; } }
   S.safeIn = s; P.hide = null; P.cover = null; input.aiming = null;
   startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: s.x, y: s.y - 14, f: 0.12 }, { x: s.x, y: s.y - 14, f: 1 }], dur: SAFE_HIDE, phases: [{ to: 1, pose: 'walk' }], face: -Math.PI / 2 });
   play('click', 0.6); after(0.3, () => { S.fade = SAFE_HIDE - 0.4; P.hidden = true; });
@@ -49,7 +49,8 @@ function safeLeave(s) {
   P.hp = P.hpMax; P.x = s.x; P.y = s.y + 6; play('click', 0.5);
   if (typeof cityDisguiseOff === 'function' && had) cityDisguiseOff();
   saveFreeProgress(true); fstat('safeUses');
-  evBanner(had ? '열기를 식혔다 — 수배 해제 · 체력 회복 · 저장됨' : '푹 쉬었다 — 체력 회복 · 저장됨', '#9fe0b0');
+  const extra = homeRest(s); if (extra) saveFreeProgress(true);
+  evBanner((had ? '열기를 식혔다 — 수배 해제 · 체력 회복 · 저장됨' : '푹 쉬었다 — 체력 회복 · 저장됨') + extra, '#9fe0b0');
 }
 // 문 앞 표시 (가까울 때): 초록 문패 / 안 산 곳은 흐린 '매물'
 function drawSafes() {

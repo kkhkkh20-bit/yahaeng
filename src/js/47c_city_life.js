@@ -39,7 +39,7 @@ function drawCuffs() {
 }
 // 체포: 지구대 앞에서 풀려난다. 수입의 30%를 벌금으로 낸다
 function cityArrest(why) {
-  const P = S.player, fine = Math.round((S.cash || 0) * 0.3);
+  const P = S.player, fine = Math.round((S.cash || 0) * (homeHas('safe') ? 0.15 : 0.3));  /* 집 벽 금고 (47zd) */
   if (P.car) { const v = P.car; P.car = null; v.parked = true; }
   P.captive = null; P.carrying = null; P.hide = null; P.hp = P.hpMax; P.hurtT = 2.5; S.fade = 1.2; S.flash = 0.2; cityDisguiseOff();
   const at = STAGE.police || STAGE.start; P.x = tc(at[0]); P.y = tc(at[1] + 1); P.z = 0; P.fl = 0; setLayer(0);

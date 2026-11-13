@@ -35,6 +35,7 @@ function drawHeldBox(x, y, a, s, front) {
   ctx.fillStyle = '#e8d9b8'; ctx.fillRect(-1.2 * s, -h / 2, 2.4 * s, h); ctx.restore();
 }
 function guardAnim(g) {
+  if (g.crew && g.moving) return g.crew.kind === 'bike' ? (PR && PR.anims.crouch ? 'crouch' : 'walk') : 'run';  // 무리 (47zc)
   if(g.act==='pickup')return 'workLow';
   if(g.act==='smoke')return 'workHigh';
   if (g.state === 'BODY' && g.bodyWork) return 'crouch';
@@ -88,7 +89,7 @@ function drawLastSeen() {
     ctx.fillStyle = q.hot ? 'rgba(232,90,70,.9)' : 'rgba(242,196,107,.9)'; ctx.font = uiFont(14); ctx.textAlign = 'center'; ctx.fillText(q.hot ? '!' : '?', q.x, q.y - 40);
   }
 }
-function drawGuard(g) {const r=withFurnitureOcclusion(g,()=>drawGuardSprite(g));if(STAGE.cityLife&&!(typeof npcGunPose==='function'&&npcGunPose(g))){drawGangKnife(g);drawCopGear(g);}return r;}
+function drawGuard(g) {if(g.crew&&typeof drawCrewBike==='function')drawCrewBike(g);const r=withFurnitureOcclusion(g,()=>drawGuardSprite(g));if(STAGE.cityLife&&!(typeof npcGunPose==='function'&&npcGunPose(g))){drawGangKnife(g);drawCopGear(g);}return r;}
 function drawGuardSprite(g) {
   if(assassinOwnsActor(g))return;
   if(S.player.killAnim?.g===g)return; // the paired pose draws this victim once

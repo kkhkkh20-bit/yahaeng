@@ -414,6 +414,14 @@
       "group": "city"
     },
     {
+      "path": "47zc_city_crews.js",
+      "group": "city"
+    },
+    {
+      "path": "47zd_city_home.js",
+      "group": "city"
+    },
+    {
       "path": "47zz_city_story.js",
       "group": "city"
     },
