@@ -35,7 +35,7 @@ function staffUpdate(dt) {
 //  · 가까이: 매장 안에서 그 직원 곁에 1초 넘게 멈춰 있을 때만 일 얘기 ("라면 드릴까요?")
 //  · 나감: 매장에 있다가 나갈 때 · 무기: 매장 안에서 총·칼을 꺼내 들었을 때 (겁먹고 뒤로)
 function staffInShop(g) {
-  const P = S.player, A = g.shopA; if (!A || P.car || P.z || flOf(P) !== g.shopF) return false; const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE);
+  const P = S.player, A = g.shopA; if (!A || P.car || P.z || P.hide || flOf(P) !== g.shopF) return false; const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE);
   if (tx < A.x0 || tx > A.x1 || ty < A.y0 || ty > A.y1) return false;
   const D = S.elevs?.get(g.shopB)?.door; if (D && dist(P.x, P.y, D.x, D.y) < 52) return false;
   const st = PLANS[g.shopB]?.[g.shopF]?.stair; if (st && dist(P.x, P.y, tc(st[0]), tc(st[1])) < 56) return false;
@@ -52,5 +52,6 @@ function staffTalk(dt) {
     if (!armed) g.scared = false;
     g.stillT = d < 80 && !P.moving ? (g.stillT || 0) + 0.5 : 0;   // staffUpdate는 0.5초마다
     if (g.stillT >= 1 && (!g.nearT || S.t - g.nearT > 12)) { g.nearT = S.t; g.want = Math.atan2(P.y - g.y, P.x - g.x); saysLine(g, g.staff, 'near'); }
+    else if (d > 120 && S.t - Math.max(g.custIn, g.nearT || 0, g.idleT || 0) > 18) { g.idleT = S.t; saysLine(g, g.staff, 'idle', 2.4); }   // 손님이 멀리 둘러보는 동안 혼잣말
   }
 }

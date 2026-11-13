@@ -200,7 +200,7 @@ const ASK = [
 ];
 function captureUpdate(h, ko) {
   const g = h.g, P = S.player;
-  if (g.state === 'DEAD' && !ko && !h.done) { contractFail(h, `${h.name}이(가) 죽어 입을 열 사람이 없다 · 의뢰 실패`); return true; }
+  if (g.state === 'DEAD' && !ko && !h.done) { contractFail(h, `${withJosa(h.name, '이/가')} 죽어 입을 열 사람이 없다 · 의뢰 실패`); return true; }
   if (!h.trunk) { const c = (S.corpses || []).find(c => c.g === g && c.inTrunk); if (c) { h.trunk = c.inTrunk; c.inTrunk.trunk = c.inTrunk.trunk.filter(o => o !== c); c.stashed = true; c.hidden = true; g.off = true; } }  /* 일반 [트렁크에 싣기]로 실어도 같다 */
   if (h.trunk) { const v = h.trunk; if (v.dead) { contractFail(h, `트렁크째 터졌다. ${h.name}도 끝났다 · 의뢰 실패`); return true; }
     g.x = v.x; g.y = v.y; const home = S.safes && S.safes[0];
@@ -240,6 +240,6 @@ function askPick(h, a) {
 }
 function captureDone(h) {
   if (S.hit !== h) return; h.done = true; const g = h.g; evGone(g); fstat('confessions');
-  S.cash = (S.cash || 0) + h.pay; S.hitN++; S.hit = null; evBanner(`자백 확보 · +${h.pay}만 · ${h.name}은(는) 경찰서 앞 기둥에`, '#9fe0b0');
+  S.cash = (S.cash || 0) + h.pay; S.hitN++; S.hit = null; evBanner(`자백 확보 · +${h.pay}만 · ${withJosa(h.name, '은/는')} 경찰서 앞 기둥에`, '#9fe0b0');
   if (h.phish != null) phishDone(h, true); if (h.dtr != null) dtrDone(h, true); saveFreeProgress(true);
 }

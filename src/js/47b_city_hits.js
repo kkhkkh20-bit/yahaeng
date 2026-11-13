@@ -160,7 +160,7 @@ function hitGoal() {
   const g = h.g;
   if (h.ctr === 'capture') { const c = captureGoal(h); c.text += ` · ${money}`; return c; }
   if (STAGE.cityLife && contractHides(h)) return { text: `표시된 블록을 돌며 사진 속 ${h.name} 찾기 · ${money}`, where: '', x: h.cx, y: h.cy, fl: 0 };
-  return { text: (h.ko ? (g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko) ? `기절한 ${h.name}에게 수갑 채우기` : `${h.name}을(를) 기절시켜 검거하기`) : g.unconscious ? `기절한 ${h.name}의 숨통을 끊어라` : `${h.name} 처치`) + (STAGE.cityLife ? contractGoal(h) : '') + ` · ${money}`, where: '', x: g.x, y: g.y, fl: flOf(g), g };
+  return { text: (h.ko ? (g.unconscious || (S.corpses || []).some(c => c.g === g && c.ko) ? `기절한 ${h.name}에게 수갑 채우기` : `${withJosa(h.name, '을/를')} 기절시켜 검거하기`) : g.unconscious ? `기절한 ${h.name}의 숨통을 끊어라` : `${h.name} 처치`) + (STAGE.cityLife ? contractGoal(h) : '') + ` · ${money}`, where: '', x: g.x, y: g.y, fl: flOf(g), g };
 }
 // 공중전화 부스 (위에서 비스듬히 본 유리 상자: 은색 기둥 · 유리벽 · 안쪽 벽의 파란 전화기 · 빨간 지붕 띠)와 표적 표시
 // layer 'world': 조명을 받는 부스 · 'ui': 어둠 위 — 안에 든 나를 덮는 앞 유리, 부스 안 불빛, 표적 고리

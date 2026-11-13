@@ -22,7 +22,7 @@ function pickupsUpdate(dt) {
     if (P.car || flOf(P) || S.t - k.t < 0.4 || dist(P.x, P.y, k.x, k.y) > 26) continue;
     S.pickups.splice(i, 1); play('loot', 0.45);
     if (k.kind === 'cash') { S.cash = (S.cash || 0) + k.n; fstat('earned', k.n); toast(`돈 +${k.n}만`, 1.2, 'good'); }
-    else { S.guns[k.wpn] = (S.guns[k.wpn] || 0) + k.n; if (!S.wpn) S.wpn = k.wpn; gunChip(); toast(`${WEAPONS[k.wpn].name}을(를) 주웠다 · 탄 +${k.n}`, 1.4, 'good'); play('click', 0.4, 0.8); } }
+    else { S.guns[k.wpn] = (S.guns[k.wpn] || 0) + k.n; if (!S.wpn) S.wpn = k.wpn; gunChip(); toast(`${withJosa(WEAPONS[k.wpn].name, '을/를')} 주웠다 · 탄 +${k.n}`, 1.4, 'good'); play('click', 0.4, 0.8); } }
 }
 function dropPickup(x, y, kind, wpn, n) { if (solidAt(Math.floor(x / TILE), Math.floor(y / TILE))) return; S.pickups.push({ x, y, kind, wpn, n, t: S.t, rot: rnd(-0.6, 0.6) }); if (S.pickups.length > 40) S.pickups.shift(); }
 // 방탄조끼: hurtPlayer가 먼저 부른다. 막으면 true

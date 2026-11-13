@@ -25,20 +25,20 @@ function carbombPlant(h) {
   doMotion({ x: v.x + Math.cos(v.a + Math.PI / 2) * 30, y: v.y + Math.sin(v.a + Math.PI / 2) * 30, pose: 'crouch', dur: CB_PLANT, face: Math.atan2(v.y - P.y, v.x - P.x),
     at: [[0.5, () => play('click', 0.4)], [1.2, () => play('switch', 0.4)]],
     end: () => { if (!S.hit || S.hit !== h || v.dead) return; P.bombs--; v.bombed = true; fstat('carBombs'); play('click', 0.6, 0.7);
-      evBanner(`폭약 설치. ${h.name}이(가) 차에 타면 터진다. 멀리 떨어져라`, '#ff8a6a'); if (witnessed(v.x, v.y, 300)) addWanted(1, '차 밑에 뭘 붙이는 걸 누가 봤다'); } });
+      evBanner(`폭약 설치. ${withJosa(h.name, '이/가')} 차에 타면 터진다. 멀리 떨어져라`, '#ff8a6a'); if (witnessed(v.x, v.y, 300)) addWanted(1, '차 밑에 뭘 붙이는 걸 누가 봤다'); } });
 }
 function carbombUpdate() {
   const h = S.hit; if (!h || !['carbomb', 'stage'].includes(h.ctr) || !h.car) return; const g = h.g, v = h.car;
   if (v.dead) { if (h.cbIn && npcAlive(g)) carbombKill(h); return; }
   if (!npcAlive(g) || h.cbIn) return;
   if (!h.cbWalk && S.t >= h.leaveAt && ['PATROL', 'RETURN'].includes(g.state)) {
-    h.cbWalk = true; g.route = [{ x: v.x, y: v.y, pause: 999 }]; g.ri = 0; g.wait = 0; g.path = null; gsay(g, '차 빼. 간다.', 2); evBanner(`${h.name}이(가) 차로 간다`, '#ffb070'); }
+    h.cbWalk = true; g.route = [{ x: v.x, y: v.y, pause: 999 }]; g.ri = 0; g.wait = 0; g.path = null; gsay(g, '차 빼. 간다.', 2); evBanner(`${withJosa(h.name, '이/가')} 차로 간다`, '#ffb070'); }
   if (h.cbWalk && dist(g.x, g.y, v.x, v.y) < 66) {  /* 차체에 막혀 46 안쪽까지는 못 온다 */
     h.cbIn = true; play('click', 0.5 * proxVol(g)); g.hiddenInCar = true; g.x = v.x; g.y = v.y; g.off = true; g.route = [{ x: v.x, y: v.y, pause: 999 }];
     if (v.bombed) { after(0.9, () => { if (!v.dead) carExplode(v); }); }
-    else { v.parked = false; v.driver = true; v.ai = true; v.locked = false; evBanner(`${h.name}이(가) 차를 몰고 떠난다. 쫓아가 차를 터뜨려라`, '#ffb070'); h.cbDrive = S.t; }
+    else { v.parked = false; v.driver = true; v.ai = true; v.locked = false; evBanner(`${withJosa(h.name, '이/가')} 차를 몰고 떠난다. 쫓아가 차를 터뜨려라`, '#ffb070'); h.cbDrive = S.t; }
   }
-  if (h.cbIn && !v.dead) { g.x = v.x; g.y = v.y; if (h.cbDrive && S.t - h.cbDrive > 120 && dist(v.x, v.y, S.player.x, S.player.y) > 1500) { h.cbGone = true; contractFail(h, `${h.name}이(가) 도시를 빠져나갔다 · 의뢰 실패`); if (!v.dead) { v.ai = false; v.parked = true; } } }
+  if (h.cbIn && !v.dead) { g.x = v.x; g.y = v.y; if (h.cbDrive && S.t - h.cbDrive > 120 && dist(v.x, v.y, S.player.x, S.player.y) > 1500) { h.cbGone = true; contractFail(h, `${withJosa(h.name, '이/가')} 도시를 빠져나갔다 · 의뢰 실패`); if (!v.dead) { v.ai = false; v.parked = true; } } }
 }
 // 차가 터지면 안에 탄 표적도 끝 (폭발 사인)
 function carbombKill(h) { const g = h.g; g.off = false; g.hiddenInCar = false; g.x = h.car.x + 20; g.y = h.car.y + 10; (S.booms || (S.booms = [])).push({ x: g.x, y: g.y, t: S.t }); npcDown(g, null, true); }

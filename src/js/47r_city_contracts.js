@@ -51,7 +51,7 @@ function contractMul(h, g) {
 // 매 프레임 (의뢰 중): 시간 제한 · 사진 의뢰 얼굴 확인
 function contractUpdate() {
   const h = S.hit; if (!h || !h.ctr || h.ko) return; const g = h.g, P = S.player;
-  if (h.ctr === 'timed' && npcAlive(g) && S.t > h.deadline) { contractFail(h, `${h.name}이(가) 서울을 떴다 · 의뢰 실패`); return; }
+  if (h.ctr === 'timed' && npcAlive(g) && S.t > h.deadline) { contractFail(h, `${withJosa(h.name, '이/가')} 서울을 떴다 · 의뢰 실패`); return; }
   if (h.ctr === 'timed' && !h.warned && h.deadline - S.t < 30) { h.warned = true; evBanner('30초 남았다', '#ffb070'); play('click', 0.5, 0.8); }
   if (h.ctr === 'carbomb' || h.ctr === 'stage') carbombUpdate();
   if (h.ctr === 'stage') stageUpdate(h);

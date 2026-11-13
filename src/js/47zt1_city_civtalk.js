@@ -14,7 +14,7 @@ function civTalkUpdate() {
   if (!STAGE.cityLife || !S.guards) return; const P = S.player, pf = flOf(P);
   // 내가 방금 쏜 총 (소음 권총은 빼고): S.gunT가 바뀐 순간
   const W = S.wpn && typeof WEAPONS !== 'undefined' ? WEAPONS[S.wpn] : null;
-  const shot = W && !W.throw && !W.silent && S.gunT !== S.civShotGunT && S.gunT > S.t - 1; S.civShotGunT = S.gunT;
+  const shot = W && !W.throw && !W.silent && S.civShotGunT !== undefined && S.gunT !== S.civShotGunT && S.gunT > S.t - 1; S.civShotGunT = S.gunT;   // 불러온 직후(처음 확인)는 총소리로 치지 않는다
   const armed = !P.car && (typeof wpnOn === 'function' && wpnOn());
   const lp = S.civLP || { x: P.x, y: P.y }, walking = !P.car && dist(lp.x, lp.y, P.x, P.y) > 8; S.civLP = { x: P.x, y: P.y };   // 지난 확인(0.5초) 뒤로 걸었나
   let near = null, nd = 1e9;
