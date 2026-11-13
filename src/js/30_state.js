@@ -668,7 +668,7 @@ function renderMap(R) {
   const draw = (name, dx, dy, dw = TILE, dh = TILE) => blit(x, name, dx, dy, dw, dh);
   const wallish = v => v === '#' || v === 'S' || v === 'N';
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) {
-    const ch = G[ty][tx],floorCh=propGround(ch,tx,ty); if(officeGround(x,floorCh,tx,ty)||freeCityGround(x,floorCh,tx,ty)||quarterFloor(x,floorCh,tx,ty))continue; let b = base(floorCh, tx, ty);
+    const ch = G[ty][tx],floorCh=propGround(ch,tx,ty); if((typeof cornerStoreGround==='function'&&cornerStoreGround(x,floorCh,tx,ty))||officeGround(x,floorCh,tx,ty)||freeCityGround(x,floorCh,tx,ty)||quarterFloor(x,floorCh,tx,ty))continue; let b = base(floorCh, tx, ty);
     if (!b) { const n = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(o => G[ty + o[1]] && G[ty + o[1]][tx + o[0]]).find(v => v && !wallish(v) && v !== '~' && base(v, tx, ty)); b = base(n || '=', tx, ty) || 'stone0'; }
     const kg = KIT ? kitGround(floorCh, tx, ty) : null;
     if (kg) x.drawImage(kg, tx * TILE, ty * TILE, TILE, TILE); else draw(b, tx * TILE, ty * TILE);
@@ -717,7 +717,7 @@ function renderMap(R) {
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) {
     const ch = G[ty][tx], px = tx * TILE, py = ty * TILE;
     if (wallish(ch)) {
-      if(officeWall(x,tx,ty))continue;
+      if((typeof cornerStoreWall==='function'&&cornerStoreWall(x,tx,ty))||officeWall(x,tx,ty))continue;
       const n = wallish((G[ty - 1] || [])[tx]), so = wallish((G[ty + 1] || [])[tx]), e = wallish(G[ty][tx + 1]), w = wallish(G[ty][tx - 1]);
       let piece = 'wallH';
       if (e && so && !n && !w) piece = 'wallTL'; else if (w && so && !n && !e) piece = 'wallTR';

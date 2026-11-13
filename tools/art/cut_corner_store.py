@@ -17,10 +17,11 @@ CUTS = {
   'wallBottles': ('A', 0, 384, 32, 64), 'fridgeBlue': ('A', 32, 384, 32, 64), 'fridgeFood': ('A', 64, 384, 32, 64), 'fridgeBlue2': ('A', 96, 384, 32, 64),
   'fridgeDark': ('A', 96, 448, 32, 64), 'wallShelf': ('A', 0, 448, 32, 64),
   'plant': ('B', 380, 0, 32, 64),
+  'floorBlue': ('A', 0, 352, 32, 32), 'floorPink': ('A', 32, 352, 32, 32), 'wallTop': ('A', 192, 452, 32, 32), 'atm': ('A', 128, 384, 32, 64),
 }
 frames, imgs = {}, []
 for name, (sh, x, y, w, h) in CUTS.items():
-  im = (B if sh == 'B' else A5).crop((x, y, x + w, y + h)); bb = im.getbbox()
+  im = (B if sh == 'B' else A5).crop((x, y, x + w, y + h)); bb = (0, 0, w, h) if name.startswith(('floor', 'wall')) else im.getbbox()
   if not bb: continue
   im = im.crop(bb); imgs.append((name, im, (x + bb[0], y + bb[1])))
 W = sum(i.width for _, i, _ in imgs) + 2 * len(imgs); H = max(i.height for _, i, _ in imgs)
