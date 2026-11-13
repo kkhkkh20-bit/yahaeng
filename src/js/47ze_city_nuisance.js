@@ -46,7 +46,7 @@ const NUISANCE = [
       if (c.broken) { if (dist(c.members[0].x, c.members[0].y, P.x, P.y) > 1400) evEnd(ev, '(킥보드 놓쳤어.)'); return; }
       // 보도를 질주하며 앞에 있는 행인을 치고 지나간다 (뺑소니)
       const L = c.members[0];
-      for (const o of actorsNear(L.x, L.y)) { if (!o.civ || o.crew || o.evt || !npcAlive(o) || o.off || dist(o.x, o.y, L.x, L.y) > 22) continue; npcDown(o, null, false); ev.hits++; play('thud', 0.4 * proxVol(o)); gsay(L, ['아 죄송~', '비켜요!', 'ㅋㅋ 가자'][ev.hits % 3], 1.6); for (const k of actorsNear(o.x, o.y)) if (k.civ && npcAlive(k) && !k.crew && dist(k.x, k.y, o.x, o.y) < 200) civPanic(k, o.x, o.y, 6); }
+      for (const o of actorsNear(L.x, L.y)) { if (!o.civ || o.crew || o.evt || !npcAlive(o) || o.off || dist(o.x, o.y, L.x, L.y) > 22) continue; o.downNpc = true; npcDown(o, null, false); ev.hits++; play('thud', 0.4 * proxVol(o)); gsay(L, ['아 죄송~', '비켜요!', 'ㅋㅋ 가자'][ev.hits % 3], 1.6); for (const k of actorsNear(o.x, o.y)) if (k.civ && npcAlive(k) && !k.crew && dist(k.x, k.y, o.x, o.y) < 200) civPanic(k, o.x, o.y, 6); }
       if (!P.car && dist(P.x, P.y, L.x, L.y) < 140 && !ev.boost) { ev.boost = true; c.slow = 1.25; gsay(L, '튀어!', 1.4); }
       if (ev.engaged && dist(L.x, L.y, P.x, P.y) > 1800) evEnd(ev, '(어디로 샜지... 놓쳤네.)'); },
     goal: ev => `보도 질주 킥보드 멈추기 (친 사람 ${ev.hits || 0}명)` },

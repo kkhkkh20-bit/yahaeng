@@ -17,7 +17,7 @@ function brawlTarget() {
 }
 // [공격] 한 번 = 한 방. 맞힐 사람이 없어도 헛손질은 한다 (모션)
 function brawlStrike() {
-  if (!STAGE.cityLife) return false; const P = S.player; if (P.car || P.captive || P.carrying || P.z || flOf(P)) return false;
+  if (!STAGE.cityLife) return false; const P = S.player; if (P.car || P.captive || P.carrying || P.z || flOf(P) || P.hide || P.cover || P.booth) return false;  /* 숨은 채로는 주먹을 못 뻗는다 */
   const knife = knifeOn(), g = brawlTarget(); if (g) P.a = Math.atan2(g.y - P.y, g.x - P.x);
   if (S.t - (P.comboT || -9) > 0.8) P.combo = 0; P.combo = (P.combo || 0) + 1; P.comboT = S.t; const heavy = !knife && P.combo % 3 === 0;
   P.strikeT = knife ? 0.26 : heavy ? 0.42 : 0.3; P.killAnim = null; P.brawling = true; P.brawlQueued = false; play(knife ? 'cloth' : 'cloth', 0.35, knife ? 1.6 : 1.1);

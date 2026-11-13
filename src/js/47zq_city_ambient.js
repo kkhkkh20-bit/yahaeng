@@ -15,7 +15,8 @@ function copTookDown(o, cop) {
   after(3.5, () => { if (o.state === 'DEAD' && !o.off) { const c = (S.corpses || []).find(k => k.g === o); if (c && c.ko && !c.carried && !c.inTrunk) { S.corpses = S.corpses.filter(k => k !== c); evGone(o); } } });
 }
 // npcDown 을 한 겹 더: 범죄자가 사람을 해치면 신고 / 경찰이 범죄자를 쓰러뜨리면 연행
-if (typeof npcDown === 'function') { const _nd = npcDown; npcDown = function (o, by, lethal) { const r = _nd(o, by, lethal); if (o) o.downBy = by && by !== S.player ? (by.police ? 'police' : 'npc') : (o.downNpc ? 'npc' : 'me'); if (o) o.downNpc = false;
+if (typeof npcDown === 'function') { const _nd = npcDown; npcDown = function (o, by, lethal) { const was = !o || !npcAlive(o); const r = _nd(o, by, lethal); if (was) { if (o) o.downNpc = false; return r; }  /* 이미 쓰러진 사람에게 또 온 호출: 누가 쓰러뜨렸는지 덮어쓰지 않는다 */
+  if (o) o.downBy = by && by !== S.player ? (by.police ? 'police' : 'npc') : (o.downNpc ? 'npc' : 'me'); if (o) o.downNpc = false;
   if (STAGE.cityLife && by && by !== S.player && o) {
     if (by.police && (o.criminal || o.cfight) && !o.knifeman) copTookDown(o, by);
     else if (!by.police && !by.fac && o.civ && !by.knifeman) {  /* 흉기 난동범은 경찰도 못 막는다 (그 사건 몫은 내 것) */ by.criminal = true; policeCall(o.x, o.y, by); } }

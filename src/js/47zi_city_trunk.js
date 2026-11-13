@@ -32,7 +32,7 @@ function trunkUnload(v) {
 }
 // ---- 사람 태우기
 const RIDE_MAX = 3;
-function rideOk(g) { return g && npcAlive(g) && !g.off && g.civ && !g.police && !g.fac && !g.crew && !g.dog && !g.child && !['PANIC', 'FLEE', 'TERROR', 'REPORT'].includes(g.state) && !g.assailant && !g.knifeman; }
+function rideOk(g) { return g && npcAlive(g) && !g.off && g.civ && !g.police && !g.fac && !g.crew && !g.dog && !g.child && !['PANIC', 'FLEE', 'TERROR', 'REPORT'].includes(g.state) && !g.assailant && !g.knifeman && !g.evt && g.skBi == null && !g.criminal && !g.cfight && !g.fist; }  /* 사건 인물·용의자·싸우는 사람은 안 탄다 */
 function rideAction() {
   if (!STAGE.cityLife) return null; const P = S.player; if (P.car || P.carrying || P.captive || actionBusy(P)) return null;
   const v = P.lastCar && !P.lastCar.dead && dist(P.x, P.y, P.lastCar.x, P.lastCar.y) < 160 ? P.lastCar : null; if (!v) return null;
@@ -46,7 +46,7 @@ function rideAction() {
 }
 function rideBoard(v, g) {
   if (!rideOk(g)) return; const R = v.riders || (v.riders = []);
-  faceEachOther(g); gsay(g, g.evt ? '네, 태워 주세요.' : ['...어디로 가는데요?', '태워 주시는 거예요?', '아, 네... 감사합니다.'][g.id % 3], 2);
+  faceEachOther(g); gsay(g, ['...어디로 가는데요?', '태워 주시는 거예요?', '아, 네... 감사합니다.'][g.id % 3], 2);
   doMotion({ dur: 0.5, pose: 'idle', end: () => { if (!npcAlive(g)) return; g.rideTo = v; g.rideT0 = S.t; R.push(g); fstat('riders');  /* 차 문까지 걸어가서 탄다 (trunkUpdate) */
     evBanner(`조수석 ${R.length}/${RIDE_MAX} · (벨트 매. 어디까지 가?)`, '#9fc4ff'); } });
 }

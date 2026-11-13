@@ -28,7 +28,9 @@ function stageReveal(h, k, who, line, note) {
   play('bell', 0.35, 1.5); evBanner(`(들었어 — ${note})`, '#9fd8ff'); fstat('stageClue');
 }
 function stageUpdate(h) {
-  const P = S.player, g = h.g; if (!npcAlive(g) || h.cbIn || flOf(P) || P.car) return;
+  const P = S.player, g = h.g;
+  if (!npcAlive(g) && h.smokeEsc) { for (const k of h.smokeEsc) if (npcAlive(k.o)) { k.o.follow = k.follow; k.o.route = k.route; k.o.path = null; k.o.wait = 0; } h.smokeEsc = null; }  // 담배 피우다 쓰러졌다: 비켜 섰던 경호원도 원래대로
+  if (!npcAlive(g) || h.cbIn || flOf(P) || P.car) return;
   const hear = o => o && npcAlive(o) && !o.off && dist(P.x, P.y, o.x, o.y) < STAGE_HEAR && los(P.x, P.y, o.x, o.y) && o.state !== 'ALERT';
   const e = h.escorts.find(npcAlive);
   // 차: 표적이 출발 시각을 말한다 (가까이 붙어 있으면 들린다)
