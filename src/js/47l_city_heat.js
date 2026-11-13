@@ -22,7 +22,7 @@ function heliUpdate(dt) {
   if (S.wanted >= 5) S.w5T = (S.w5T || 0) + dt; else S.w5T = 0;
   if (!H && S.wanted >= 5 && S.w5T > 20) { const a = Math.random() * TAU; H = S.heli = { x: P.x + Math.cos(a) * 1100, y: P.y + Math.sin(a) * 1100, a: a + Math.PI, sx: P.x, sy: P.y, leave: false }; evBanner('경찰 헬기가 떴다. 서치라이트를 피해라', '#9fc4ff'); }
   if (!H) { heliSound(0); return; }
-  if (S.wanted < 4) H.leave = true;
+  if (S.wanted < 4) H.leave = true; else if (S.wanted >= 5) H.leave = false;   // 다시 별 다섯이면 돌아온다
   const tv = P.car ? P.car : null, lead = tv ? 0.6 : 0.3, tx = H.leave ? H.x + Math.cos(H.a) * 900 : P.x + (tv ? Math.cos(tv.a) * tv.v * lead : 0), ty = H.leave ? H.y + Math.sin(H.a) * 900 : P.y + (tv ? Math.sin(tv.a) * tv.v * lead : 0);
   const d = dist(H.x, H.y, tx, ty), want = Math.atan2(ty - H.y, tx - H.x);
   if (d > 30) { H.a += angDiff(H.a, want) * Math.min(1, dt * 2.2); const sp = Math.min(HELI_SPD * (H.leave ? 1.3 : 1), d * 1.5); H.x += Math.cos(H.a) * sp * dt; H.y += Math.sin(H.a) * sp * dt; }

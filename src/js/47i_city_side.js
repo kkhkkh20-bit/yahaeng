@@ -144,7 +144,11 @@ function garageStore(v) {
   v.ai = false; v.v = 0; v.jacking = true;  // 셔터가 올라가면 차가 천천히 들어간다
   const x0 = v.x, y0 = v.y, a0 = v.a, tx = G.x, ty = G.base - 30;
   let k = 0; const step = () => { k++; const f = Math.min(1, k / 30); v.x = x0 + (tx - x0) * f; v.y = y0 + (ty - y0) * f; v.a = a0 + angDiff(a0, -Math.PI / 2) * Math.min(1, f * 2); P.x = v.x; P.y = v.y; if (k < 30) after(1 / 30, step); else done(); };
-  const done = () => { v.jacking = false; P.car = null; P.x = G.x + 56; P.y = G.base + 40; collide(P, 13, groundSolidP); v.gone = true; S.vehicles = S.vehicles.filter(o => o !== v);
+  const done = () => { v.jacking = false; P.car = null; P.x = G.x + 56; P.y = G.base + 40; collide(P, 13, groundSolidP); v.gone = true;
+    // 태운 사람·트렁크 짐은 셔터 앞에 내려놓고 차만 넣는다 (차와 함께 사라지면 영영 못 찾는다)
+    for (const g of v.riders || []) { g.off = false; g.rideIn = g.rideTo = null; g.x = P.x + 30; g.y = P.y + 10; g.path = null; } v.riders = [];
+    for (const c of v.trunk || []) { c.stashed = false; c.hidden = false; c.inTrunk = null; c.x = P.x - 20; c.y = P.y + 14; if (c.g) { c.g.keep = c.g.skBi != null; c.g.inTrunk = null; } } v.trunk = [];
+    if (P.lastCar === v) P.lastCar = null; S.vehicles = S.vehicles.filter(o => o !== v);
     G.cars.push({ type: v.type || 'sedan', c: v.c || 0, hp: Math.max(1, v.hp), hpMax: v.hpMax || vType(v).hp });
     G.openTo = 0; G.busy = false; play('metal', 0.4, 0.6); evBanner(`차고에 넣었다 · ${G.cars.length}/${GARAGE_CAP}`, '#9fe0b0'); saveFreeProgress(true); };
   after(0.7, step);

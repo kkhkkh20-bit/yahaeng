@@ -41,14 +41,14 @@ function drawCuffs() {
 function cityArrest(why) {
   const P = S.player, fine = Math.round((S.cash || 0) * (homeHas('safe') ? 0.15 : 0.3));  /* 집 벽 금고 (47zd) */
   if (P.car) { const v = P.car; P.car = null; v.parked = true; }
-  P.captive = null; P.carrying = null; P.hide = null; P.hp = P.hpMax; P.hurtT = 2.5; S.fade = 1.2; S.flash = 0.2; cityDisguiseOff();
+  cityDropHeld(); P.hide = null; P.hp = P.hpMax; P.hurtT = 2.5; S.fade = 1.2; S.flash = 0.2; cityDisguiseOff();
   const at = STAGE.police || STAGE.start; P.x = tc(at[0]); P.y = tc(at[1] + 1); P.z = 0; P.fl = 0; setLayer(0);
   if (STAGE.cityLife && bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) >= 0) {  // 지구대 '앞' 길에서 풀려난다 (건물 안 사무실이 아니라)
     let best = null; for (let r = 1; r <= 8 && !best; r++) for (let dy = -r; dy <= r && !best; dy++) for (let dx = -r; dx <= r && !best; dx++) { if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue; const tx = Math.floor(P.x / TILE) + dx, ty = Math.floor(P.y / TILE) + dy; if (inMap(tx, ty) && !solidAt(tx, ty) && bldAt(tx, ty) < 0) best = [tx, ty]; }
     if (best) { P.x = tc(best[0]); P.y = tc(best[1]); } }
   cam.x = P.x; cam.y = P.y;
   S.cash = Math.max(0, (S.cash || 0) - fine); S.wanted = 0; S.wantLost = 0; S.alevel = 0; S.alevelT = 0;
-  for (const g of S.guards) { if (g.police && !g.off && !g.contact && !g.beat) despawnCop(g); else if (['ALERT', 'SEARCH', 'SUSPICIOUS', 'CHECK'].includes(g.state)) { g.state = 'RETURN'; g.path = null; g.icon = null; g.meter = 0; } }
+  cityStandDownCops();
   // 벌을 받았으니 경찰과의 악연은 '알아보면 수배' 아래로 덜어 주고, 풀려난 뒤 90초는 얼굴만 보고 수배를 걸지 않는다 (지구대 안에서 바로 다시 잡히는 고리 방지)
   if (S.stand && (S.stand.P || 0) <= -30) S.stand.P = -20; S.releasedT = S.t + 90; S.gunHeat = 0;
   S.stats.arrests = (S.stats.arrests || 0) + 1; fstat('arrests'); play('lose', 0.35);

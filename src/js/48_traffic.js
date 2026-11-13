@@ -339,10 +339,10 @@ function trafficStopDistance(v){
    incoming.sort((a,b)=>a.junctionWait[key]-b.junctionWait[key]||distance(a)-distance(b)||a.id-b.id);JC.m.set(key,jc={incoming,near});}
   const incoming=jc.incoming;
   let owner=VGr.byId.get(locks[key]);
-  if(owner&&!inside(owner)&&dist(owner.x,owner.y,(x0+x1)/2,(y0+y1)/2)>300){delete locks[key];owner=null;}
+  if(owner&&(owner.dead||owner.crashed||(!inside(owner)&&dist(owner.x,owner.y,(x0+x1)/2,(y0+y1)/2)>300))){delete locks[key];owner=null;}  // 부서진 차는 교차로를 잡지 않는다
   // A car behind the queue cannot reserve the junction ahead of its own lead.
   if(owner&&!inside(owner)){const lead=incoming.find(o=>o.d===owner.d&&distance(o)<distance(owner)-3);if(lead)owner=lead;}
-  if(!owner)owner=jc.near.find(o=>o!==v&&!o.parked&&!onDeckLevel(o)&&inside(o))||incoming[0]||v;
+  if(!owner)owner=jc.near.find(o=>o!==v&&!o.parked&&!o.dead&&!o.crashed&&!onDeckLevel(o)&&inside(o))||incoming[0]||v;
   locks[key]=owner.id;
   if(locks[key]===v.id||inside(v))return null;
   return Math.max(0,left);

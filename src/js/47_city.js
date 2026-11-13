@@ -41,12 +41,12 @@ function addWanted(n, why) {
 // 차로 사람을 쳤을 때: 경찰이 봤으면 바로 수배. 아니면 살짝 친 건 넘어가고, 죽였으면 본 사람이 10초 뒤 신고(뺑소니).
 // 조직원을 친 건 아무도 신고 안 한다 (경찰이 보지 않았다면)
 function carHitReport(g, lethal) {
-  if (g.police) { addWanted(2, '경찰을 차로 쳤다'); return; }
+  if (g.police) { addWanted(lethal ? 2 : 1, '경찰을 차로 쳤다'); return; }   // 살짝 부딪힌 경찰은 별 하나
   const cop = S.guards.some(o => o.police && npcAlive(o) && !o.off && !flOf(o) && dist(o.x, o.y, g.x, g.y) < 420 && los(o.x, o.y, g.x, g.y));
-  if (cop) { addWanted(1, g.civ ? '경찰 앞에서 사람을 쳤다' : '경찰 앞에서 조직원을 쳤다'); return; }
+  if (cop && lethal) { addWanted(1, g.civ ? '경찰 앞에서 사람을 쳤다' : '경찰 앞에서 조직원을 쳤다'); return; }   /* 경찰 앞이라도 살짝 스친 건 넘어간다 */
   if (!lethal || !g.civ || !witnessed(g.x, g.y, 320) || (S.hitRunT || 0) > S.t) return;
   S.hitRunT = S.t + 10; toast('(누가 휴대폰을 꺼냈다.)', 2, 'warn');
-  after(10, () => { if (!S.over) addWanted(1, '뺑소니 신고가 들어갔다'); });
+  const ep = S.wantEpoch || 0; after(10, () => { if (!S.over && (S.wantEpoch || 0) === ep) addWanted(1, '뺑소니 신고가 들어갔다'); });
 }
 // 수배 별만큼만 쫓는다: 가까운 경찰부터 WANT_COPS[별] 명 (+ 이미 나를 보고 있는 경찰). 자유 모드가 아니면 예전처럼 모두
 function wantedCops() {
@@ -191,6 +191,7 @@ function cityDown(why) {
   const P = S.player; if (S.downing || S.cuffs) return;
   if (P.car) { const v = P.car; P.car = null; v.parked = true; }
   clearCarScripts();
+  for (const v of S.vehicles || []) if (v.jacking && !v.scripted && !S.garage?.busy) { v.jacking = false; v.parked = true; }   // 타던 중 쓰러지면 그 차는 세워 둔 차로
   P.trav = null; P.moving = false; P.vx = P.vy = 0;
   P.hurtT = 3.5; P.defeat = { x: P.x, y: P.y, a: P.a, t0: performance.now() }; S.downing = { t: S.t, why }; S.shakeT = Math.max(S.shakeT || 0, 0.3); play('kill', 0.6);
 }
@@ -207,13 +208,26 @@ function drawDowning() {
   if (f > 0.8) { ctx.globalAlpha = (f - 0.8) * 5; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
   ctx.restore();
 }
+// 쓰러지거나 잡혀 가면 들고 있던 것·붙잡던 사람을 그 자리에 놓는다 (예전엔 '운반 중' 표시가 남아 영영 못 줍던 시신 · 얼어붙은 인질)
+function cityDropHeld() {
+  const P = S.player;
+  if (P.carrying) { const c = P.carrying; c.carried = false; c.x = P.x; c.y = P.y; c.fl = flOf(P); }
+  if (P.captive && P.captive.state === 'CAPTIVE') { const g = P.captive; g.state = 'PATROL'; g.meter = 1; g.path = null; }
+  P.captive = null; P.carrying = null;
+  for (const v of S.vehicles || []) if (v.jacking && !v.scripted && !S.garage?.busy) { v.jacking = false; v.parked = true; }   // 타다 만 차
+  S.wantEpoch = (S.wantEpoch || 0) + 1;   // 쓰러지기 전 걸어 둔 뺑소니 신고는 무효
+}
+// 수배가 풀릴 때 경찰 정리: 쓰러진 경찰(시신이 남은 사람)은 건드리지 않는다 (재활용되면 깨어나는 타이머가 순간이동시킨다)
+function cityStandDownCops() {
+  for (const g of S.guards) { if (g.police && !g.off && !g.contact && !g.beat && g.state !== 'DEAD' && !g.unconscious) despawnCop(g); else if (['ALERT', 'SEARCH', 'SUSPICIOUS', 'CHECK'].includes(g.state)) { g.state = 'RETURN'; g.path = null; g.icon = null; g.meter = 0; } }
+}
 function cityRespawn(why) {
   const P = S.player; if (P.car) { const v = P.car; P.car = null; v.parked = true; }
   if (STAGE.cityLife) fstat('downs');
-  P.captive = null; P.carrying = null; P.hide = null; P.hp = P.hpMax; P.hurtT = 2.5; S.fade = 1.2; S.flash = 0.4; if (STAGE.cityLife) cityDisguiseOff();
+  cityDropHeld(); P.hide = null; P.hp = P.hpMax; P.hurtT = 2.5; S.fade = 1.2; S.flash = 0.4; if (STAGE.cityLife) cityDisguiseOff();
   const h = STAGE.hospital || STAGE.start; P.x = tc(h[0]); P.y = tc(h[1]); P.z = 0; P.fl = 0; setLayer(0); cam.x = P.x; cam.y = P.y;
   S.wanted = 0; S.wantLost = 0; S.alevel = 0; S.alevelT = 0;
-  for (const g of S.guards) { if (g.police && !g.off && !g.contact && !g.beat) despawnCop(g); else if (['ALERT', 'SEARCH', 'SUSPICIOUS', 'CHECK'].includes(g.state)) { g.state = 'RETURN'; g.path = null; g.icon = null; g.meter = 0; } }
+  cityStandDownCops();
   S.stats.downs = (S.stats.downs || 0) + 1; play('lose', 0.4);
   toast((why ? why + ' ' : '') + '— 병원에서 깨어났다', 3, 'warn');
 }

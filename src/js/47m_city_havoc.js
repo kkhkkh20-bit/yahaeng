@@ -39,7 +39,7 @@ function pileHit(a, b) {  // 추돌 한 번: 두 차가 서고 비상등, 연쇄
     spawnEffect('impact', { x: mx, y: my, fl: 0, z: 0 }, { scale: 0.8, alpha: 0.9 }); crashSound(320, clamp(1 - dist(mx, my, S.player.x, S.player.y) / 900, 0, 1));
     for (const v of [a, b]) if (v && v !== S.player.car && !v.crashed) { v.a += rnd(-0.4, 0.4); v.va = v.a; v.smoke = 3; v.hp = Math.min(v.hp, (v.hpMax || 6) * rnd(0.35, 0.6)); } }  // 비틀려 서고 연기
   for (const v of [a, b]) { if (!v || v === S.player.car) continue; v.ai = false; v.v = 0; v.crashed = true; v.hazardT = S.t + 40; v.panicT = 0;
-    if (v.driver && !v.driverOutT) { v.driverOutT = S.t; after(rnd(1, 2.2), () => { if (v.dead) return; v.driver = false; v.doorT = S.t + 0.2; v.doorSide = -1;
+    if (v.driver && !v.driverOutT) { v.driverOutT = S.t; after(rnd(1, 2.2), () => { if (v.dead || !v.driver || v.jacking || S.player.car === v) return; v.driver = false;   /* 그사이 내가 차를 빼앗았으면 운전자를 또 만들지 않는다 */ v.doorT = S.t + 0.2; v.doorSide = -1;
       const gi = cityGuardSlot(), side = v.a - Math.PI / 2, g = makeGuard({ kind: 'civ', at: [Math.floor(v.x / TILE), Math.floor(v.y / TILE)], radio: false }, gi);
       g.x = v.x + Math.cos(side) * 44; g.y = v.y + Math.sin(side) * 44; g.route = [{ x: g.x, y: g.y, pause: 999 }]; g.driverOut = true; placeGuard(g, gi); if (PR) prWarm([charOf(g)], true);
       gsay(g, ['아이고 내 차!', '어떻게 된 거야!', '보험사 불러!', '아 진짜...'][(Math.random() * 4) | 0], 2.2); }); } }

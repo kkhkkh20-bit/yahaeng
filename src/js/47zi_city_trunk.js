@@ -47,7 +47,7 @@ function rideAction() {
 function rideBoard(v, g) {
   if (!rideOk(g)) return; const R = v.riders || (v.riders = []);
   faceEachOther(g); gsay(g, ['...어디로 가는데요?', '태워 주시는 거예요?', '아, 네... 감사합니다.'][g.id % 3], 2);
-  doMotion({ dur: 0.5, pose: 'idle', end: () => { if (!npcAlive(g)) return; g.rideTo = v; g.rideT0 = S.t; R.push(g); fstat('riders');  /* 차 문까지 걸어가서 탄다 (trunkUpdate) */
+  doMotion({ dur: 0.5, pose: 'idle', end: () => { if (!npcAlive(g) || v.dead || (v.riders || (v.riders = [])).length >= RIDE_MAX) return; g.rideTo = v; g.rideT0 = S.t; v.riders.push(g); fstat('riders');  /* 차 문까지 걸어가서 탄다 (trunkUpdate) */
     evBanner(`조수석 ${R.length}/${RIDE_MAX} · (벨트 매. 어디까지 가?)`, '#9fc4ff'); } });
 }
 function rideDrop(v) {
@@ -65,6 +65,6 @@ function trunkUpdate(dt = 1 / 60) {
     if (dist(g.x, g.y, dx, dy) > 16 && S.t - g.rideT0 < 2.5) evRun(g, dx, dy, 110, dt);
     else { g.rideTo = null; g.rideIn = v; g.off = true; g.x = -9999; g.y = -9999; g.path = null; play('door', 0.4 * proxVol(v)); } } }
   for (const v of S.vehicles) { if (!v.dead) continue;
-    if (v.riders?.length) { for (const g of v.riders) { g.off = false; g.x = v.x; g.y = v.y; npcDown(g, null, true); } v.riders = []; }
+    if (v.riders?.length) { for (const g of v.riders) { g.off = false; g.rideIn = g.rideTo = null; g.x = v.x; g.y = v.y; npcDown(g, null, true); } v.riders = []; }
     if (v.trunk?.length) { for (const c of v.trunk) { c.stashed = false; c.hidden = false; c.x = v.x - 10; c.y = v.y + 6; c.inTrunk = null; if (c.g) { c.g.keep = c.g.skBi != null; c.g.inTrunk = null; } } v.trunk = []; } }
 }
