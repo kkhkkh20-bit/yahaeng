@@ -24,7 +24,7 @@ function staffSpawn(bi) {
   return out;
 }
 function staffUpdate(dt) {
-  if (!STAGE.cityLife || !S.staffB || (S.staffT -= dt) > 0) return; S.staffT = 0.5; const P = S.player; staffTalk(dt);   // 나가며 인사가 일꾼을 들여보내기 전에
+  if (!STAGE.cityLife || !S.staffB || (S.staffT -= dt) > 0) return; S.staffT = 0.5; const P = S.player; staffTalk(dt); civTalkUpdate();   // 나가며 인사가 일꾼을 들여보내기 전에
   // 실내는 들어가야 보인다: 내가 들어간 건물에만 일꾼을 세우고, 나오면 들여보낸다 (바깥 사람 수·목격자 수는 그대로)
   const inB = P.z ? -1 : bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE));
   for (const [bi, have] of S.staffB) if (bi !== inB) { for (const g of have) if (!g.off && g.evt === '__staff') { if (npcAlive(g)) evGone(g); else g.keep = false; } S.staffB.delete(bi); }

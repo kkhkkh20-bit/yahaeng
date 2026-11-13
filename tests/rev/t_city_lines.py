@@ -1,4 +1,4 @@
-"""Free mode lines book (47zt0): shop staff speak only when the situation fits. Walking into the pharmacy floor gets a greeting
+"""Free mode lines book (47zt0, 47zt1): shop staff speak only when the situation fits. Walking into the pharmacy floor gets a greeting
 (no 'you can't come in here'), standing next to the pharmacist gets job talk, leaving gets a goodbye, and standing at the
 elevator door on a PC-room floor gets nothing (no '라면 드릴까요?' to someone just riding the lift). Small shops get a counter."""
 import asyncio, json, sys
@@ -20,6 +20,20 @@ CHECK = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));w
   const L=S.ladders.find(l=>l.kind==='fstair'&&G.bldAt(l.tx,l.ty)===b);const D=E.elevDoorOf(E.elevStack(L.tx,L.ty));
   P.fl=f;G.setLayer(f);P.x=D.x;P.y=D.y;tick(1.2);for(const g of S.guards)hush(g);P.moving=false;tick(4);const pc=S.guards.filter(g=>g.staff&&!g.off&&g.shopF===f);out.pcStaff=pc.length;out.atLift=pc.map(said).join('|');
   return out}'''
+# 행인: 부딪히면 · 무기를 보면 · 총소리 · 쓰러진 사람 · 바짝 붙어 달리는 차 — 그때만 대사집의 행인 대사
+CIV = '''()=>{const G=__game,S=G.S,P=S.player,E=G.events,out={};const tick=s=>{for(let t=0;t<s;t+=1/60)G.update(1/60)};
+  P.fl=0;P.z=0;G.setLayer(0);P.car=null;S.wanted=0;S.copT=1e9;const ST=G.STAGE;P.x=(ST.roadsX[2]+2)*48+20;P.y=(ST.roadsY[2]+2)*48+20;
+  for(const o of S.guards)if(o.civ&&Math.hypot(o.x-P.x,o.y-P.y)<700)o.x+=3000;
+  const pick=()=>S.guards.find(o=>o.civ&&!o.dog&&!o.child&&!o.evt&&!o.crew&&!o.staff&&!o.off&&o.state==='PATROL'&&!o.used);
+  const put=(dx,dy)=>{const g=pick();g.used=1;g.x=P.x+dx;g.y=P.y+dy;g.fl=0;g.route=[{x:g.x,y:g.y,pause:999}];g.path=null;g.say='';g.talkT=0;S.civTalkT=0;return g};
+  const L=E.LINES.civ,said=(g,k)=>L[k].includes(g.say)?k:(g.say||'-');
+  let g=put(40,0);for(let k=0;k<36;k++){P.x+=0.6;G.update(1/60);}out.bump=said(g,'bump');g.x+=3000;
+  S.guns.pistol=12;S.wpn='pistol';g=put(120,0);tick(.6);out.weapon=said(g,'weapon');g.x+=3000;
+  g=put(-300,40);P.a=0;S.civTalkT=0;E.fireWeapon(false);tick(.6);out.gunshot=said(g,'gunshot');g.x+=3000;S.wpn=null;
+  const v=put(60,60),w=put(140,60);G.npcDown?G.npcDown(v,null,true):G.killGuard(v);S.civTalkT=0;tick(.8);out.corpse=said(w,'corpse');w.x+=3000;
+  const car=G.traffic.makeVehicle({type:'sedan',x:P.x,y:P.y,a:0,parked:true});S.vehicles.push(car);P.car=car;g=put(50,40);S.civTalkT=0;for(let k=0;k<36;k++){car.v=200;G.update(1/60);}out.car=said(g,'car');P.car=null;car.v=0;g.x+=3000;
+  g=put(40,30);g.say='';P.moving=false;S.civTalkT=0;tick(1.2);out.quiet=g.say||'';
+  return out}'''
 
 async def main():
     bad = []
@@ -38,6 +52,10 @@ async def main():
         ok(r['icon'] != '!?' and r['meter'] < 0.5, 'pharmacist treats the customer as a trespasser: %s' % r)
         ok(r['bye'] in book['pharm']['bye'], 'no goodbye when leaving: %s' % r['bye'])
         ok(r['pcStaff'] >= 1 and r['atLift'].strip('|') == '', 'PC room staff talks to someone at the lift: %s' % r)
+        c = await q.evaluate(CIV); print(json.dumps(c, ensure_ascii=False))
+        for k in ['bump', 'weapon', 'gunshot', 'corpse', 'car']:
+            ok(c[k] == k, 'passerby does not react (%s): %s' % (k, c[k]))
+        ok(c['quiet'] == '' or c['quiet'] in book['civ']['idle'], 'passerby talks for no reason: %s' % c['quiet'])
         ok(not errs, 'page errors: %s' % errs)
         await b.close()
     print('통과' if not bad else '문제', bad); sys.exit(1 if bad else 0)
