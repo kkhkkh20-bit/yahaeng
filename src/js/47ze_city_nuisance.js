@@ -30,6 +30,9 @@ const NUISANCE = [
     update(ev) { const v = ev.car, P = S.player, d = ev.out || v;
       if (!ev.honked && ev.engaged) { ev.honked = true; evBanner('보복운전 — 뒤에서 상향등을 번쩍이며 붙는다', '#ff9a86'); play('metal', 0.5, 2.2); }
       if (v.dead || ev.out && !npcAlive(ev.out)) { if (!ev.paid) { ev.paid = true; cash(100); evEnd(ev, '보복운전자를 막았다 · 놈의 지갑 100만', true); justiceMoment('보복운전 처리', `[속보] 도심서 보복운전하던 SUV 운전자, 되레 당해… 블랙박스 영상 "사이다" 반응`, d.x, d.y); } return; }
+      // 화면 밖에서 막혀 멈춘 채 3초 → 내 뒤 다른 차로에서 다시 붙는다 (교차로·보행자에 영영 막히지 않게)
+      if (!ev.out && !v.dead) { if (Math.abs(v.v || 0) < 5 && dist(v.x, v.y, P.x, P.y) > 250 && !inView(v.x, v.y, 60)) ev.stuckT = (ev.stuckT || 0) + 1 / 60; else ev.stuckT = 0;
+        if (ev.stuckT > 3) { const n = rageCar(); if (n) { S.vehicles = S.vehicles.filter(o => o !== v); ev.cars = ev.cars.filter(o => o !== v); ev.car = n; ev.cars.push(n); n.rage = ev; } ev.stuckT = 0; return; } }
       if (ev.out) { const g = ev.out; if (g.state === 'PANIC' || g.state === 'FLEE') { g.state = 'PATROL'; g.fear = null; } if (!P.car) evGo(g, P.x, P.y);
         if (!P.car && dist(P.x, P.y, g.x, g.y) < 38 && (ev.hitT || 0) < S.t) { ev.hitT = S.t + 1.8; g.swingT = 0.35; gsay(g, ['내려! 내리라고!', '운전 똑바로 해!', '죽고 싶어?'][(S.t | 0) % 3], 2); hurtPlayer(g, '보복운전자에게 맞았다'); } }
       if (dist(d.x, d.y, P.x, P.y) > 1700 || S.t - ev.t1 > 120) evEnd(ev, '보복운전자를 따돌렸다'); },

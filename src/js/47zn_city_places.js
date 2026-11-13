@@ -32,7 +32,9 @@ function schoolKids() {
   const b = S.school; if (!b) return; const p = shopFront(b); if (!p) return; let n = 0;
   for (const g of S.guards) { if (n >= 6) break; if (!g.civ || g.evt || g.crew || g.off || g.dog || g.home || g.wander) continue;
     g.outfit = 'student'; g.body = n % 2 ? 'kid' : 'hoodieCasual'; const k = (n * 53) % 120 - 60; g.x = p.x + k; g.y = p.y + 8 + (n * 7) % 22;  /* 시드 난수를 쓰지 않는다 (다른 시험 장면이 바뀌지 않게) */
-    const w = walkableNear(p.x + ((n * 97) % 440) - 220, p.y + 10 + (n * 13) % 50, { x: -1e5, y: -1e5 }); g.route = [{ x: g.x, y: g.y, pause: 2 + n % 4 }, { x: w.x, y: w.y, pause: 3 + n % 3 }]; g.ri = 1; g.path = null; g.student = true; n++; }
+    const side = (x, y) => { const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); return inMap(tx, ty) && !solidAt(tx, ty) && G0[ty][tx] !== '=' && bldAt(tx, ty) < 0; };  /* 인도만 (차도로 나가면 차가 선다) */
+    let wx = p.x + ((n * 97) % 440) - 220; for (let t = 0; t < 8 && !side(wx, p.y + 6); t++) wx = p.x + (wx - p.x) * 0.6; const w = side(wx, p.y + 6) ? { x: wx, y: p.y + 6 } : { x: p.x, y: p.y + 6 };
+    g.y = p.y + 6; if (!side(g.x, g.y)) g.x = p.x; g.route = [{ x: g.x, y: g.y, pause: 2 + n % 4 }, { x: w.x, y: w.y, pause: 3 + n % 3 }]; g.ri = 1; g.path = null; g.student = true; n++; }
 }
 // 병원: 정문 앞에서 치료 (잃은 체력 한 칸당 20만)
 function hospitalAction() {
