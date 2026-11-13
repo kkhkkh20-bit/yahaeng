@@ -29,7 +29,7 @@ async def main():
         r = await q.evaluate('''()=>{const S=__game.S;while(__game.DLG.modal)__game.advanceDialog();const t0=S.story.nextT>S.t,nr=CALL(),norm=!!(S.hit||S.job)&&!(S.hit&&S.hit.story!=null);if(S.hit)__game.events.contractFail(S.hit,'x');S.hit=null;S.job=null;while(__game.DLG.modal)__game.advanceDialog();S.story.nextT=0;const l=CALL(),h=S.hit;return{gap:t0&&norm,lines:l,hit:h&&{name:h.name,story:h.story,ctr:h.ctr}}}''')
         print('ch2', json.dumps(r, ensure_ascii=False)[:400])
         ok(r['gap'], 'no ordinary call between chapters: %s' % r.get('gap'))
-        ok(r['hit'] and r['hit']['story'] == 1 and r['hit']['ctr'] == 'roadkill' and any('검은 장미' in t for t in r['lines']), 'second call lacks debrief or roadkill: %s' % r)
+        ok(r['hit'] and r['hit']['story'] == 1 and r['hit']['ctr'] == 'roadkill' and any('노 계장' in t for t in r['lines']), 'second call lacks debrief or roadkill: %s' % r)
         r = await q.evaluate('''()=>{const G=__game,S=G.S;G.events.contractFail(S.hit,'실패');S.story.nextT=0;const l=CALL();return{failed:S.story.failed,ch:S.story.ch,retry:l.some(t=>t.includes('한 번 더')),story:S.hit&&S.hit.story}}''')
         print('retry', r); ok(r['ch'] == 1 and r['retry'] and r['story'] == 1, 'failed chapter is not retried: %s' % r)
         # 조직 이야기

@@ -21,7 +21,7 @@ function hunterSpawn() {
   g.x = p.x; g.y = p.y; g.route = [{ x: p.x, y: p.y, pause: 999 }]; g.civ = true; g.hunter = true; g.huntCd = 0; g.aimH = 0;
   placeGuard(g, gi); setLayer(0); if (PR) prWarm([charOf(g)], true);
   S.hunter = { g, t0: S.t }; fstat('hunters');
-  play('click', 0.4, 0.6); evBanner('까마귀: "네 목에 돈이 걸렸다. 누가 오고 있다 — 행인 얼굴을 잘 봐."', '#ffb070');
+  play('click', 0.4, 0.6); evBanner('강 형사: "네 목에 돈이 걸렸다. 누가 오고 있다 — 행인 얼굴을 잘 봐."', '#ffb070');
   return true;
 }
 function hunterEnd(killed) {
