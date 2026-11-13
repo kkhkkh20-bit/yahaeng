@@ -474,6 +474,10 @@
       "group": "city"
     },
     {
+      "path": "47zs_city_elevator.js",
+      "group": "city"
+    },
+    {
       "path": "47zz_city_story.js",
       "group": "city"
     },

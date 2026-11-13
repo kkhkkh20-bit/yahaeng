@@ -1,5 +1,5 @@
 """Free-mode heat and records.
-- ★4: a police helicopter flies in; while its searchlight is on me the wanted level cannot drain; below ★3 it leaves.
+- ★5 held for 20 s: a police helicopter flies in (the last card); while its searchlight is on me the wanted level cannot drain; below ★4 it leaves.
 - ★3 while driving: a roadblock of police cars across the road ahead (out of view).
 - Records: stealing a car counts, the first-car achievement pays 20 and both are saved; the pause menu shows
   '자유 모드 기록 · 업적' only in free mode and opens the records panel."""
@@ -21,7 +21,7 @@ async def main():
         await q.evaluate('''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));while(G.DLG.modal)G.advanceDialog();
           window.tick=s=>{for(let t=0;t<s;t+=1/60)G.update(1/60)};tick(.3);const S=G.S;S.evNext={};for(const e of G.events.list)S.evNext[e.d]=1e9;
           for(const g of S.guards)if(g.police&&!g.contact){g.x=-9000;g.route=[{x:-9000,y:-9000,pause:999}];}}''')
-        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.wanted=4;S.copT=1e9;tick(.1);const spawned=!!G.events.heli;tick(5);const H=G.events.heli;
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.wanted=5;S.w5T=21;S.copT=1e9;tick(.1);const spawned=!!G.events.heli;tick(5);const H=G.events.heli;
           const d=H?Math.round(Math.hypot(H.x-P.x,H.y-P.y)):-1;S.wantLost=5;tick(.5);const held=S.wantLost<0.5;
           S.wanted=2;tick(8);return {spawned,d,lit:H&&H.lit,held,gone:!G.events.heli}}''')
         print('heli', r); ok(r['spawned'] and r['d'] < 300 and r['held'] and r['gone'], 'helicopter: %s' % r)

@@ -218,6 +218,7 @@ function drawBooth(p, front) {
   ctx.restore();
 }
 function drawHits(layer) {
+  if (layer === 'ui' && !flOf(S.player)) drawHeli();   // 헬기는 옥상·전깃줄 위에서도 보인다 (실내 위층만 빼고)
   if (flOf(S.player) || S.player.z > 0 || S.player.wire) return;
   for (const p of S.phones || []) {
     if (!inView(p.x, p.y, 80)) continue;
@@ -232,7 +233,7 @@ function drawHits(layer) {
     drawBooth(p, false);
   }
   if (layer !== 'ui') return;
-  drawEvents(); drawContacts(); drawJobs(); drawCarPickProgress(); drawCarriedParcel(); drawWpRoute(); drawSide(); drawSafes(); drawHome(); drawNuisance(); drawSlashes(); drawScene(); drawHunter(); drawScope(); drawPoison(); drawPickups(); drawGuns(); drawIntel(); drawHeli(); drawRain();
+  drawEvents(); drawContacts(); drawJobs(); drawCarPickProgress(); drawCarriedParcel(); drawWpRoute(); drawSide(); drawSafes(); drawHome(); drawNuisance(); drawSlashes(); drawScene(); drawHunter(); drawScope(); drawPoison(); drawPickups(); drawGuns(); drawIntel();  drawRain();
   const h = S.hit; if (!h || h.g.state === 'DEAD' && !h.g.unconscious || contractHides(h)) return;
   const g = h.g; if (flOf(g) !== flOf(S.player) || !inView(g.x, g.y, 60)) return;
   const pu = .55 + .35 * Math.sin(S.t * 5);
