@@ -53,7 +53,9 @@ function slipUpdate() {  // 빗길: 가끔 내 앞쪽 차 하나가 미끄러져
 }
 // ---------- 폭약 · 교각
 function deckPillars(d) { const out = [], h = d.axis === 'x'; for (let u = d.a0 + d.r + 2 * TILE; u < d.a1 - d.r - TILE; u += 6 * TILE) for (const c of [d.c0 + TILE * 0.9, d.c1 - TILE * 0.9]) out.push({ d, u, x: h ? u : c, y: h ? c : u }); return out; }
-const smallBld = b => b && !b.vacant && !b.collapsed && (b.x1 - b.x0 + 1) * (b.y1 - b.y0 + 1) <= 30 && !Object.values(CONTACT_BLD).includes(b.name) && !/병원|지구대|중고차/.test(b.name || '') && !(S.garage && S.garage.b === b);
+// 폭약 한 번에 무너지는 '작은 건물': 자유 모드는 건물이 커져(폭 8~14 · 깊이 9~13칸) 1~2층 상가·주택 크기까지 (예전 30칸 기준이면 무너뜨릴 건물이 하나도 없다)
+const SMALL_BLD_AREA = 120;
+const smallBld = b => b && !b.vacant && !b.collapsed && (b.x1 - b.x0 + 1) * (b.y1 - b.y0 + 1) <= SMALL_BLD_AREA && !Object.values(CONTACT_BLD).includes(b.name) && !/병원|지구대|중고차/.test(b.name || '') && !(S.garage && S.garage.b === b);
 function havocAction() {
   const P = S.player; if (P.car || !(P.bombs > 0) || P.trav) return null;
   for (const d of S.decks || []) for (const p of deckPillars(d)) if (dist(P.x, P.y, p.x, p.y) < 60) return { k: 'evAct', label: `교각에 폭약 설치 (${P.bombs})`, fn: () => plantBomb(p.x, p.y, { deck: d, u: p.u }) };
