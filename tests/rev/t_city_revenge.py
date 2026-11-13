@@ -29,7 +29,7 @@ async def main():
         print('tteot', json.dumps(r, ensure_ascii=False))
         ok(r['start'] and r['hot'] and all(s == 'ALERT' for s in r['chase']) and r['dropped'] and '처리' in r['stamp'] and '경찰' in r['news'], 'tteot: %s' % r)
         # 동물 학대범
-        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.ev=null;S.copT=1e9;S.wanted=0;const c0=S.cash;const e=EV('animal');if(!e)return{start:false};P.x=e.g.x+500;P.y=e.g.y;tick(5);const kicks=e.kicks;const ch=G.events.charOf(e.dog);
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.ev=null;S.copT=1e9;S.wanted=0;const c0=S.cash;const e=EV('animal');if(!e)return{start:false};for(let k=0;k<5*60;k++){P.x=e.g.x+500;P.y=e.g.y;G.update(1/60);}/* 놈을 따라다닌다 (멀어지면 '내 일 아니야'로 끝난다) */const kicks=e.kicks;const ch=G.events.charOf(e.dog);
           G.killGuard(e.g);tick(1.6);const civ=[];return{start:true,kicks,ch,paid:S.cash-c0,...DONE()}}''')
         print('animal', json.dumps(r, ensure_ascii=False))
         ok(r['start'] and r['kicks'] >= 2 and r['ch'] == 'dog' and r['paid'] >= 30 and r['done'] and '처리' in r['stamp'], 'animal: %s' % r)

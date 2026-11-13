@@ -28,7 +28,7 @@ async def main():
         ok(r['started'] and len(r['said']) >= 2 and r['over'] and r['fled'], 'quarrel: %s' % r)
         # 묻지마 폭행범: 행인을 치면 신고 → 경찰이 와서 제압·연행 → 사건은 "경찰이 먼저"
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.ev=null;S.wanted=0;const e=EV('assault');const g=e.g;P.x=g.x+900;P.y=g.y;
-          const c=S.guards.find(o=>o.civ&&!o.child&&!o.evt&&!o.crew&&o.state==='PATROL'&&!o.off&&!o.student&&!o.cfight);c.x=g.x+40;c.y=g.y;c.route=[{x:c.x,y:c.y,pause:999}];c.path=null;
+          const c=S.guards.find(o=>o.civ&&!o.child&&!o.evt&&!o.crew&&o.state==='PATROL'&&!o.off&&!o.student&&!o.cfight&&!o.fl&&G.bldAt(Math.floor(o.x/48),Math.floor(o.y/48))<0);/* 바깥 행인 */c.x=g.x+40;c.y=g.y;c.route=[{x:c.x,y:c.y,pause:999}];c.path=null;
           const cop=S.guards.find(o=>o.police&&o.beat);cop.x=g.x+260;cop.y=g.y;cop.route=[{x:cop.x,y:cop.y,pause:999}];cop.path=null;cop.state='PATROL';cop.incident=null;cop.brawl=null;
           let hitT=null,downT=null;for(let k=0;k<60*40;k++){P.x=g.x+900;P.y=g.y;G.update(1/60);if(hitT==null&&e.hits)hitT=k;if(g.state==='DEAD'&&downT==null)downT=k;if(downT!=null&&g.off)break;}
           return{hits:e.hits,criminal:hitT!=null,down:g.state,gone:!!g.off,copTook:!!e.copTook,done:!!e.done,banner:(document.getElementById('evBanner')||{}).textContent||''}}''')

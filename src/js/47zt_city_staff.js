@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------- 자유 모드 가게 일꾼: 건물마다 층의 쓰임새대로 일하는 사람과 옷
 // 편의점 조끼 · 약국 흰 가운 · 철물점 작업복 · 식당 조리복/앞치마 · PC방·노래방 직원 · 헬스 트레이너 · 학원 선생님 · 사무실 양복.
-// 근처(약 1100px) 건물에만 그때그때 세우고, 멀어지면 들여보낸다 (사람 수가 늘어 느려지지 않게). 무작위는 쓰지 않는다.
+// 내가 들어간 건물에만 세우고, 나오면 들여보낸다 (사람 수가 늘어 느려지지 않게 · 바깥 목격자가 늘지 않게). 무작위는 쓰지 않는다.
 const STAFF_SAY = { staff: ['어서 오세요.', '봉투 필요하세요?'], pharm: ['어디가 불편하세요?', '처방전 있으세요?'], hardware: ['뭐 찾으세요?', '그건 안쪽에 있어요.'], chef: ['주문 들어왔어!', '불 조심해.'], cater: ['몇 분이세요?', '앉으세요, 금방 갖다드릴게요.'],
   gamer: ['몇 번 자리 하실래요?', '라면 드릴까요?'], karaoke: ['몇 분이세요? 방 드릴게요.', '서비스 10분 넣어 드렸어요.'], trainer: ['하나 더! 하나 더!', '자세 무너졌어요.'], teacher: ['자, 다음 문제.', '조용히 하자.'], clerk: ['...야근이네.', '보고서 언제 끝나지.'] };
 function staffOutfit(b, f, use) {
@@ -25,10 +25,11 @@ function staffSpawn(bi) {
   return out;
 }
 function staffUpdate(dt) {
-  if (!STAGE.cityLife || !S.staffB || (S.staffT -= dt) > 0) return; S.staffT = 1; const P = S.player;
-  BLD.forEach((b, bi) => { if (b.vacant || !PLANS[bi]) return; const cx = (b.x0 + b.x1 + 1) * TILE / 2, cy = (b.y0 + b.y1 + 1) * TILE / 2, d = dist(cx, cy, P.x, P.y), have = S.staffB.get(bi);
-    if (!have && d < 1100) S.staffB.set(bi, staffSpawn(bi));
-    else if (have && d > 1600) { for (const g of have) if (!g.off && g.evt === '__staff') { if (npcAlive(g)) evGone(g); else g.keep = false; } S.staffB.delete(bi); } });
+  if (!STAGE.cityLife || !S.staffB || (S.staffT -= dt) > 0) return; S.staffT = 0.5; const P = S.player;
+  // 실내는 들어가야 보인다: 내가 들어간 건물에만 일꾼을 세우고, 나오면 들여보낸다 (바깥 사람 수·목격자 수는 그대로)
+  const inB = P.z ? -1 : bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE));
+  for (const [bi, have] of S.staffB) if (bi !== inB) { for (const g of have) if (!g.off && g.evt === '__staff') { if (npcAlive(g)) evGone(g); else g.keep = false; } S.staffB.delete(bi); }
+  if (inB >= 0 && PLANS[inB] && !BLD[inB].vacant && !S.staffB.has(inB)) S.staffB.set(inB, staffSpawn(inB));
   // 손님이 들어오면 한마디 (같은 층 가까이)
   for (const list of S.staffB.values()) for (const g of list) if (npcAlive(g) && !g.off && flOf(g) === flOf(P) && !g.greeted && dist(g.x, g.y, P.x, P.y) < 120 && !P.car) { g.greeted = true; const L = STAFF_SAY[g.staff] || ['어서 오세요.']; gsay(g, L[g.id % L.length], 2.2); }
 }
