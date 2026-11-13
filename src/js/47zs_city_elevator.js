@@ -7,16 +7,24 @@ function elevStack(tx, ty) {
   if (!L.length) return null; const fl = L.filter(l => l.kind === 'fstair'), roof = L.find(l => l.kind === 'stair');
   const top = Math.max(0, ...fl.map(l => l.tfl)); return { tx, ty, top, roof, fl };
 }
+// 엘리베이터 문: 건물마다 모든 층에서 걸을 수 있고 위가 벽인 칸 하나 (계단에서 두 칸 넘게 떨어진 곳). 그 벽에 철문을 그린다
+function elevDoorOf(E) {
+  if (E.door !== undefined) return E.door; const bi = bldAt(E.tx, E.ty), b = BLD[bi]; let best = null, bd = 1e9; const old = CUR_F;
+  if (b) for (let ty = b.y0 + 1; ty < b.y1; ty++) for (let tx = b.x0 + 1; tx < b.x1; tx++) {
+    if (Math.abs(tx - E.tx) + Math.abs(ty - E.ty) < 3) continue; let ok = true;
+    for (let f = 0; f <= E.top && ok; f++) { setLayer(f); if (solidAt(tx, ty) || !solidAt(tx, ty - 1) || furnAt(f, tx, ty) || furnAt(f, tx, ty + 1) || bldAt(tx, ty) !== bi) ok = false; }
+    if (!ok) continue; const d = (ty - b.y0) * 10 + Math.abs(tx - E.tx); if (d < bd) { bd = d; best = { tx, ty, x: tc(tx), y: tc(ty) }; } }
+  setLayer(old); return E.door = best || { tx: E.tx, ty: E.ty + 1, x: tc(E.tx), y: tc(E.ty + 1), stairs: true };   // 문 낼 벽이 없으면 계단 앞에서
+}
 function nearElevator() {
-  const P = S.player; if (P.z || P.car || P.carrying?.fly) return null; let best = null, bd = 40; const inB = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE));   // 같은 건물 안에서만 (벽 너머 계단은 안 된다)
-  for (const l of S.ladders || []) { if ((l.kind !== 'fstair' && l.kind !== 'stair') || (l.bfl || 0) > flOf(P) || (l.kind === 'fstair' ? l.tfl < flOf(P) : l.bfl !== flOf(P))) continue;
-    if (bldAt(l.tx, l.ty) !== inB) continue; const d = dist(P.x, P.y, l.x, l.y); if (d < bd) { bd = d; best = l; } }
-  return best ? elevStack(best.tx, best.ty) : null;
+  const P = S.player; if (P.z || P.car || P.carrying?.fly) return null; const inB = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)); if (inB < 0) return null;
+  const E = (S.elevs || (S.elevs = new Map())).get(inB) ?? (() => { const l = (S.ladders || []).find(k => (k.kind === 'fstair' || k.kind === 'stair') && bldAt(k.tx, k.ty) === inB); const e = l ? elevStack(l.tx, l.ty) : null; S.elevs.set(inB, e); return e; })();
+  if (!E || flOf(P) > E.top) return null; const D = elevDoorOf(E); if (!D || dist(P.x, P.y, D.x, D.y) > 34) return null; return E;
 }
 function elevatorAction() {
   if (!STAGE.cityLife) return null; const P = S.player; if (P.car || P.trav || P.hide || P.vent || P.wire || P.captive || actionBusy(P)) return null;
   const E = nearElevator(); if (!E || (E.top < 1 && !E.roof)) return null;
-  return { k: 'evAct', label: `엘리베이터 · 지금 ${flOf(P) + 1}층`, at: { x: tc(E.tx), y: tc(E.ty) - 46 }, fn: () => elevatorPanel(E) };
+  const D = E.door; return { k: 'evAct', label: `엘리베이터 · 지금 ${flOf(P) + 1}층`, at: { x: D.x, y: D.y - 50 }, fn: () => elevatorPanel(E) };
 }
 function elevatorPanel(E) {
   const P = S.player, cur = flOf(P), rows = [];
@@ -25,9 +33,9 @@ function elevatorPanel(E) {
   const close = shopPanel('엘리베이터', rows); play('click', 0.4);
 }
 function elevatorGo(E, to) {
-  const P = S.player, x = tc(E.tx), y = tc(E.ty), seen = S.wanted > 0 && S.guards.some(g => g.police && npcAlive(g) && !g.off && flOf(g) === flOf(P) && dist(g.x, g.y, P.x, P.y) < 260);
-  doMotion({ x, y: y + 4, dur: 0.7, pose: 'idle', at: [[0.1, () => play('door', 0.45)]], end: () => {
-    S.fade = 0.45; play('bell', 0.3, 1.6); fstat('elevator');
+  const P = S.player, D = elevDoorOf(E) || { x: tc(E.tx), y: tc(E.ty) }, x = to === 'roof' ? tc(E.tx) : D.x, y = to === 'roof' ? tc(E.ty) : D.y, seen = S.wanted > 0 && S.guards.some(g => g.police && npcAlive(g) && !g.off && flOf(g) === flOf(P) && dist(g.x, g.y, P.x, P.y) < 260);
+  doMotion({ x: D.x, y: D.y + 4, dur: 0.9, face: -Math.PI / 2, pose: 'idle', at: [[0.1, () => play('door', 0.45)]], end: () => {
+    S.fade = 0.45; play('bell', 0.3, 1.6); fstat('elevator'); if (E.door) E.door.openT = S.t;
     const f = to === 'roof' ? E.roof.bfl : to; P.fl = f; P.z = 0; setLayer(f); P.x = x; P.y = y + 4; P.path = null; P.moving = false;
     if (P.carrying) { P.carrying.fl = f; P.carrying.x = P.x; P.carrying.y = P.y; }
     if (to === 'roof') { after(0.35, () => { if (flOf(S.player) === f && !S.player.trav) beginStairTravel(E.roof, true); }); evBanner('(옥상으로.)', '#c8c0b0'); }
@@ -49,4 +57,14 @@ function liftAction() {
   if ((S.shops || []).some(o => dist(o.x, o.y, P.x, P.y) < 60) || (S.safes || []).some(o => dist(o.x, o.y, P.x, P.y) < 60)) return null;   // 가게·은신처 문 앞은 그쪽 행동이 먼저
   for (const L of S.lifts) if (dist(P.x, P.y, L.door.x, L.door.y) < 30) return { k: 'evAct', label: `엘리베이터 · ${L.E.top + 1}층 건물`, at: { x: L.door.x, y: L.door.y - 50 }, fn: () => elevatorPanel(L.E) };
   return null;
+}
+// 엘리베이터 철문 (내가 그 건물 안에 있을 때만): 벽 칸 아래쪽에 두 짝 문 · 위에 층 표시등 · 탈 때 문이 열렸다 닫힌다
+function drawElevDoors() {
+  const P = S.player; if (!S.elevs || P.z || P.car) return; const inB = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)); const E = S.elevs.get(inB); if (!E || !E.door) return;
+  const D = E.door, x = D.x - 20, y = D.y - TILE - 18 + 6, open = E.door.openT && S.t - E.door.openT < 0.8 ? Math.sin(Math.min(1, (S.t - E.door.openT) / 0.8) * Math.PI) : 0;
+  ctx.save(); ctx.fillStyle = '#2b2f37'; ctx.fillRect(x - 3, y - 6, 46, 48); ctx.fillStyle = '#121418'; ctx.fillRect(x, y, 40, 42);
+  const w = 20 * (1 - open * 0.85); ctx.fillStyle = '#a3abb6'; ctx.fillRect(x, y, w, 42); ctx.fillRect(x + 40 - w, y, w, 42);
+  ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(x + 2, y + 2, 3, 38); ctx.fillRect(x + 40 - w + 2, y + 2, 3, 38); ctx.fillStyle = '#6a717c'; if (!open) ctx.fillRect(x + 19.5, y, 1, 42);
+  ctx.fillStyle = '#0c0c0e'; ctx.fillRect(x + 12, y - 5, 16, 4); ctx.fillStyle = '#ff9a3a'; ctx.font = '700 4px ' + UI_FONT_FAMILY; ctx.textAlign = 'center'; ctx.fillText(String(flOf(P) + 1), x + 20, y - 1.6);
+  ctx.fillStyle = '#d8dce2'; ctx.fillRect(x + 43, y + 18, 3, 7); ctx.fillStyle = '#ffd36a'; ctx.fillRect(x + 43.5, y + 19, 2, 2); ctx.fillRect(x + 43.5, y + 22, 2, 2); ctx.restore();
 }

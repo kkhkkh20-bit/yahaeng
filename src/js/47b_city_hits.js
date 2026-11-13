@@ -218,7 +218,7 @@ function drawBooth(p, front) {
   ctx.restore();
 }
 function drawHits(layer) {
-  if (layer === 'ui' && !flOf(S.player)) drawHeli();   // 헬기는 옥상·전깃줄 위에서도 보인다 (실내 위층만 빼고)
+  if (layer === 'ui') { drawElevDoors(); if (!flOf(S.player)) drawHeli(); }   // 실내 엘리베이터 문 (위층에서도) · 헬기   // 헬기는 옥상·전깃줄 위에서도 보인다 (실내 위층만 빼고)
   if (flOf(S.player) || S.player.z > 0 || S.player.wire) return;
   for (const p of S.phones || []) {
     if (!inView(p.x, p.y, 80)) continue;

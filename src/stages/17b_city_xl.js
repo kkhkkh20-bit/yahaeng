@@ -43,7 +43,9 @@
       const d = y1 - y0 + 1, h = Math.max(1, Math.min(ri(tall[0], tall[1]), d - 2));
       if (front && kind !== 'res') {  // 1층 가게(식당 · 가게), 위층은 사무실 · 헬스장 · PC방 · 학원
         const up = curD.upper || UPPER, use = Array.from({ length: h }, (_, f) => f ? up[ri(0, up.length - 1)] : r() < 0.55 ? 'food' : 'store');
-        m.villa(x0, y0, x1, y1, h, { kind: 'shop', use, signs: use.map((u, f) => f === 0 ? pick(u === 'food' ? curD.food || FOOD : curD.store || STORE, x0, y0) : f <= 2 ? pick(UPPER_SIGN[u] || [''], x0, y0, f) : '') });
+        const signs = use.map((u, f) => f === 0 ? pick(u === 'food' ? curD.food || FOOD : curD.store || STORE, x0, y0) : f <= 2 ? pick(UPPER_SIGN[u] || [''], x0, y0, f) : '');
+        signs.forEach((s, f) => { if (s === '노래방') use[f] = 'karaoke'; else if (s === '당구장') use[f] = 'billiards'; });  // 간판대로 실내를 꾸민다 (난수는 더 쓰지 않는다)
+        m.villa(x0, y0, x1, y1, h, { kind: 'shop', use, signs });
       } else m.villa(x0, y0, x1, y1, h, r() < 0.35 ? { kind: 'house' } : {});
     };
     const row = (y0, y1, front) => {

@@ -137,12 +137,14 @@ function planInterior(g, b, bi, f) {
   };
   const furnishUnit = (u) => { needWall = false; if (!u.rooms.length) studio(u); u.rooms.forEach((r, i) => bedroom(r, i === 0)); if (u.bath) bathroom(u.bath); ldk(u); };
   if (kind === 'shop') {
-    const cx0 = ix1 - 1; for (let y = iy0; y <= iy1; y++) g[y][cx0 - 1] = '#'; fill(cx0, iy0, ix1, iy1, 'h'); g[iy0][ix1] = 'Y'; rec.stair = [ix1, iy0]; K(ix1, iy0 + 1); K(cx0, iy0);
-    gap(cx0 - 1, iy1 - 1, 'h'); if (f === 0) { g[b.y1][cx0] = 'h'; K(cx0, iy1); if (b.backDoor) { g[b.y0][cx0] = 'h'; K(cx0, iy0); } }
+    // 자유 모드: 계단 복도 벽을 없애고 한 층을 통째로 가게로 (계단은 오른쪽 위 구석 한 칸)
+    const open = !!STAGE.cityLife, cx0 = ix1 - 1; if (!open) for (let y = iy0; y <= iy1; y++) g[y][cx0 - 1] = '#'; fill(open ? ix1 : cx0, iy0, ix1, iy1, 'h'); g[iy0][ix1] = 'Y'; rec.stair = [ix1, iy0]; K(ix1, iy0 + 1); K(ix1 - 1, iy0); if (!open) K(cx0, iy0);
+    if (!open) gap(cx0 - 1, iy1 - 1, 'h'); if (f === 0) { g[b.y1][cx0] = 'h'; K(cx0, iy1); if (b.backDoor) { g[b.y0][cx0] = 'h'; K(cx0, iy0); } }
     const use = (b.floorsUse || [])[f] || (f === 0 ? 'store' : 'office');
-    const sx0 = ix0, sx1 = cx0 - 2; fill(sx0, iy0, sx1, iy1, use === 'store' || use === 'food' ? 't' : use === 'pc' ? 'h' : 'w');
+    const sx0 = ix0, sx1 = open ? ix1 - 1 : cx0 - 2; fill(sx0, iy0, sx1, iy1, use === 'store' || use === 'food' ? 't' : use === 'pc' ? 'h' : 'w');
     rec.store = { x0: sx0, y0: iy0, x1: sx1, y1: iy1, use };
     if (f === 0) { const dx = sx0 + 2; g[b.y1][dx] = 't'; K(dx, iy1); K(dx, iy1 - 1); }
+    if (open) { K(sx0, iy0); K(sx0, iy0 + 1); }  // 자유 모드: 왼쪽 위 구석은 엘리베이터 문 앞 (47zs)
     for (let x = sx0; x <= sx1; x++) K(x, iy1);  // 앞줄 비움(창문 쪽 통로)
     K(ix0, iy1 - 1); K(ix1, iy1 - 1);  // 옆 창문 안쪽 비움 (옆 건물 창문 건너기)
     if (use === 'heist') {  // 미션 1 창고 상회 1층: 뒤 = 창고(높은 선반 사이로 숨어 지나간다)·사무실(책상 = 낮은 엄폐, 장부) / 앞 = 매장(낮은 진열대)
@@ -159,6 +161,10 @@ function planInterior(g, b, bi, f) {
       for (let x = sx0 + 1; x + 2 <= sx1 - 1; x += 4) furn(x, vy + 2, 3, 1, 'disp');
       furn(sx1 - 2, vy + 2, 2, 1, 'disp');
     }
+    else if (use === 'store' && open) {  // 자유 모드 가게(넓힌 층): 안쪽 벽을 따라 냉장고, 폭에 맞춘 진열대 줄, 앞쪽 계산대
+      for (let x = sx0 + 1, n = 0; x <= sx1 && n < 4; x++) if (furn(x, iy0, 1, 1, 'fridge')) n++;
+      const sw = sx1 - sx0 + 1 >= 7 ? 3 : 2; for (let y = iy0 + 2; y < iy1 - 1; y += 2) for (let x = sx0 + 1; x + sw - 1 <= sx1 - 1; x += sw + 1) furn(x, y, sw, 1, 'shelf');
+      if (furn(sx1 - 1, iy1 - 1, 2, 1, 'counter', true, 0)) furn(sx1, iy1 - 2, 1, 1, 'chairD', true, 0); }
     else if (use === 'store') { furn(sx0, iy0, 1, 1, 'fridge'); furn(sx0 + 1, iy0, 1, 1, 'fridge'); for (let y = iy0 + 2; y < iy1 - 1; y += 2) for (let x = sx0 + 1; x + 2 <= sx1 - 1; x += 4) furn(x, y, 3, 1, 'shelf'); if (furn(sx1 - 1, iy1 - 1, 2, 1, 'counter', true, 0)) furn(sx1, iy1 - 2, 1, 1, 'chairD', true, 0); }  // 가게: 안쪽 벽 음료 냉장고, 진열대 줄, 계산대와 점원 의자
     else if (use === 'pc') { for (let y = iy0; y + 1 < iy1; y += 3) for (let x = sx0; x <= sx1; x++) if ((x - sx0) % 4 !== 3 && furn(x, y, 1, 1, 'pc', true, 0)) furn(x, y + 1, 1, 1, 'chairD', true, 2); }  // 줄마다 컴퓨터 + 의자, 그 아래 통로
     else if (use === 'academy') { furn(sx0 + 1, iy0, Math.max(2, sx1 - sx0 - 1), 1, 'board'); for (let y = iy0 + 2; y + 1 < iy1; y += 3) for (let x = sx0; x <= sx1; x += 2) if (furn(x, y, 1, 1, 'desk', true, 0)) furn(x, y + 1, 1, 1, 'chairD', true, 2); }  // 칠판을 보는 책상·의자 줄
@@ -202,6 +208,16 @@ function planInterior(g, b, bi, f) {
       for (let x = sx0 + 3; x + 1 <= sx1; x += 3) furn(x, iy0, 2, 1, 'mirror', false);
       for (let x = sx0; x + 1 <= sx1; x += 3) furn(x, iy1 - 1, 2, 1, 'tread', true, 0);
       for (let y = iy0 + 2; y + 1 < iy1 - 1; y += 3) for (let x = sx0 + 1; x <= sx1 - 1; x += 3) furn(x, y, 1, 1, 'rack', true, 0);
+    }
+    else if (use === 'karaoke') {  // 노래방: 방마다 소파·탁자·노래 화면 (넓으면 칸막이로 방 여럿), 앞줄은 복도
+      const yb = iy1 - 2, W = sx1 - sx0 + 1, step = W >= 7 ? 4 : 99;
+      if (W >= 7) for (let x = sx0 + 3; x < sx1; x += 4) for (let y = iy0; y <= yb; y++) g[y][x] = '#';
+      for (let x = sx0; x + 1 <= sx1; x += step) { furn(x, iy0, 2, 1, 'sofa', true, 0); furn(x, iy0 + 1, 1, 1, 'tableS', true, 0); furn(x + 1, Math.max(iy0 + 2, yb), 1, 1, 'kscreen', true, 0); }
+    }
+    else if (use === 'billiards') {  // 당구장: 초록 당구대 줄, 벽에 큐 걸이, 앞쪽 카운터
+      for (let x = sx0; x <= sx1 - 1; x += 3) furn(x, iy0, 1, 1, 'cues', false);
+      for (let y = iy0 + 2; y + 1 < iy1; y += 3) for (let x = sx0 + (sx1 - sx0 >= 4 ? 1 : 0); x + 1 <= sx1; x += 4) furn(x, y, 2, 1, 'pool', true, 0);
+      furn(sx0, iy1 - 1, 2, 1, 'counter', true, 0);
     }
     else if (use === 'food') { furn(sx0, iy0, 2, 1, 'sink', true, 0, [[sx0, iy0 + 1], [sx0 + 1, iy0 + 1]]); for (let y = iy0 + 2; y + 1 < iy1; y += 3) for (let x = sx0 + 1; x + 1 <= sx1; x += 4) if (furn(x, y, 2, 1, 'table', true, 0)) { furn(x - 1, y, 1, 1, 'chair', true, 1); furn(x + 2, y, 1, 1, 'chair', true, 3); } }  // 식당: 주방 싱크대, 양 끝에 의자 놓인 식탁
     else { furn(sx0, iy0, 1, 1, 'locker'); furn(sx0 + 1, iy0, 1, 1, 'cab'); furn(sx1 - 1, iy0, 2, 1, 'sofa', true, 0, [[sx1 - 1, iy0 + 1], [sx1, iy0 + 1]]);  // 사무실: 벽에 사물함·서류장·소파, 가운데 책상 줄(책상마다 의자, 줄 사이 통로)
@@ -290,6 +306,10 @@ function drawFurnBase(x, it) {
     case 'rug': R(4, 4, w - 8, h - 8, ['#8a4a4a', '#4a5f8a', '#7a6a3a'][s % 3]); R(8, 8, w - 16, h - 16, 'rgba(255,255,255,.12)'); break;
     case 'bed': sh(); R(3, 2, w - 6, h - 4, '#6b4a32'); R(6, 5, w - 12, h - 10, '#e8e6e0'); R(6, 26, w - 12, h - 31, ['#4a6fa8', '#a84a5a', '#5a8a5a', '#8a6aa8'][s % 4]); R(10, 7, w - 20, 12, '#ffffff'); break;
     case 'sofa': sh(); { const c = ['#5a6e4a', '#7a4a3a', '#4a5a7a'][s % 3]; R(2, 6, w - 4, h - 10, c); R(2, 6, w - 4, 10, 'rgba(0,0,0,.25)'); R(2, 6, 7, h - 10, 'rgba(0,0,0,.2)'); R(w - 9, 6, 7, h - 10, 'rgba(0,0,0,.2)'); R(12, 20, w / 2 - 14, 16, 'rgba(255,255,255,.12)'); } break;
+    case 'pool': sh(); R(2, 6, w - 4, h - 12, '#5a3420'); R(7, 11, w - 14, h - 22, '#1f7a46'); R(7, 11, w - 14, 2, 'rgba(255,255,255,.12)'); x.fillStyle = '#0b0c0e'; for (const [a, b] of [[7, 11], [w / 2, 9], [w - 7, 11], [7, h - 11], [w / 2, h - 9], [w - 7, h - 11]]) { x.beginPath(); x.arc(px + a, py + b, 3, 0, TAU); x.fill(); }
+      for (const [a, b, c] of [[w * 0.3, h / 2, '#f2efe6'], [w * 0.62, h / 2 - 3, '#d8b23a'], [w * 0.66, h / 2 + 3, '#c83a3a'], [w * 0.7, h / 2, '#2a4ab0']]) { x.fillStyle = c; x.beginPath(); x.arc(px + a, py + b, 2.5, 0, TAU); x.fill(); } break;
+    case 'cues': R(10, 4, w - 20, 6, '#4a3020'); for (let k = 12; k < w - 12; k += 5) R(k, 6, 2, h - 14, '#c89a60'); break;
+    case 'kscreen': sh(); R(3, 10, w - 6, h - 16, '#121318'); R(6, 13, w - 12, h - 24, ['#2a4ab0', '#7a2ab0', '#b02a6a'][s % 3]); R(9, h - 18, w - 18, 2, '#f2efe6'); R(12, h - 14, w - 24, 2, '#ffd36a'); break;
     case 'tv': sh(); R(4, 16, w - 8, 18, '#5a4030'); R(10, 14, w - 20, 6, '#111318'); R(12, 15, w - 24, 2, '#3a4a5a'); break;
     case 'sink': sh(); R(2, 4, w - 4, h - 10, '#c8ccd2'); R(8, 10, 22, 18, '#8e98a4'); R(12, 13, 14, 12, '#6a7a8a'); R(w - 36, 10, 26, 22, '#3a3d44'); for (const [a, b] of [[w - 30, 15], [w - 19, 15], [w - 30, 25], [w - 19, 25]]) { x.strokeStyle = '#8a8f98'; x.lineWidth = 1.5; x.beginPath(); x.arc(px + a + 3, py + b, 4, 0, TAU); x.stroke(); } break;
     case 'fridge': sh(); R(6, 4, w - 12, h - 8, '#e8eaee'); R(6, 18, w - 12, 2, '#a8acb4'); R(w - 12, 8, 2, 8, '#8a8f98'); break;
