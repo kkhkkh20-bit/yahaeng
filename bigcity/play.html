@@ -16913,7 +16913,7 @@ function evCleanup(ev) {
   const P = S.player;
   for (const g of ev.actors) if (!g.off && g.state !== 'DEAD' && !(g.state === 'ALERT' && g.fac) && !inView(g.x, g.y, 80)) evGone(g);
   if (S.evItems) S.evItems = S.evItems.filter(i => i.evt !== ev.key);
-  for (const v of ev.cars) v.fireHold = false;
+  for (const v of ev.cars) { v.fireHold = false; if (v.rage) { v.rage = false; v.chase = false; } }
   if (ev.loot && !ev.loot.resolved) {}  // evEnd 전에 처리됨
   S.ev = null;
 }
@@ -17932,7 +17932,6 @@ function weaponShop(f) {
   const st = typeof standOf === 'function' ? standOf(f) : 0;
   const rows = Object.keys(SHOP_GUNS).map(k => { const W = WEAPONS[k], G = SHOP_GUNS[k], locked = st < G.need;
     return { name: locked ? `${W.name} — 이 조직과 더 가까워야 판다 (호감 ${G.need})` : `${W.name} (+${W.ammo})`, price: G.price, ok: !locked && (S.cash || 0) >= G.price, buy: () => { if (locked || (S.cash || 0) < G.price) return; S.cash -= G.price; S.guns[k] = (S.guns[k] || 0) + W.ammo; if (!S.wpn) S.wpn = k; play('loot', 0.5); gunChip(); saveFreeProgress(true); weaponShop(f); } }; });
-  if (false) WPN_ORDER.map(k => { const W = WEAPONS[k]; return { name: `${W.name} (+${W.ammo})`, price: W.price, ok: (S.cash || 0) >= W.price, buy: () => { if ((S.cash || 0) < W.price) return; S.cash -= W.price; S.guns[k] = (S.guns[k] || 0) + W.ammo; if (!S.wpn) S.wpn = k; play('loot', 0.5); gunChip(); saveFreeProgress(true); weaponShop(f); } }; });
   const P = S.player; rows.push({ name: `방탄조끼 (${ARMOR_MAX}번 막는다)`, price: ARMOR_PRICE, ok: (S.cash || 0) >= ARMOR_PRICE && (P.armor | 0) < ARMOR_MAX, buy: () => { if ((S.cash || 0) < ARMOR_PRICE || (P.armor | 0) >= ARMOR_MAX) return; S.cash -= ARMOR_PRICE; P.armor = ARMOR_MAX; play('loot', 0.5); gunChip(); saveFreeProgress(true); weaponShop(f); } });
   shopPanel(`${STAND_NAME[f]} 뒷거래 · 가진 돈 ${S.cash || 0}만`, rows);
 }
@@ -18782,8 +18781,9 @@ function crewsUpdate() {
     if (down || shot) { crewBreak(crew, down || P); continue; }
     for (const m of crew.members) if (m.state !== 'PATROL') { m.state = 'PATROL'; m.meter = 0; m.fear = null; m.panicT = 0; m.icon = null; m.rep = null; m.path = null; }
     {
-      const L = crew.members[0], v = S.player.car; crew.slow = v && Math.abs(v.v) < 40 && dist(v.x, v.y, L.x, L.y) < 90 ? 0.3 : 1; }  /* 길을 막고 선 차 앞에선 속도를 줄인다 */
+      const L = crew.members[0], v = S.player.car; if (!CREW_KINDS[crew.kind].event) crew.slow = v && Math.abs(v.v) < 40 && dist(v.x, v.y, L.x, L.y) < 90 ? 0.3 : 1; }  /* 길을 막고 선 차 앞에선 속도를 줄인다 */
   }
+  S.crews = S.crews.filter(c => { if (!CREW_KINDS[c.kind].event || (S.ev && S.ev.crew === c && !S.ev.done)) return true; for (const m of c.members) { m.crew = null; if (npcAlive(m) && !m.off) { m.route = [{ x: m.x, y: m.y, pause: 999 }]; m.path = null; } } return false; });  /* 끝난 킥보드 사건의 무리는 내린다 */
   for (const k of Object.keys(CREW_KINDS)) { if (CREW_KINDS[k].event) continue;
     const live = S.crews.some(c => c.kind === k && !c.broken);
     if (!live && S.t > (S.crewNext[k] || 0)) { S.crews = S.crews.filter(c => !(c.kind === k && c.broken && c.members.every(m => !npcAlive(m) || m.off || !inView(m.x, m.y, 200)))); if (crewSpawn(k, true)) S.crewNext[k] = 0; else S.crewNext[k] = S.t + 10; }
@@ -18838,7 +18838,7 @@ function openHome() {
 // 집에서 쉴 때 (47u safeLeave)
 function homeRest(s) {
   if (s.i !== 0 || !homeHas('locker') || !S.guns) return '';
-  let n = 0; for (const k of Object.keys(S.guns)) { const W = WEAPONS[k]; if (W && S.guns[k] < W.ammo * 3) { S.guns[k] = W.ammo * 3; n++; } }
+  let n = 0; if (S.guns.pistol != null && S.guns.pistol < 12) { S.guns.pistol = 12; n++; }  /* 경찰 권총 한 탄창만 (총은 귀하다) */
   return n ? ' · 탄약 보충' : '';
 }
 // 문 앞 꾸밈 (땅 위, 사람보다 먼저)
@@ -19211,7 +19211,7 @@ function trunkLoad(v, c) {
 }
 function trunkUnload(v) {
   const P = S.player, T = v.trunk || []; const c = T.pop(); if (!c) return; const p = carRear(v);
-  c.stashed = false; c.inTrunk = null; c.x = p.x; c.y = p.y; c.hidden = false; c.carried = true; P.carrying = c; if (c.g) c.g.inTrunk = null;
+  c.stashed = false; c.inTrunk = null; c.x = p.x; c.y = p.y; c.hidden = false; c.carried = true; P.carrying = c; if (c.g) { c.g.inTrunk = null; c.g.keep = false; }
   play('thud', 0.4); evBanner('트렁크에서 꺼내 들쳐 멨다', '#9fc4ff');
   if (witnessed(P.x, P.y, 260)) addWanted(1, '트렁크에서 시체를 꺼내는 걸 봤다');
 }
@@ -19246,7 +19246,7 @@ function trunkUpdate() {
   if (!STAGE.cityLife) return; const P = S.player; if (P.car) P.lastCar = P.car;
   for (const v of S.vehicles) { if (!v.dead) continue;
     if (v.riders?.length) { for (const g of v.riders) { g.off = false; g.x = v.x; g.y = v.y; npcDown(g, null, true); } v.riders = []; }
-    if (v.trunk?.length) { for (const c of v.trunk) { c.stashed = false; c.x = v.x - 10; c.y = v.y + 6; c.inTrunk = null; } v.trunk = []; } }
+    if (v.trunk?.length) { for (const c of v.trunk) { c.stashed = false; c.hidden = false; c.x = v.x - 10; c.y = v.y + 6; c.inTrunk = null; if (c.g) { c.g.keep = false; c.g.inTrunk = null; } } v.trunk = []; } }
 }
 
 // ---------------------------------------------------------------- 자유 모드 연쇄 살인마 추적
@@ -19374,7 +19374,7 @@ function killHowOf(g) {
 }
 // 처리 보너스 (justiceMoment 에서): 가까이 쓰러진 악당 하나를 골라 방식을 읽는다
 function killMethodBonus(x, y) {
-  let g = null, bd = 140; for (const o of S.guards) { if (o.state !== 'DEAD' || o.methodPaid || !(o.evt || o.skReal || o.assailant || o.knifeman || o.hit || o.basementKill || (o.fac && o.envKill))) continue; const d = dist(o.x, o.y, x, y); if (d < bd) { bd = d; g = o; } }
+  let g = null, bd = 140; for (const o of S.guards) { if (o.state !== 'DEAD' || o.methodPaid || o.killHow === 'npc' || o.police || !(o.evt || o.skReal || o.assailant || o.knifeman || o.hit || o.basementKill || (o.fac && o.envKill))) continue; const d = dist(o.x, o.y, x, y); if (d < bd) { bd = d; g = o; } }
   if (!g) return null; g.methodPaid = true; const k = killHowOf(g), [name, bonus] = KILL_HOW[k];
   const seen = S.methods || (S.methods = {}); const first = !seen[k]; seen[k] = (seen[k] || 0) + 1; fstat('method_' + k);
   if (bonus) cash(bonus);
@@ -19392,7 +19392,7 @@ function basementAction() {
   if (!STAGE.cityLife || S.cellar) return null; const P = S.player, home = basementHome(); if (!home || P.car || P.carrying || actionBusy(P)) return null;
   if (dist(P.x, P.y, home.x, home.y) > 260) return null;
   const v = typeof nearRear === 'function' ? nearRear(60) : null; if (!v || !v.trunk?.length) return null;
-  const c = v.trunk.find(c => c.ko && c.g); if (!c) return null; const p = carRear(v);
+  const c = v.trunk.find(c => c.ko && c.g && !(S.hit && S.hit.g === c.g)); if (!c) return null; const p = carRear(v);
   return { k: 'evAct', label: '지하실로 끌고 내려가기', at: { x: p.x, y: p.y - 40 }, fn: () => doMotion({ dur: 1.4, pose: 'grab', at: [[0.5, () => play('cloth', 0.5)], [1.1, () => play('door', 0.5)]], end: () => basementOpen(v, c) }) };
 }
 function basementOpen(v, c) {
@@ -19405,10 +19405,10 @@ function basementAsk() {
   if (C.press >= 100 || C.told) opts.push({ name: '처리한다 — 여기서 끝낸다', price: null, tag: '지하실', ok: true, buy: () => basementEnd('kill') },
     { name: '눈 가리고 먼 길에 버린다', price: null, tag: '풀어 줌', ok: true, buy: () => basementEnd('dump') },
     { name: '경찰서 앞에 묶어 둔다', price: null, tag: '넘김', ok: true, buy: () => basementEnd('cops') });
-  shopPanel(`지하실 · ${C.name} — 압박 ${C.press | 0}%`, opts, () => {});
+  C.picking = false; shopPanel(`지하실 · ${C.name} — 압박 ${C.press | 0}%`, opts, () => { if (S.cellar === C && !C.picking) after(0.2, basementAsk); });  /* 나가기·Esc: 아직 끝나지 않았다 — 다시 연다 */
 }
 function basementPick(a) {
-  closeShopPanel(); const C = S.cellar; if (!C) return; const n = C.used[a.k] | 0; C.used[a.k] = n + 1; C.press = Math.min(100, C.press + a.p);
+  const C = S.cellar; if (!C) return; C.picking = true; closeShopPanel(); const n = C.used[a.k] | 0; C.used[a.k] = n + 1; C.press = Math.min(100, C.press + a.p);
   play(a.k === 'fist' ? 'thud' : a.k === 'tools' ? 'metal' : 'cloth', 0.5); const line = a.say[n] || a.say[0];
   if (C.press >= 100 && !C.told) { C.told = true; const [what, fx] = basementTruth(C.g); say([[{ note: C.name }, line || '...'], [{ note: C.name }, what]], true, () => { fx(); basementAsk(); }); return; }
   say([[{ note: C.name }, line || '...']], true, () => basementAsk());
@@ -19425,17 +19425,17 @@ function basementTruth(g) {
 }
 function C_note(t) { evBanner(t, '#ffd066'); }
 function basementEnd(how) {
-  closeShopPanel(); const C = S.cellar; if (!C) return; S.cellar = null; const g = C.g, c = C.c, home = basementHome();
+  const C = S.cellar; if (!C) return; C.picking = true; closeShopPanel(); S.cellar = null; const g = C.g, c = C.c, home = basementHome();
   S.corpses = (S.corpses || []).filter(o => o !== c); if (g.skBi != null) g.skChecked = true;  /* 용의자: 엉뚱한 사람 판정은 여기서 끝낸다 */
   if (how === 'kill') { g.basementKill = true; g.state = 'PATROL'; g.off = false; g.x = home.x; g.y = home.y; g.keep = false; npcDown(g, null, true);
     const k = (S.corpses || []).find(o => o.g === g); if (k) { k.stashed = true; k.hidden = true; }  /* 지하실에 남는다 — 아무도 못 본다 */
     g.off = true; play('thud', 0.4);
     if (g.skReal && S.sk && !S.sk.done) skSolved(g);
     else if (g.skBi != null) evBanner('엉뚱한 사람이었다 — 아무도 모르게 끝났지만, 진범은 아직 밖에 있다', '#ff8a7a');
-    else { const m = killMethodBonus(g.x, g.y) || { name: '지하실', bonus: 0 }; evBanner(`지하실에서 끝냈다 · 처리 방식 ${m.name}${m.bonus ? ' +' + m.bonus + '만' : ''}`, '#c8c0b0'); }
+    else { g.methodPaid = false; const m = killMethodBonus(g.x, g.y) || { name: '지하실', bonus: 0 }; evBanner(`지하실에서 끝냈다 · 처리 방식 ${m.name}${m.bonus ? ' +' + m.bonus + '만' : ''}`, '#c8c0b0'); }
     return; }
   g.off = true; g.state = 'DEAD'; g.x = -9999; g.y = -9999;
-  if (how === 'dump') { evBanner('눈을 가려 먼 길에 내다 버렸다 — 다신 이 동네에 안 나타난다', '#c8c0b0'); return; }
+  if (how === 'dump') { evBanner('눈을 가려 먼 길에 내다 버렸다 — 다신 이 동네에 안 나타난다', '#c8c0b0'); if (g.skReal && S.sk && !S.sk.done) skSolved(g); return; }
   cash(40); evBanner('경찰서 앞 기둥에 묶어 뒀다 · 강 형사가 40만을 보냈다', '#9fc4ff'); if (g.skReal && S.sk && !S.sk.done) skSolved(g);
 }
 
@@ -19688,6 +19688,7 @@ const ASK = [
 function captureUpdate(h, ko) {
   const g = h.g, P = S.player;
   if (g.state === 'DEAD' && !ko && !h.done) { contractFail(h, `${h.name}이(가) 죽었다 — 입을 열 사람이 없다. 의뢰 실패`); return true; }
+  if (!h.trunk) { const c = (S.corpses || []).find(c => c.g === g && c.inTrunk); if (c) { h.trunk = c.inTrunk; c.inTrunk.trunk = c.inTrunk.trunk.filter(o => o !== c); c.stashed = true; c.hidden = true; g.off = true; } }  /* 일반 [트렁크에 싣기]로 실어도 같다 */
   if (h.trunk) { const v = h.trunk; if (v.dead) { contractFail(h, `트렁크째 터졌다 — ${h.name}도 끝. 의뢰 실패`); return true; }
     g.x = v.x; g.y = v.y; const home = S.safes && S.safes[0];
     if (home && !h.asking && P.car === v && dist(v.x, v.y, home.x, home.y) < 200 && Math.abs(v.v) < 40) { h.asking = true; h.press = 0; h.used = {}; askOpen(h); } }
@@ -19713,10 +19714,10 @@ function captureGoal(h) {
 function askOpen(h) {
   if (S.hit !== h) return; const used = h.used;
   shopPanel(`지하실 · ${h.name} 심문 — 압박 ${h.press | 0}%`, ASK.map(a => { const n = used[a.k] | 0, max = a.max || 1;
-    return { name: a.name, price: null, tag: n >= max ? '했다' : `+${a.p}`, ok: n < max + (a.k === 'fist' ? 1 : 0), buy: () => askPick(h, a) }; }), () => {});
+    return { name: a.name, price: null, tag: n >= max ? '했다' : `+${a.p}`, ok: n < max + (a.k === 'fist' ? 1 : 0), buy: () => askPick(h, a) }; }), () => { if (S.hit === h && !h.picking && !h.done) after(0.2, () => askOpen(h)); }); h.picking = false;
 }
 function askPick(h, a) {
-  closeShopPanel(); const n = h.used[a.k] | 0; h.used[a.k] = n + 1; play(a.k === 'fist' ? 'thud' : a.k === 'gun' ? 'click' : 'cloth', 0.5);
+  h.picking = true; closeShopPanel(); const n = h.used[a.k] | 0; h.used[a.k] = n + 1; play(a.k === 'fist' ? 'thud' : a.k === 'gun' ? 'click' : 'cloth', 0.5);
   if (a.k === 'fist' && n >= 2) { say([[{ note: h.name }, '(축 늘어진다. 기절했다 — 깨어날 때까지 기다린다)']], true, () => after(1.5, () => askOpen(h))); return; }
   h.press = Math.min(100, (h.press || 0) + a.p);
   const line = a.say[Math.min(n, a.say.length - 1)];
