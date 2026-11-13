@@ -28,7 +28,7 @@ function placeFront(n, r0 = 200, r1 = 2200, from = S.player) {
 const COZY_PLAIN = ['철물', '공구', '자재', '지물포', '타일', '조명', '도색', '인쇄', '', '청계 상회', '약국', '호프', '포차', '골뱅이', '노가리', '분식'];
 const cozyPlainRank = t => COZY_PLAIN.indexOf(t);
 const COZY_SIGN = { 'PC방': 'PC방', '119': '119 안전센터', '지구대': '지구대', '국밥': '국밥', '편의점': '편의점' };
-function cozyRename(b, n) { if (!b) return; b.signs = [n, ...(b.signs || []).slice(1)]; b.name = n; b._facade = null; }
+function cozyRename(b, n) { if (!b) return; b.signs = [n, ...(b.signs || []).slice(1)]; b.name = n; b.plate = n + ' 빌딩'; b._facade = null; }
 // 놈이 무너질 때 한마디 (빌거나 끝까지 뻔뻔하거나)
 function revengeBeg(g, lines) { if (npcAlive(g) && !g.begged && dist(g.x, g.y, S.player.x, S.player.y) < 70) { g.begged = true; gsay(g, lines[(g.id) % lines.length], 2.2); } }
 // 덩치들은 조직원처럼 덤빈다 (행인 AI는 쫓지 않으므로 조직원으로 바꿔 단다 — 옷은 그대로)

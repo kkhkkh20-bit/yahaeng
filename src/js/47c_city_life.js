@@ -218,6 +218,8 @@ function cityLifeUpdate(dt) {
 // 한국식 간판: 1층 위 건물 폭 가로 간판(가게 이름 · 작은 부제), 위층 업소는 건물 오른쪽 세로 돌출 간판(층 표시)
 // 밤에는 LED처럼 스스로 빛난다(lit). 글자는 게임 UI 글꼴로 그린다
 const SIGN_STYLE = [
+  [/학교/, '#1f6a3a', '#ffffff', '#ffe14a'],
+  [/병원|의원/, '#ffffff', '#c8302a', '#c8302a'],
   [/119|소방/, '#d42a22', '#ffffff', '#ffe14a'],
   [/지구대|파출소|경찰/, '#14306e', '#ffffff', '#6ab8ff'],
   [/국밥|순댓국|백반|분식|곱창|골뱅이|노가리|포차|식당/, '#c8302a', '#fff6e8', '#ffd25a'],
@@ -240,7 +242,7 @@ function drawStoreSigns(b, lit) {
   // 가로 간판: 1층 출입구 차양보다 위(2층 창 아랫단)에 건다
   const name = (b.signs[0] || '').trim();
   if (name) {
-    const st = signStyle(name), bx = x0 + 4, bw = w - 8, bh = 30, by = b.y1 * TILE - bh - 22, sub = SIGN_SUB[hs % SIGN_SUB.length];
+    const st = signStyle(name), bx = x0 + 4, bw = w - 8, bh = 30, by = b.y1 * TILE - bh - 22, sub = b.school ? '교문' : b.hospital ? '응급실' : SIGN_SUB[hs % SIGN_SUB.length];
     if (lit) { ctx.globalCompositeOperation = 'lighter'; const c = hexRgb(st.bg === '#ffffff' || st.bg === '#f4f2ea' ? st.ac : st.bg);
       for (const [pad, a] of [[20, .07], [9, .12]]) { ctx.fillStyle = `rgba(${c},${a})`; ctx.fillRect(bx - pad, by - pad, bw + pad * 2, bh + pad * 2); } ctx.globalCompositeOperation = 'source-over'; }
     ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(bx + 2, by + 3, bw, bh);

@@ -38,8 +38,12 @@ function envKill(g, s) {
     const c = (S.corpses || []).find(o => o.g === g); if (c && s.k === 'river') { c.hidden = true; c.stashed = true; }  // 물에 가라앉는다
     if (witnessed(P.x, P.y, 300)) addWanted(1, `${E.how} 처치를 누가 봤다`);
     fstat('envKill'); };
-  if (s.k === 'traffic') { doMotion({ dur: 0.45, pose: 'grab', at: [[0.25, hit]] }); }
-  else doMotion({ dur: 0.9, pose: 'grab', at: [[0.2, () => play('cloth', 0.5)], [0.55, hit]] });
+  // 끌고 가서 처박는다: 놈을 물건 쪽으로 몇 프레임에 걸쳐 밀어 넣고(앞으로 당겼다가), 맞는 순간 멈칫
+  const sx = g.x, sy = g.y, tx = P.x + Math.cos(a) * 30, ty = P.y + Math.sin(a) * 30, pull = (u) => { if (g.state === 'PATROL') { g.x = sx + (tx - sx) * u; g.y = sy + (ty - sy) * u; g.a = a; } };
+  const steps = s.k === 'traffic' ? 3 : 6, tHit = s.k === 'traffic' ? 0.25 : 0.55;
+  for (let k = 1; k <= steps; k++) after(tHit * k / (steps + 1), () => pull(k / steps));
+  P.strikeT = Math.max(P.strikeT || 0, tHit + 0.1);
+  doMotion({ dur: tHit + 0.35, pose: 'grab', at: [[0.12, () => play('cloth', 0.5)], [tHit, () => { hit(); S.hitStop = Math.max(S.hitStop || 0, 0.14); P.a = a; }]] });
   // 악당이 아니면 보너스 없이 기록만 (행인을 이렇게 죽이면 그냥 살인이다)
   after(1.2, () => { if (g.evt || g.skReal || g.hit || g.fac) { const m = killMethodBonus(g.x, g.y); if (m) evBanner(`처리 방식: ${m.name}${m.bonus ? ` · 보너스 +${m.bonus}만` : ''}${m.first ? ` · 처음 써 본 방식 (${m.n}/${Object.keys(KILL_HOW).length})` : ''}`, '#e8d8a8'); } });
 }

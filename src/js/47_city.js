@@ -9,7 +9,7 @@ function markCityDone(id) { try { const d = cityDone(); d[id] = 1; localStorage.
 function cityInit() {
   S.wanted = 0; S.wantLost = 0; S.copT = 0;
   S.contracts = (STAGE.contracts || []).map(c => ({ id: c.id, name: c.name, x: tc(c.at[0]), y: tc(c.at[1]), si: STAGES.findIndex(s => s.id === c.id) })).filter(c => c.si >= 0);
-  trafficInit(); if (STAGE.hits) hitsInit(); loadFreeProgress(); shopsInit(); cityFactionsInit(); garageInit(); S.side = null; weatherInit(); heatInit(); havocInit(); gunsInit(); rampageInit(); warInit(); safehouseInit(); hunterInit(); crewsInit(); homeInit(); dealerInit(); cozyPlacesInit(); killerInit(); if (STAGE.cityLife) storyInit();  // 가게 · 중고차 매매 · 도색소  // 도시 안 의뢰 (공중전화)
+  trafficInit(); if (STAGE.hits) hitsInit(); loadFreeProgress(); shopsInit(); cityFactionsInit(); garageInit(); S.side = null; weatherInit(); heatInit(); havocInit(); gunsInit(); rampageInit(); warInit(); safehouseInit(); hunterInit(); crewsInit(); homeInit(); dealerInit(); cozyPlacesInit(); placesInit(); killerInit(); if (STAGE.cityLife) storyInit();  // 가게 · 중고차 매매 · 도색소  // 도시 안 의뢰 (공중전화)
   // 순찰 경찰 둘: 시내 보도를 돈다 (조직 구역에는 들어가지 않는다)
   for (const r of STAGE.copBeats || []) { const g = makeGuard({ kind: 'g1', route: r, radio: false }, S.guards.length); g.police = true; g.beat = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; g.radio = false; setLayer(0); buildRouteLine(g); S.guards.push(g); }
   // 자유 모드 첫 화면: 칼 든 조직원이 바로 옆에 서 있지 않게 — 300px 안의 조직원은 제자리 근처, 나와 350px 넘게 떨어진 빈 길로 옮긴다
@@ -215,7 +215,7 @@ function cityAction() {
 function cityActionList() {
   const P = S.player, out = [];
   if (STAGE.cityLife) { const a = shopAction(); if (a) out.push(a); }
-  for (const f of [envKillAction, cuffAction, captureAction, basementAction, killerAction, trunkAction, rideAction, homeAction, dealerAction, carbombAction, poisonAction, havocAction, sideAction, eventAction, factionAction]) { const e = f(); if (e) out.push(e); }  // 구역 이벤트·부업 (차 안에서도: 드래그 레이스·택시)
+  for (const f of [envKillAction, hospitalAction, cuffAction, captureAction, basementAction, killerAction, trunkAction, rideAction, homeAction, dealerAction, carbombAction, poisonAction, havocAction, sideAction, eventAction, factionAction]) { const e = f(); if (e) out.push(e); }  // 구역 이벤트·부업 (차 안에서도: 드래그 레이스·택시)
   const one = a => { if (a) out.push(a); return out; };
   if (P.car) return one({ k: 'carOut', v: P.car, label: P.car.fireT > 0 ? '뛰어내리기!' : Math.abs(P.car.v) >= 60 ? '뛰어내리기' : '차에서 내리기' });
   if (P.z || flOf(P) || P.hide) return out;

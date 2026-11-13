@@ -17,7 +17,11 @@ function killHowNow(o) {
   const P = S.player; if (P.car && Math.abs(P.car.v || 0) > 50 && dist(P.car.x, P.car.y, o.x, o.y) < 70) return 'car';
   return 'melee';
 }
-if (typeof npcDown === 'function') { const _npcDown = npcDown; npcDown = function (o, by, lethal) { if (STAGE.cityLife && o && npcAlive(o)) o.killHow = by && by !== S.player ? 'npc' : killHowNow(o); return _npcDown(o, by, lethal); }; }
+// 손맛: 내가 쓰러뜨린 순간 아주 짧게 멈칫 (히트스톱) + 흔들림 — 방식마다 세기가 다르다
+const HIT_FEEL = { melee: [0.06, 0.12], car: [0.08, 0.3], gun: [0.035, 0.08], boom: [0.1, 0.45], fire: [0.05, 0.15], crush: [0.1, 0.4], basement: [0, 0], env_booth: [0.14, 0.3], env_cardoor: [0.14, 0.3], env_traffic: [0.12, 0.35], env_river: [0.08, 0.1], env_wall: [0.12, 0.25] };
+if (typeof npcDown === 'function') { const _npcDown = npcDown; npcDown = function (o, by, lethal) { if (STAGE.cityLife && o && npcAlive(o)) { o.killHow = by && by !== S.player ? 'npc' : killHowNow(o);
+    const f = o.killHow !== 'npc' && dist(o.x, o.y, S.player.x, S.player.y) < 700 && HIT_FEEL[o.killHow]; if (f) { S.hitStop = Math.max(S.hitStop || 0, f[0]); S.shakeT = Math.max(S.shakeT || 0, f[1]); } }
+  return _npcDown(o, by, lethal); }; }
 // 쓰러진 놈의 방식 (사고·독은 시체 기록에 남는다)
 function killHowOf(g) {
   const c = (S.corpses || []).find(c => c.g === g || c.guardId === g.id);

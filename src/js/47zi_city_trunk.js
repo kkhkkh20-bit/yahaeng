@@ -47,18 +47,22 @@ function rideAction() {
 function rideBoard(v, g) {
   if (!rideOk(g)) return; const R = v.riders || (v.riders = []);
   faceEachOther(g); gsay(g, g.evt ? '네, 태워 주세요.' : ['...어디로 가는데요?', '태워 주시는 거예요?', '아, 네... 감사합니다.'][g.id % 3], 2);
-  doMotion({ dur: 0.7, pose: 'idle', end: () => { if (!npcAlive(g)) return; g.rideIn = v; g.rideFrom = { x: g.x, y: g.y }; g.off = true; g.x = -9999; g.y = -9999; g.path = null; R.push(g); play('door', 0.4); fstat('riders');
-    evBanner(`조수석에 태웠다 (${R.length}/${RIDE_MAX}) — 차를 몰고 가서 내려 줘라`, '#9fc4ff'); } });
+  doMotion({ dur: 0.5, pose: 'idle', end: () => { if (!npcAlive(g)) return; g.rideTo = v; g.rideT0 = S.t; R.push(g); fstat('riders');  /* 차 문까지 걸어가서 탄다 (trunkUpdate) */
+    evBanner(`조수석에 태운다 (${R.length}/${RIDE_MAX}) — 차를 몰고 가서 내려 줘라`, '#9fc4ff'); } });
 }
 function rideDrop(v) {
   const R = v.riders || []; if (!R.length) return; play('door', 0.4);
-  R.forEach((g, i) => { const a = v.a + Math.PI / 2 + i * 0.5, w = walkableNear(v.x + Math.cos(a) * 34, v.y + Math.sin(a) * 34, { x: -1e5, y: -1e5 });
+  R.forEach((g, i) => { g.rideTo = null; const a = v.a + Math.PI / 2 + i * 0.5, w = walkableNear(v.x + Math.cos(a) * 34, v.y + Math.sin(a) * 34, { x: -1e5, y: -1e5 });
     g.off = false; g.state = 'PATROL'; g.x = w.x; g.y = w.y; g.route = [{ x: w.x, y: w.y, pause: 999 }]; g.ri = 0; g.path = null; g.rideIn = null; if (g.onDrop) g.onDrop(g, v); });
   evBanner(`${R.length}명을 내려 줬다`, '#9fc4ff'); v.riders = [];
 }
 // 차가 터지면 실린 사람·시체도 끝
 function trunkUpdate() {
   if (!STAGE.cityLife) return; const P = S.player; if (P.car) P.lastCar = P.car;
+  // 태운 사람: 조수석 문 앞까지 걸어가 문을 열고 탄다 (2.5초 넘게 못 가면 그냥 탄 것으로)
+  for (const v of S.vehicles) for (const g of v.riders || []) { if (!g.rideTo || g.off) continue; const dx = v.x + Math.cos(v.a + Math.PI / 2) * 22, dy = v.y + Math.sin(v.a + Math.PI / 2) * 22;
+    if (dist(g.x, g.y, dx, dy) > 16 && S.t - g.rideT0 < 2.5) evRun(g, dx, dy, 110, 1 / 60);
+    else { g.rideTo = null; g.rideIn = v; g.off = true; g.x = -9999; g.y = -9999; g.path = null; play('door', 0.4 * proxVol(v)); } }
   for (const v of S.vehicles) { if (!v.dead) continue;
     if (v.riders?.length) { for (const g of v.riders) { g.off = false; g.x = v.x; g.y = v.y; npcDown(g, null, true); } v.riders = []; }
     if (v.trunk?.length) { for (const c of v.trunk) { c.stashed = false; c.hidden = false; c.x = v.x - 10; c.y = v.y + 6; c.inTrunk = null; if (c.g) { c.g.keep = false; c.g.inTrunk = null; } } v.trunk = []; } }

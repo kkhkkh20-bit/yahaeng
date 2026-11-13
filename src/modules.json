@@ -458,6 +458,10 @@
       "group": "city"
     },
     {
+      "path": "47zn_city_places.js",
+      "group": "city"
+    },
+    {
       "path": "47zz_city_story.js",
       "group": "city"
     },
