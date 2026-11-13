@@ -151,7 +151,7 @@ function hitsUpdate(dt) {
 function hitGoal() {
   const h = S.hit, P = S.player, money = `수입 ${S.cash || 0}만`;
   if (S.job) return jobGoal(money);
-  if (!h) { const e = sideGoal(money) || eventGoal(money); if (e) return e; }
+  if (!h) { const e = sideGoal(money) || killerGoal(money) || eventGoal(money); if (e) return e; }
   if (!h) {
     const p = S.ringPhone; if (!p) return { text: `거리를 돈다 · ${money}`, where: '', x: null, y: null, fl: 0 };
     return { text: `울리는 공중전화 받기 · ${money}`, where: '', x: p.x, y: p.y, fl: 0 };

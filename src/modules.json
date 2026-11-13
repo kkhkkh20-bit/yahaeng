@@ -438,6 +438,14 @@
       "group": "city"
     },
     {
+      "path": "47zi_city_trunk.js",
+      "group": "city"
+    },
+    {
+      "path": "47zj_city_killer.js",
+      "group": "city"
+    },
+    {
       "path": "47zz_city_story.js",
       "group": "city"
     },
