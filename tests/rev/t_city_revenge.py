@@ -46,6 +46,19 @@ async def main():
           G.killGuard(e.g);const says=[];for(let k=0;k<180;k++){G.update(1/60);for(const g of L)if(g.say&&!says.includes(g.say))says.push(g.say);}return{says}}''')
         print('crowd', json.dumps(r, ensure_ascii=False))
         ok(r['says'] and not any(w in ''.join(r['says']) for w in ['고마', '박수', '잘했다']), 'crowd: %s' % r)
+        # 흉기 난동: 행인을 찌르고, 출동한 경찰도 당한다. 가까이 가면 나도 찌른다
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.ev=null;S.wanted=0;S.copT=1e9;const c0=S.cash;const e=EV('knife');if(!e)return{start:false};const g=e.g;P.x=g.x+1000;P.y=g.y;
+          const L=[];for(const o of S.guards)if(o.civ&&!o.evt&&!o.crew&&o.state==='PATROL'&&!o.off&&L.length<3){o.x=g.x+60+L.length*40;o.y=g.y+10;o.route=[{x:o.x,y:o.y,pause:999}];o.path=null;L.push(o);}
+          for(let k=0;k<60*40&&!(e.victims>=1&&e.copsDown>=1);k++){P.x=g.x+1000;P.y=g.y;G.update(1/60);}const vict=e.victims,cops=e.cops.length,copsDown=e.copsDown,goal=e.def.goal(e);
+          const hp0=P.hp;P.hurtT=0;for(let k=0;k<60*4&&P.hp===hp0;k++){P.x=g.x+20;P.y=g.y;G.update(1/60);}const hurt=hp0-P.hp;P.hp=hp0;
+          G.killGuard(g);tick(1.6);return{start:true,vict,cops,copsDown,goal,hurt,paid:S.cash-c0,...DONE()}}''')
+        print('knife', json.dumps(r, ensure_ascii=False))
+        ok(r['start'] and r['vict'] >= 1 and r['cops'] == 2 and r['copsDown'] >= 1 and r['hurt'] >= 1 and r['paid'] == 150 and r['done'] and '경찰관' in r['news'], 'knife: %s' % r)
+        # 떴다방 덩치는 노인을 밀쳐 넘어뜨린다 / 공갈단은 운전자를 때린다
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.ev=null;let e=null;for(let k=0;k<8&&!e;k++){P.x+=700;e=EV('tteot');}if(!e)return{down:-1};P.x=e.g.x+900;P.y=e.g.y;e.engaged=false;tick(10);const down=e.olds.filter(o=>o.state==='DEAD').length;
+          S.ev=null;let f=null;for(let k=0;k<8&&!f;k++){P.y+=500;f=EV('gongal');}if(!f)return{down,slap:'nostart'};P.x=f.x+900;P.y=f.y;f.engaged=false;tick(9);return{down,slap:!!f.slap}}''')
+        print('villainy', json.dumps(r, ensure_ascii=False))
+        ok(r['down'] >= 1 and r['slap'], 'villainy before I arrive: %s' % r)
         # 다가가면 주인공이 한마디 (거슬려서 치운다)
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.ev=null;const e=EV('animal');e.engaged=false;P.x=e.g.x+60;P.y=e.g.y;tick(.3);return{engaged:!!e.engaged,banner:(document.getElementById('evBanner')||{}).textContent||''}}''')
         print('engage', json.dumps(r, ensure_ascii=False))
