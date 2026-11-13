@@ -2,7 +2,7 @@
 function cityShowAware(g) { return g.warSide == null && !g.civ && guardAwareness(g).direct; }
 const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리기 단계를 하나씩 끄고 비교
 function draw() {
-  refreshPurchasedArt();refreshPurchasedProps();refreshPropArt();refreshOfficeArt();refreshFreeCity();
+  refreshPurchasedArt();refreshPurchasedProps();if(typeof refreshCornerStore==='function')refreshCornerStore();refreshPropArt();refreshOfficeArt();refreshFreeCity();
   flushMapRebuild();  // 위에서 그림 자산이 준비돼 바닥 지도를 다시 구워야 하면 여기서 한 번만
   visionFrame=selectVisionFocus();
   if(STAGE.artSlice&&window.__clubView?.ready)window.__clubView.setTactical(tactical);

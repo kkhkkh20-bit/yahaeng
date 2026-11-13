@@ -278,6 +278,7 @@ function drawRoomLabels(x, f, rx0, ry0, rx1, ry1) {
 // 가구 그리기 (위에서 본 단순한 픽셀 모양)
 // 가구는 원본 픽셀과 접지 그림자로 그린다. 통행·엄폐 판정은 렌더링과 별개다.
 function drawFurn(x, it) {
+  if (typeof cornerStoreFurn === 'function' && cornerStoreFurn(x, it)) return;   // 자유 모드 편의점: 구매한 팩 그림 (47zu)
   if(drawPropFurn(x,it,true))return;
   if(drawRoomFinishFurn(x,it))return;
   const flat = FURN_FLAT.has(it.t), T = TILE, px = it.x * T, py = it.y * T, w = it.w * T, h = it.h * T, tall = FURN_TALL.has(it.t);

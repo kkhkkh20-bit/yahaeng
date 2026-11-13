@@ -1,0 +1,139 @@
+{
+ "pack": "GuttyKreum The Japan Collection: Corner Store v1",
+ "zipSha256": "b0cc500c6c687a2c297942020362317f54b5f6d439711a8aed1d94dd5f794e74",
+ "scale": 1.5,
+ "frames": {
+  "shelfEmpty": {
+   "rect": [
+    0,
+    0,
+    32,
+    32
+   ],
+   "source": [
+    352,
+    74
+   ]
+  },
+  "shelfGoods": {
+   "rect": [
+    34,
+    0,
+    32,
+    32
+   ],
+   "source": [
+    384,
+    74
+   ]
+  },
+  "shelfBoxes": {
+   "rect": [
+    68,
+    0,
+    32,
+    32
+   ],
+   "source": [
+    416,
+    74
+   ]
+  },
+  "foodCase": {
+   "rect": [
+    102,
+    0,
+    64,
+    32
+   ],
+   "source": [
+    384,
+    128
+   ]
+  },
+  "wallBottles": {
+   "rect": [
+    168,
+    0,
+    32,
+    64
+   ],
+   "source": [
+    0,
+    384
+   ]
+  },
+  "fridgeBlue": {
+   "rect": [
+    202,
+    0,
+    32,
+    64
+   ],
+   "source": [
+    32,
+    384
+   ]
+  },
+  "fridgeFood": {
+   "rect": [
+    236,
+    0,
+    32,
+    64
+   ],
+   "source": [
+    64,
+    384
+   ]
+  },
+  "fridgeBlue2": {
+   "rect": [
+    270,
+    0,
+    32,
+    64
+   ],
+   "source": [
+    96,
+    384
+   ]
+  },
+  "fridgeDark": {
+   "rect": [
+    304,
+    0,
+    32,
+    64
+   ],
+   "source": [
+    96,
+    448
+   ]
+  },
+  "wallShelf": {
+   "rect": [
+    338,
+    0,
+    32,
+    64
+   ],
+   "source": [
+    0,
+    448
+   ]
+  },
+  "plant": {
+   "rect": [
+    372,
+    0,
+    21,
+    43
+   ],
+   "source": [
+    384,
+    21
+   ]
+  }
+ }
+}
