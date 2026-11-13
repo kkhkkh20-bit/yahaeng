@@ -62,7 +62,7 @@ function crewsUpdate() {
 function crewBreak(crew, why) {
   crew.broken = true; S.crewNext[crew.kind] = S.t + 90; fstat('crewBroken');
   for (const m of crew.members) { if (!npcAlive(m)) continue; m.crew = null; civPanic(m, why.x, why.y, 6); }
-  if (inView(why.x, why.y, 80)) evBanner(`${CREW_KINDS[crew.kind].name}가 흩어진다`, '#ffb070');
+  if (inView(why.x, why.y, 80)) { const L = crew.members.find(npcAlive); if (L) gsay(L, crew.kind === 'run' ? '흩어져!' : '피해!', 1.6); }  /* 위쪽 띠는 의뢰 결과에 양보한다 */
 }
 // 자전거: 사람 밑에 깔리는 바퀴 두 개와 몸체 (사람 그리기 바로 전)
 function drawCrewBike(g) {

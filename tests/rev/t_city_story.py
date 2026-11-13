@@ -8,7 +8,7 @@ from playwright.async_api import async_playwright
 R = Path(__file__).resolve().parents[2]
 SETUP = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));while(G.DLG.modal)G.advanceDialog();
   window.tick=s=>{for(let t=0;t<s;t+=1/60)G.update(1/60)};tick(.3);const S=G.S;S.copT=1e9;S.warNext=1e9;S.huntNext=1e9;S.evNext={};for(const e of G.events.list)S.evNext[e.d]=1e9;
-  window.CALL=()=>{const P=S.player,p=S.phones.reduce((a,b)=>Math.hypot(b.x-P.x,b.y-P.y)<Math.hypot(a.x-P.x,a.y-P.y)?b:a);P.x=p.x-40;P.y=p.y+4;P.car=null;S.ringPhone=p;S.ringT0=S.t;tick(.05);G.events.enterBooth(p);tick(1.2);
+  window.CALL=()=>{S.wanted=0;const P=S.player,p=S.phones.reduce((a,b)=>Math.hypot(b.x-P.x,b.y-P.y)<Math.hypot(a.x-P.x,a.y-P.y)?b:a);P.x=p.x-40;P.y=p.y+4;P.car=null;S.ringPhone=p;S.ringT0=S.t;tick(.05);G.events.enterBooth(p);tick(1.2);
     const lines=[];let k=0;while(G.DLG.modal&&k<30){lines.push(document.getElementById('dlgText')?.textContent||'');G.advanceDialog();tick(.05);k++;}tick(1);return lines};
   window.KILL=()=>{const h=S.hit;h.g.shotT=null;G.killGuard(h.g);for(let k=0;k<60&&S.hit;k++)tick(1/30);};}'''
 
