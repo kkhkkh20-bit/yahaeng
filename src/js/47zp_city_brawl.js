@@ -35,6 +35,7 @@ function brawlHit(g, knife, heavy) {
   hitJuice(g, a, heavy ? 1.4 : knife ? 1 : 0.7, g.bhp <= 0);   // 타격감 (47zw)
   // 수배: 행인·경찰을 때리는 걸 봤다
   if ((g.civ || g.police) && !g.evt && g.skBi == null && witnessed(P.x, P.y, 300)) { if (g.police) addWanted(1, '경찰을 폭행했다'); else if (!S.wanted) addWanted(1, knife ? '칼로 사람을 찔렀다' : '사람을 때리는 걸 봤다'); }
+  if (g.bhp > 0 && typeof villainHit === 'function') villainHit(g);   // 악당은 맞아도 뻔뻔하게 (47zt1)
   if (g.bhp <= 0) { g.fist = false; npcDown(g, null, !!knife); if (!knife) gsay(g, '...', 1); return; }
   // 반응: 맞서거나 도망
   if (g.fist) { if (Math.random() < 0.3) saysLine(g, 'civ', 'fighting', 1.2); return; }

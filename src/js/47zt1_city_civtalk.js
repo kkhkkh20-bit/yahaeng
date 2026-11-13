@@ -33,3 +33,12 @@ function civTalkUpdate() {
   // 혼잣말: 내가 곁에 멈춰 있을 때 가까운 행인이 가끔 (밤거리 분위기)
   if (near && nd < 90 && !walking && !P.car && S.t > (S.civIdleT || 0)) { S.civIdleT = S.t + 14; civSay(near, 'idle', 2.2, 30); }
 }
+// ---- 악당 도발: 동네 사건의 악당이 내가 다가가면 얄밉게 한마디 (8초에 한 번) · 맞으면 뻔뻔하게 (47zp brawlHit 에서)
+function villainOf(g) { const E = S.ev; if (!E || E.done || !E.def?.villain || !g) return null; const k = 'v_' + E.def.key; if (!LINES[k]) return null;
+  const f = E.def.focus?.(E); return (f === g || E.crew?.members?.includes(g) || E.thugs?.includes(g)) ? k : null; }
+function villainTalk() {
+  const E = S.ev; if (!STAGE.cityLife || !E || E.done || !E.def?.villain || !E.engaged) return; const k = 'v_' + E.def.key; if (!LINES[k]) return;
+  const g = E.def.focus?.(E), P = S.player; if (!g || !npcAlive(g) || g.off || flOf(g) !== flOf(P)) return;
+  if (dist(g.x, g.y, P.x, P.y) < 150 && S.t > (E.tauntT || 0)) { E.tauntT = S.t + 8; g.want = Math.atan2(P.y - g.y, P.x - g.x); saysLine(g, k, 'taunt', 2.6); }
+}
+function villainHit(g) { const k = villainOf(g); if (k && npcAlive(g) && S.t > (g.vHitT || 0)) { g.vHitT = S.t + 2.5; saysLine(g, k, 'hit', 1.8); } }
