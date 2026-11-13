@@ -12,13 +12,15 @@ function copTookDown(o, cop) {
   const near = dist(o.x, o.y, S.player.x, S.player.y) < 700; o.criminal = false; o.cfight = null;
   if (o.evt && S.ev && S.ev.key === o.evt && !S.ev.done) { S.ev.copTook = true; evEnd(S.ev, '(한발 늦었네. 이번 건 경찰 몫이야.)', false); }
   if (near) { gsay(cop, ['연행한다. 일어나.', '현행범으로 체포합니다.', '얌전히 있어.'][cop.id % 3], 2.2); toast('경찰이 범인 제압 · 연행', 2); }
-  after(3.5, () => { if (o.state === 'DEAD' && !o.off) { const c = (S.corpses || []).find(k => k.g === o); if (c && c.ko && !c.carried && !c.inTrunk) { if (!TEMP_ACTOR(o)) { o.criminal = false; return; }  /* 동네 주민은 훈방 — 깨어나 제 길을 간다 (거리 인구가 줄지 않게) */ S.corpses = S.corpses.filter(k => k !== c); evGone(o); } } });
+  after(3.5, () => { if (o.state === 'DEAD' && !o.off) { const c = (S.corpses || []).find(k => k.g === o); if (c && c.ko && !c.carried && !c.inTrunk) { S.corpses = S.corpses.filter(k => k !== c);
+    if (!TEMP_ACTOR(o) && o.route?.length) { const r = o.route[0]; o.criminal = false; for (const q of S.guards) if (q.police) { if (q.incident?.by === o) q.incident = null; if (q.brawl?.o === o) { q.brawl = null; q.state = 'RETURN'; } }  /* 끝난 신고는 닫는다 */ o.state = 'PATROL'; o.x = r.x; o.y = r.y; o.ri = 0; o.path = null; o.fear = null; return; }  /* 동네 주민: 연행됐다가 나중에 제 길로 돌아온다 (거리 인구가 줄지 않게) */
+    evGone(o); } } });
 }
 // npcDown 을 한 겹 더: 범죄자가 사람을 해치면 신고 / 경찰이 범죄자를 쓰러뜨리면 연행
 if (typeof npcDown === 'function') { const _nd = npcDown; npcDown = function (o, by, lethal) { const was = !o || !npcAlive(o); const r = _nd(o, by, lethal); if (was) { if (o) o.downNpc = false; return r; }  /* 이미 쓰러진 사람에게 또 온 호출: 누가 쓰러뜨렸는지 덮어쓰지 않는다 */
   if (o) o.downBy = by && by !== S.player ? (by.police ? 'police' : 'npc') : (o.downNpc ? 'npc' : 'me'); if (o) o.downNpc = false;
   if (STAGE.cityLife && by && by !== S.player && o) {
-    if (by.police && (o.criminal || o.cfight) && !o.knifeman) copTookDown(o, by);
+    if (by.police && (o.criminal || o.cfight || (o.evt && S.ev && S.ev.key === o.evt && S.ev.def?.villain && S.ev.def.focus?.(S.ev) === o)) && !o.knifeman) copTookDown(o, by);  /* 사건 악당을 경찰이 쓰러뜨렸으면 내 몫이 아니다 */
     else if (!by.police && !by.fac && o.civ && !by.knifeman) {  /* 흉기 난동범은 경찰도 못 막는다 (그 사건 몫은 내 것) */ by.criminal = true; policeCall(o.x, o.y, by); } }
   return r; }; }
 // ---- 주민끼리 시비
@@ -44,7 +46,7 @@ function quarrelStep(g, dt) {
     play('thud', 0.5 * proxVol(o)); o.stunT = S.t + 0.35; const a = Math.atan2(o.y - g.y, o.x - g.x), nx = o.x + Math.cos(a) * 10, ny = o.y + Math.sin(a) * 10; if (!solidAt(Math.floor(nx / TILE), Math.floor(ny / TILE))) { o.x = nx; o.y = ny; }
     if ((o.cfight.hp -= 1) <= 0) { const w = g; quarrelEnd(o); quarrelEnd(w); civPanic(o, w.x, w.y, 10); gsay(o, ['살려 주세요!', '아이고...', '경찰 불러!'][o.id % 3], 1.6); after(0.8, () => npcAlive(w) && gsay(w, '다음에 또 까불어 봐.', 2)); } });
 }
-function quarrelEnd(g) { if (!g) return; g.cfight = null; g.criminal = false; g.route = g.routeQ || [{ x: g.x, y: g.y, pause: 1 }, { x: g.x + 1, y: g.y, pause: 2 }]; g.routeQ = null; g.ri = 0; g.path = null; }  /* 원래 다니던 길로 돌아간다 */
+function quarrelEnd(g) { if (!g) return; g.cfight = null; g.criminal = false; for (const q of S.guards) if (q.police && q.incident?.by === g) q.incident = null; g.route = g.routeQ || [{ x: g.x, y: g.y, pause: 1 }, { x: g.x + 1, y: g.y, pause: 2 }]; g.routeQ = null; g.ri = 0; g.path = null; }  /* 원래 다니던 길로 돌아간다 */
 function ambientUpdate(dt) {
   if (!STAGE.cityLife) return;
   for (const g of S.guards) if (g.cfight) quarrelStep(g, dt);

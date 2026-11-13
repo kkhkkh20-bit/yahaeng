@@ -171,7 +171,7 @@ function npcDown(o, by, lethal) {
   if (o.hasKey) { const k = o.hasKey; o.hasKey = null; S.keyDrop = { x: c.x + 14, y: c.y + 10, key: k, fl: c.fl || 0 }; }
   if (!lethal && !o.civ) after(25, () => { const i = S.corpses.indexOf(c); if (i < 0 || c.carried || c.stashed || !c.ko) return; if(c.stripped)stripBodyClothing(c);S.corpses.splice(i, 1); o.state = 'PATROL'; o.x = c.x; o.y = c.y; o.meter = 0.3; o.path = null; gsay(o, '누가 친 거야. 다들 괜찮아?'); });
   // 범행을 본 주민: 이긴 쪽이 쫓아가 입을 막는다
-  if (by && !by.civ && npcAlive(by)) {
+  if (by && !by.civ && !by.police && by.fac !== 'P' && npcAlive(by)) {  // 경찰은 목격자 입을 막지 않는다
     const w = S.guards.filter(q => q.civ && npcAlive(q) && !q.child && flOf(q) === flOf(o) && dist(q.x, q.y, o.x, o.y) < 300 && ((q.state === 'PANIC' && q.fear && dist(q.fear.x, q.fear.y, o.x, o.y) < 220) || canSee(q, o.x, o.y, Math.max(0.4, lightAt(o.x, o.y)), false, false, 0) > 0))
       .sort((p, q) => dist(p.x, p.y, by.x, by.y) - dist(q.x, q.y, by.x, by.y))[0];
     if (w) { by.hunt = { c: w, t0: S.t }; civPanic(w, by.x, by.y, 14); gsay(by, ['거기 잠깐 서 봐.', '방금 일 봤어?', '도망가지 마.'][by.id % 3], 2);
