@@ -234,6 +234,11 @@ const SIGN_STYLE = [
   [/CLUB/, '#120818', '#ff4ad8', '#6ae8ff'],
 ];
 const SIGN_SUB = ['24시', '맛집', '배달', '영업중', '본점', '할인', '1층'];
+// 간판 작은 글씨는 업종에 맞게 (약국 간판에 '맛집'이 붙던 것): [이름 규칙, 고를 말들]
+const SIGN_SUB_BY = [[/약국/, ['처방조제', '휴일영업']], [/편의점|마트|슈퍼/, ['24시', '택배', '할인']], [/치킨|호프|포차|골뱅이|노가리|곱창|주점/, ['맛집', '포장', '단체석']],
+  [/국밥|순댓국|백반|분식|식당|반점|중국집/, ['맛집', '배달', '원조']], [/인쇄|지물/, ['명함전단', '당일출고']], [/철물|공구|자재|타일|조명|전파/, ['도매', '납품']],
+  [/꽃집/, ['배달', '화환']], [/세탁|수선/, ['수선', '당일']], [/미용|헤어/, ['커트·펌', '예약']], [/PC방|당구|노래/, ['24시', '흡연실']], [/부동산/, ['상가원룸', '매매']]];
+const signSub = (name, hs) => { for (const [re, L] of SIGN_SUB_BY) if (re.test(name)) return L[hs % L.length]; return SIGN_SUB[hs % SIGN_SUB.length]; };
 function signStyle(txt) { for (const [re, bg, fg, ac] of SIGN_STYLE) if (re.test(txt)) return { bg, fg, ac }; return { bg: '#1d3c78', fg: '#ffffff', ac: '#ffd25a' }; }
 function signHash(b) { return ((b.x0 * 73856093) ^ (b.y0 * 19349663)) >>> 0; }
 function drawStoreSigns(b, lit) {
@@ -243,7 +248,7 @@ function drawStoreSigns(b, lit) {
   // 가로 간판: 1층 출입구 차양보다 위(2층 창 아랫단)에 건다
   const name = (b.signs[0] || '').trim();
   if (name) {
-    const st = signStyle(name), bx = x0 + 4, bw = w - 8, bh = 30, by = b.y1 * TILE - bh - 22, sub = b.school ? '교문' : b.hospital ? '응급실' : SIGN_SUB[hs % SIGN_SUB.length];
+    const st = signStyle(name), bx = x0 + 4, bw = w - 8, bh = 30, by = b.y1 * TILE - bh - 22, sub = b.school ? '교문' : b.hospital ? '응급실' : signSub(name, hs);
     if (lit) { ctx.globalCompositeOperation = 'lighter'; const c = hexRgb(st.bg === '#ffffff' || st.bg === '#f4f2ea' ? st.ac : st.bg);
       for (const [pad, a] of [[20, .07], [9, .12]]) { ctx.fillStyle = `rgba(${c},${a})`; ctx.fillRect(bx - pad, by - pad, bw + pad * 2, bh + pad * 2); } ctx.globalCompositeOperation = 'source-over'; }
     ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(bx + 2, by + 3, bw, bh);
@@ -252,6 +257,16 @@ function drawStoreSigns(b, lit) {
     if (bw > 150) { ctx.font = '700 11px ' + UI_FONT_FAMILY; ctx.fillStyle = st.ac; ctx.fillText(sub, bx + 26, by + bh / 2 + 1); ctx.fillText('☎', bx + bw - 22, by + bh / 2 + 1); }
     ctx.globalAlpha = 1;
   }
+  // 자유 모드: 위층마다 창문 글씨 (2F 세무사 · 3F 학원 …), 업소가 없는 층은 '임대' — 을지로 상가 건물 창에 붙은 시트 글씨
+  if (STAGE.cityLife && b.fh >= 2 && w >= 4 * TILE) for (let f = 1; f < b.fh; f++) {
+    if (b.collapsed) break; const t = (b.signs[f] || '').trim(), u = (b.floorsUse || [])[f], label = t ? (f + 1) + 'F ' + t : u && u !== 'vip' ? '임대 문의' : '';
+    { const ay = (b.y1 - f - 1) * TILE + 20, ax = Math.round((x0 + w - 70 - ((hs >> (f + 3)) & 3) * 30) / 3) * 3;   // 벽걸이 에어컨 실외기 (층마다 있을 수도 없을 수도): 3px 칸 도트
+      if (((hs >> f) & 3) !== 0 && ax > x0 + 120) { ctx.fillStyle = '#1c1f25'; ctx.fillRect(ax - 3, ay - 3, 27, 21); ctx.fillStyle = '#c9cdd3'; ctx.fillRect(ax, ay, 21, 15); ctx.fillStyle = '#e8ebef'; ctx.fillRect(ax, ay, 21, 3);
+        ctx.fillStyle = '#6e737c'; ctx.fillRect(ax + 3, ay + 3, 9, 9); ctx.fillStyle = '#9ba0a8'; ctx.fillRect(ax + 6, ay + 6, 3, 3); ctx.fillStyle = '#8a8f98'; ctx.fillRect(ax + 15, ay + 4, 3, 2); ctx.fillRect(ax + 15, ay + 8, 3, 2);
+        ctx.fillStyle = '#7e848c'; ctx.fillRect(ax + 18, ay + 15, 3, 15); } }
+    if (!label) continue; const y = (b.y1 - f - 1) * TILE + 4, lx = x0 + 10, lw = Math.min(w - 52, label.length * 13 + 14);
+    ctx.fillStyle = t ? 'rgba(12,16,26,.72)' : 'rgba(250,246,232,.82)'; ctx.fillRect(lx, y, lw, 16);
+    ctx.fillStyle = t ? (lit ? '#ffe9a8' : '#e8e2cc') : '#c43a2a'; ctx.font = '700 11px ' + UI_FONT_FAMILY; ctx.textAlign = 'left'; ctx.fillText(label, lx + 6, y + 8.5, lw - 10); ctx.textAlign = 'center'; }
   // 세로 돌출 간판: 위층 업소들 (층 표시와 함께)
   const ups = []; for (let f = 1; f < b.signs.length && f < b.fh; f++) { const t = (b.signs[f] || '').trim(); if (t) ups.push([f, t]); }
   if (ups.length) {
