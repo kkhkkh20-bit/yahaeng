@@ -63,6 +63,8 @@ function trafficInit() {
     if (dist(x, y, P.x, P.y) < 300 || S.vehicles.some(v => dist(v.x, v.y, x, y) < 160) || RX.some(rx=>RY.some(ry=>Math.abs(x-(rx+2)*TILE)<170&&Math.abs(y-(ry+2)*TILE)<170))) continue;
     const dz = deckSpawnZ(x, y); if (dz < 0) continue;
     const v = makeVehicle({ z: dz, x, y, d, a: Math.atan2(DV[d][1], DV[d][0]), v: AI_SPD * 0.6, c: (k * 3) % 5, ai: true, driver: true, type: STAGE.cityLife ? pickVType(((k * 2654435761) >>> 0) / 4294967296, STAGE.vehicleMix?.(Math.floor(x / TILE), Math.floor(y / TILE))) : undefined });
+    // 긴 차(버스)는 앞머리가 정지선을 넘어 횡단보도에 걸린 채 나오지 않게: 차 길이만큼 교차로에서 더 떨어져야 한다
+    if (STAGE.cityLife && (hor ? RX : RY).some(r => { const c = (r + 2) * TILE, p = hor ? x : y; return Math.abs(p - c) < 2 * TILE + stopGap(v) + 12; })) continue;
     planTurn(v); S.vehicles.push(v); i++;
   }
 }
@@ -111,8 +113,31 @@ function aheadBlocked(v) {
   for (const g of actorsNear(v.x + ca * 70, v.y + sa * 70)) if (g !== P && g.state !== 'DEAD' && inBox(g.x, g.y, 110, 28) && !flOf(g) && !g.z) return 'ped';  // 앞 70px 둘레 칸의 사람만
   return null;
 }
+// 자유 모드: 지도가 커서 차 84대가 고르게 흩어지면 내 둘레엔 거의 없다. 2초마다, 내 둘레(1500px)에 다니는 차가 적으면
+// 멀리(3000px 밖, 화면 밖) 다니는 보통 차 몇 대를 내 둘레 도로(화면 밖 700~1400px)로 옮긴다. 전체 대수는 그대로
+function trafficRecycle() {
+  if (!STAGE.cityLife || S.t < (S.trRecT || 0)) return; S.trRecT = S.t + 2;
+  const P = S.player, RX = STAGE.roadsX, RY = STAGE.roadsY, ok = v => v.ai && !v.parked && !v.dead && !v.crashed && !v.chase && !v.flee && !v.police && !v.gang && !v.scripted && !v.rageCar && !v.roadblock && !(v.z > 0.05);
+  let near = 0; const far = [];
+  for (const v of S.vehicles) { if (!ok(v)) continue; const d = dist(v.x, v.y, P.x, P.y); if (d < 1500) near++; else if (d > 3000 && !inView(v.x, v.y, 300)) far.push(v); }
+  for (let n = 0; n < 3 && near < 12 && far.length; n++) {
+    const v = far.pop(); let done = false;
+    for (let k = 0; k < 30 && !done; k++) {
+      const hor = Math.random() < 0.5, d = hor ? (Math.random() < 0.5 ? 0 : 2) : (Math.random() < 0.5 ? 1 : 3);
+      const roads = (hor ? RY : RX).filter(r => Math.abs((r + 2) * TILE - (hor ? P.y : P.x)) < 1400); if (!roads.length) continue;
+      const road = roads[(Math.random() * roads.length) | 0], along = (hor ? P.x : P.y) + rnd(-1400, 1400), x = hor ? along : laneOf(road, d), y = hor ? laneOf(road, d) : along, dd = dist(x, y, P.x, P.y);
+      if (dd < 700 || dd > 1400 || inView(x, y, 160) || x < 3 * TILE || y < 3 * TILE || x > (MW - 3) * TILE || y > (MH - 3) * TILE) continue;
+      if ((hor ? RX : RY).some(r => Math.abs((hor ? x : y) - (r + 2) * TILE) < 2 * TILE + stopGap(v) + 40)) continue;   // 교차로·횡단보도 근처는 피한다
+      if (deckSpawnZ(x, y) !== 0) continue;
+      const ox = v.x, oy = v.y, od = v.d, oa = v.a; Object.assign(v, { x, y, d, a: Math.atan2(DV[d][1], DV[d][0]), lane: hor ? y : x, v: AI_SPD * 0.6, junctionWait: null });
+      if (carOverlap(v)) { Object.assign(v, { x: ox, y: oy, d: od, a: oa }); continue; }
+      planTurn(v); near++; done = true;
+    }
+  }
+}
 function updateVehicles(dt) {
   if (!S.vehicles) return;
+  trafficRecycle();
   for (const v of S.vehicles) {
     if (v.dead) { v.burn = Math.max(0, v.burn - dt); if ((v.z || 0) > 0.001) deckStep(v, dt); continue; }  // 부서진 차도 공중이면 떨어진다
     if (v.smoke > 0) v.smoke -= dt;
@@ -179,10 +204,16 @@ function aiDrive(v, dt) {
   const turn=clamp(err * 3, -1, 1) * T.turn * Math.max(0.15, Math.min(1, Math.abs(v.v) / 90)) * dt;
   carMove(v,dt,turn);
   // 지도 끝: 반대 방향 차로로 돌아 들어온다
-  if (v.x < -60 || v.x > MW * TILE + 60 || v.y < -60 || v.y > MH * TILE + 60) {
-    v.d = (v.d + 2) % 4; v.a = Math.atan2(DV[v.d][1], DV[v.d][0]); v.x = clamp(v.x, 30, MW * TILE - 30); v.y = clamp(v.y, 30, MH * TILE - 30);
+  // 자유 모드는 지도 끝이 막혀 있어(도시 끝 마감) 밖으로 60px 나가지 못하고 그 앞에서 서 버렸다: 끝 2칸 앞에서 바깥을 향하면 돌린다
+  const E = STAGE.cityLife ? 2 * TILE : -60, out = STAGE.cityLife ? ((v.x < E && DV[v.d][0] < 0) || (v.x > MW * TILE - E && DV[v.d][0] > 0) || (v.y < E && DV[v.d][1] < 0) || (v.y > MH * TILE - E && DV[v.d][1] > 0)) : (v.x < -60 || v.x > MW * TILE + 60 || v.y < -60 || v.y > MH * TILE + 60);
+  if (out) {
+    const m = STAGE.cityLife ? 3 * TILE : 30;
+    v.d = (v.d + 2) % 4; v.a = Math.atan2(DV[v.d][1], DV[v.d][0]); v.x = clamp(v.x, m, MW * TILE - m); v.y = clamp(v.y, m, MH * TILE - m);
     const road = hor ? STAGE.roadsY.find(r => Math.abs(r * TILE + 96 - v.y) < 120) : STAGE.roadsX.find(r => Math.abs(r * TILE + 96 - v.x) < 120);
-    v.lane = laneOf(road || 0, v.d); if (hor) v.y = v.lane; else v.x = v.lane; planTurn(v); }
+    v.lane = laneOf(road || 0, v.d); if (hor) v.y = v.lane; else v.x = v.lane;
+    // 자유 모드: 돌려 놓은 자리가 교차로 상자나 그 정지선 사이면 가는 쪽으로 상자 밖까지 민다 (상자 안에 놓이면 빨간불에 교차로에 들어선 차가 된다)
+    if (STAGE.cityLife) { const sg = DV[v.d][0] + DV[v.d][1], g = stopGap(v) + 24; let p = hor ? v.x : v.y; for (const r of (hor ? STAGE.roadsX : STAGE.roadsY)) { const lo = r * TILE - g, hi = (r + 4) * TILE + g; if (p > lo && p < hi) p = sg > 0 ? hi : lo; } if (hor) v.x = p; else v.y = p; }
+    planTurn(v); }
 }
 // One junction reservation, released after the rear bumper clears it. Waiting
 // never authorizes driving through another car after an arbitrary timeout.
@@ -190,6 +221,12 @@ function aiDrive(v, dt) {
 // 보행 신호는 같은 방향 직진과 함께 초록이 되고(끝 3초 깜빡임), 좌회전 때는 빨강이다. 교차로마다 시작을 어긋나게 해 한꺼번에 바뀌지 않는다
 const SIG_T = 36, SIG_PH = [[10, 'G'], [12, 'Y'], [17, 'L'], [18, 'Y']];
 function signalTime(rx, ry) { return ((S.t + ((rx * 7 + ry * 11) % SIG_T)) % SIG_T + SIG_T) % SIG_T; }
+// dt초 전의 신호 (방금 바뀌었는지 볼 때)
+function signalStateAt(rx, ry, dt) {
+  if (!STAGE.signals) return null;
+  const t = ((signalTime(rx, ry) - dt) % SIG_T + SIG_T) % SIG_T, ph = t => SIG_PH.find(([end]) => t < end)[1];
+  return t < 18 ? { ew: ph(t), ns: 'R' } : { ew: 'R', ns: ph(t - 18) };
+}
 function signalState(rx, ry) {
   if (!STAGE.signals) return null;
   const t = signalTime(rx, ry), ph = t => SIG_PH.find(([end]) => t < end)[1];
@@ -328,28 +365,35 @@ function trafficStopDistance(v){
   const G=stopGap(v),entry=hor?(sgn>0?x0-G:x1+G):(sgn>0?y0-G:y1+G),left=(entry-(hor?v.x:v.y))*sgn;
   if(!aligned||left>230||left< -4*TILE-STOP_GAP-58){if(left< -4*TILE-STOP_GAP-58&&v.junctionWait)delete v.junctionWait[key];continue;}
   // 신호: 빨강이면 정지선(교차로 앞 횡단보도 앞)에서 선다. 황색은 정지선에 바짝 붙었으면 그대로 지나간다
-  const inside=o=>o.x>x0-STOP_GAP+3&&o.x<x1+STOP_GAP-3&&o.y>y0-STOP_GAP+3&&o.y<y1+STOP_GAP-3;
+  const inside=o=>{const SG=STAGE.cityLife?stopGap(o):STOP_GAP;return o.x>x0-SG+3&&o.x<x1+SG-3&&o.y>y0-SG+3&&o.y<y1+SG-3;};  // 자유 모드: 차마다 자기 정지선(stopGap, 차 길이 포함)으로 잰다. 줄 밖(-6)과 안 사이에 빈틈이 생기면 정지선을 조금 넘은 차(특히 긴 버스)를 아무도 세지 않아 교차로가 서로 기다리며 멎었다
   const sig=signalState(rx,ry),light=sig&&(hor?sig.ew:sig.ns);
   if(light&&!signalLets(light,v,x0,y0,x1,y1)){
    // 앞머리가 아직 교차로 상자에 들어가지 않았고 그 앞에서 설 수 있으면 선다 (긴 버스가 정지선을 넘어 횡단보도에 걸린 채 앞차를 따라가다 빨간불에 들어가던 것).
    // 황색에 정지선 바로 앞을 달리던 차는 그대로 지나간다. 서게 되면 잡아 둔 교차로도 내려놓는다
-   const sp=Math.abs(v.v),noseIn=-left-(STOP_LINE-6),yellowGo=light==='Y'&&left<45&&sp>60;
-   if(!yellowGo&&(left>-40||noseIn+sp*sp/(2*CAR_BRAKE)<8)){if(locks[key]===v.id)delete locks[key];return Math.max(0,left);}
+   // 자유 모드: 황색은 그 앞 신호가 이 차를 보내던 때만 '지나가라'다 (좌회전 화살표 뒤 황색에 직진 차가 출발해 횡단보도 위에 서던 것)
+   const prevLets=()=>{for(const dt of [0.4,0.8,1.2,1.6,2.0,2.4,2.8]){const p=signalStateAt(rx,ry,dt),pl=p&&(hor?p.ew:p.ns);if(pl&&pl!=='Y')return signalLets(pl,v,x0,y0,x1,y1);}return false;};
+   const sp=Math.abs(v.v),noseIn=-left-(STOP_LINE-6),yellowGo=light==='Y'&&left<45&&sp>60&&(!STAGE.cityLife||prevLets());
+   // 자유 모드: 신호가 바뀌었는데 횡단보도 앞에서 더는 설 수 없는 차(제동 거리 > 횡단보도까지 남은 거리)는 횡단보도 위에 급정거하지 않고 빠져나간다 (1.2초 전엔 갈 수 있던 신호일 때만)
+   const clearing=STAGE.cityLife&&sp>20&&sp*sp/(2*CAR_BRAKE)>(STOP_LINE+14-6)+left-XWALK&&prevLets();
+   if(!yellowGo&&!clearing&&(left>-40||noseIn+sp*sp/(2*CAR_BRAKE)<8)){if(locks[key]===v.id)delete locks[key];return Math.max(0,left);}
   }  // 좌회전 차는 화살표를, 직진 차는 초록을 기다린다  // 정지선을 조금 넘겨 선 차도 빨간불엔 그대로 기다린다
   const distance=o=>{const h=o.d%2===0,s=DV[o.d][0]+DV[o.d][1];if(!(h?o.y>y0&&o.y<y1:o.x>x0&&o.x<x1))return Infinity;const g=stopGap(o);return ((h?(s>0?x0-g:x1+g):(s>0?y0-g:y1+g))-(h?o.x:o.y))*s;};
   // 이 교차로로 들어오는 차 줄: 교차로 둘레 칸의 차만 보고, 한 프레임에 한 번만 정렬한다
   let jc=JC.m.get(key);if(!jc){const near=vehiclesIn(x0-STOP_GAP-260,y0-STOP_GAP-260,x1+STOP_GAP+260,y1+STOP_GAP+260);
-   const incoming=near.filter(o=>o.ai&&!o.dead&&!o.parked&&!onDeckLevel(o)&&distance(o)>=-6&&distance(o)<230);
+   const incoming=near.filter(o=>o.ai&&!o.dead&&!o.parked&&!onDeckLevel(o)&&distance(o)>=-6&&distance(o)<230&&!(STAGE.cityLife&&sig&&!o.chase&&!o.flee&&!signalLets(o.d%2===0?sig.ew:sig.ns,o,x0,y0,x1,y1)));  // 자유 모드: 빨간불에 선 차는 차례 줄에 넣지 않는다 (먼저 와 기다린다고 잡았다 놓기를 되풀이해, 화살표를 받은 좌회전 차가 끝내 못 가던 것)
    for(const o of incoming){const waits=o.junctionWait||(o.junctionWait={});waits[key]??=S.t;}
    incoming.sort((a,b)=>a.junctionWait[key]-b.junctionWait[key]||distance(a)-distance(b)||a.id-b.id);JC.m.set(key,jc={incoming,near});}
   const incoming=jc.incoming;
   let owner=VGr.byId.get(locks[key]);
-  if(owner&&(owner.dead||owner.crashed||(!inside(owner)&&dist(owner.x,owner.y,(x0+x1)/2,(y0+y1)/2)>300))){delete locks[key];owner=null;}  // 부서진 차는 교차로를 잡지 않는다
+  // 자유 모드: 차체가 교차로 상자에 걸치지 않고 제 신호에 막혀 선 차(정지선을 조금 넘어 빨간불을 기다리는 차)는 교차로를 잡지 않는다 — 건너편 화살표를 받은 차를 끝없이 막던 것
+  const holds=o=>!STAGE.cityLife||!sig||o.chase||o.flee||carPts(o).some(([px,py])=>px>x0&&px<x1&&py>y0&&py<y1)||signalLets(o.d%2===0?sig.ew:sig.ns,o,x0,y0,x1,y1);
+  if(owner&&(owner.dead||owner.crashed||(!inside(owner)&&dist(owner.x,owner.y,(x0+x1)/2,(y0+y1)/2)>300)||!holds(owner))){delete locks[key];owner=null;}  // 부서진 차는 교차로를 잡지 않는다
   // A car behind the queue cannot reserve the junction ahead of its own lead.
   if(owner&&!inside(owner)){const lead=incoming.find(o=>o.d===owner.d&&distance(o)<distance(owner)-3);if(lead)owner=lead;}
-  if(!owner)owner=jc.near.find(o=>o!==v&&!o.parked&&!o.dead&&!o.crashed&&!onDeckLevel(o)&&inside(o))||incoming[0]||v;
+  if(!owner)owner=jc.near.find(o=>o!==v&&!o.parked&&!o.dead&&!o.crashed&&!onDeckLevel(o)&&inside(o)&&holds(o))||incoming[0]||v;
   locks[key]=owner.id;
-  if(locks[key]===v.id||inside(v))return null;
+  const inBox=o=>carPts(o).some(([px,py])=>px>x0&&px<x1&&py>y0&&py<y1);
+  if(locks[key]===v.id||(inside(v)&&(!STAGE.cityLife||inBox(v)||!(owner!==v&&inBox(owner)))))return null;  // 자유 모드: 정지선만 조금 넘은 차는 다른 차가 상자 안에 있으면 기다린다 (긴 버스가 들어가다 횡단보도 위에 서던 것)
   return Math.max(0,left);
  }
  return null;
