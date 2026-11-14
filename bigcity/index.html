@@ -6436,7 +6436,9 @@ function planInterior(g, b, bi, f) {
     }
     else if (use === 'store') { furn(sx0, iy0, 1, 1, 'fridge'); furn(sx0 + 1, iy0, 1, 1, 'fridge'); for (let y = iy0 + 2; y < iy1 - 1; y += 2) for (let x = sx0 + 1; x + 2 <= sx1 - 1; x += 4) furn(x, y, 3, 1, 'shelf'); if (furn(sx1 - 1, iy1 - 1, 2, 1, 'counter', true, 0)) furn(sx1, iy1 - 2, 1, 1, 'chairD', true, 0); }  // 가게: 안쪽 벽 음료 냉장고, 진열대 줄, 계산대와 점원 의자
     else if (use === 'pc') { for (let y = iy0; y + 1 < iy1; y += 3) for (let x = sx0; x <= sx1; x++) if ((x - sx0) % 4 !== 3 && furn(x, y, 1, 1, 'pc', true, 0)) furn(x, y + 1, 1, 1, 'chairD', true, 2); }  // 줄마다 컴퓨터 + 의자, 그 아래 통로
+    if (open && use === 'pc') { furn(sx1 - 1, iy1 - 1, 2, 1, 'counter', true, 0) || furn(sx0 + 1, iy1 - 1, 2, 1, 'counter', true, 0); furn(sx1, iy1 - 2, 1, 1, 'fridge', true, 0); }  // PC방: 앞쪽 카운터와 음료 냉장고
     else if (use === 'academy') { furn(sx0 + 1, iy0, Math.max(2, sx1 - sx0 - 1), 1, 'board'); for (let y = iy0 + 2; y + 1 < iy1; y += 3) for (let x = sx0; x <= sx1; x += 2) if (furn(x, y, 1, 1, 'desk', true, 0)) furn(x, y + 1, 1, 1, 'chairD', true, 2); }  // 칠판을 보는 책상·의자 줄
+    if (open && use === 'academy') { furn(sx1, iy0 + 2, 1, 1, 'shelf', true, 0) || furn(sx1, iy0 + 3, 1, 1, 'shelf', true, 0); furn(sx0, iy1 - 1, 1, 1, 'locker') || furn(sx1, iy1 - 1, 1, 1, 'locker'); furn(sx1, iy1 - 2, 1, 1, 'plant'); }  // 학원: 옆벽 책장 · 사물함 · 화분
     else if (use === 'club') {  // 클럽: 바·디제이 부스·스피커, 가운데 춤추는 자리, 색 조명
       fill(sx0, iy0, sx1, iy1, 'h');
       furn(sx0 + 1, iy0, Math.min(5, sx1 - sx0 - 3), 1, 'bar'); furn(sx1 - 1, iy0, 2, 1, 'dj'); furn(sx0, iy0, 1, 1, 'spk'); furn(sx1, iy1 - 1, 1, 1, 'spk');
@@ -6478,7 +6480,9 @@ function planInterior(g, b, bi, f) {
       for (let x = sx0; x + 1 <= sx1; x += 3) furn(x, iy1 - 1, 2, 1, 'tread', true, 0);
       let racks = 0; for (let y = iy0 + 2; y + 1 < iy1 - 1; y += 3) for (let x = sx0 + 1; x <= sx1 - 1; x += 3) if (furn(x, y, 1, 1, 'rack', true, 0)) racks++;
       if (open && !racks) for (let x = sx0 + 1; x <= sx1 - 1; x += 2) furn(x, iy0 + 1, 1, 1, 'rack', true, 0);   // 낮은 층: 앞줄 러닝머신 뒤 한 줄에 랙
-      if (open) furn(sx1, iy0 + 1, 1, 1, 'locker');
+      if (open) { furn(sx1, iy0 + 1, 1, 1, 'locker');
+        for (let y = iy0 + 2; y + 1 < iy1 - 1; y += 3) for (let x = sx0 + 2; x + 1 <= sx1; x += 3) furn(x, y, 1, 1, 'rug', false);   // 랙 사이 운동 매트
+        furn(sx1, iy1 - 2, 1, 1, 'fridge', true, 0); furn(sx0, iy1 - 2, 1, 1, 'plant'); }   // 음료 냉장고 · 화분
     }
     else if (use === 'karaoke') {  // 노래방: 방마다 소파·탁자·노래 화면 (넓으면 칸막이로 방 여럿), 앞줄은 복도
       const yb = iy1 - 2, W = sx1 - sx0 + 1, step = W >= 7 ? 4 : 99;
@@ -6509,6 +6513,9 @@ function planInterior(g, b, bi, f) {
     else if (use === 'food') {  // 자유 모드 식당·포차: 안쪽 벽 주방(싱크대·냉장고), 식탁 줄(양 끝 의자, 줄 사이 한 칸 통로). 좁은 1층 가게는 작은 식탁+의자 둘
       const kx = open ? sx0 + 2 : sx0; furn(kx, iy0, 2, 1, 'sink', true, 0, [[kx, iy0 + 1], [kx + 1, iy0 + 1]]) || furn(sx0, iy0, 2, 1, 'sink', true, 0, [[sx0, iy0 + 1], [sx0 + 1, iy0 + 1]]);
       furn(kx + 2, iy0, 1, 1, 'fridge', true, 0, [[kx + 2, iy0 + 1]]);
+      // 주방 줄: 화구 · 그릇장 (치킨·분식·국밥집은 화구를 둘)
+      { const hot = /치킨|분식|국밥|순댓국|곱창|족발|반점|중국집/.test((b.signs || [])[f] || ''); let x = kx + 3;
+        for (const t of hot ? ['stove', 'stove', 'kcab'] : ['stove', 'kcab']) { if (x > sx1 - 1) break; if (furn(x, iy0, 1, 1, t, true, 0, [[x, iy0 + 1]])) x++; else break; } }
       let n = 0; const y0 = iy0 + 2, step = iy1 - y0 >= 5 ? 3 : 2;
       for (let y = y0; y <= iy1 - 1; y += step) for (let x = sx0 + 1; x + 2 <= sx1; x += 4) if (furn(x, y, 2, 1, 'table', true, 0)) { n++; furn(x - 1, y, 1, 1, 'chair', true, 1); furn(x + 2, y, 1, 1, 'chair', true, 3); }
       if (!n) for (let y = y0; y <= iy1 - 1; y += 2) for (let x = sx0 + 1; x + 1 <= sx1; x += 3) { const c0 = g[y][x]; if (furn(x, y, 1, 1, 'tableS', true, 0)) { const a = furn(x - 1, y, 1, 1, 'chair', true, 1), b2 = furn(x + 1, y, 1, 1, 'chair', true, 3); if (a || b2) n++; else { FURN.pop(); g[y][x] = c0; } } }
@@ -6516,7 +6523,11 @@ function planInterior(g, b, bi, f) {
     }
     else { furn(sx0, iy0, 1, 1, 'locker'); furn(sx0 + 1, iy0, 1, 1, 'cab'); furn(sx1 - 1, iy0, 2, 1, 'sofa', true, 0, [[sx1 - 1, iy0 + 1], [sx1, iy0 + 1]]);  // 사무실: 벽에 사물함·서류장·소파, 가운데 책상 줄(책상마다 의자, 줄 사이 통로)
       let n = 0; for (const y0 of open ? [iy0 + 2, iy0 + 1] : [iy0 + 2]) { if (n) break; for (let y = y0; open ? y + 1 <= iy1 - 1 : y + 1 < iy1; y += 3) for (let x = sx0 + 1; x + 1 <= sx1 - 1; x += 3) if (furn(x, y, 2, 1, 'desk2', true, 0)) { n++; furn(x, y + 1, 1, 1, 'chairD', true, 2); } }   // 좁은 층은 한 줄 위에서 다시
-      furn(sx0, iy1 - 1, 1, 1, 'locker'); if (!n && open) tinySeat('desk', 'chairD'); }
+      furn(sx0, iy1 - 1, 1, 1, 'locker'); if (!n && open) tinySeat('desk', 'chairD');
+      if (open) { // 자유 모드 사무실: 안쪽 벽 화이트보드 · 서가 · 냉장고(정수기 자리), 넓으면 회의 탁자
+        const mx = sx0 + Math.floor((sx1 - sx0) / 2) - 1; furn(mx, iy0, 2, 1, 'board', true, 0) || furn(sx0 + 2, iy0, 2, 1, 'board', true, 0);
+        furn(sx0 + 2, iy0, 1, 1, 'shelfS', true, 0); furn(sx1 - 2, iy0, 1, 1, 'fridge', true, 0, [[sx1 - 2, iy0 + 1]]);
+        if (sx1 - sx0 >= 7 && iy1 - iy0 >= 6) for (let y = iy1 - 3; y >= iy0 + 2; y--) { const x = sx1 - 4; if (furn(x, y, 2, 1, 'table', true, 0)) { furn(x - 1, y, 1, 1, 'chairD', true, 1); furn(x + 2, y, 1, 1, 'chairD', true, 3); break; } } } }
     // 자유 모드 넓은 층 채우기: 주된 배치 뒤에 남은 3×3 빈자리마다 식탁·책상 한 벌(의자 포함, 줄 사이 통로), 벽가엔 화분·서류장을 띄엄띄엄
     if (open && ['food', 'office'].includes(use)) {
       const free3 = (x, y) => { for (let yy = y - 1; yy <= y + 1; yy++) for (let xx = x - 1; xx <= x + 1; xx++) if (xx < sx0 || xx > sx1 || yy < iy0 + 1 || yy >= iy1 || !floorCh(g[yy][xx]) || keep.has(xx + ',' + yy)) return false; return true; };
@@ -8493,6 +8504,7 @@ function guardAnim(g) {
   if (g.crew && g.moving) return g.crew.kind === 'kick' ? 'idleC' : g.crew.kind === 'bike' ? (PR && PR.anims.crouch ? 'crouch' : 'walk') : 'run';  // 무리 (47zc)
   if (g.seat && !g.moving && g.state === 'PATROL') return PR && PR.bodies?.[prSplit(charOf(g))[1]]?.anims?.sit ? 'sit' : PR && PR.anims.crouch ? 'crouch' : 'idleC';   // 자유 모드 가게: 의자에 앉은 사람 (47zt) — 앉은 자세가 구워진 체형만, 없으면 웅크림
   if (g.jog && !g.moving && g.state === 'PATROL') return 'run';   // 러닝머신 위
+  if (g.jogger && g.moving && g.state === 'PATROL') return 'run';   // 청계천 산책로를 뛰는 사람 (47zt2)
   if ((g.act === 'workHigh' || g.act === 'workLow') && g.shopper && !g.moving && g.state === 'PATROL') return g.act;
   if (g.chatter && !g.moving && g.state === 'PATROL' && PR && PR.anims.talk) return 'talk';
   if(g.act==='pickup')return 'workLow';
@@ -12342,7 +12354,7 @@ function updateGuard(g, dt) {
   const P = S.player;
   g.moving = false;
   if (g.iconT > 0) { g.iconT -= dt; if (g.iconT <= 0 && g.state !== 'ALERT') g.icon = null; }
-  const spd = (g.target ? SPD.target*(rendezvousHurry(g)?1.75:vipDrinkHurry(g)?1.5:1) : SPD.gPatrol * (S.alevel ? 1 : 0.85) * (g.dog ? 1.25 : 1) * (diningHurry(g) ? 1.5 : 1)) * spdMul();
+  const spd = (g.target ? SPD.target*(rendezvousHurry(g)?1.75:vipDrinkHurry(g)?1.5:1) : SPD.gPatrol * (S.alevel ? 1 : 0.85) * (g.dog ? 1.25 : 1) * (diningHurry(g) ? 1.5 : 1) * (g.spdK || 1)) * spdMul();  // spdK: 자유 모드 행인마다 걸음 (47zt2)
   if (S.alevel && (g.chat || g.act)) { endChat(g); g.act = null; }
   // 공포: 겁에 질려 달아난다. 주변을 못 보고, 가까운 동료를 잘못 벨 수 있다
   if (g.state === 'TERROR') {
@@ -16502,6 +16514,11 @@ const SIGN_STYLE = [
   [/CLUB/, '#120818', '#ff4ad8', '#6ae8ff'],
 ];
 const SIGN_SUB = ['24시', '맛집', '배달', '영업중', '본점', '할인', '1층'];
+// 간판 작은 글씨는 업종에 맞게 (약국 간판에 '맛집'이 붙던 것): [이름 규칙, 고를 말들]
+const SIGN_SUB_BY = [[/약국/, ['처방조제', '휴일영업']], [/편의점|마트|슈퍼/, ['24시', '택배', '할인']], [/치킨|호프|포차|골뱅이|노가리|곱창|주점/, ['맛집', '포장', '단체석']],
+  [/국밥|순댓국|백반|분식|식당|반점|중국집/, ['맛집', '배달', '원조']], [/인쇄|지물/, ['명함전단', '당일출고']], [/철물|공구|자재|타일|조명|전파/, ['도매', '납품']],
+  [/꽃집/, ['배달', '화환']], [/세탁|수선/, ['수선', '당일']], [/미용|헤어/, ['커트·펌', '예약']], [/PC방|당구|노래/, ['24시', '흡연실']], [/부동산/, ['상가원룸', '매매']]];
+const signSub = (name, hs) => { for (const [re, L] of SIGN_SUB_BY) if (re.test(name)) return L[hs % L.length]; return SIGN_SUB[hs % SIGN_SUB.length]; };
 function signStyle(txt) { for (const [re, bg, fg, ac] of SIGN_STYLE) if (re.test(txt)) return { bg, fg, ac }; return { bg: '#1d3c78', fg: '#ffffff', ac: '#ffd25a' }; }
 function signHash(b) { return ((b.x0 * 73856093) ^ (b.y0 * 19349663)) >>> 0; }
 function drawStoreSigns(b, lit) {
@@ -16511,7 +16528,7 @@ function drawStoreSigns(b, lit) {
   // 가로 간판: 1층 출입구 차양보다 위(2층 창 아랫단)에 건다
   const name = (b.signs[0] || '').trim();
   if (name) {
-    const st = signStyle(name), bx = x0 + 4, bw = w - 8, bh = 30, by = b.y1 * TILE - bh - 22, sub = b.school ? '교문' : b.hospital ? '응급실' : SIGN_SUB[hs % SIGN_SUB.length];
+    const st = signStyle(name), bx = x0 + 4, bw = w - 8, bh = 30, by = b.y1 * TILE - bh - 22, sub = b.school ? '교문' : b.hospital ? '응급실' : signSub(name, hs);
     if (lit) { ctx.globalCompositeOperation = 'lighter'; const c = hexRgb(st.bg === '#ffffff' || st.bg === '#f4f2ea' ? st.ac : st.bg);
       for (const [pad, a] of [[20, .07], [9, .12]]) { ctx.fillStyle = `rgba(${c},${a})`; ctx.fillRect(bx - pad, by - pad, bw + pad * 2, bh + pad * 2); } ctx.globalCompositeOperation = 'source-over'; }
     ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(bx + 2, by + 3, bw, bh);
@@ -16520,6 +16537,16 @@ function drawStoreSigns(b, lit) {
     if (bw > 150) { ctx.font = '700 11px ' + UI_FONT_FAMILY; ctx.fillStyle = st.ac; ctx.fillText(sub, bx + 26, by + bh / 2 + 1); ctx.fillText('☎', bx + bw - 22, by + bh / 2 + 1); }
     ctx.globalAlpha = 1;
   }
+  // 자유 모드: 위층마다 창문 글씨 (2F 세무사 · 3F 학원 …), 업소가 없는 층은 '임대' — 을지로 상가 건물 창에 붙은 시트 글씨
+  if (STAGE.cityLife && b.fh >= 2 && w >= 4 * TILE) for (let f = 1; f < b.fh; f++) {
+    if (b.collapsed) break; const t = (b.signs[f] || '').trim(), u = (b.floorsUse || [])[f], label = t ? (f + 1) + 'F ' + t : u && u !== 'vip' ? '임대 문의' : '';
+    { const ay = (b.y1 - f - 1) * TILE + 20, ax = Math.round((x0 + w - 70 - ((hs >> (f + 3)) & 3) * 30) / 3) * 3;   // 벽걸이 에어컨 실외기 (층마다 있을 수도 없을 수도): 3px 칸 도트
+      if (((hs >> f) & 3) !== 0 && ax > x0 + 120) { ctx.fillStyle = '#1c1f25'; ctx.fillRect(ax - 3, ay - 3, 27, 21); ctx.fillStyle = '#c9cdd3'; ctx.fillRect(ax, ay, 21, 15); ctx.fillStyle = '#e8ebef'; ctx.fillRect(ax, ay, 21, 3);
+        ctx.fillStyle = '#6e737c'; ctx.fillRect(ax + 3, ay + 3, 9, 9); ctx.fillStyle = '#9ba0a8'; ctx.fillRect(ax + 6, ay + 6, 3, 3); ctx.fillStyle = '#8a8f98'; ctx.fillRect(ax + 15, ay + 4, 3, 2); ctx.fillRect(ax + 15, ay + 8, 3, 2);
+        ctx.fillStyle = '#7e848c'; ctx.fillRect(ax + 18, ay + 15, 3, 15); } }
+    if (!label) continue; const y = (b.y1 - f - 1) * TILE + 4, lx = x0 + 10, lw = Math.min(w - 52, label.length * 13 + 14);
+    ctx.fillStyle = t ? 'rgba(12,16,26,.72)' : 'rgba(250,246,232,.82)'; ctx.fillRect(lx, y, lw, 16);
+    ctx.fillStyle = t ? (lit ? '#ffe9a8' : '#e8e2cc') : '#c43a2a'; ctx.font = '700 11px ' + UI_FONT_FAMILY; ctx.textAlign = 'left'; ctx.fillText(label, lx + 6, y + 8.5, lw - 10); ctx.textAlign = 'center'; }
   // 세로 돌출 간판: 위층 업소들 (층 표시와 함께)
   const ups = []; for (let f = 1; f < b.signs.length && f < b.fh; f++) { const t = (b.signs[f] || '').trim(); if (t) ups.push([f, t]); }
   if (ups.length) {
@@ -20339,6 +20366,121 @@ function castSpawn(b, bi, f, A, p) {
   return out;
 }
 
+// ---------------------------------------------------------------- 자유 모드 거리 사람들 (을지로 밤거리처럼)
+// · 같이 걷는 사람: 블록을 도는 행인 몇은 친구·연인과 나란히 걷는다 (짝은 앞사람 옆에 붙어 따라간다)
+// · 걸음이 다른 사람: 휴대폰 보며 천천히 걷는 사람(화면 불빛), 지팡이 짚은 노인은 더 천천히, 청계천 산책로엔 뛰는 사람
+// · 가게 앞: 내 둘레의 호프·포차·골뱅이집 앞엔 담배 피우며 떠드는 손님 둘, 가끔 가게 앞에 선 배달 기사, 편의점 앞엔 휴대폰 보는 사람
+//   (가게 직원처럼 가까이 가면 세우고 멀어지면 들여보낸다 — 거리 전체 인원은 거의 그대로)
+// · 비: 우산을 쓴 사람이 많아지고, 우산 없는 사람은 걸음을 재촉한다
+// 무작위는 게임 시드 난수를 쓰지 않는다 (사람 번호로 정한다 — 다른 장면이 바뀌지 않게)
+const LIFE_K = id => ((((id | 0) + 7) * 2654435761) >>> 0) % 100;
+const FRONT_R = 900, FRONT_DROP = 1500, FRONT_MAX = 4;
+const FOOD_RE = /호프|포차|골뱅이|노가리|곱창|치킨|주점|국밥|순댓국|백반|분식|족발|횟집|반점/, CS_RE = /편의점|마트|슈퍼/;
+function streetLifeInit() {
+  if (!STAGE.cityLife) return; const L = S.life = { t: 0, fronts: new Map(), grp: [], cands: [] };
+  const R = STAGE.river, ry0 = R ? (R.y - 1) * TILE : -1e9, ry1 = R ? (R.y + R.rows) * TILE : -1e9;
+  const plain = g => g.civ && !g.evt && !g.dog && !g.child && !g.staff && !g.police && !g.crew && !g.wander && !g.student && !g.outfit && g.route && g.route.length >= 2;
+  const rings = [];
+  for (const g of S.guards) { if (!plain(g)) continue; const k = LIFE_K(g.id);
+    if (g.route.every(p => p.y >= ry0 && p.y <= ry1)) { if (k % 2 === 0) { g.jogger = true; g.spdB = 2.1; } continue; }   // 청계천 산책로: 둘 중 하나는 뛴다
+    if (g.body === 'old') g.spdB = 0.62;                                   // 노인: 지팡이 짚고 천천히
+    else if (k < 16) { g.phone = true; g.spdB = 0.72; }                    // 휴대폰 보며 걷는 사람
+    g.umb = k % 10 < 6;                                                     // 비 올 때 우산 (열에 여섯)
+    if (g.route.length === 4) rings.push(g); }
+  // 같이 걷기: 블록 도는 사람 넷 중 하나는 짝을 데리고 (짝은 원래 다른 길을 돌던 사람이라 전체 인원은 같다)
+  for (let i = 0; i + 1 < rings.length; i += 4) { const A = rings[i], C = rings[i + 1]; if (C.phone || A.body === 'old' || C.body === 'old') continue;
+    C.grp = { L: A, side: ((i >> 2) & 1) ? 1 : -1 }; C.spdB = A.spdB || 1; C.umb = A.umb; C.wait = 999; C.still = true; groupSnap(C); L.grp.push(C); }
+  // 가게 앞 자리: 1층이 술집·식당이거나 편의점인 건물
+  BLD.forEach((b, bi) => { if (b.kind !== 'shop' || b.vacant) return; const s = (b.signs?.[0] || '').trim(); const kind = FOOD_RE.test(s) ? 'food' : CS_RE.test(s) ? 'cs' : null; if (!kind) return;
+    const p = shopFront(b); if (p) L.cands.push({ bi, kind, x: p.x, y: p.y }); });
+}
+// 짝: 앞사람 옆(어깨 너비)에 붙인다. 앞사람이 멈추면(대화·신호) 같이 멈춘다
+function groupSnap(C) { const o = C.grp, A = o.L, a = A.a || 0, s = o.side * 22;
+  C.x = A.x + Math.cos(a + Math.PI / 2) * s - Math.cos(a) * 4; C.y = A.y + Math.sin(a + Math.PI / 2) * s - Math.sin(a) * 4; C.a = C.want = a; C.moving = A.moving; C.fl = A.fl; C.z = A.z || 0; }
+function groupRelease(C) { const A = C.grp?.L; C.grp = null; C.wait = 0; C.still = false; C.path = null;
+  if (A && A.route?.length) { C.route = A.route.map(p => ({ x: p.x, y: p.y, pause: p.pause })); C.ri = A.ri || 0; } }
+function lifeGroups() {
+  const G = S.life?.grp; if (!G?.length) return;
+  for (let i = G.length - 1; i >= 0; i--) { const C = G[i], A = C.grp?.L;
+    const ok = C.grp && A && npcAlive(A) && npcAlive(C) && !A.off && !C.off && A.state === 'PATROL' && C.state === 'PATROL' && flOf(A) === flOf(C) && !C.chat?.with?.grp
+      && dist(C.x, C.y, A.x, A.y) < 90;   // 누가 짝을 옮겼거나(사건·시험) 떨어졌으면 각자 걷는다
+    if (!ok) { if (C.grp) groupRelease(C); G.splice(i, 1); continue; }
+    groupSnap(C); }
+}
+// 가게 앞 사람들: 가까운 가게 앞에 화면 밖일 때 세우고, 멀어지면 들여보낸다
+function frontSpawn(c) {
+  const out = [], put = (x, y, a, o = {}) => { const gi = cityGuardSlot(), g = makeGuard(Object.assign({ kind: 'civ', at: [Math.floor(x / TILE), Math.floor(y / TILE)], radio: false }, o.body ? { body: o.body } : {}), gi);
+    g.evt = '__front'; g.x = x; g.y = y; g.fl = 0; g.a = g.want = a; g.post = a; g.route = [{ x, y, pause: 999 }]; g.ri = 0; g.wait = 999; placeGuard(g, gi); out.push(g); return g; };
+  const k = LIFE_K(c.bi);
+  if (c.kind === 'food') {
+    const s = put(c.x - 20, c.y + 6, 0); s.smoker = true; s.idleT = 1 + (k % 4);        // 담배 피우는 손님 (가끔 한 모금)
+    const t = put(c.x + 20, c.y + 6, Math.PI); t.chatter = true;                          // 맞은편에서 떠드는 일행
+    if (k % 3 === 0) { const r = put(c.x + 66, c.y + 30, -Math.PI / 2, { body: 'helmet' }); r.outfit = 'courier'; r.phone = true; }   // 가게 앞에서 기다리는 배달 기사
+  } else { const p = put(c.x + 30, c.y + 10, -Math.PI / 2); p.phone = true; }             // 편의점 앞: 휴대폰 보는 사람
+  if (PR && out.length) prWarm(out.map(charOf), true);
+  return out;
+}
+function lifeFronts() {
+  const L = S.life, P = S.player;
+  for (const [bi, f] of L.fronts) if (dist(f.c.x, f.c.y, P.x, P.y) > FRONT_DROP) { for (const g of f.gs) if (!g.off && npcAlive(g)) evGone(g); L.fronts.delete(bi); }
+  if (L.fronts.size >= FRONT_MAX || flOf(P) || S.wanted >= 3) return;
+  let best = null, bd = FRONT_R;
+  for (const c of L.cands) { if (L.fronts.has(c.bi) || BLD[c.bi].collapsed) continue; const d = dist(c.x, c.y, P.x, P.y); if (d < bd && (L.jump || !inView(c.x, c.y, 80))) { bd = d; best = c; } }
+  if (best) L.fronts.set(best.bi, { c: best, gs: frontSpawn(best) });
+  if (best && L.jump && L.fronts.size < FRONT_MAX) lifeFronts();   // 막 도착했으면 둘레 가게 앞을 한꺼번에
+}
+// 걸음 빠르기: 사람마다 기본 + 비 올 때 우산 없는 사람은 재촉 (guards.js 순찰 속도에 g.spdK 를 곱한다)
+function lifePace() {
+  const rain = rainK() > 0.3;
+  for (const g of S.guards) { if (!g.civ || g.off || g.evt) continue; const b = g.spdB || 1;
+    g.spdK = rain && !g.umb && !g.jogger && g.body !== 'old' ? b * 1.35 : b; }
+}
+// 내 둘레 인파: 멀리(화면 밖 2600px 넘게) 블록을 돌던 행인 몇을 내 둘레 블록 둘레로 옮긴다 (화면 밖 자리에, 짝과 함께). 전체 인원은 그대로
+const ROAM_R = 1600, ROAM_WANT = 18;
+function lifeRoam() {
+  const P = S.player, B0 = STAGE.blockOrigin, BS = STAGE.blockSize, [BX, BY] = STAGE.blockCount || [0, 0]; if (!B0 || !BS || flOf(P)) return;
+  const ring = g => g.civ && !g.evt && !g.grp && !g.dog && !g.child && !g.staff && !g.police && !g.crew && !g.wander && !g.student && !g.outfit && g.route?.length === 4 && g.state === 'PATROL' && !g.off && !flOf(g);
+  let near = 0; const far = [];
+  for (const g of S.guards) { if (!ring(g)) continue; const d = dist(g.x, g.y, P.x, P.y); if (d < ROAM_R) near++; else if (d > 2600 && !inView(g.x, g.y, 200)) far.push(g); }
+  if (near >= ROAM_WANT || !far.length) return;
+  const mates = new Map(S.life.grp.map(C => [C.grp.L, C]));
+  // 내 둘레 3×3 블록 중 하나 (번갈아)
+  let pbx = 0, pby = 0, bd = 1e9; for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) { const [x0, y0] = B0(bx, by), cx = (x0 + BS / 2) * TILE, cy = (y0 + BS / 2) * TILE, d = dist(cx, cy, P.x, P.y); if (d < bd) { bd = d; pbx = bx; pby = by; } }
+  for (let k = 0; k < (S.life.jump ? 6 : 2) && far.length; k++) {   // 막 도착했으면 한꺼번에
+    const n = (S.life.roamN = (S.life.roamN || 0) + 1), bx = Math.max(0, Math.min(BX - 1, pbx + (n % 3) - 1)), by = Math.max(0, Math.min(BY - 1, pby + ((n / 3 | 0) % 3) - 1));
+    const [x0, y0] = B0(bx, by), e = BS - 1, cs = [[x0, y0], [x0 + e, y0], [x0 + e, y0 + e], [x0, y0 + e]], route = (n % 2 ? cs.slice().reverse() : cs).map(([a, b]) => ({ x: tc(a), y: tc(b), pause: 0.5 }));
+    // 화면 밖이고 너무 가깝지 않은 둘레 위 자리 (모서리 사이 가운데도 본다)
+    const spots = []; route.forEach((p, i) => { const q = route[(i + 1) % 4]; spots.push({ x: p.x, y: p.y, ri: (i + 1) % 4 }, { x: (p.x + q.x) / 2, y: (p.y + q.y) / 2, ri: (i + 1) % 4 }); });
+    const at = spots.filter(p => !inView(p.x, p.y, 120) && dist(p.x, p.y, P.x, P.y) > 550).sort((p, q) => dist(p.x, p.y, P.x, P.y) - dist(q.x, q.y, P.x, P.y))[0]; if (!at) continue;   // 화면 밖에서 가장 가까운 자리
+    const g = far.pop(); g.route = route; g.ri = at.ri; g.x = at.x; g.y = at.y; g.path = null; g.wait = 0; if (g.chat) { const o = g.chat.with; g.chat = null; g.say = null; if (o?.chat?.with === g) { o.chat = null; o.say = null; } }   /* endChat 은 게임 난수를 쓴다: 직접 끊는다 */
+    const C = mates.get(g); if (C) groupSnap(C); }
+}
+function streetLifeUpdate(dt) {
+  const L = S.life; if (!STAGE.cityLife || !L) return;
+  lifeGroups();
+  if ((L.t -= dt) > 0) return; L.t = 0.5;
+  const P = S.player, jump = L.lp && dist(L.lp.x, L.lp.y, P.x, P.y) > 600; L.lp = { x: P.x, y: P.y }; L.jump = jump;   // 순간이동(병원·엘리베이터·집): 그 둘레는 화면 안이라도 바로 채운다
+  lifeFronts(); lifePace();
+  if ((L.roamT = (L.roamT || 0) - 0.5) <= 0 || jump) { L.roamT = 2; lifeRoam(); }
+}
+// ---- 그림: 우산(비 올 때) · 휴대폰 불빛 (사람 위에 작은 도트)
+const UMB_ART = (() => { const rows = ['....#######....', '..###########..', '.#############.', '###############', '#.#.#.#.#.#.#.#'], cols = ['#1d2840', '#222226', '#c8d6e2', '#7a2630', '#2f4a34'];
+  return cols.map(col => { const c = document.createElement('canvas'); c.width = 15; c.height = 12; const x = c.getContext('2d'); x.fillStyle = col;
+    rows.forEach((r, y) => { for (let i = 0; i < r.length; i++) if (r[i] === '#') x.fillRect(i, y, 1, 1); });
+    x.fillStyle = 'rgba(255,255,255,.22)'; x.fillRect(4, 1, 5, 1);   // 윗면 반사
+    x.fillStyle = '#3a3a40'; x.fillRect(7, 5, 1, 6); x.fillRect(6, 10, 1, 1); return c; }); })();
+function drawLifeExtras(g) {
+  if (!g.civ || g.off || g.state === 'DEAD' || g.state === 'SLEEP' || flOf(g)) return;
+  if (g.umb && rainK() > 0.3 && !g.evt) { const art = UMB_ART[LIFE_K(g.id) % UMB_ART.length]; ctx.save(); ctx.imageSmoothingEnabled = false; if (art === UMB_ART[2]) ctx.globalAlpha = 0.8;
+    ctx.drawImage(art, Math.round(g.x - 15), Math.round(g.y - 48), 30, 24); /* 머리 바로 위 (손잡이는 손 높이) */ ctx.restore(); }
+  else if (g.phone && (g.moving || g.evt === '__front')) { const hx = Math.round(g.x + Math.cos(g.a || 0) * 7), hy = Math.round(g.y - 24);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(120,200,255,.22)'; ctx.fillRect(hx - 4, hy - 9, 9, 9); ctx.restore();
+    ctx.fillStyle = '#bfefff'; ctx.fillRect(hx - 1, hy - 2, 2, 3); }
+}
+if (typeof drawGuard === 'function') { const _dg = drawGuard; drawGuard = function (g) { const r = _dg(g); if (STAGE.cityLife) drawLifeExtras(g); return r; }; }
+if (typeof staffInit === 'function') { const _si = staffInit; staffInit = function () { _si(); streetLifeInit(); }; }
+if (typeof staffUpdate === 'function') { const _su = staffUpdate; staffUpdate = function (dt) { _su(dt); streetLifeUpdate(dt); }; }
+
 // ---------------------------------------------------------------- 자유 모드 편의점 실내 그림 (구매한 GuttyKreum Corner Store 팩에서 글자 없는 조각만)
 // 편의점·마트 층의 진열대·음료 냉장고·화분을 팩 그림으로 그린다 (32px 원본 · 1.5배 = 한 칸 48px). 그림이 없으면 원래 그림 그대로.
 const cornerStoreArt = A.cornerStore || null, cornerStoreAtlas = new Image(); let cornerStoreDirty = false;
@@ -20448,6 +20590,226 @@ function hitJuice(o, a, power = 1, finish = false, push = true) {
 function juiceOffset() {
   const K = S.kick; if (!K) return [0, 0, 0]; const f = 1 - (S.t - K.t) / 0.18; if (f <= 0) { S.kick = null; S.zoomKick = 0; return [0, 0, 0]; }
   return [K.x * f * f, K.y * f * f, (S.zoomKick || 0) * f];
+}
+
+// ---------------------------------------------------------------- 자유 모드 거리 소품 (을지로의 밤): 지도에 없는 잔살림을 판 시작 때 한 번 정해 둔다
+// 가게 앞(포차 플라스틱 탁자·맥주 상자·입간판·자판기·아이스크림 냉장고·종이 묶음), 집 앞(스티로폼 텃밭·재활용 봉투·배달 오토바이·자전거),
+// 공장 마당(팔레트·컨테이너·드럼통), 주차장 칸 선, 공원(벤치·가로등·운동 기구·정자), 청계천 산책로 벤치, 공사장 고깔.
+// 모두 바닥 장식이라 길을 막지 않는다(충돌 없음). 그림은 2px 칸 도트(작은 캔버스에 그려 흐림 없이 키운다), 화면 안 덩어리만 그린다.
+const SD_PX = 3, SD_CH = 16;   // 도트 한 칸 = 3 월드 px (아틀라스 16px×3과 같은 굵기) · 공간 나눔 16칸
+const SD_SCALE = { container: 2, pavilion: 2, pochaTable: 2.5 };   // 큰 것은 칸 수에 맞춰 조금 작게
+const SD_SPR = {};
+function sdSprite(key, w, h, paint) {
+  if (SD_SPR[key]) return SD_SPR[key];
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
+  const R = (a, b, ww, hh, col) => { x.fillStyle = col; x.fillRect(a, b, ww, hh); };
+  paint(R, x); return (SD_SPR[key] = c);
+}
+const sdHash = (a, b, k = 0) => ((((a * 73856093) ^ (b * 19349663) ^ (k * 83492791)) >>> 0) % 1000) / 1000;
+// ---- 그림 (색은 밤거리 기준으로 조금 눅인다). 키 뒤 숫자는 색 변형
+const SD_ART = {
+  pochaTable: v => sdSprite('pochaTable' + v, 22, 18, R => {   // 접이식 탁자 + 플라스틱 의자 넷
+    const st = ['#c23a36', '#2f62b0', '#c23a36', '#2f62b0'], tb = v ? '#c9c4b8' : '#b8854a';
+    [[0, 3], [18, 3], [0, 12], [18, 12]].forEach(([a, b], i) => { R(a, b + 1, 4, 4, '#1a1a20'); R(a, b, 4, 4, st[(i + v) % 4]); R(a + 1, b, 2, 1, '#f0b0a0'); });
+    R(5, 5, 12, 10, '#1a1a20'); R(5, 4, 12, 9, tb); R(5, 4, 12, 1, '#ece6d8');
+    R(7, 6, 2, 3, '#3a9a5a'); R(7, 6, 2, 1, '#a8e0b0'); R(13, 8, 3, 2, '#e8e2d2'); R(10, 9, 2, 2, '#d8a040'); R(14, 5, 1, 3, '#3a9a5a');
+  }),
+  crates: v => sdSprite('crates' + v, 10, 14, R => {   // 맥주·소주 상자 더미
+    const c = v ? ['#2f8a4a', '#1f6a36'] : ['#d8a12a', '#a87a1a'];
+    for (let k = 0; k < 3; k++) { const y = 10 - k * 4; R(0, y, 10, 4, '#14141a'); R(0, y, 10, 3, c[0]); R(1, y + 1, 8, 1, c[1]); R(2, y, 1, 3, c[1]); R(7, y, 1, 3, c[1]); }
+  }),
+  aboard: v => sdSprite('aboard' + v, 9, 14, R => {   // 입간판 (글씨는 흰 줄 몇 개로)
+    const bg = ['#1c1c24', '#7a1f24', '#1f3a6a'][v % 3];
+    R(0, 12, 2, 2, '#14141a'); R(7, 12, 2, 2, '#14141a'); R(0, 0, 9, 12, '#0e0e14'); R(1, 1, 7, 10, bg);
+    R(2, 2, 5, 1, '#f2e6c0'); R(2, 4, 4, 1, '#e8e8e8'); R(2, 6, 5, 1, '#e8e8e8'); R(2, 8, 3, 1, '#ffd24a');
+  }),
+  vending: v => sdSprite('vending' + v, 12, 20, R => {   // 음료 자판기
+    const body = ['#b62b36', '#2a5aa8', '#e8e2d6'][v % 3];
+    R(0, 18, 12, 2, '#0e0e14'); R(0, 0, 12, 18, '#0e0e14'); R(1, 1, 10, 16, body); R(2, 2, 8, 8, '#d8e6f2');
+    for (let r = 0; r < 3; r++) for (let k = 0; k < 4; k++) R(3 + k * 2, 3 + r * 2, 1, 1, ['#d83a3a', '#f0c030', '#3a9a5a', '#3a6ad8'][(k + r + v) % 4]);
+    R(8, 11, 2, 3, '#1a1a20'); R(2, 14, 6, 2, '#1a1a20');
+  }),
+  freezer: () => sdSprite('freezer', 14, 10, R => {   // 아이스크림 냉장고
+    R(0, 8, 14, 2, '#0e0e14'); R(0, 2, 14, 7, '#e8eef2'); R(1, 0, 12, 4, '#8ac8e8'); R(2, 1, 4, 1, '#d8f0ff'); R(0, 5, 14, 1, '#3a6ad8');
+  }),
+  bundles: v => sdSprite('bundles' + v, 12, 12, R => {   // 종이 묶음·택배 상자 (인쇄골목·공구상가)
+    for (let k = 0; k < 3; k++) { const y = 8 - k * 4, x = (k % 2) * 2; R(x, y, 10, 4, '#14141a'); R(x, y, 10, 3, v ? '#e8e2d2' : '#b0844e'); R(x + 4, y, 1, 3, v ? '#c84a3a' : '#e0c8a0'); }
+  }),
+  styro: v => sdSprite('styro' + v, 12, 9, R => {   // 스티로폼 상자 텃밭 (고추·상추)
+    R(0, 4, 12, 5, '#0e0e14'); R(0, 4, 12, 4, '#e8e8ec'); R(0, 4, 12, 1, '#ffffff');
+    for (let k = 0; k < 5; k++) { R(1 + k * 2, 1 + (k % 2), 2, 3, k % 2 ? '#3a7a34' : '#5aa84a'); }
+    if (v) { R(3, 2, 1, 2, '#d83a2a'); R(8, 1, 1, 2, '#d83a2a'); }
+  }),
+  recycle: () => sdSprite('recycle', 14, 10, R => {   // 재활용 봉투 · 납작한 상자
+    R(0, 6, 14, 4, '#0e0e14'); R(0, 6, 9, 3, '#a8804a'); R(1, 6, 7, 1, '#c8a06a');
+    R(5, 1, 6, 7, '#5a7ab0'); R(6, 1, 3, 1, '#9ab4e0'); R(9, 3, 5, 5, '#c8d0d8'); R(10, 3, 2, 1, '#f0f4f8');
+  }),
+  scooter: v => sdSprite('scooter' + v, 16, 10, R => {   // 배달 오토바이 (뒤에 배달통)
+    const c = ['#c83a3a', '#e8e2d6', '#2a5aa8'][v % 3];
+    R(1, 7, 3, 3, '#14141a'); R(12, 7, 3, 3, '#14141a'); R(3, 5, 10, 3, '#2a2a30'); R(4, 4, 7, 2, c);
+    R(12, 2, 2, 4, '#3a3a40'); R(11, 1, 4, 1, '#7a7a80'); R(0, 0, 6, 5, '#d8d4c8'); R(0, 0, 6, 1, '#f0ece0'); R(1, 2, 4, 1, '#c83a3a');
+  }),
+  bike: () => sdSprite('bike', 16, 9, R => {   // 자전거
+    for (const cx of [3, 12]) { R(cx - 2, 3, 4, 1, '#3a3a44'); R(cx - 2, 8, 4, 1, '#3a3a44'); R(cx - 3, 4, 1, 4, '#3a3a44'); R(cx + 2, 4, 1, 4, '#3a3a44'); }
+    R(3, 5, 9, 1, '#2f8a8a'); R(6, 2, 1, 4, '#2f8a8a'); R(5, 1, 3, 1, '#14141a'); R(11, 1, 3, 1, '#9a9aa0');
+  }),
+  pallets: v => sdSprite('pallets' + v, 16, 12, R => {   // 팔레트 더미 (위에 포대)
+    for (let k = 0; k < 3; k++) { const y = 9 - k * 3; R(0, y, 16, 3, '#14141a'); R(0, y, 16, 2, '#9a7a4a'); for (let j = 0; j < 4; j++) R(1 + j * 4, y, 2, 2, '#b8955e'); }
+    if (v) { R(2, 0, 12, 3, '#e8e2d2'); R(3, 1, 10, 1, '#c8c0b0'); }
+  }),
+  drums: v => sdSprite('drums' + v, 14, 10, R => {   // 드럼통 둘
+    const c = v ? ['#2a5aa8', '#4a7ad0'] : ['#a83a2a', '#c85a3a'];
+    for (const ox of [0, 7]) { R(ox, 2, 7, 8, '#14141a'); R(ox, 2, 7, 7, c[0]); R(ox + 1, 2, 5, 2, c[1]); R(ox, 5, 7, 1, '#1a1a20'); }
+  }),
+  container: v => sdSprite('container' + v, 44, 22, R => {   // 화물 컨테이너 (가로 두 칸)
+    const c = [['#2f5a8a', '#24486e'], ['#9a3a2a', '#7a2e22'], ['#4a7a4a', '#3a603a']][v % 3];
+    R(0, 18, 44, 4, '#0e0e14'); R(0, 0, 44, 18, c[1]); R(0, 0, 44, 3, c[0]);
+    for (let k = 2; k < 44; k += 4) R(k, 4, 2, 13, c[0]);
+    R(38, 4, 1, 13, '#1a1a20'); R(40, 8, 2, 4, '#c8c0b0'); R(3, 7, 2, 2, '#c87a3a'); R(20, 12, 3, 2, '#7a4a2a');
+  }),
+  bench: v => sdSprite('bench' + v, 22, 10, R => {   // 벤치 (나무 살 셋)
+    R(1, 8, 2, 2, '#14141a'); R(19, 8, 2, 2, '#14141a'); R(0, 6, 22, 3, '#1a1a20');
+    for (let k = 0; k < 3; k++) R(0, k * 2 + (v ? 0 : 1), 22, 1, k % 2 ? '#a67a4a' : '#c8955a');
+    R(0, 6, 22, 1, '#8a6038');
+  }),
+  lamp: () => sdSprite('lamp', 8, 32, R => {   // 공원·산책로 가로등
+    R(3, 6, 2, 25, '#2a2e36'); R(2, 30, 4, 2, '#14141a'); R(0, 0, 8, 6, '#14141a'); R(1, 1, 6, 4, '#3a3e48'); R(2, 4, 4, 2, '#ffe6a0');
+  }),
+  gym: () => sdSprite('gym', 18, 14, R => {   // 야외 운동 기구 (노란 틀)
+    R(1, 12, 16, 2, '#14141a'); R(1, 2, 2, 11, '#e0b020'); R(15, 2, 2, 11, '#e0b020'); R(1, 2, 16, 2, '#e0b020'); R(1, 2, 16, 1, '#f8d860');
+    R(6, 6, 6, 2, '#3a6ad8'); R(8, 4, 2, 4, '#3a3e48'); R(5, 10, 8, 2, '#3a3e48');
+  }),
+  bollard: () => sdSprite('bollard', 14, 9, R => { for (const a of [1, 9]) { R(a, 7, 4, 2, '#14141a'); R(a, 1, 4, 7, '#b8bcc6'); R(a, 1, 4, 1, '#e8ecf2'); R(a, 4, 4, 1, '#d8a020'); } }),
+  bin: v => sdSprite('bin' + v, 10, 13, R => {   // 길가 분리수거함 (일반·재활용)
+    R(0, 11, 10, 2, '#14141a'); R(0, 2, 10, 10, v ? '#2f6a4a' : '#3a4a6a'); R(0, 0, 10, 3, '#1c1c24'); R(2, 1, 6, 1, '#0a0a10');
+    R(1, 5, 8, 1, '#e8e8e8'); R(3, 7, 4, 3, v ? '#5aa87a' : '#6a8ad0');
+  }),
+  sign: v => sdSprite('sign' + v, 8, 22, R => {   // 도로 표지 (주정차 금지·어린이 보호 등)
+    R(3, 8, 2, 13, '#7a7e88'); R(2, 20, 4, 2, '#14141a'); const c = ['#c83a3a', '#2f62b0', '#e0b020'][v % 3];
+    R(0, 0, 8, 8, '#14141a'); R(1, 1, 6, 6, c); R(2, 3, 4, 2, '#f0f0f0');
+  }),
+  cone: () => sdSprite('cone', 6, 8, R => { R(0, 7, 6, 1, '#14141a'); R(0, 6, 6, 1, '#d8601a'); R(1, 2, 4, 4, '#f07a2a'); R(1, 3, 4, 1, '#f0f0f0'); R(2, 0, 2, 2, '#f07a2a'); }),
+};
+// 정자: 3×3칸 기와지붕 (사람은 밑으로 지나간다)
+function sdPavilion() { return sdSprite('pavilion', 72, 66, R => {
+  for (const [a, b] of [[6, 30], [62, 30], [6, 58], [62, 58]]) { R(a, b, 4, 8, '#14141a'); R(a, b, 4, 7, '#a83a2a'); }
+  R(0, 4, 72, 30, '#14141a'); R(2, 2, 68, 28, '#3a3a44'); for (let k = 4; k < 68; k += 4) R(k, 3, 2, 26, '#4a4a56');
+  R(0, 28, 72, 4, '#2a2a32'); R(30, 0, 12, 4, '#2a2a32'); R(2, 30, 68, 2, '#5a8a6a');
+}); }
+// ---- 배치: 판마다 한 번 (지도 칸만 보고 정하므로 매번 같은 자리)
+let SD = null;
+function sdInit() {
+  const list = [], parkLines = [], add = (k, tx, ty, o = {}) => list.push(Object.assign({ k, x: tx * TILE, y: ty * TILE }, o));
+  const at = (x, y) => inMap(x, y) ? G0[y][x] : '#', open = c => c === ',' || c === '=';
+  const used = new Set(), take = (x, y, w = 1) => { for (let k = 0; k < w; k++) if (used.has((x + k) + ',' + y)) return false; for (let k = 0; k < w; k++) used.add((x + k) + ',' + y); return true; };
+  const wallCh = c => '#NSXV'.includes(c), carNear = (x, y, r = 90) => (S.vehicles || []).some(v => Math.abs(v.x - (x + 0.5) * TILE) < r && Math.abs(v.y - (y + 0.5) * TILE) < r);
+  const FOOD = /포차|호프|노가리|골뱅이|곱창|국밥|순댓국|백반|분식|치킨|족발|맥주|식당/, STORE = /편의점|마트|슈퍼|약국/, CRAFT = /인쇄|공구|철물|타일|조명|전파|지물|자재|상회|시장/;
+  // 1) 건물 앞: 앞벽 칸(벽인 칸만 — 문·창 앞은 비운다) 바로 아래 한 칸이 맨땅·보도이면
+  BLD.forEach((b, bi) => {
+    if (b.vacant) return; const y = b.y1 + 1, sign = (b.signs?.[0] || '').trim(), up = (b.floorsUse || []).slice(1).some(u => u === 'pc' || u === 'karaoke' || u === 'billiards');
+    const spots = []; for (let x = b.x0 + 1; x <= b.x1 - 1; x++) if (wallCh(at(x, b.y1)) && open(at(x, y)) && bldAt(x, y) < 0) spots.push(x);
+    if (!spots.length) return; const pick = k => spots[Math.floor(sdHash(bi, k, 7) * spots.length)];
+    const put = (k, x, w = 1, o) => { if (x != null && x + w - 1 <= b.x1 && !carNear(x, y, 60) && take(x, y, w)) add(k, x, y, o); };
+    if (b.kind === 'shop') {
+      if (FOOD.test(sign)) { const n = Math.min(2, Math.floor(spots.length / 3)); for (let k = 0; k < n; k++) put('pochaTable', pick(k), 1, { v: (bi + k) % 2, night: true }); put('crates', pick(5), 1, { v: bi % 2 }); }
+      else if (STORE.test(sign)) { put('vending', pick(0), 1, { v: bi % 3, glow: true }); if (/편의점|마트|슈퍼/.test(sign)) put('freezer', pick(1)); }
+      else if (CRAFT.test(sign)) { put('bundles', pick(0), 1, { v: bi % 2 }); put('bundles', pick(3), 1, { v: (bi + 1) % 2 }); if (sdHash(bi, 2) < 0.5) put('scooter', pick(4), 1, { v: bi % 3 }); }
+      if (sign && sdHash(bi, 9) < 0.7) put('aboard', pick(2), 1, { v: bi % 3, glow: up });
+      if (up) put('aboard', pick(6), 1, { v: (bi + 1) % 3, glow: true });
+      if (sdHash(bi, 11) < 0.35) put('vending', pick(8), 1, { v: (bi + 2) % 3, glow: true });
+    } else {   // 집·빌라 앞
+      if (sdHash(bi, 1) < 0.7) put('styro', pick(0), 1, { v: bi % 2 });
+      if (sdHash(bi, 2) < 0.6) put('recycle', pick(1));
+      if (sdHash(bi, 3) < 0.45) put('scooter', pick(2), 1, { v: bi % 3 });
+      else if (sdHash(bi, 4) < 0.5) put('bike', pick(3));
+    }
+  });
+  // 1-2) 보도 연석가: 블록 둘레 보도('=')가 차도와 맞닿는 칸에 띄엄띄엄 볼라드·분리수거함·표지판 (모퉁이·횡단보도 근처는 비운다)
+  { const [BX0, BY0] = STAGE.blockCount || [0, 0], BS0 = STAGE.blockSize || 0;
+    for (let by = 0; by < BY0; by++) for (let bx = 0; bx < BX0; bx++) { const [x0, y0] = STAGE.blockOrigin(bx, by), e = BS0 - 1;
+      const side = (pts) => pts.forEach(([x, y], i) => { if (i < 3 || i > pts.length - 4 || at(x, y) !== '=' || bldAt(x, y) >= 0) return; const h = sdHash(x, y, 13); if (h > 0.16 || !take(x, y)) return;
+        add(h < 0.06 ? 'bollard' : h < 0.12 ? 'bin' : 'sign', x, y, { v: (x + y) % 3 }); });
+      const N = [], S2 = [], Wl = [], E = []; for (let k = 0; k <= e; k++) { N.push([x0 + k, y0]); S2.push([x0 + k, y0 + e]); Wl.push([x0, y0 + k]); E.push([x0 + e, y0 + k]); }
+      side(N); side(S2); side(Wl); side(E); } }
+  // 2) 블록 안 마당: 주차된 차(A 두 칸) 옆 주차선 · 공장지대 맨땅엔 팔레트·드럼통·컨테이너 · 공원(풀밭이 많은 블록)엔 벤치·가로등·운동 기구·정자
+  const [BX, BY] = STAGE.blockCount || [0, 0], BS = STAGE.blockSize || 0;
+  for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) {
+    const [x0, y0] = STAGE.blockOrigin(bx, by), x1 = x0 + BS - 1, y1 = y0 + BS - 1, dname = STAGE.districtAt?.(x0 + 2, y0 + 2) || '';
+    let grass = 0; for (let y = y0 + 1; y < y1; y++) for (let x = x0 + 1; x < x1; x++) if (at(x, y) === 'g') grass++;
+    const park = grass > (BS - 2) * (BS - 2) * 0.3, factory = /공장/.test(dname);
+    for (let y = y0 + 1; y < y1; y++) for (let x = x0 + 1; x < x1; x++) {
+      const c = at(x, y); if (bldAt(x, y) >= 0) continue;
+      if (c === 'A' && at(x, y + 1) === 'A' && at(x, y - 1) !== 'A') parkLines.push([(x + 0.5) * TILE, (y + 1) * TILE, true]);   // 차 한 대 = 세로 두 칸
+      if (factory && c === '.' && sdHash(x, y, 3) < 0.13 && !carNear(x, y, 72)) {
+        const free = (w, h) => { for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { const q = at(x + i, y + j); if (q !== '.' || bldAt(x + i, y + j) >= 0 || used.has((x + i) + ',' + (y + j))) return false; } return true; };
+        const r = sdHash(x, y, 5);
+        if (r < 0.3 && free(2, 2)) { for (let j = 0; j < 2; j++) take(x, y + j, 2); add('container', x, y, { v: (x + y) % 3 }); }
+        else if (r < 0.65 && free(1, 1)) { take(x, y); add('pallets', x, y, { v: (x * 3 + y) % 2 }); }
+        else if (free(1, 1)) { take(x, y); add('drums', x, y, { v: (x + y * 3) % 2 }); }
+      }
+      if (c === 'U') for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) { const q = at(x + dx, y + dy); if ((q === ',' || q === '.') && take(x + dx, y + dy)) add('cone', x + dx, y + dy); }   // 공사장 구덩이 둘레 고깔
+    }
+    if (park) {
+      for (let y = y0 + 2; y < y1 - 1; y++) for (let x = x0 + 2; x < x1 - 1; x++) {
+        if (at(x, y) !== 'g') continue; const nearPath = ['=', ','].includes(at(x, y + 1)) ? 's' : ['=', ','].includes(at(x, y - 1)) ? 'n' : ['=', ','].includes(at(x + 1, y)) || ['=', ','].includes(at(x - 1, y)) ? 'e' : null;
+        if (!nearPath) continue;
+        if ((x + y) % 5 === 0 && nearPath !== 'e' && at(x + 1, y) === 'g' && take(x, y, 2)) add('bench', x, y, { v: (x + y) % 2 });
+        else if ((x * 3 + y) % 7 === 0 && take(x, y)) add('lamp', x, y, { glow: true });
+      }
+      // 운동 기구 한 무더기 · 정자 하나: 나무 없는 3×3 풀밭
+      let gymDone = false, pavDone = false;
+      for (let y = y0 + 2; y < y1 - 3 && !(gymDone && pavDone); y++) for (let x = x0 + 2; x < x1 - 3 && !(gymDone && pavDone); x++) {
+        let ok = true; for (let j = 0; j < 3 && ok; j++) for (let i = 0; i < 3; i++) if (at(x + i, y + j) !== 'g' || used.has((x + i) + ',' + (y + j))) { ok = false; break; }
+        if (!ok) continue; for (let j = 0; j < 3; j++) take(x, y + j, 3);
+        if (!pavDone && x > x0 + BS / 2) { pavDone = true; add('pavilion', x, y); }
+        else if (!gymDone) { gymDone = true; add('gym', x, y); add('gym', x + 1, y + 2); }
+      }
+    }
+  }
+  // 주차된 차(판 시작 때 세워 둔 차) 둘레 주차 칸: 도로가 아닌 블록 안 맨땅·아스팔트에 선 차만
+  const onRoad = (tx, ty) => (STAGE.roadsX || []).some(r => tx >= r && tx < r + 4) || (STAGE.roadsY || []).some(r => ty >= r && ty < r + 4);
+  for (const v of S.vehicles || []) { if (!v.parked) continue; const tx = Math.floor(v.x / TILE), ty = Math.floor(v.y / TILE); if (onRoad(tx, ty) || bldAt(tx, ty) >= 0) continue; parkLines.push([v.x, v.y, Math.abs(Math.sin(v.a || 0)) > 0.7]); }
+  // 3) 청계천 남쪽 산책로: 난간 앞 벤치와 가로등 (다리 칸은 뺀다)
+  const Rv = STAGE.river; if (Rv) { const yy = Rv.y + Rv.rows - 3; for (let x = 4; x < MW - 4; x++) { if (at(x, yy) !== '=' || at(x + 1, yy) !== '=' || at(x, yy - 1) !== '¦') continue;
+    if (x % 9 === 3 && take(x, yy, 2)) add('bench', x, yy, { v: 1 }); else if (x % 9 === 7 && take(x, yy)) add('lamp', x, yy, { glow: true }); } }
+  // 공간 나눔
+  const grid = new Map(); for (const o of list) { const k = Math.floor(o.x / TILE / SD_CH) + ',' + Math.floor(o.y / TILE / SD_CH); if (!grid.has(k)) grid.set(k, []); grid.get(k).push(o); }
+  for (const a of grid.values()) a.sort((p, q) => p.y - q.y);
+  SD = { stage: STAGE.id, list, grid, parkLines };
+}
+function sdVisible(fn) {
+  const vw = W / SCALE / 2 + 160, vh = H / SCALE / 2 + 160, cx0 = Math.floor((cam.x - vw) / TILE / SD_CH), cx1 = Math.floor((cam.x + vw) / TILE / SD_CH), cy0 = Math.floor((cam.y - vh) / TILE / SD_CH), cy1 = Math.floor((cam.y + vh) / TILE / SD_CH);
+  for (let cy = cy0; cy <= cy1; cy++) for (let cx = cx0; cx <= cx1; cx++) { const a = SD.grid.get(cx + ',' + cy); if (a) for (const o of a) if (inView(o.x + TILE / 2, o.y + TILE / 2, 80)) fn(o); }
+}
+// 땅 단계 (사람·차보다 먼저): 주차선과 소품
+function drawStreetDeco() {
+  if (!STAGE.cityLife || CUR_F || !G0) return; if (!SD || SD.stage !== STAGE.id) sdInit();
+  ctx.save(); ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = 'rgba(214,218,226,.55)';   // 주차선: 차 칸 양옆 세로선 + 앞쪽 가로선 (2px 굵기)
+  for (const [cx, cy, vert] of SD.parkLines) { if (!inView(cx, cy, 90)) continue; const hw = vert ? 33 : 54, hh = vert ? 54 : 33;   // 차 칸: 양옆 선 + 앞쪽 끝선
+    if (vert) { ctx.fillRect(cx - hw, cy - hh, 3, hh * 2); ctx.fillRect(cx + hw - 3, cy - hh, 3, hh * 2); ctx.fillRect(cx - hw, cy + hh - 3, hw * 2, 3); }
+    else { ctx.fillRect(cx - hw, cy - hh, hw * 2, 3); ctx.fillRect(cx - hw, cy + hh - 3, hw * 2, 3); ctx.fillRect(cx + hw - 3, cy - hh, 3, hh * 2); } }
+  sdVisible(o => {
+    const k = SD_SCALE[o.k] || SD_PX;
+    if (o.k === 'pavilion') { ctx.drawImage(sdPavilion(), o.x, o.y + 4, 72 * k, 66 * k); return; }
+    const s = SD_ART[o.k](o.v || 0), w = s.width * k, h = s.height * k;
+    const bx = o.k === 'container' ? o.x + 4 : o.x + (TILE - w) / 2, by = o.y + TILE - h + (o.k === 'lamp' ? 6 : 4);
+    ctx.drawImage(s, Math.round(bx), Math.round(by), w, h);
+  });
+  ctx.restore();
+}
+// 어둠 뒤 단계: 자판기 앞면·불 켜진 입간판·가로등 불빛·포차 탁자 위 알전구 (스스로 빛나는 것만, 도트 칸으로)
+function drawStreetDecoGlow() {
+  if (!STAGE.cityLife || CUR_F || !SD) return; const night = (STAGE.nightShade ?? 0.6) > 0.3; if (!night) return;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  sdVisible(o => {
+    const k = SD_SCALE[o.k] || SD_PX, box = (sw, sh, dy) => [o.x + (TILE - sw * k) / 2, o.y + TILE - sh * k + dy];
+    if (o.k === 'vending') { const [x, y] = box(12, 20, 4); ctx.fillStyle = 'rgba(200,225,255,.35)'; ctx.fillRect(x + 2 * k, y + 2 * k, 8 * k, 8 * k); ctx.fillStyle = 'rgba(160,200,255,.12)'; ctx.fillRect(x - 2 * k, y + 18 * k, 16 * k, 4 * k); }
+    else if (o.k === 'aboard' && o.glow) { const [x, y] = box(9, 14, 4); ctx.fillStyle = 'rgba(255,220,150,.28)'; ctx.fillRect(x + k, y + k, 7 * k, 10 * k); }
+    else if (o.k === 'lamp') { const [x, y] = box(8, 32, 6); ctx.fillStyle = 'rgba(255,226,150,.5)'; ctx.fillRect(x + 2 * k, y + 4 * k, 4 * k, 2 * k); ctx.fillStyle = 'rgba(255,214,140,.06)'; for (let j = 0; j < 3; j++) ctx.fillRect(x - (2 + j * 3) * k, y + (29 - j) * k, (12 + j * 6) * k, (3 + j * 2) * k); }
+    else if (o.k === 'pochaTable') { const [x, y] = box(22, 18, 4); ctx.fillStyle = 'rgba(255,190,110,.14)'; ctx.fillRect(x - 2 * k, y - k, 26 * k, 20 * k); ctx.fillStyle = 'rgba(255,230,170,.6)'; for (let j = 0; j < 4; j++) ctx.fillRect(x + (2 + j * 6) * k, y - 3 * k, k, k); }
+  });
+  ctx.restore();
 }
 
 // ---------------------------------------------------------------- 자유 모드 이야기: 은퇴한 전직 요원 '올빼미'
@@ -27059,7 +27421,7 @@ function draw() {
     ctx.strokeStyle = 'rgba(232,71,60,.7)'; ctx.lineWidth = 3; ctx.setLineDash([6, 6]); ctx.beginPath(); ctx.arc(fx, fy, 40, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
   }
   if (showRoutes || tactical) drawRoutes(P);
-  drawCityEntryThresholds();drawTrapsGround(); drawProps(); if (STAGE.cityLife && typeof drawElevDoors === 'function') drawElevDoors();   // 엘리베이터 문은 벽 그림 — 사람보다 먼저(아래) 그린다
+  drawCityEntryThresholds();drawTrapsGround(); if (STAGE.cityLife && typeof drawStreetDeco === 'function') drawStreetDeco(); drawProps(); if (STAGE.cityLife && typeof drawElevDoors === 'function') drawElevDoors();   // 엘리베이터 문은 벽 그림 — 사람보다 먼저(아래) 그린다
   for (const d of S.decals) { if (!onGround(d)) continue; if (STAGE.cityLife) { drawPixelBlood(d); continue; } ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.arc(d.r * 0.8, d.r * 0.4, d.r * 0.3, 0, TAU); ctx.fill(); ctx.restore(); }
   if (STAGE.cityLife) drawBloodParts();
   for (const it of S.items) if (!it.got && onGround(it)) drawLootItem(it);
@@ -27281,7 +27643,7 @@ function draw() {
   drawOutdoorLampFixtures();
   drawTrafficSignals();
   if (S.decks?.length && !flOf(P)) drawDecks();  // 고가도로·높은 다리: 지붕·신호등보다 위 (고가 밑 신호등은 가려진다)
-  if (STAGE.cityLife) { drawCuffs(); if (!flOf(P)) { drawGarage(); drawHavocAbove(); } }  // 내 차고 셔터: 집 앞벽보다 위
+  if (STAGE.cityLife) { drawCuffs(); if (!flOf(P)) { drawGarage(); drawHavocAbove(); if (typeof drawStreetDecoGlow === 'function') drawStreetDecoGlow(); } }  // 내 차고 셔터: 집 앞벽보다 위
   const aboveBridge=p=>!!(P.wire||(P.jump&&!lowJ)||travUp||P.z>p.z);
   if(!tactical)drawPlanks('front',aboveBridge);
   if (exteriorClip) ctx.restore();
