@@ -32,13 +32,19 @@ function amInit() {
   const add = o => { list.push(o); used.add(o.tx + ',' + o.ty); };
   // 고양이: 건물 앞벽 밑 보도 칸(위가 건물, 칸은 보도) · 블록 안 맨땅의 주차된 차 옆 — 50마리 남짓
   let cats = 0;
+  // 앉을 자리는 비어 있어야 한다: 거리 소품(포차 탁자·자판기)·명소·가게 문 앞 칸과 그 옆에는 앉히지 않는다 (탁자 위에 고양이가 겹쳐 보이던 것)
+  if (typeof sdInit === 'function' && (!SD || SD.stage !== STAGE.id)) sdInit();
+  const busy = new Set(), mark = (tx, ty, r = 1) => { for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) busy.add((tx + dx) + ',' + (ty + dy)); };
+  for (const o of SD?.list || []) mark(Math.floor(o.x / TILE), Math.floor(o.y / TILE) + (o.sy ? 0 : 0), 1);
+  for (const o of (typeof LM !== 'undefined' && LM && LM.stage === STAGE.id ? LM.sets : null) || []) for (let dy = -1; dy <= (o.h || 1); dy++) for (let dx = -1; dx <= (o.w || 1); dx++) busy.add((Math.floor(o.x / TILE) + dx) + ',' + (Math.floor(o.y / TILE) + dy));
+  if (typeof shopFront === 'function') for (const b of BLD) { const f = b.kind === 'shop' && !b.vacant ? shopFront(b) : null; if (f) mark(Math.floor(f.x / TILE), Math.floor(f.y / TILE), 1); }
   for (let y = 2; y < MH - 2 && cats < 70; y++) for (let x = 2; x < MW - 2 && cats < 70; x++) {
-    if (at(x, y) !== '=' || bldAt(x, y) >= 0 || bldAt(x, y - 1) < 0 || amHash(x, y, 1) > 0.04 || !free(x, y)) continue;
+    if (at(x, y) !== '=' || bldAt(x, y) >= 0 || bldAt(x, y - 1) < 0 || amHash(x, y, 1) > 0.075 || !free(x, y) || busy.has(x + ',' + y)) continue;
     add({ k: 'cat', tx: x, ty: y, x: (x + 0.5) * TILE, y: (y + 0.55) * TILE, coat: (x * 3 + y) % 4, hx: (x + 0.5) * TILE, hy: (y + 0.55) * TILE, st: 'sit', t0: amHash(x, y, 2) * 9 }); cats++; }
   // 블록 안 주차된 차 옆에 웅크린 고양이 (차 밑 그늘에서 나와 앉은 것처럼, 넷 중 하나)
   const onRoad = (tx, ty) => (STAGE.roadsX || []).some(r => tx >= r && tx < r + 4) || (STAGE.roadsY || []).some(r => ty >= r && ty < r + 4);
   for (const v of S.vehicles || []) { if (cats >= 70 || !v.parked) continue; const tx = Math.floor(v.x / TILE), ty = Math.floor(v.y / TILE); if (onRoad(tx, ty) || bldAt(tx, ty) >= 0 || amHash(tx, ty, 17) > 0.25) continue;
-    const x = v.x + (amHash(tx, ty, 18) < 0.5 ? -44 : 44), y = v.y + 30, gx = Math.floor(x / TILE), gy = Math.floor(y / TILE); if (bldAt(gx, gy) >= 0 || !free(gx, gy)) continue;
+    const x = v.x + (amHash(tx, ty, 18) < 0.5 ? -44 : 44), y = v.y + 30, gx = Math.floor(x / TILE), gy = Math.floor(y / TILE); if (bldAt(gx, gy) >= 0 || !free(gx, gy) || busy.has(gx + ',' + gy)) continue;
     add({ k: 'cat', tx: gx, ty: gy, x, y, coat: (tx + ty) % 4, hx: x, hy: y, st: 'sit', t0: amHash(tx, ty, 19) * 9 }); cats++; }
   // 비둘기 떼: 공원 풀밭 가장자리 · 청계천 산책로 · 식당 앞 보도 (떼마다 3~5마리)
   const flock = (x, y) => { const n = 3 + Math.floor(amHash(x, y, 4) * 3), birds = [];
@@ -85,8 +91,10 @@ function amUpdate() {
   }, 260);
 }
 // ---- 땅 단계: 웅덩이(비) · 고양이 · 비둘기 (사람·차보다 먼저 = 발밑)
+let AM_OFF = false;   // 시험용 끄개 (그리기 비용 비교)
+window.__cityAmbient = { off: v => { AM_OFF = !!v; } };
 function drawAmbientGround() {
-  if (!STAGE.cityLife || CUR_F || !G0) return; if (!AM || AM.stage !== STAGE.id) amInit();
+  if (AM_OFF || !STAGE.cityLife || CUR_F || !G0) return; if (!AM || AM.stage !== STAGE.id) amInit();
   const t = S.t, rk = typeof rainK === 'function' ? rainK() : 0;
   ctx.save(); ctx.imageSmoothingEnabled = false;
   amVisible(o => {
@@ -119,7 +127,7 @@ function drawAmbientGround() {
 }
 // ---- 위 단계(어둠 뒤): 김(도트 덩어리가 피어오르며 흩어진다) · 가로등 날벌레 · 자판기 숨 쉬는 불빛
 function drawAmbientAbove() {
-  if (!STAGE.cityLife || CUR_F || !AM || AM.stage !== STAGE.id) return;
+  if (AM_OFF || !STAGE.cityLife || CUR_F || !AM || AM.stage !== STAGE.id) return;
   const t = S.t, px = AM_PX; ctx.save();
   amVisible(o => { if (o.k !== 'steam') return;
     for (let i = 0; i < 4; i++) { const p = ((t * 0.45 + o.ph + i / 4) % 1), x = o.x + Math.sin((p + i) * 5 + o.ph) * 10 * p, y = o.y - p * 70 * o.sz, s = Math.round((3 + p * 5) * o.sz), a = (o.kitchen ? 0.5 : 0.42) * (1 - p) * Math.min(1, p * 5);

@@ -107,7 +107,8 @@ function lifeVendors() {
   const L = S.life, P = S.player;
   for (const [bi, v] of L.vend) if (dist(v.x, v.y, P.x, P.y) > 1700 || !npcAlive(v.g) || v.g.off) { if (npcAlive(v.g) && !v.g.off) evGone(v.g); L.vend.delete(bi); }
   if (L.vend.size >= VEND_MAX || flOf(P) || S.wanted >= 2) return;
-  for (const c of L.cands) { if (c.kind !== 'food' || LIFE_K(c.bi) % 3 || L.vend.has(c.bi)) continue;
+  const busyAt = (x, y) => (S.lm?.active || []).some(s => dist(s.c.x, s.c.y, x, y) < 260);   // 명소 장면(배달 기사 등)이 선 자리는 피한다
+  for (const c of L.cands) { if (c.kind !== 'food' || LIFE_K(c.bi) % 3 || L.vend.has(c.bi) || busyAt(c.x, c.y)) continue;
     const x = c.x + 110, y = c.y + 12; if (dist(x, y, P.x, P.y) > 1100 || (!L.jump && inView(x, y, 100))) continue;   // 가게 문 옆 연석 (문 앞 손님 자리와 겹치지 않게)
     const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); if (!lifeOpen(tx, ty)) continue;
     const gi = cityGuardSlot(), g = makeGuard({ kind: 'civ', at: [tx, ty], radio: false, body: LIFE_K(c.bi) % 2 ? 'old' : 'workApron' }, gi);

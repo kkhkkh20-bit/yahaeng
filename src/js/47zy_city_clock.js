@@ -106,9 +106,9 @@ function drawClosedShutters(b) {
   ctx.restore();
 }
 function clockDrawMini(x) {
-  if (!S.clock) return; const c = x.canvas, t = clockText(), w = 46, h = 17, px = c.width - w - 4, py = c.height - h - 4;
+  if (!S.clock) return; const c = x.canvas, t = clockText(), w = Math.max(46, Math.round(c.width * 0.4)), h = Math.round(w * 0.37), px = c.width - w - 3, py = c.height - h - 3;   // 미니맵 캔버스 크기에 맞춰 (휴대폰에선 작게 줄어 보이므로 비율로)
   x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.fillStyle = 'rgba(8,10,18,.82)'; x.fillRect(px, py, w, h); x.fillStyle = clockHour() >= 28.5 ? '#ffc890' : '#e8e2cc';
-  x.font = '700 12px ' + UI_FONT_FAMILY; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(t, px + w / 2, py + h / 2 + 1); x.restore();
+  x.font = '700 ' + Math.round(h * 0.72) + 'px ' + UI_FONT_FAMILY; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(t, px + w / 2, py + h / 2 + 1); x.restore();
 }
 // ---- 이어 붙이기 (가게 일꾼·거리 생활과 같은 갈고리)
 if (typeof staffInit === 'function') { const _ci = staffInit; staffInit = function () { _ci(); clockInit(); }; }
@@ -121,5 +121,6 @@ if (typeof drawGuard === 'function') { const _dg = drawGuard; drawGuard = functi
   ctx.fillStyle = '#8a6a3a'; for (let k = 0; k < 9; k++) ctx.fillRect(x + Math.round(k * 0.6), y + k * 3, 2, 3);
   ctx.fillStyle = '#c8b070'; ctx.fillRect(x + 2, y + 26, 9, 4); ctx.fillStyle = '#9a8450'; ctx.fillRect(x + 3, y + 30, 7, 2); return r; }; }
 if (typeof shopAction === 'function') { const _sa = shopAction; shopAction = function () { const r = _sa(); const C = r && r.k === 'shop' && STAGE.cityLife && BLD[r.s.b];
-  if (C && !floorOpen(C, 0)) return { k: 'evAct', at: r.at, label: `${r.s.name} · 영업 끝`, fn: () => toast(`${r.s.name}은 문을 닫았다. 저녁 8시에 다시 연다`, 2.4) };
+  const P = S.player, inside = C && bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) === r.s.b && (S.staffB?.get(r.s.b) || []).some(g => npcAlive(g) && !g.off);   // 문 닫기 전에 들어와 있던 손님은 직원이 마저 받는다
+  if (C && !floorOpen(C, 0) && !inside) return { k: 'evAct', at: r.at, label: `${r.s.name} · 영업 끝`, fn: () => toast(`${r.s.name}은 문을 닫았다. 저녁 8시에 다시 연다`, 2.4) };
   return r; }; }

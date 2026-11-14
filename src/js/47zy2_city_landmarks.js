@@ -56,8 +56,8 @@ function lmHand(t, v) {   // 손글씨 간판: 나무판에 붓 글씨
   return lmCanvas('hd' + t + v, 42, 18, (R, T) => { R(0, 0, 42, 18, '#1a1410'); R(1, 1, 40, 16, bg); R(1, 15, 40, 2, 'rgba(0,0,0,.35)'); T(t, 21, 9, t.length > 2 ? 10 : 12, fg); R(3, 3, 1, 1, '#5a4a3a'); R(38, 3, 1, 1, '#5a4a3a'); }); }
 function lmStickers(v) { return lmCanvas('st' + v, 24, 18, R => { const C = ['#ff4a4a', '#ffd84a', '#5ae0ff', '#ffffff', '#7af05a', '#ff9ad8'];
   for (let k = 0; k < 5; k++) { const a = (v * 7 + k * 5) % 16, b = (v * 3 + k * 7) % 11; R(a, b, 7, 6, '#101014'); R(a + 1, b + 1, 5, 4, C[(v + k) % 6]); R(a + 2, b + 2, 3, 1, '#101014'); } }); }
-function lmAd(t, v) { return lmCanvas('ad' + t + v, 132, 26, (R, T) => {   // 빛바랜 칠 광고 (을지로)
-  R(0, 0, 132, 26, 'rgba(232,222,196,.55)'); R(0, 0, 132, 2, 'rgba(160,60,40,.55)'); T(t, 66, 14, 15, ['rgba(140,40,30,.8)', 'rgba(30,60,110,.8)', 'rgba(40,90,50,.8)'][v % 3]); }); }
+function lmAd(t, v) { return lmCanvas('ad' + t + v, 88, 26, (R, T) => {   // 빛바랜 칠 광고 (을지로): 맨벽 두 칸 폭
+  R(0, 0, 88, 26, 'rgba(232,222,196,.55)'); R(0, 0, 88, 2, 'rgba(160,60,40,.55)'); T(t, 44, 14, t.length > 5 ? 11 : 13, ['rgba(140,40,30,.8)', 'rgba(30,60,110,.8)', 'rgba(40,90,50,.8)'][v % 3]); }); }
 function lmMural(n, v) {   // 성수 벽화: 칸 n개 폭 (도트 띠로 그린 노을 도시 · 물결 · 꽃 · 기하 무늬)
   const w = n * TILE - 10, h = 40;
   return lmCanvas('mu' + n + v, w, h, R => {
@@ -124,16 +124,19 @@ function lmInit() {
   // 1) 1층 정면 맨벽 칸마다 (문·창 칸은 건너뛴다) 구역 꾸러미에서 하나씩, 건물마다 많아야 셋
   BLD.forEach((b, bi) => {
     if (b.vacant || !b.fh) return; const D = LM_WALL[dname(Math.floor((b.x0 + b.x1) / 2), b.y1 + 1)]; if (!D) return;
-    const cols = []; for (let x = b.x0 + 1; x <= b.x1 - 1; x++) if (wallCh(at(x, b.y1)) && !used.has(x + ',' + (b.y1 + 1))) cols.push(x);
-    if (!cols.length) return; let n = 0;
+    // 붙일 칸: 맨벽('#')과 유리창('N')만 (잠긴 문 'X'에는 붙이지 않는다). 칠·글씨(벽화·광고·태그·손글씨)는 맨벽에만, 유리엔 포스터·스티커만
+    const cols = [], glass = new Set(); for (let x = b.x0 + 1; x <= b.x1 - 1; x++) { const c = at(x, b.y1); if ((c === '#' || c === 'N') && !used.has(x + ',' + (b.y1 + 1))) { cols.push(x); if (c === 'N') glass.add(x); } }
+    if (!cols.length) return; let n = 0; const solidRun = (i, j) => { for (let k = i; k <= j; k++) if (glass.has(cols[k])) return false; return true; };
     if (D.mural && b.kind !== 'shop' || D.mural && lmHash(bi, 1) < 0.35) {   // 성수: 연달아 맨벽 셋 이상이면 벽화
-      for (let i = 0; i < cols.length; i++) { let j = i; while (j + 1 < cols.length && cols[j + 1] === cols[j] + 1) j++; if (j - i + 1 >= 3) { wall.push({ k: 'mural', b: bi, x: cols[i] * TILE + 5, y: b.y1 * TILE + 4, n: Math.min(5, j - i + 1), v: bi % 4 }); n = 9; break; } i = j; } }
-    if (D.ads && lmHash(bi, 2) < 0.35) { for (let i = 0; i + 2 < cols.length; i++) if (cols[i + 2] === cols[i] + 2) { wall.push({ k: 'ad', b: bi, x: cols[i] * TILE + 6, y: b.y1 * TILE + 4, t: D.ads[bi % D.ads.length], v: bi % 3 }); cols.splice(i, 3); n++; break; } }
+      const sc = cols.filter(x => !glass.has(x));   // 맨벽 칸끼리 이어진 곳만
+      for (let i = 0; i < sc.length; i++) { let j = i; while (j + 1 < sc.length && sc[j + 1] === sc[j] + 1) j++; if (j - i + 1 >= 2) { wall.push({ k: 'mural', b: bi, x: sc[i] * TILE + 5, y: b.y1 * TILE + 4, n: Math.min(5, j - i + 1), v: bi % 4 }); n = 9; break; } i = j; }
+      if (n < 9 && sc.length) { wall.push({ k: 'mural', b: bi, x: sc[0] * TILE + 5, y: b.y1 * TILE + 4, n: 1, v: bi % 4 }); n = 2; } }   // 정면은 창과 벽이 번갈아 이어진 벽이 드물다: 한 칸짜리 벽화 판
+    if (D.ads && lmHash(bi, 2) < 0.5) { for (let i = 0; i + 1 < cols.length; i++) if (cols[i + 1] === cols[i] + 1 && solidRun(i, i + 1)) { wall.push({ k: 'ad', b: bi, x: cols[i] * TILE + 4, y: b.y1 * TILE + 4, t: D.ads[bi % D.ads.length], v: bi % 3, w2: true }); cols.splice(i, 2); n++; break; } }   // 맨벽 두 칸에 걸친 빛바랜 광고
     for (const x of cols) { if (n >= 3) break; const h = lmHash(x, b.y1, 3); if (h > 0.62) continue; n++;
-      const r = lmHash(x, b.y1, 5);
+      const r = glass.has(x) ? (lmHash(x, b.y1, 5) < 0.75 ? 0 : 0.5 + D.tag + 0.001) : lmHash(x, b.y1, 5);   // 유리창: 포스터 아니면 스티커
       if (r < 0.5) wall.push({ k: 'poster', b: bi, x: x * TILE + 9, y: b.y1 * TILE + 5, p: D.posters[Math.floor(lmHash(x, bi, 6) * D.posters.length)], v: (x + bi) % 4 });
       else if (r < 0.5 + D.tag) wall.push({ k: 'tag', b: bi, x: x * TILE, y: b.y1 * TILE + 18, v: (x * 3 + b.y1) % 40 });
-      else if (r < 0.5 + D.tag + D.sticker) wall.push({ k: 'sticker', b: bi, x: x * TILE + 12, y: b.y1 * TILE + 20, v: (x + b.y1) % 12 });
+      else if (r < 0.5 + D.tag + D.sticker || glass.has(x)) wall.push({ k: 'sticker', b: bi, x: x * TILE + 12, y: b.y1 * TILE + 20, v: (x + b.y1) % 12 });
       else wall.push({ k: 'hand', b: bi, x: x * TILE + 3, y: b.y1 * TILE + 8, t: D.hand[(x + bi) % D.hand.length], v: (x + bi) % 3 }); }
     // 바닥 칠: 주택가 집 앞 맨땅에 '주차금지'
     if (D.paint && b.kind !== 'shop' && lmHash(bi, 7) < 0.5) for (const x of [b.x0 + 2, b.x1 - 3]) { const y = b.y1 + 1; if (at(x, y) === '.' || at(x, y) === ',') { if (!used.has(x + ',' + y) && !used.has((x + 1) + ',' + y)) { ground.push({ k: 'nopark', x: x * TILE + 6, y: y * TILE + 14 }); used.add(x + ',' + y); used.add((x + 1) + ',' + y); break; } } }
@@ -164,7 +167,9 @@ function lmInit() {
   if (Rv) for (let x = 12; x < MW - 12; x += 23) { if ((STAGE.roadsX || []).some(r => x >= r - 3 && x < r + 7)) continue; const y = (Rv.y + Rv.rows - 3) * TILE + 20;   // 남쪽 산책로 첫 줄(난간 앞): 구경꾼은 그 아래 두 줄에 선다
     scenes.push({ k: lmHash(x, 1, 4) < 0.55 ? 'busk' : 'photo', x: x * TILE + TILE / 2, y }); }
   BLD.forEach((b, bi) => { if (b.vacant || b.kind !== 'shop' || !/포차|호프|분식|국밥|치킨|백반|곱창|골뱅이/.test((b.signs?.[0] || ''))) return; if (lmHash(bi, 12) > 0.3) return;
-    const x = (b.x1 - 1) * TILE, y = (b.y1 + 1) * TILE + TILE * 0.55; scenes.push({ k: 'rider', x, y }); });
+    // 앉을 자리와 오토바이 자리(오른쪽 한 칸)가 맨 보도여야 한다: 화단(B)·거리 소품 칸이면 오토바이가 가려진다
+    const ty = b.y1 + 1, open = tx => at(tx, ty) === '=' && bldAt(tx, ty) < 0 && !(SD?.list || []).some(o => Math.floor(o.x / TILE) === tx && Math.floor(o.y / TILE) === ty);
+    for (const tx of [b.x1 - 1, b.x1 - 2, b.x0 + 2, b.x0 + 3]) if (open(tx - 1) && open(tx) && open(tx + 1)) { scenes.push({ k: 'rider', x: tx * TILE, y: ty * TILE + TILE * 0.55 }); break; } });
   const grid = new Map(), put = o => { const key = Math.floor(o.x / TILE / 16) + ',' + Math.floor(o.y / TILE / 16); if (!grid.has(key)) grid.set(key, []); grid.get(key).push(o); };
   ground.forEach(put); sets.forEach(put);
   const wallBy = new Map(); for (const o of wall) { if (!wallBy.has(o.b)) wallBy.set(o.b, []); wallBy.get(o.b).push(o); }
@@ -187,9 +192,10 @@ function drawLandmarksGround() {
     const oy = o.y + o.h * TILE - h;   // 밑동을 자리 아래 끝에 맞춘다 (천막·깃대는 위로 솟는다)
     ctx.drawImage(s, o.x + Math.round((o.w * TILE - w) / 2), oy, w, h);
   });
-  for (const sc of S.lm?.active || []) if (sc.prop && inView(sc.prop.x, sc.prop.y, 80)) drawSceneProp(sc.prop);
   ctx.restore();
 }
+// 장면 소품(바둑판·기타 가방·배달 오토바이)은 거리 소품(벤치) 뒤에 그린다: 벤치 밑에 바둑판이 묻히던 것
+function drawLandmarkSceneProps() { if (CUR_F || !S?.lm?.active?.length) return; ctx.save(); ctx.imageSmoothingEnabled = false; for (const sc of S.lm.active) if (sc.prop && inView(sc.prop.x, sc.prop.y, 80)) drawSceneProp(sc.prop); ctx.restore(); }
 function drawSceneProp(p) {
   if (p.k === 'board') { ctx.fillStyle = '#14141a'; ctx.fillRect(p.x - 18, p.y - 6, 36, 21); ctx.fillStyle = '#c8a060'; ctx.fillRect(p.x - 15, p.y - 9, 30, 21); ctx.fillStyle = '#7a5a30';   // 바둑판 · 돌
     for (let k = 1; k < 5; k++) { ctx.fillRect(p.x - 15 + k * 6, p.y - 9, 1, 21); ctx.fillRect(p.x - 15, p.y - 9 + k * 4, 30, 1); }
@@ -197,7 +203,7 @@ function drawSceneProp(p) {
   else if (p.k === 'case') { ctx.fillStyle = '#14141a'; ctx.fillRect(p.x - 21, p.y - 3, 42, 15); ctx.fillStyle = '#3a2a1a'; ctx.fillRect(p.x - 20, p.y - 4, 40, 12); ctx.fillStyle = '#7a1a2a'; ctx.fillRect(p.x - 17, p.y - 1, 34, 6);   // 기타 가방 · 동전
     ctx.fillStyle = '#e8c83a'; ctx.fillRect(p.x - 9, p.y, 3, 3); ctx.fillRect(p.x + 3, p.y + 1, 3, 3); ctx.fillStyle = '#c8ccd2'; ctx.fillRect(p.x + 9, p.y, 3, 3);
     ctx.fillStyle = '#1a1a20'; ctx.fillRect(p.x + 27, p.y - 15, 15, 21); ctx.fillStyle = '#3a3a44'; ctx.fillRect(p.x + 30, p.y - 12, 9, 9); }   // 작은 앰프
-  else if (p.k === 'scoot') { const s = SD_ART?.scooter?.(1); if (s) ctx.drawImage(s, p.x - 24, p.y - 24, 48, 30);
+  else if (p.k === 'scoot') { const s = SD_ART?.scooter?.(1); if (s) ctx.drawImage(s, p.x - 32, p.y - 32, 64, 40);   // 배달 오토바이: 거리 소품보다 크게 (장면의 주인공)
     ctx.fillStyle = '#e8e2d2'; ctx.fillRect(p.x + 27, p.y - 3, 9, 6); ctx.fillStyle = '#d8302a'; ctx.fillRect(p.x + 28, p.y - 2, 7, 3); }   // 길바닥 위 야식 그릇
 }
 function drawLandmarkWall(b) {
@@ -226,12 +232,12 @@ function sceneSpawn(c) {
   const out = [], put = (x, y, a, o = {}) => { const gi = cityGuardSlot(), g = makeGuard(Object.assign({ kind: 'civ', at: [Math.floor(x / TILE), Math.floor(y / TILE)], radio: false }, o.body ? { body: o.body } : {}), gi);
     g.evt = '__scene'; g.x = x; g.y = y; g.fl = 0; g.a = g.want = a; g.post = a; g.route = [{ x, y, pause: 999 }]; g.ri = 0; g.wait = 999; placeGuard(g, gi); out.push(g); return g; };
   let prop = null;
-  if (c.k === 'baduk') { prop = { k: 'board', x: c.x, y: c.y + 10 }; const a = put(c.x - 30, c.y, 0, { body: 'old' }), b = put(c.x + 30, c.y, Math.PI, { body: 'old' }); a.seat = b.seat = true; }   // 공원 바둑: 마주 앉은 노인 둘
+  if (c.k === 'baduk') { prop = { k: 'board', x: c.x, y: c.y + 4 }; const a = put(c.x - 42, c.y, 0, { body: 'old' }), b = put(c.x + 42, c.y, Math.PI, { body: 'old' }); a.seat = b.seat = true; }   // 판이 앉은 두 사람 다리에 가리지 않게 사이를 띄우고, 판은 사람 위 단계에서 그린다   // 공원 바둑: 마주 앉은 노인 둘
   else if (c.k === 'sleep') { const g = put(c.x, c.y, 0); g.state = 'SLEEP'; g.sleep = true; }   // 벤치에서 잠든 사람 (zz)
   else if (c.k === 'busk') { prop = { k: 'case', x: c.x, y: c.y + 24 }; const s = put(c.x, c.y, Math.PI / 2, { body: 'jacket' }); s.chatter = true;   // 버스킹: 노래하는 사람과 멈춰 선 구경꾼
     for (let k = 0; k < 2 + (Math.floor(c.x / TILE) % 2); k++) { const ax = c.x + (k - 1) * 46, ay = c.y + 66 + (k % 2) * 16; put(ax, ay, Math.atan2(c.y - ay, c.x - ax)); } }
   else if (c.k === 'photo') { const p = put(c.x - 36, c.y, 0); p.shopper = true; p.act = 'workHigh'; const q = put(c.x + 36, c.y, Math.PI); q.chatter = true; }   // 사진 찍는 둘: 휴대폰을 든 사람 · 포즈 잡는 사람
-  else if (c.k === 'rider') { prop = { k: 'scoot', x: c.x, y: c.y }; const r = put(c.x - 6, c.y - 6, Math.PI / 2, { body: 'helmet' }); r.outfit = 'courier'; r.seat = true; }   // 오토바이 옆에 앉아 야식 먹는 배달 기사
+  else if (c.k === 'rider') { prop = { k: 'scoot', x: c.x + 18, y: c.y }; const r = put(c.x - 30, c.y - 4, 0, { body: 'helmet' }); r.outfit = 'courier'; r.seat = true; }   // 오토바이 옆 연석에 걸터앉아 (오토바이를 가리지 않게)   // 오토바이 옆에 앉아 야식 먹는 배달 기사
   if (PR && out.length) prWarm(out.map(charOf), true);
   return { c, gs: out, prop };
 }
@@ -241,11 +247,12 @@ function lmSceneUpdate() {
       for (const g of s.gs) if (!g.off && npcAlive(g) && g.state !== 'PANIC' && g.state !== 'FLEE') evGone(g); s.prop = null; L.active.splice(i, 1); } }   // 놀란 사람은 그대로 둔다 (임시 인물이라 멀어지면 정리된다)
   if (L.active.length >= SCENE_MAX || flOf(P) || P.car && Math.abs(P.car.v || 0) > 300 || S.wanted >= 2) return;
   let best = null, bd = SCENE_R;
-  for (const c of LM.scenes) { if (L.active.some(s => s.c === c || dist(s.c.x, s.c.y, c.x, c.y) < 900)) continue; const d = dist(c.x, c.y, P.x, P.y); if (d > 420 && d < bd && !inView(c.x, c.y, 120)) { bd = d; best = c; } }
+  const carts = [...(S.life?.vend?.values() || [])];   // 노점 손수레가 선 가게 앞엔 배달 기사 장면을 세우지 않는다 (서로 겹쳐 보이던 것)
+  for (const c of LM.scenes) { if (L.active.some(s => s.c === c || dist(s.c.x, s.c.y, c.x, c.y) < 900) || carts.some(v => dist(v.x, v.y, c.x, c.y) < 260)) continue; const d = dist(c.x, c.y, P.x, P.y); if (d > 420 && d < bd && !inView(c.x, c.y, 120)) { bd = d; best = c; } }
   if (best) L.active.push(sceneSpawn(best));
 }
 // ---- 이어 붙이기: 땅 소품 앞, 정면 간판 뒤, 어둠 뒤 불빛, 직원 갱신(0.5초마다 장면)
-if (typeof drawStreetDeco === 'function') { const _d = drawStreetDeco; drawStreetDeco = function () { drawLandmarksGround(); return _d.apply(this, arguments); }; }
+if (typeof drawStreetDeco === 'function') { const _d = drawStreetDeco; drawStreetDeco = function () { drawLandmarksGround(); const r = _d.apply(this, arguments); drawLandmarkSceneProps(); return r; }; }
 if (typeof drawStreetDecoGlow === 'function') { const _g = drawStreetDecoGlow; drawStreetDecoGlow = function () { const r = _g.apply(this, arguments); drawLandmarksGlow(); return r; }; }
 if (typeof drawStoreSigns === 'function') { const _s = drawStoreSigns; drawStoreSigns = function (b) { drawLandmarkWall(b); return _s.apply(this, arguments); }; }
 if (typeof staffUpdate === 'function') { const _u = staffUpdate; staffUpdate = function (dt) { const r = _u.apply(this, arguments); if (STAGE.cityLife && S && ((S.lmT = (S.lmT || 0) - (dt || 0)) <= 0)) { S.lmT = 1; lmSceneUpdate(); } return r; }; }
