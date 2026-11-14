@@ -6487,6 +6487,8 @@ function planInterior(g, b, bi, f) {
         if (open) {   // 자유 모드: 왼쪽 위는 엘리베이터 문 앞이라 소파를 한 칸 옆이나 한 줄 아래로
           const at = [[x, iy0], [x + 1, iy0], [x, iy0 + 2], [x + 1, iy0 + 2]].find(([a, b]) => a + 1 <= Math.min(sx1, x + step - 2 >= x + 1 ? x + step - 2 : sx1) && furn(a, b, 2, 1, 'sofa', true, 0));
           if (at) furn(at[0], at[1] + 1, 1, 1, 'tableS', true, 0) || furn(at[0] + 1, at[1] + 1, 1, 1, 'tableS', true, 0);
+          // 탁자 둘레 의자 둘 (소파는 맵 정리 단계에서 빠지므로 앉을 자리를 따로 둔다)
+          const T = FURN[FURN.length - 1]; if (T && T.t === 'tableS' && T.fl === f) { let n = 0; for (const [dx, dy, r] of [[-1, 0, 1], [1, 0, 3], [0, 1, 2], [0, -1, 0]]) if (n < 2 && furn(T.x + dx, T.y + dy, 1, 1, 'chair', true, r)) n++; }
         } else { furn(x, iy0, 2, 1, 'sofa', true, 0); furn(x, iy0 + 1, 1, 1, 'tableS', true, 0); }
         furn(x + 1, Math.max(iy0 + 2, yb), 1, 1, 'kscreen', true, 0); }
     }
