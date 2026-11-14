@@ -284,8 +284,9 @@
   keys.forEach((f, i) => { const [hx0, hy0] = find(homes[f]), [ox0, oy0] = find(homes[keys[(i + 1) % 4]]), [px0, py0] = find(homes[keys[(i + 3) % 4]]);
     st.guards.push({ kind: 'g2', fac: f, route: [[hx0, hy0 + BS - 1, 3], [ox0 + BS - 1, oy0, 3]], radio: false }, { kind: 'g1', fac: f, route: [[hx0 + BS - 1, hy0, 3], [px0, py0 + BS - 1, 3]], radio: false }); });
   // 청계천 산책로: 북쪽 축대 길과 남쪽 둔치를 걷는 사람들
-  for (let i = 0; i < 8; i++) { const x0 = 6 + i * 28, y = i % 2 ? RIVER_Y + RIVER_ROWS - 2 : RIVER_Y;
-    st.guards.push({ kind: 'civ', body: i % 2 ? 'fBob' : undefined, route: [[x0, y, 2], [Math.min(W - 6, x0 + 34), y, 2]] }); }
+  // 다리(세로 도로) 사이 축대 길 위에서 출발해 다음 칸으로 건너간다. 블록 주기(P)에 맞춘다 — 예전 28칸 주기 그대로면 다리 난간(¦) 위에 서는 사람이 생겼다
+  for (let i = 0; i < 8; i++) { const x0 = 6 + i * P, y = i % 2 ? RIVER_Y + RIVER_ROWS - 2 : RIVER_Y;
+    st.guards.push({ kind: 'civ', body: i % 2 ? 'fBob' : undefined, route: [[x0, y, 2], [Math.min(W - 10, x0 + P), y, 2]] }); }
   st.guards.push(...gangs);
   return st;
 }, new URLSearchParams(location.search).get('study') === 'city-xl' ? [window.__CITY_XL__()] : []),
