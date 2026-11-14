@@ -95,6 +95,7 @@ const REVENGE = [
         gsay(ev.cops[0], '흉기 내려놔! 내려놓으라고!', 2.6); }
       if ((ev.stepT = (ev.stepT || 0) - dt) <= 0) { ev.stepT = 0.6; let tgt = null, bd = 280;
         for (const o of [...ev.cops, ...actorsNear(g.x, g.y)]) { if (o === g || !npcAlive(o) || o.off || o.crew || (o.evt && !ev.cops.includes(o)) || !(o.civ || o.police)) continue; const d = dist(o.x, o.y, g.x, g.y); if (d < bd) { bd = d; tgt = o; } }
+        { let cd = 160; for (const c of ev.cops) if (npcAlive(c) && !c.off) { const d = dist(c.x, c.y, g.x, g.y); if (d < cd) { cd = d; tgt = c; } } }   // 다가온 경찰이 먼저다 (거리에 사람이 많아져도 경찰과 맞붙는다)
         if (!P.car && (dist(P.x, P.y, g.x, g.y) < 160 || (!tgt && dist(P.x, P.y, g.x, g.y) < 900))) tgt = P; ev.tgt = tgt; }
       if (ev.tgt) evRun(g, ev.tgt.x, ev.tgt.y, 150, dt); for (const c of ev.cops) if (npcAlive(c) && dist(c.x, c.y, g.x, g.y) > 30) evRun(c, g.x, g.y, 170, dt);
       const t = ev.tgt;
