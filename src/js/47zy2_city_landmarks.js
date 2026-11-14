@@ -235,7 +235,7 @@ function sceneSpawn(c) {
   if (PR && out.length) prWarm(out.map(charOf), true);
   return { c, gs: out, prop };
 }
-function sceneUpdate() {
+function lmSceneUpdate() {
   if (!STAGE.cityLife || !lmReady()) return; const L = S.lm || (S.lm = { active: [], t: 0 }), P = S.player;
   for (let i = L.active.length - 1; i >= 0; i--) { const s = L.active[i]; if (dist(s.c.x, s.c.y, P.x, P.y) > SCENE_DROP || s.gs.some(g => g.state === 'PANIC' || g.state === 'FLEE')) {   // 멀어졌거나 놀라 달아나면 장면을 접는다
       for (const g of s.gs) if (!g.off && npcAlive(g) && g.state !== 'PANIC' && g.state !== 'FLEE') evGone(g); s.prop = null; L.active.splice(i, 1); } }   // 놀란 사람은 그대로 둔다 (임시 인물이라 멀어지면 정리된다)
@@ -248,5 +248,5 @@ function sceneUpdate() {
 if (typeof drawStreetDeco === 'function') { const _d = drawStreetDeco; drawStreetDeco = function () { drawLandmarksGround(); return _d.apply(this, arguments); }; }
 if (typeof drawStreetDecoGlow === 'function') { const _g = drawStreetDecoGlow; drawStreetDecoGlow = function () { const r = _g.apply(this, arguments); drawLandmarksGlow(); return r; }; }
 if (typeof drawStoreSigns === 'function') { const _s = drawStoreSigns; drawStoreSigns = function (b) { drawLandmarkWall(b); return _s.apply(this, arguments); }; }
-if (typeof staffUpdate === 'function') { const _u = staffUpdate; staffUpdate = function (dt) { const r = _u.apply(this, arguments); if (STAGE.cityLife && S && ((S.lmT = (S.lmT || 0) - (dt || 0)) <= 0)) { S.lmT = 1; sceneUpdate(); } return r; }; }
+if (typeof staffUpdate === 'function') { const _u = staffUpdate; staffUpdate = function (dt) { const r = _u.apply(this, arguments); if (STAGE.cityLife && S && ((S.lmT = (S.lmT || 0) - (dt || 0)) <= 0)) { S.lmT = 1; lmSceneUpdate(); } return r; }; }
 window.__cityLandmarks = () => ({ LM, active: S?.lm?.active || [], off: v => { LM_OFF = !!v; } });   // 시험·점검용
