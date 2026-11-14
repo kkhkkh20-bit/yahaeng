@@ -338,7 +338,7 @@ function draw() {
     if (ka.list) ka.list.forEach(g => ring(g, '#c4d3cd'));
     if (ka.k !== 'none' && ka.k !== 'counter' && !subduedAction(ka) && (ka.g || ka.kill)) ring(ka.g || ka.kill, ka.holdOnly?'#e8473c':'#c4d3cd',ka.c);
     if (ka.k === 'counter') { ring(ka.g, '#f2c46b'); if (guideFull()) tag(ka.g.x, ka.g.y - 46, '지금 [공격] — 반격', '#f2c46b', 1); else tag(ka.g.x, ka.g.y - 46, '반격', '#f2c46b', 1, KK('atk'), 3.5); }
-    if (pa.k === 'lamp') { const at=lampControl(pa.l);ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(at.x, at.y, 16, 0, TAU); ctx.stroke(); }
+    if (pa.k === 'lamp' && !STAGE.cityLife) { const at=lampControl(pa.l);ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(at.x, at.y, 16, 0, TAU); ctx.stroke(); }
     if (pa.k === 'down' && pa.l.roofDoor) {
       const d = pa.l.roofDoor; ctx.save(); ctx.strokeStyle = '#f2c46b'; ctx.fillStyle = 'rgba(242,196,107,.12)'; ctx.lineWidth = 2;
       if (!d.dx) { ctx.fillRect(d.x - 12, d.y - 32, 24, 32); ctx.strokeRect(d.x - 12, d.y - 32, 24, 32); }

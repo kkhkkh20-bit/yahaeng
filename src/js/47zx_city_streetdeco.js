@@ -115,7 +115,7 @@ function sdInit() {
     if (b.vacant) return; const y = b.y1 + 1, sign = (b.signs?.[0] || '').trim(), up = (b.floorsUse || []).slice(1).some(u => u === 'pc' || u === 'karaoke' || u === 'billiards');
     const spots = []; for (let x = b.x0 + 1; x <= b.x1 - 1; x++) if (wallCh(at(x, b.y1)) && open(at(x, y)) && bldAt(x, y) < 0) spots.push(x);
     if (!spots.length) return; const pick = k => spots[Math.floor(sdHash(bi, k, 7) * spots.length)];
-    const put = (k, x, w = 1, o) => { if (x != null && x + w - 1 <= b.x1 && !carNear(x, y, 60) && take(x, y, w)) add(k, x, y, o); };
+    const put = (k, x, w = 1, o) => { if (x != null && x + w - 1 <= b.x1 && !carNear(x, y, 60) && take(x, y, w)) add(k, x, y, Object.assign({ sy: -30 }, o)); };   // 앞벽에 붙여 세운다: 발밑이 칸 가운데보다 위라 지나가는 사람이 소품 앞으로 그려진다 (전엔 칸 아래쪽에 서 있어 사람이 소품을 뚫고 지나갔다)
     if (b.kind === 'shop') {
       if (FOOD.test(sign)) { const n = Math.min(2, Math.floor(spots.length / 3)); for (let k = 0; k < n; k++) put('pochaTable', pick(k), 1, { v: (bi + k) % 2, night: true }); put('crates', pick(5), 1, { v: bi % 2 }); }
       else if (STORE.test(sign)) { put('vending', pick(0), 1, { v: bi % 3, glow: true }); if (/편의점|마트|슈퍼/.test(sign)) put('freezer', pick(1)); }
@@ -133,10 +133,10 @@ function sdInit() {
   // 1-2) 보도 연석가: 블록 둘레 보도('=')가 차도와 맞닿는 칸에 띄엄띄엄 볼라드·분리수거함·표지판 (모퉁이·횡단보도 근처는 비운다)
   { const [BX0, BY0] = STAGE.blockCount || [0, 0], BS0 = STAGE.blockSize || 0;
     for (let by = 0; by < BY0; by++) for (let bx = 0; bx < BX0; bx++) { const [x0, y0] = STAGE.blockOrigin(bx, by), e = BS0 - 1;
-      const side = (pts) => pts.forEach(([x, y], i) => { if (i < 3 || i > pts.length - 4 || at(x, y) !== '=' || bldAt(x, y) >= 0) return; const h = sdHash(x, y, 13); if (h > 0.16 || !take(x, y)) return;
-        add(h < 0.06 ? 'bollard' : h < 0.12 ? 'bin' : 'sign', x, y, { v: (x + y) % 3 }); });
+      const side = (pts, off) => pts.forEach(([x, y], i) => { if (i < 3 || i > pts.length - 4 || at(x, y) !== '=' || bldAt(x, y) >= 0) return; const h = sdHash(x, y, 13); if (h > 0.16 || !take(x, y)) return;
+        add(h < 0.06 ? 'bollard' : h < 0.12 ? 'bin' : 'sign', x, y, Object.assign({ v: (x + y) % 3 }, off)); });   // 연석 쪽(차도 쪽)으로 붙인다: 칸 가운데를 걷는 행인과 겹치지 않게
       const N = [], S2 = [], Wl = [], E = []; for (let k = 0; k <= e; k++) { N.push([x0 + k, y0]); S2.push([x0 + k, y0 + e]); Wl.push([x0, y0 + k]); E.push([x0 + e, y0 + k]); }
-      side(N); side(S2); side(Wl); side(E); } }
+      side(N, { sy: -36 }); side(S2, {}); side(Wl, { sx: -15 }); side(E, { sx: 15 }); } }
   // 2) 블록 안 마당: 주차된 차(A 두 칸) 옆 주차선 · 공장지대 맨땅엔 팔레트·드럼통·컨테이너 · 공원(풀밭이 많은 블록)엔 벤치·가로등·운동 기구·정자
   const [BX, BY] = STAGE.blockCount || [0, 0], BS = STAGE.blockSize || 0;
   for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) {
@@ -199,7 +199,7 @@ function drawStreetDeco() {
     const k = SD_SCALE[o.k] || SD_PX;
     if (o.k === 'pavilion') { ctx.drawImage(sdPavilion(), o.x, o.y + 4, 72 * k, 66 * k); return; }
     const s = SD_ART[o.k](o.v || 0), w = s.width * k, h = s.height * k;
-    const bx = o.k === 'container' ? o.x + 4 : o.x + (TILE - w) / 2, by = o.y + TILE - h + (o.k === 'lamp' ? 6 : 4);
+    const bx = (o.k === 'container' ? o.x + 4 : o.x + (TILE - w) / 2) + (o.sx || 0), by = o.y + TILE - h + (o.k === 'lamp' ? 6 : 4) + (o.sy || 0);
     ctx.drawImage(s, Math.round(bx), Math.round(by), w, h);
   });
   ctx.restore();
@@ -209,7 +209,7 @@ function drawStreetDecoGlow() {
   if (!STAGE.cityLife || CUR_F || !SD) return; const night = (STAGE.nightShade ?? 0.6) > 0.3; if (!night) return;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   sdVisible(o => {
-    const k = SD_SCALE[o.k] || SD_PX, box = (sw, sh, dy) => [o.x + (TILE - sw * k) / 2, o.y + TILE - sh * k + dy];
+    const k = SD_SCALE[o.k] || SD_PX, box = (sw, sh, dy) => [o.x + (TILE - sw * k) / 2 + (o.sx || 0), o.y + TILE - sh * k + dy + (o.sy || 0)];
     if (o.k === 'vending') { const [x, y] = box(12, 20, 4); ctx.fillStyle = 'rgba(200,225,255,.35)'; ctx.fillRect(x + 2 * k, y + 2 * k, 8 * k, 8 * k); ctx.fillStyle = 'rgba(160,200,255,.12)'; ctx.fillRect(x - 2 * k, y + 18 * k, 16 * k, 4 * k); }
     else if (o.k === 'aboard' && o.glow) { const [x, y] = box(9, 14, 4); ctx.fillStyle = 'rgba(255,220,150,.28)'; ctx.fillRect(x + k, y + k, 7 * k, 10 * k); }
     else if (o.k === 'lamp') { const [x, y] = box(8, 32, 6); ctx.fillStyle = 'rgba(255,226,150,.5)'; ctx.fillRect(x + 2 * k, y + 4 * k, 4 * k, 2 * k); ctx.fillStyle = 'rgba(255,214,140,.06)'; for (let j = 0; j < 3; j++) ctx.fillRect(x - (2 + j * 3) * k, y + (29 - j) * k, (12 + j * 6) * k, (3 + j * 2) * k); }

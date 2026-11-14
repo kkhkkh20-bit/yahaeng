@@ -35,7 +35,7 @@ function purchasedPropFurnKey(f){
   return ['bookcaseBlue','bookcaseWood','bookcaseRed'][v];
  }
  if(f.t==='plant'&&f.w===1&&f.h===1)return seed%2?'plantLean':'plantWide';
- if(f.t==='board'&&f.h===1)return f.w>1&&seed%2?'noticeBoard':'graphBoard';
+ if(f.t==='board'&&f.h===1)return f.w>1&&seed%2&&!STAGE.cityLife?'noticeBoard':'graphBoard';  // 자유 모드(을지로)는 그래프 칠판만: 게시판 그림에 일본 신사 문 무늬가 있다
  // A printer may be explicitly assigned to an existing service counter. Never
  // put one on a food bar, loose floor, or a surface holding mission loot.
  if(f.t==='counter'&&f.w>=2&&f.h===1&&STAGE.purchasedProps?.counterPrinters?.some(a=>a.x===f.x&&a.y===f.y&&(a.fl||0)===(f.fl||0))){
