@@ -121,9 +121,9 @@ function prPalette(pk, body) {
 
 // 시트 = 조각 묶음(칠하지 않은 채 만들어 둔다). 실제 칠하기는 prPart 가 조각 단위로
 function prSheet(key) {
-  if (prVar[key]) return prVar[key]; const [pk, bn] = prSplit(key), base = bn ? prBodies[bn] : prBase;
+  const hit = prVar[key]; if (hit) { if (STAGE.cityLife) hit.lu = performance.now(); return hit; } const [pk, bn] = prSplit(key), base = bn ? prBodies[bn] : prBase;
   if (!base) { if (bn) prLoadBody(bn); return null; } const pal = prPalette(pk, bn); if (!pal) return null;
-  const sh = prVar[key] = { key, base, P4: pal.map(h => hexRgb(h).split(',').map(Number)), parts: [] };
+  const sh = prVar[key] = { key, lu: performance.now(), base, P4: pal.map(h => hexRgb(h).split(',').map(Number)), parts: [] };
   if (key === 'ninja' || (PR.style === 'modular' && bn && bn.startsWith('hero'))) prVar[key + '_ol'] = { key: key + '_ol', of: sh, parts: [] };  // 숨었을 때 쓰는 밝은 외곽선 실루엣 (주인공만)
   return sh;
 }
