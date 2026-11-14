@@ -198,9 +198,7 @@ function planInterior(g, b, bi, f) {
     }
     else if (use === 'store') { furn(sx0, iy0, 1, 1, 'fridge'); furn(sx0 + 1, iy0, 1, 1, 'fridge'); for (let y = iy0 + 2; y < iy1 - 1; y += 2) for (let x = sx0 + 1; x + 2 <= sx1 - 1; x += 4) furn(x, y, 3, 1, 'shelf'); if (furn(sx1 - 1, iy1 - 1, 2, 1, 'counter', true, 0)) furn(sx1, iy1 - 2, 1, 1, 'chairD', true, 0); }  // 가게: 안쪽 벽 음료 냉장고, 진열대 줄, 계산대와 점원 의자
     else if (use === 'pc') { for (let y = iy0; y + 1 < iy1; y += 3) for (let x = sx0; x <= sx1; x++) if ((x - sx0) % 4 !== 3 && furn(x, y, 1, 1, 'pc', true, 0)) furn(x, y + 1, 1, 1, 'chairD', true, 2); }  // 줄마다 컴퓨터 + 의자, 그 아래 통로
-    if (open && use === 'pc') { furn(sx1 - 1, iy1 - 1, 2, 1, 'counter', true, 0) || furn(sx0 + 1, iy1 - 1, 2, 1, 'counter', true, 0); furn(sx1, iy1 - 2, 1, 1, 'fridge', true, 0); }  // PC방: 앞쪽 카운터와 음료 냉장고
     else if (use === 'academy') { furn(sx0 + 1, iy0, Math.max(2, sx1 - sx0 - 1), 1, 'board'); for (let y = iy0 + 2; y + 1 < iy1; y += 3) for (let x = sx0; x <= sx1; x += 2) if (furn(x, y, 1, 1, 'desk', true, 0)) furn(x, y + 1, 1, 1, 'chairD', true, 2); }  // 칠판을 보는 책상·의자 줄
-    if (open && use === 'academy') { furn(sx1, iy0 + 2, 1, 1, 'shelf', true, 0) || furn(sx1, iy0 + 3, 1, 1, 'shelf', true, 0); furn(sx0, iy1 - 1, 1, 1, 'locker') || furn(sx1, iy1 - 1, 1, 1, 'locker'); furn(sx1, iy1 - 2, 1, 1, 'plant'); }  // 학원: 옆벽 책장 · 사물함 · 화분
     else if (use === 'club') {  // 클럽: 바·디제이 부스·스피커, 가운데 춤추는 자리, 색 조명
       fill(sx0, iy0, sx1, iy1, 'h');
       furn(sx0 + 1, iy0, Math.min(5, sx1 - sx0 - 3), 1, 'bar'); furn(sx1 - 1, iy0, 2, 1, 'dj'); furn(sx0, iy0, 1, 1, 'spk'); furn(sx1, iy1 - 1, 1, 1, 'spk');
@@ -290,6 +288,9 @@ function planInterior(g, b, bi, f) {
         const mx = sx0 + Math.floor((sx1 - sx0) / 2) - 1; furn(mx, iy0, 2, 1, 'board', true, 0) || furn(sx0 + 2, iy0, 2, 1, 'board', true, 0);
         furn(sx0 + 2, iy0, 1, 1, 'shelfS', true, 0); furn(sx1 - 2, iy0, 1, 1, 'fridge', true, 0, [[sx1 - 2, iy0 + 1]]);
         if (sx1 - sx0 >= 7 && iy1 - iy0 >= 6) for (let y = iy1 - 3; y >= iy0 + 2; y--) { const x = sx1 - 4; if (furn(x, y, 2, 1, 'table', true, 0)) { furn(x - 1, y, 1, 1, 'chairD', true, 1); furn(x + 2, y, 1, 1, 'chairD', true, 3); break; } } } }
+    // 업종별 덧붙임 (위 else-if 사슬 밖에서: 사슬 중간에 끼우면 스토리 가게 층이 사무실 배치까지 받는다)
+    if (open && use === 'pc') { furn(sx1 - 1, iy1 - 1, 2, 1, 'counter', true, 0) || furn(sx0 + 1, iy1 - 1, 2, 1, 'counter', true, 0); furn(sx1, iy1 - 2, 1, 1, 'fridge', true, 0); }  // PC방: 앞쪽 카운터와 음료 냉장고
+    if (open && use === 'academy') { furn(sx1, iy0 + 2, 1, 1, 'shelf', true, 0) || furn(sx1, iy0 + 3, 1, 1, 'shelf', true, 0); furn(sx0, iy1 - 1, 1, 1, 'locker') || furn(sx1, iy1 - 1, 1, 1, 'locker'); furn(sx1, iy1 - 2, 1, 1, 'plant'); }  // 학원: 옆벽 책장 · 사물함 · 화분
     // 자유 모드 넓은 층 채우기: 주된 배치 뒤에 남은 3×3 빈자리마다 식탁·책상 한 벌(의자 포함, 줄 사이 통로), 벽가엔 화분·서류장을 띄엄띄엄
     if (open && ['food', 'office'].includes(use)) {
       const free3 = (x, y) => { for (let yy = y - 1; yy <= y + 1; yy++) for (let xx = x - 1; xx <= x + 1; xx++) if (xx < sx0 || xx > sx1 || yy < iy0 + 1 || yy >= iy1 || !floorCh(g[yy][xx]) || keep.has(xx + ',' + yy)) return false; return true; };
