@@ -4341,8 +4341,9 @@ const STAGES = [
   keys.forEach((f, i) => { const [hx0, hy0] = find(homes[f]), [ox0, oy0] = find(homes[keys[(i + 1) % 4]]), [px0, py0] = find(homes[keys[(i + 3) % 4]]);
     st.guards.push({ kind: 'g2', fac: f, route: [[hx0, hy0 + BS - 1, 3], [ox0 + BS - 1, oy0, 3]], radio: false }, { kind: 'g1', fac: f, route: [[hx0 + BS - 1, hy0, 3], [px0, py0 + BS - 1, 3]], radio: false }); });
   // 청계천 산책로: 북쪽 축대 길과 남쪽 둔치를 걷는 사람들
-  for (let i = 0; i < 8; i++) { const x0 = 6 + i * 28, y = i % 2 ? RIVER_Y + RIVER_ROWS - 2 : RIVER_Y;
-    st.guards.push({ kind: 'civ', body: i % 2 ? 'fBob' : undefined, route: [[x0, y, 2], [Math.min(W - 6, x0 + 34), y, 2]] }); }
+  // 다리(세로 도로) 사이 축대 길 위에서 출발해 다음 칸으로 건너간다. 블록 주기(P)에 맞춘다 — 예전 28칸 주기 그대로면 다리 난간(¦) 위에 서는 사람이 생겼다
+  for (let i = 0; i < 8; i++) { const x0 = 6 + i * P, y = i % 2 ? RIVER_Y + RIVER_ROWS - 2 : RIVER_Y;
+    st.guards.push({ kind: 'civ', body: i % 2 ? 'fBob' : undefined, route: [[x0, y, 2], [Math.min(W - 10, x0 + P), y, 2]] }); }
   st.guards.push(...gangs);
   return st;
 }, new URLSearchParams(location.search).get('study') === 'city-xl' ? [window.__CITY_XL__()] : []),
@@ -7691,6 +7692,9 @@ function drawOfficeSurfaceDress(c,f){
 }
 function officeDecorLayout(fl){
  if(!officeReady())return [];
+ return wallLayoutMemo('o',fl,()=>officeDecorLayoutNow(fl));
+}
+function officeDecorLayoutNow(fl){
  const placed=[];
  for(const d of STAGE.officeArt?.decor||[]){
   if(d.fl!==fl)continue;
@@ -7857,8 +7861,18 @@ function drawPurchasedPropFurn(c,f,shadow=false){
  c.save();if(shadow){c.fillStyle='#09121a33';c.beginPath();c.ellipse((f.x+f.w/2)*TILE+2,(f.y+f.h)*TILE-5,f.w*TILE*.4,6,0,0,TAU);c.fill();}
  for(let i=0;i<b.count;i++)purchasedPropBlit(c,b.key,b.x+i*TILE,b.y);c.restore();return true;
 }
+// 벽 장식 배치는 층마다 맵 전체를 훑어 정한다(모든 건물 · 등 · 가구). 바닥 그림을 건물마다 칠할 때마다 다시 계산하면
+// 새 동네에 들어설 때 한 프레임이 수백 ms 걸렸다. 결과는 같으므로 층별로 기억해 두고, 가구·등·건물이 바뀌면 다시 계산한다.
+function wallLayoutMemo(tag,fl,fn){
+ const k=FURN.length+','+(S&&S.lamps||[]).length+','+BLD.length+','+BLD.reduce((n,b)=>n+(b.collapsed?1:0),0);
+ const M=S&&(S._wallLayout&&S._wallLayout.k===k?S._wallLayout:(S._wallLayout={k,m:new Map()}));if(!M)return fn();
+ const id=tag+fl;if(!M.m.has(id))M.m.set(id,fn());return M.m.get(id);
+}
 function purchasedPropWallLayout(fl){
  if(!purchasedPropsReady()||!officeReady())return[];
+ return wallLayoutMemo('p',fl,()=>purchasedPropWallLayoutNow(fl));
+}
+function purchasedPropWallLayoutNow(fl){
  const old=officeDecorLayout(fl),out=[];
  for(let bi=0;bi<BLD.length;bi++){
   const b=BLD[bi];if(b.vacant)continue;
@@ -8119,8 +8133,13 @@ function drawAwareness(P) {
   for (const g of S.guards) {
     if (g.civ || g.dog || g.state === 'DEAD' || g.state === 'CAPTIVE' || flOf(g) !== flOf(P) || dist(g.x, g.y, P.x, P.y) > 1100) continue;  // 다른 층은 표시하지 않는다
     const aw=guardAwareness(g),al=aw.phase==='seen',m=aw.progress;if(!aw.direct||m<.03)continue;
-    if (!ring) { ring = true; ctx.strokeStyle = 'rgba(244,241,234,.14)'; ctx.lineWidth = 1.5 * k; ctx.beginPath(); ctx.arc(P.x, P.y, R, 0, TAU); ctx.stroke(); }  // 고리 바탕 (어쌔신 크리드 유니티식)
     const a = Math.atan2(g.y - P.y, g.x - P.x), span = 0.22 + 0.5 * m;
+    if (STAGE.cityLife) {  // 자유 모드: 내 둘레 고리·호 없이 그쪽을 가리키는 작은 도트 삼각형만 (동그라미는 쓰지 않는다)
+      const px = Math.round((P.x + Math.cos(a) * R) / 3) * 3, py = Math.round((P.y - 14 + Math.sin(a) * R) / 3) * 3, s3 = 3 * Math.round(k), dx = Math.round(Math.cos(a) * 2), dy = Math.round(Math.sin(a) * 2);
+      ctx.globalAlpha = 0.45 + 0.55 * m; ctx.fillStyle = awareCol(g);
+      for (let i = 0; i < 3; i++) for (let j = -(2 - i); j <= 2 - i; j++) ctx.fillRect(px + (dx * i - dy * j) * s3 / 2 - s3 / 2, py + (dy * i + dx * j) * s3 / 2 - s3 / 2, s3, s3);
+      ctx.globalAlpha = 1; continue; }
+    if (!ring) { ring = true; ctx.strokeStyle = 'rgba(244,241,234,.14)'; ctx.lineWidth = 1.5 * k; ctx.beginPath(); ctx.arc(P.x, P.y, R, 0, TAU); ctx.stroke(); }  // 고리 바탕 (어쌔신 크리드 유니티식)
     ctx.strokeStyle = awareCol(g); ctx.globalAlpha = 0.35 + 0.6 * m; ctx.lineWidth = (3 + 3 * m) * k; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.arc(P.x, P.y, R, a - span / 2, a + span / 2); ctx.stroke(); ctx.lineCap = 'butt';
     if (Math.abs(g.x - cam.x) > hw || Math.abs(g.y - cam.y) > hh) {  // 화면 밖 사람: 바깥쪽 삼각형으로 '그쪽에서 본다'
@@ -11425,9 +11444,16 @@ function drawSharpEye(g) {
   ctx.restore();
   if(on&&dist(P.x,P.y,g.x,g.y)<180&&sightLine(P,g.x,g.y,g.z||0,P.mode==='sneak',flOf(g))){if(guideFull())tag(g.x,g.y-77,f>0?'신원 확인 중 · 걸어서 벗어나기':'얼굴 확인 담당','#d7c6a3',1,null,2.3);else drawBadge(g.x,g.y-77,'eye',f>0?'#ff8a76':'#d7c6a3',f>0?.75+.25*Math.sin(S.t*8):.9);}
 }
+// 자유 모드의 남은 시간 표시: 고리 대신 머리 위 3px 칸 막대 (테두리 + 남은 만큼 채움)
+function drawPixelTimer(g, f, col) {
+  const w = 30, x = Math.round((g.x - w / 2) / 3) * 3, y = Math.round((g.y - 62) / 3) * 3;
+  ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(x - 3, y - 3, w + 6, 9);
+  ctx.fillStyle = col; ctx.fillRect(x, y, Math.max(3, Math.round(w * f / 3) * 3), 3);
+}
 // 출입 금지 경고 중: 경비 둘레에 남은 시간 고리 (다 닳기 전에 공개 구역으로 나가야 한다)
 function drawWarnRing(g) {
   if (g.state !== 'WARN' || !g.warnEnd) return; const f = clamp((g.warnEnd - S.t) / 4.5, 0, 1);
+  if (STAGE.cityLife) { drawPixelTimer(g, f, f > 0.35 ? '#f2aa46' : '#e8503c'); return; }   // 자유 모드: 둘레 고리 대신 머리 위 도트 막대
   ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(g.x, g.y, 26, 0, TAU); ctx.stroke();
   ctx.strokeStyle = f > 0.35 ? 'rgba(242,170,70,.95)' : 'rgba(232,80,60,.95)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(g.x, g.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke();
 }
@@ -15798,7 +15824,7 @@ function cityGuardRefs() {
 function cityGuardSlot() {
   if (!STAGE.cityLife) return S.guards.length;
   let used = null;
-  for (let i = 0; i < S.guards.length; i++) { const o = S.guards[i]; if (!o.off || !TEMP_ACTOR(o) || o.contact || o.beat || o.rideIn || o.rideTo) continue;  /* 차에 탄 사람 자리는 비어 있지 않다 */
+  for (let i = 0; i < S.guards.length; i++) { const o = S.guards[i]; if (!o.off || !(TEMP_ACTOR(o) || o.freed) || o.contact || o.beat || o.rideIn || o.rideTo) continue;  /* 차에 탄 사람 자리는 비어 있지 않다 */
     used = used || cityGuardRefs(); if (!used.has(i) && !used.has(o)) return i; }
   return S.guards.length;
 }
@@ -15843,7 +15869,7 @@ function cityListsCleanup() {
     if (g.civ && g.route && g.route.length) { const idx = S.guards.indexOf(g), pts = g.route.filter(w => far(w)); const at = pts[0]; if (!at) continue;
       const ng = makeGuard({ kind: 'civ', body: g.body, route: g.route.map(w => [Math.floor(w.x / TILE), Math.floor(w.y / TILE), w.pause]) }, idx); ng.x = at.x; ng.y = at.y; ng.ri = (g.route.indexOf(at) + 1) % g.route.length;
       placeGuard(ng, idx); setLayer(0); if (PR) prWarm([charOf(ng)], true); }
-    else g.off = true; }  // 조직원·경찰: 치운 자리는 spawnCop 등이 다시 쓴다
+    else { g.off = true; g.freed = true; } }  // 조직원·경찰: 치운 자리는 spawnCop · cityGuardSlot 이 다시 쓴다 (freed: 원래 있던 조직원 자리도 새 인물이 물려받는다 — 오래 하면 자리가 계속 늘던 것)
   const before = S.vehicles.length;
   S.vehicles = S.vehicles.filter(v => { if (v._drop) { v.gone = true; return false; } if (S.vehBase.has(v) || busy.has(v) || v.chase || v.jacking || !far(v)) return true; v.gone = true; return false; });
   if (S.vehicles.length !== before) VEHG = null;
@@ -16890,6 +16916,8 @@ function evBanner(text, col = '#f2e7c8') {
   if (!el) { el = document.createElement('div'); el.id = 'evBanner'; el.setAttribute('aria-live', 'polite');
     el.style.cssText = 'position:fixed;left:50%;top:16%;transform:translateX(-50%);z-index:41;pointer-events:none;font:600 20px/1.35 "Yahaeng UI",sans-serif;letter-spacing:-.01em;text-align:center;text-shadow:0 2px 0 #000,0 0 10px rgba(0,0,0,.85);opacity:0;transition:opacity .35s;max-width:90vw';
     document.body.appendChild(el); }
+  // 밝은 네온 위에서도 읽히게: 반투명 어두운 띠 + 알림 색 밑줄 (글자 그림자만으로는 간판 앞에서 묻혔다)
+  if (!el._bg) { el._bg = true; Object.assign(el.style, { background: 'rgba(7,10,18,.78)', padding: '6px 16px', borderBottom: '2px solid currentColor', maxWidth: 'min(92vw,720px)' }); }
   el.textContent = text; el.style.color = col; el.style.opacity = '1'; clearTimeout(el._t); el._t = setTimeout(() => { el.style.opacity = '0'; }, 3200);
 }
 // ---- 등장인물 · 차 · 줍는 것
@@ -20147,7 +20175,7 @@ const LINES = {
     greet: ['어서 오세요!'],
     near: ['주문 들어왔어!', '불 조심해, 뜨거워.', '여기 주방이에요, 손님.', '육수 다 됐다.'],
     bye: ['감사합니다!'],
-    weapon: ['칼은 여기도 많거든? 나가.', '어어, 그거 내려놔.'],
+    weapon: ['연장 자랑은 여기서 하지 마. 나가.', '어어, 그거 내려놔.'],
     idle: ['(재료 또 모자라네.)'] },
   cater: {   // 식당 홀
     greet: ['어서 오세요! 몇 분이세요?', '편한 데 앉으세요.'],
@@ -20188,7 +20216,7 @@ const LINES = {
   // ---- 거리 사람
   civ: {
     bump: ['아, 죄송해요.', '앞 좀 보고 다녀요.', '어이쿠.', '아 진짜...'],
-    weapon: ['저 사람 뭐 들었어...!', '어, 저거 칼 아니야?', '피해, 피해!'],
+    weapon: ['저 사람 뭐 들었어...!', '어, 저거 진짜야...?', '피해, 피해!'],   // 행인은 총·투척물을 꺼냈을 때만 말한다 (칼 얘기는 맞지 않는다)
     gunshot: ['총소리야!', '엎드려!', '뭐야, 무슨 소리야?'],
     corpse: ['저기 사람 쓰러졌어!', '119! 119 불러요!', '저 사람 숨 쉬어요?'],
     hurt: ['사람 살려!', '왜 이래요!', '경찰! 경찰!'],
@@ -20393,9 +20421,18 @@ function streetLifeInit() {
   // 같이 걷기: 블록 도는 사람 넷 중 하나는 짝을 데리고 (짝은 원래 다른 길을 돌던 사람이라 전체 인원은 같다)
   for (let i = 0; i + 1 < rings.length; i += 4) { const A = rings[i], C = rings[i + 1]; if (C.phone || A.body === 'old' || C.body === 'old') continue;
     C.grp = { L: A, side: ((i >> 2) & 1) ? 1 : -1 }; C.spdB = A.spdB || 1; C.umb = A.umb; C.wait = 999; C.still = true; groupSnap(C); L.grp.push(C); }
+  L.grpWant = L.grp.length;   // 짝이 흩어지면 화면 밖에서 다시 짝을 지어 이 수를 지킨다 (lifeRepair)
+  // 길 건너는 행인: 짝 없는 블록 행인 몇은 모퉁이에서 옆 블록 모퉁이까지 횡단보도로 건넜다 돌아온다 (빨간불엔 연석에서 기다린다 — pedWaits)
+  for (let i = 2; i < rings.length; i += 4) { const g = rings[i]; if (g.grp || g.phone || LIFE_K(g.id) % 2) continue;
+    const T = g.route.map(p => [Math.floor(p.x / TILE), Math.floor(p.y / TILE)]); let ci = 0; T.forEach(([x, y], j) => { if (x - y > T[ci][0] - T[ci][1]) ci = j; });   // 오른쪽 위 모퉁이
+    const [cx, cy] = T[ci]; let nb = null; for (const dx of [5, -5]) { const nx = (dx > 0 ? cx : T.reduce((a, t) => t[0] < a[0] ? t : a, T[0])[0]) + dx, ny = cy; if (inMap(nx, ny) && G0[ny][nx] === '=' && bldAt(nx, ny) < 0) { nb = { x: tc(nx), y: tc(ny), at: dx > 0 ? ci : T.findIndex(t => t[0] === nx - dx && t[1] === ny) }; break; } }
+    if (!nb || nb.at < 0) continue; const R = g.route, c = R[nb.at];
+    g.route = R.slice(0, nb.at + 1).concat([{ x: nb.x, y: nb.y, pause: 1.5 }, { x: c.x, y: c.y, pause: 0.3 }], R.slice(nb.at + 1)); g.crosser = true; }
+  L.vend = new Map(); L.trash = []; L.bags = []; L.trashT = 8;
   // 가게 앞 자리: 1층이 술집·식당이거나 편의점인 건물
   BLD.forEach((b, bi) => { if (b.kind !== 'shop' || b.vacant) return; const s = (b.signs?.[0] || '').trim(); const kind = FOOD_RE.test(s) ? 'food' : CS_RE.test(s) ? 'cs' : null; if (!kind) return;
     const p = shopFront(b); if (p) L.cands.push({ bi, kind, x: p.x, y: p.y }); });
+  L.tcands = []; BLD.forEach((b, bi) => { if (b.kind !== 'shop' || b.vacant || !(b.signs?.[0] || '').trim()) return; const p = shopFront(b); if (p) L.tcands.push({ bi, x: p.x, y: p.y }); });   // 쓰레기 내놓는 가게: 간판 단 1층 가게 모두
 }
 // 짝: 앞사람 옆(어깨 너비)에 붙인다. 앞사람이 멈추면(대화·신호) 같이 멈춘다
 // 옆자리가 벽·건물이면 반대편으로, 그것도 막혔으면 한 걸음 뒤에 (짝이 벽 속에 그려지던 것)
@@ -20462,12 +20499,55 @@ function lifeRoam() {
     const g = far.pop(); g.route = route; g.ri = at.ri; g.x = at.x; g.y = at.y; g.path = null; g.wait = 0; if (g.chat) { const o = g.chat.with; g.chat = null; g.say = null; if (o?.chat?.with === g) { o.chat = null; o.say = null; } }   /* endChat 은 게임 난수를 쓴다: 직접 끊는다 */
     const C = mates.get(g); if (C) groupSnap(C); }
 }
+// 노점: 내 둘레 술집·식당 거리의 연석에 손수레(떡볶이·붕어빵·어묵) 하나와 장사하는 사람. 화면 밖일 때 세우고, 멀어지면 걷는다 (둘까지)
+const lifeOpen = (tx, ty) => inMap(tx, ty) && '=,g'.includes(G0[ty][tx]) && bldAt(tx, ty) < 0 && !solidAt(tx, ty);   // 가게 앞 빈 바닥 (보도·마당·풀밭)
+const VEND_MAX = 2, VEND_KIND = ['떡볶이', '붕어빵', '어묵'];
+function lifeVendors() {
+  const L = S.life, P = S.player;
+  for (const [bi, v] of L.vend) if (dist(v.x, v.y, P.x, P.y) > 1700 || !npcAlive(v.g) || v.g.off) { if (npcAlive(v.g) && !v.g.off) evGone(v.g); L.vend.delete(bi); }
+  if (L.vend.size >= VEND_MAX || flOf(P) || S.wanted >= 2) return;
+  for (const c of L.cands) { if (c.kind !== 'food' || LIFE_K(c.bi) % 3 || L.vend.has(c.bi)) continue;
+    const x = c.x + 110, y = c.y + 12; if (dist(x, y, P.x, P.y) > 1100 || (!L.jump && inView(x, y, 100))) continue;   // 가게 문 옆 연석 (문 앞 손님 자리와 겹치지 않게)
+    const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); if (!lifeOpen(tx, ty)) continue;
+    const gi = cityGuardSlot(), g = makeGuard({ kind: 'civ', at: [tx, ty], radio: false, body: LIFE_K(c.bi) % 2 ? 'old' : 'workApron' }, gi);
+    g.evt = '__vendor'; g.x = x; g.y = y - 6; g.fl = 0; g.a = g.want = Math.PI / 2; g.post = g.a; g.route = [{ x: g.x, y: g.y, pause: 999 }]; g.ri = 0; g.wait = 999; g.chatter = true;
+    g.vendor = VEND_KIND[LIFE_K(c.bi + 7) % VEND_KIND.length]; placeGuard(g, gi); if (PR) prWarm([charOf(g)], true);
+    L.vend.set(c.bi, { g, x, y }); if (L.vend.size >= VEND_MAX) break; }
+}
+// 쓰레기 내놓기: 가끔 내 둘레 식당·편의점 문에서 직원이 상자를 들고 나와 연석에 내려놓고 들어간다
+function lifeTrash() {
+  const L = S.life, P = S.player;
+  for (let i = L.trash.length - 1; i >= 0; i--) { const t = L.trash[i], g = t.g;
+    if (!npcAlive(g) || g.off || g.state !== 'PATROL' || S.t - t.t0 > 40) { if (npcAlive(g) && !g.off && g.state === 'PATROL') evGone(g); L.trash.splice(i, 1); continue; }   // 놀라 달아난 직원은 그대로 둔다(보통 행인처럼)
+    if (t.ph === 0 && dist(g.x, g.y, t.cx, t.cy) < 14) { t.ph = 1; g.carryTo = null; L.bags.push({ x: t.cx + (LIFE_K(g.id) % 3 - 1) * 8, y: t.cy + 4, t: S.t, k: LIFE_K(g.id) % 2 }); if (L.bags.length > 24) L.bags.shift(); }
+    else if (t.ph === 1 && dist(g.x, g.y, t.dx, t.dy) < 14) { evGone(g); L.trash.splice(i, 1); } }   // 다시 가게로 들어갔다
+  if ((L.trashT -= 0.5) > 0 || L.trash.length || flOf(P) || S.wanted || S.ev) return;   // 동네 사건 중엔 내놓지 않는다 (경찰·행인 반응에 끼어들지 않게) L.trashT = 3;   // 알맞은 가게가 없으면 곧 다시 본다
+  const spot = c => [-70, 70, -44, 44].map(dx => [c.x + dx, c.y + 16]).find(([x, y]) => lifeOpen(Math.floor(x / TILE), Math.floor(y / TILE)));
+  const c = (L.tcands || []).filter(c => !BLD[c.bi].collapsed && dist(c.x, c.y, P.x, P.y) < 900 && dist(c.x, c.y, P.x, P.y) > 260 && spot(c))
+    .sort((a, b) => LIFE_K(a.bi + (S.t | 0)) - LIFE_K(b.bi + (S.t | 0)))[0]; if (!c) return;
+  L.trashT = 18 + (S.t % 7); const [cx, cy] = spot(c);
+  const gi = cityGuardSlot(), g = makeGuard({ kind: 'civ', at: [Math.floor(c.x / TILE), Math.floor(c.y / TILE)], radio: false }, gi);
+  g.evt = '__trash'; g.outfit = 'staff'; g.x = c.x; g.y = c.y - 10; g.fl = 0; g.route = [{ x: g.x, y: g.y, pause: 0 }, { x: cx, y: cy, pause: 1.2 }, { x: c.x, y: c.y - 10, pause: 999 }]; g.ri = 1; g.wait = 0; g.carryTo = 1; placeGuard(g, gi);
+  if (PR) prWarm([charOf(g)], true); L.trash.push({ g, ph: 0, cx, cy, dx: c.x, dy: c.y - 10, t0: S.t });
+}
+// 흩어진 짝 다시 맺기: 오래 놀면 사건·싸움·순간이동으로 짝이 줄어든다(28→19). 화면 밖 멀리 있는 혼자 걷는 블록 행인 둘을 한 번에 한 쌍씩 다시 묶는다
+function lifeRepair() {
+  const L = S.life, P = S.player; if (!L || L.grp.length >= (L.grpWant || 0)) return;
+  const solo = g => g.civ && !g.evt && !g.grp && !g.dog && !g.child && !g.staff && !g.police && !g.crew && !g.wander && !g.student && !g.outfit && !g.phone && g.body !== 'old' && !g.jogger && !g.cross
+    && g.route?.length === 4 && g.state === 'PATROL' && !g.off && !flOf(g) && !g.chat && npcAlive(g) && dist(g.x, g.y, P.x, P.y) > 1600 && !inView(g.x, g.y, 300);
+  const leaders = new Set(L.grp.map(C => C.grp.L)); let A = null, C = null;
+  for (const g of S.guards) { if (!solo(g)) continue; if (!A) { if (!leaders.has(g)) A = g; } else if (!leaders.has(g)) { C = g; break; } }
+  if (!A || !C) return;
+  C.route = A.route.map(p => ({ x: p.x, y: p.y, pause: p.pause })); C.ri = A.ri || 0; C.path = null;
+  C.grp = { L: A, side: (L.grp.length & 1) ? 1 : -1 }; C.spdB = A.spdB || 1; C.umb = A.umb; C.wait = 999; C.still = true; groupSnap(C); L.grp.push(C);
+}
 function streetLifeUpdate(dt) {
   const L = S.life; if (!STAGE.cityLife || !L) return;
   lifeGroups();
   if ((L.t -= dt) > 0) return; L.t = 0.5;
   const P = S.player, jump = L.lp && dist(L.lp.x, L.lp.y, P.x, P.y) > 600; L.lp = { x: P.x, y: P.y }; L.jump = jump;   // 순간이동(병원·엘리베이터·집): 그 둘레는 화면 안이라도 바로 채운다
-  lifeFronts(); lifePace();
+  lifeFronts(); lifePace(); lifeVendors(); lifeTrash();
+  if ((L.repT = (L.repT || 0) - 0.5) <= 0) { L.repT = 10; lifeRepair(); }
   if ((L.roamT = (L.roamT || 0) - 0.5) <= 0 || jump) { L.roamT = 2; lifeRoam(); }
 }
 // ---- 그림: 우산(비 올 때) · 휴대폰 불빛 (사람 위에 작은 도트)
@@ -20476,7 +20556,33 @@ const UMB_ART = (() => { const rows = ['....#######....', '..###########..', '.#
     rows.forEach((r, y) => { for (let i = 0; i < r.length; i++) if (r[i] === '#') x.fillRect(i, y, 1, 1); });
     x.fillStyle = 'rgba(255,255,255,.22)'; x.fillRect(4, 1, 5, 1);   // 윗면 반사
     x.fillStyle = '#3a3a40'; x.fillRect(7, 5, 1, 6); x.fillRect(6, 10, 1, 1); return c; }); })();
+// 노점 손수레 (장사하는 사람 앞, 2px 도트): 바퀴 · 나무 몸통 · 판 위 음식 · 줄무늬 차양 · 김
+function drawVendorCart(g) {
+  const x = Math.round(g.x), y = Math.round(g.y) + 6, R = (a, b, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x + a, y + b, w, h); };
+  R(-20, 12, 40, 3, 'rgba(0,0,0,.35)');                                                   // 그림자
+  R(-16, 10, 6, 6, '#1c1c20'); R(10, 10, 6, 6, '#1c1c20'); R(-14, 12, 2, 2, '#55565c'); R(12, 12, 2, 2, '#55565c');   // 바퀴
+  R(-19, -4, 38, 14, '#7a4a28'); R(-19, 6, 38, 4, '#5a3418'); R(-19, -4, 38, 2, '#9a6a3c');   // 나무 몸통
+  R(-20, -8, 40, 4, '#b9b3a8'); R(-20, -8, 40, 1, '#dcd6ca');                             // 스테인리스 판
+  const k = g.vendor;
+  if (k === '떡볶이') { R(-14, -11, 16, 4, '#2a2a2e'); for (let i = 0; i < 6; i++) R(-13 + i * 2.5 | 0, -10, 2, 2, i % 2 ? '#e0452a' : '#c8321e'); R(6, -10, 8, 2, '#d8c8a0'); }
+  else if (k === '붕어빵') { R(-15, -10, 30, 3, '#3a3a40'); for (let i = 0; i < 4; i++) { R(-13 + i * 7, -12, 5, 3, '#d89a3a'); R(-9 + i * 7, -11, 1, 1, '#a8682a'); } }
+  else { R(-14, -11, 18, 4, '#5a5048'); for (let i = 0; i < 5; i++) { R(-12 + i * 3, -16, 1, 6, '#c8a878'); R(-13 + i * 3, -13, 3, 2, '#e8c890'); } R(8, -11, 6, 3, '#e8e2d2'); }
+  R(-20, -40, 2, 32, '#3a3a40'); R(18, -40, 2, 32, '#3a3a40');                             // 차양 기둥
+  for (let i = 0; i < 10; i++) R(-22 + i * 4.4 | 0, -46, 5, 6, i % 2 ? '#f2efe6' : '#c8322e'); R(-22, -40, 44, 1, 'rgba(0,0,0,.35)');   // 줄무늬 차양 (머리 위)
+  const t = S.t + LIFE_K(g.id); for (let i = 0; i < 3; i++) { const ph = (t * 0.8 + i / 3) % 1, a = 0.35 * (1 - ph); ctx.fillStyle = `rgba(230,236,240,${a.toFixed(2)})`; ctx.fillRect(x - 8 + i * 6 + Math.round(Math.sin(t * 2 + i) * 2), y - 14 - Math.round(ph * 14), 3, 3); }   // 김
+  ctx.fillStyle = '#f6e9b8'; ctx.font = '700 8px ' + UI_FONT_FAMILY; ctx.textAlign = 'center'; ctx.fillText(k, x, y + 5);   // 몸통 글자
+}
+// 내놓은 쓰레기봉투·상자 (연석 위, 1분쯤 지나면 치워진다)
+function drawLifeBags() {
+  const L = S.life; if (!STAGE.cityLife || !L?.bags?.length || flOf(S.player)) return;
+  for (let i = L.bags.length - 1; i >= 0; i--) { const b = L.bags[i]; if (S.t - b.t > 70) { L.bags.splice(i, 1); continue; } if (!inView(b.x, b.y, 30)) continue;
+    const x = Math.round(b.x), y = Math.round(b.y), R = (a, c, w, h, col) => { ctx.fillStyle = col; ctx.fillRect(x + a, y + c, w, h); };
+    R(-6, 4, 13, 2, 'rgba(0,0,0,.3)');
+    if (b.k) { R(-5, -6, 10, 10, '#1e2026'); R(-4, -8, 8, 2, '#1e2026'); R(-1, -10, 2, 2, '#2e3038'); R(-3, -5, 2, 4, '#3a3d46'); }   // 검은 종량제 봉투
+    else { R(-6, -5, 12, 9, '#b48a52'); R(-6, -5, 12, 2, '#cfa66a'); R(-1, -5, 2, 9, '#e6dcc4'); } }   // 납작한 상자
+}
 function drawLifeExtras(g) {
+  if (g.vendor && !g.off && npcAlive(g) && !flOf(g)) drawVendorCart(g);
   if (!g.civ || g.off || g.state === 'DEAD' || g.state === 'SLEEP' || flOf(g)) return;
   if (g.umb && rainK() > 0.3 && !g.evt) { const art = UMB_ART[LIFE_K(g.id) % UMB_ART.length]; ctx.save(); ctx.imageSmoothingEnabled = false; if (art === UMB_ART[2]) ctx.globalAlpha = 0.8;
     ctx.drawImage(art, Math.round(g.x - 15), Math.round(g.y - 48), 30, 24); /* 머리 바로 위 (손잡이는 손 높이) */ ctx.restore(); }
@@ -20485,6 +20591,7 @@ function drawLifeExtras(g) {
     ctx.fillStyle = '#bfefff'; ctx.fillRect(hx - 1, hy - 2, 2, 3); }
 }
 if (typeof drawGuard === 'function') { const _dg = drawGuard; drawGuard = function (g) { const r = _dg(g); if (STAGE.cityLife) drawLifeExtras(g); return r; }; }
+if (typeof drawCarScorch === 'function') { const _dc = drawCarScorch; drawCarScorch = function () { _dc(); drawLifeBags(); }; }   // 바닥 그림 차례(차보다 먼저)
 if (typeof staffInit === 'function') { const _si = staffInit; staffInit = function () { _si(); streetLifeInit(); }; }
 if (typeof staffUpdate === 'function') { const _su = staffUpdate; staffUpdate = function (dt) { _su(dt); streetLifeUpdate(dt); }; }
 
@@ -20803,6 +20910,7 @@ function drawStreetDeco() {
     if (o.k === 'pavilion') { ctx.drawImage(sdPavilion(), o.x, o.y + 4, 72 * k, 66 * k); return; }
     const s = SD_ART[o.k](o.v || 0), w = s.width * k, h = s.height * k;
     const bx = (o.k === 'container' ? o.x + 4 : o.x + (TILE - w) / 2) + (o.sx || 0), by = o.y + TILE - h + (o.k === 'lamp' ? 6 : 4) + (o.sy || 0);
+    if (o.down) { ctx.save(); ctx.translate(Math.round(bx + w / 2), Math.round(by + h)); ctx.rotate(o.rot || Math.PI / 2); ctx.drawImage(s, -Math.round(w / 2), -Math.round(h), w, h); ctx.restore(); return; }   // 차에 받혀 넘어진 것: 밑동을 축으로 옆으로 눕힌다
     ctx.drawImage(s, Math.round(bx), Math.round(by), w, h);
   });
   ctx.restore();
@@ -20811,7 +20919,7 @@ function drawStreetDeco() {
 function drawStreetDecoGlow() {
   if (!STAGE.cityLife || CUR_F || !SD) return; const night = (STAGE.nightShade ?? 0.6) > 0.3; if (!night) return;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  sdVisible(o => {
+  sdVisible(o => { if (o.down) return;   // 넘어진 것은 불이 꺼진다
     const k = SD_SCALE[o.k] || SD_PX, box = (sw, sh, dy) => [o.x + (TILE - sw * k) / 2 + (o.sx || 0), o.y + TILE - sh * k + dy + (o.sy || 0)];
     if (o.k === 'vending') { const [x, y] = box(12, 20, 4); ctx.fillStyle = 'rgba(200,225,255,.35)'; ctx.fillRect(x + 2 * k, y + 2 * k, 8 * k, 8 * k); ctx.fillStyle = 'rgba(160,200,255,.12)'; ctx.fillRect(x - 2 * k, y + 18 * k, 16 * k, 4 * k); }
     else if (o.k === 'aboard' && o.glow) { const [x, y] = box(9, 14, 4); ctx.fillStyle = 'rgba(255,220,150,.28)'; ctx.fillRect(x + k, y + k, 7 * k, 10 * k); }
@@ -20820,6 +20928,20 @@ function drawStreetDecoGlow() {
   });
   ctx.restore();
 }
+// 차가 들이받으면 쓰러진다: 빠르게 달리는 차(내 차·다른 차) 앞머리에 닿은 소품은 넘어져 조각이 튀고 차가 조금 느려진다.
+// 가로등·정자·컨테이너·벤치·운동기구처럼 무겁거나 박힌 것은 빼고, 넘어진 것은 다시 세우지 않는다 (판이 바뀌면 처음부터)
+const SD_SOLID = new Set(['lamp', 'pavilion', 'container', 'bench', 'exercise']);
+function sdSmashUpdate() {
+  if (!STAGE.cityLife || !SD || SD.stage !== STAGE.id) return;
+  for (const v of S.vehicles || []) { if (v.dead || v.z || Math.abs(v.v || 0) < 90 || (!v.ai && S.player.car !== v)) continue;
+    const L = (v.len || 92) * 0.5, hx = v.x + Math.cos(v.a) * L * 0.7, hy = v.y + Math.sin(v.a) * L * 0.7, a = SD.grid.get(Math.floor(hx / TILE / SD_CH) + ',' + Math.floor(hy / TILE / SD_CH)); if (!a) continue;
+    for (const o of a) { if (o.down || SD_SOLID.has(o.k)) continue; const ox = o.x + TILE / 2 + (o.sx || 0), oy = o.y + TILE - 10 + (o.sy || 0);
+      if (Math.abs(ox - hx) > 30 || Math.abs(oy - hy) > 30) continue;
+      o.down = S.t; o.rot = (Math.cos(v.a) >= 0 ? 1 : -1) * Math.PI / 2; v.v *= 0.85;
+      if (typeof fireEmit === 'function') fireEmit(v, 'debris', 6, { x: ox, y: oy });
+      if (S.player.car === v && typeof hitJuice === 'function') hitJuice({ x: ox, y: oy }, v.a, 0.6, false, false); } }
+}
+if (typeof cityUpdate === 'function') { const _cu = cityUpdate; cityUpdate = function (dt) { const r = _cu.apply(this, arguments); sdSmashUpdate(); return r; }; }
 
 // ---------------------------------------------------------------- 자유 모드 이야기: 은퇴한 전직 요원 '올빼미'
 // 설정: 올빼미는 국가 비밀 처리반에서 은퇴한 요원이다. 지금은 아무 소속도 없다 — 경찰 눈에는 그냥 범죄자다.
@@ -21132,6 +21254,8 @@ function trafficInit() {
     if (dist(x, y, P.x, P.y) < 300 || S.vehicles.some(v => dist(v.x, v.y, x, y) < 160) || RX.some(rx=>RY.some(ry=>Math.abs(x-(rx+2)*TILE)<170&&Math.abs(y-(ry+2)*TILE)<170))) continue;
     const dz = deckSpawnZ(x, y); if (dz < 0) continue;
     const v = makeVehicle({ z: dz, x, y, d, a: Math.atan2(DV[d][1], DV[d][0]), v: AI_SPD * 0.6, c: (k * 3) % 5, ai: true, driver: true, type: STAGE.cityLife ? pickVType(((k * 2654435761) >>> 0) / 4294967296, STAGE.vehicleMix?.(Math.floor(x / TILE), Math.floor(y / TILE))) : undefined });
+    // 긴 차(버스)는 앞머리가 정지선을 넘어 횡단보도에 걸린 채 나오지 않게: 차 길이만큼 교차로에서 더 떨어져야 한다
+    if (STAGE.cityLife && (hor ? RX : RY).some(r => { const c = (r + 2) * TILE, p = hor ? x : y; return Math.abs(p - c) < 2 * TILE + stopGap(v) + 12; })) continue;
     planTurn(v); S.vehicles.push(v); i++;
   }
 }
@@ -21180,8 +21304,31 @@ function aheadBlocked(v) {
   for (const g of actorsNear(v.x + ca * 70, v.y + sa * 70)) if (g !== P && g.state !== 'DEAD' && inBox(g.x, g.y, 110, 28) && !flOf(g) && !g.z) return 'ped';  // 앞 70px 둘레 칸의 사람만
   return null;
 }
+// 자유 모드: 지도가 커서 차 84대가 고르게 흩어지면 내 둘레엔 거의 없다. 2초마다, 내 둘레(1500px)에 다니는 차가 적으면
+// 멀리(3000px 밖, 화면 밖) 다니는 보통 차 몇 대를 내 둘레 도로(화면 밖 700~1400px)로 옮긴다. 전체 대수는 그대로
+function trafficRecycle() {
+  if (!STAGE.cityLife || S.t < (S.trRecT || 0)) return; S.trRecT = S.t + 2;
+  const P = S.player, RX = STAGE.roadsX, RY = STAGE.roadsY, ok = v => v.ai && !v.parked && !v.dead && !v.crashed && !v.chase && !v.flee && !v.police && !v.gang && !v.scripted && !v.rageCar && !v.roadblock && !(v.z > 0.05);
+  let near = 0; const far = [];
+  for (const v of S.vehicles) { if (!ok(v)) continue; const d = dist(v.x, v.y, P.x, P.y); if (d < 1500) near++; else if (d > 3000 && !inView(v.x, v.y, 300)) far.push(v); }
+  for (let n = 0; n < 3 && near < 12 && far.length; n++) {
+    const v = far.pop(); let done = false;
+    for (let k = 0; k < 30 && !done; k++) {
+      const hor = Math.random() < 0.5, d = hor ? (Math.random() < 0.5 ? 0 : 2) : (Math.random() < 0.5 ? 1 : 3);
+      const roads = (hor ? RY : RX).filter(r => Math.abs((r + 2) * TILE - (hor ? P.y : P.x)) < 1400); if (!roads.length) continue;
+      const road = roads[(Math.random() * roads.length) | 0], along = (hor ? P.x : P.y) + rnd(-1400, 1400), x = hor ? along : laneOf(road, d), y = hor ? laneOf(road, d) : along, dd = dist(x, y, P.x, P.y);
+      if (dd < 700 || dd > 1400 || inView(x, y, 160) || x < 3 * TILE || y < 3 * TILE || x > (MW - 3) * TILE || y > (MH - 3) * TILE) continue;
+      if ((hor ? RX : RY).some(r => Math.abs((hor ? x : y) - (r + 2) * TILE) < 2 * TILE + stopGap(v) + 40)) continue;   // 교차로·횡단보도 근처는 피한다
+      if (deckSpawnZ(x, y) !== 0) continue;
+      const ox = v.x, oy = v.y, od = v.d, oa = v.a; Object.assign(v, { x, y, d, a: Math.atan2(DV[d][1], DV[d][0]), lane: hor ? y : x, v: AI_SPD * 0.6, junctionWait: null });
+      if (carOverlap(v)) { Object.assign(v, { x: ox, y: oy, d: od, a: oa }); continue; }
+      planTurn(v); near++; done = true;
+    }
+  }
+}
 function updateVehicles(dt) {
   if (!S.vehicles) return;
+  trafficRecycle();
   for (const v of S.vehicles) {
     if (v.dead) { v.burn = Math.max(0, v.burn - dt); if ((v.z || 0) > 0.001) deckStep(v, dt); continue; }  // 부서진 차도 공중이면 떨어진다
     if (v.smoke > 0) v.smoke -= dt;
@@ -21248,10 +21395,16 @@ function aiDrive(v, dt) {
   const turn=clamp(err * 3, -1, 1) * T.turn * Math.max(0.15, Math.min(1, Math.abs(v.v) / 90)) * dt;
   carMove(v,dt,turn);
   // 지도 끝: 반대 방향 차로로 돌아 들어온다
-  if (v.x < -60 || v.x > MW * TILE + 60 || v.y < -60 || v.y > MH * TILE + 60) {
-    v.d = (v.d + 2) % 4; v.a = Math.atan2(DV[v.d][1], DV[v.d][0]); v.x = clamp(v.x, 30, MW * TILE - 30); v.y = clamp(v.y, 30, MH * TILE - 30);
+  // 자유 모드는 지도 끝이 막혀 있어(도시 끝 마감) 밖으로 60px 나가지 못하고 그 앞에서 서 버렸다: 끝 2칸 앞에서 바깥을 향하면 돌린다
+  const E = STAGE.cityLife ? 2 * TILE : -60, out = STAGE.cityLife ? ((v.x < E && DV[v.d][0] < 0) || (v.x > MW * TILE - E && DV[v.d][0] > 0) || (v.y < E && DV[v.d][1] < 0) || (v.y > MH * TILE - E && DV[v.d][1] > 0)) : (v.x < -60 || v.x > MW * TILE + 60 || v.y < -60 || v.y > MH * TILE + 60);
+  if (out) {
+    const m = STAGE.cityLife ? 3 * TILE : 30;
+    v.d = (v.d + 2) % 4; v.a = Math.atan2(DV[v.d][1], DV[v.d][0]); v.x = clamp(v.x, m, MW * TILE - m); v.y = clamp(v.y, m, MH * TILE - m);
     const road = hor ? STAGE.roadsY.find(r => Math.abs(r * TILE + 96 - v.y) < 120) : STAGE.roadsX.find(r => Math.abs(r * TILE + 96 - v.x) < 120);
-    v.lane = laneOf(road || 0, v.d); if (hor) v.y = v.lane; else v.x = v.lane; planTurn(v); }
+    v.lane = laneOf(road || 0, v.d); if (hor) v.y = v.lane; else v.x = v.lane;
+    // 자유 모드: 돌려 놓은 자리가 교차로 상자나 그 정지선 사이면 가는 쪽으로 상자 밖까지 민다 (상자 안에 놓이면 빨간불에 교차로에 들어선 차가 된다)
+    if (STAGE.cityLife) { const sg = DV[v.d][0] + DV[v.d][1], g = stopGap(v) + 24; let p = hor ? v.x : v.y; for (const r of (hor ? STAGE.roadsX : STAGE.roadsY)) { const lo = r * TILE - g, hi = (r + 4) * TILE + g; if (p > lo && p < hi) p = sg > 0 ? hi : lo; } if (hor) v.x = p; else v.y = p; }
+    planTurn(v); }
 }
 // One junction reservation, released after the rear bumper clears it. Waiting
 // never authorizes driving through another car after an arbitrary timeout.
@@ -21259,6 +21412,12 @@ function aiDrive(v, dt) {
 // 보행 신호는 같은 방향 직진과 함께 초록이 되고(끝 3초 깜빡임), 좌회전 때는 빨강이다. 교차로마다 시작을 어긋나게 해 한꺼번에 바뀌지 않는다
 const SIG_T = 36, SIG_PH = [[10, 'G'], [12, 'Y'], [17, 'L'], [18, 'Y']];
 function signalTime(rx, ry) { return ((S.t + ((rx * 7 + ry * 11) % SIG_T)) % SIG_T + SIG_T) % SIG_T; }
+// dt초 전의 신호 (방금 바뀌었는지 볼 때)
+function signalStateAt(rx, ry, dt) {
+  if (!STAGE.signals) return null;
+  const t = ((signalTime(rx, ry) - dt) % SIG_T + SIG_T) % SIG_T, ph = t => SIG_PH.find(([end]) => t < end)[1];
+  return t < 18 ? { ew: ph(t), ns: 'R' } : { ew: 'R', ns: ph(t - 18) };
+}
 function signalState(rx, ry) {
   if (!STAGE.signals) return null;
   const t = signalTime(rx, ry), ph = t => SIG_PH.find(([end]) => t < end)[1];
@@ -21397,28 +21556,35 @@ function trafficStopDistance(v){
   const G=stopGap(v),entry=hor?(sgn>0?x0-G:x1+G):(sgn>0?y0-G:y1+G),left=(entry-(hor?v.x:v.y))*sgn;
   if(!aligned||left>230||left< -4*TILE-STOP_GAP-58){if(left< -4*TILE-STOP_GAP-58&&v.junctionWait)delete v.junctionWait[key];continue;}
   // 신호: 빨강이면 정지선(교차로 앞 횡단보도 앞)에서 선다. 황색은 정지선에 바짝 붙었으면 그대로 지나간다
-  const inside=o=>o.x>x0-STOP_GAP+3&&o.x<x1+STOP_GAP-3&&o.y>y0-STOP_GAP+3&&o.y<y1+STOP_GAP-3;
+  const inside=o=>{const SG=STAGE.cityLife?stopGap(o):STOP_GAP;return o.x>x0-SG+3&&o.x<x1+SG-3&&o.y>y0-SG+3&&o.y<y1+SG-3;};  // 자유 모드: 차마다 자기 정지선(stopGap, 차 길이 포함)으로 잰다. 줄 밖(-6)과 안 사이에 빈틈이 생기면 정지선을 조금 넘은 차(특히 긴 버스)를 아무도 세지 않아 교차로가 서로 기다리며 멎었다
   const sig=signalState(rx,ry),light=sig&&(hor?sig.ew:sig.ns);
   if(light&&!signalLets(light,v,x0,y0,x1,y1)){
    // 앞머리가 아직 교차로 상자에 들어가지 않았고 그 앞에서 설 수 있으면 선다 (긴 버스가 정지선을 넘어 횡단보도에 걸린 채 앞차를 따라가다 빨간불에 들어가던 것).
    // 황색에 정지선 바로 앞을 달리던 차는 그대로 지나간다. 서게 되면 잡아 둔 교차로도 내려놓는다
-   const sp=Math.abs(v.v),noseIn=-left-(STOP_LINE-6),yellowGo=light==='Y'&&left<45&&sp>60;
-   if(!yellowGo&&(left>-40||noseIn+sp*sp/(2*CAR_BRAKE)<8)){if(locks[key]===v.id)delete locks[key];return Math.max(0,left);}
+   // 자유 모드: 황색은 그 앞 신호가 이 차를 보내던 때만 '지나가라'다 (좌회전 화살표 뒤 황색에 직진 차가 출발해 횡단보도 위에 서던 것)
+   const prevLets=()=>{for(const dt of [0.4,0.8,1.2,1.6,2.0,2.4,2.8]){const p=signalStateAt(rx,ry,dt),pl=p&&(hor?p.ew:p.ns);if(pl&&pl!=='Y')return signalLets(pl,v,x0,y0,x1,y1);}return false;};
+   const sp=Math.abs(v.v),noseIn=-left-(STOP_LINE-6),yellowGo=light==='Y'&&left<45&&sp>60&&(!STAGE.cityLife||prevLets());
+   // 자유 모드: 신호가 바뀌었는데 횡단보도 앞에서 더는 설 수 없는 차(제동 거리 > 횡단보도까지 남은 거리)는 횡단보도 위에 급정거하지 않고 빠져나간다 (1.2초 전엔 갈 수 있던 신호일 때만)
+   const clearing=STAGE.cityLife&&sp>20&&sp*sp/(2*CAR_BRAKE)>(STOP_LINE+14-6)+left-XWALK&&prevLets();
+   if(!yellowGo&&!clearing&&(left>-40||noseIn+sp*sp/(2*CAR_BRAKE)<8)){if(locks[key]===v.id)delete locks[key];return Math.max(0,left);}
   }  // 좌회전 차는 화살표를, 직진 차는 초록을 기다린다  // 정지선을 조금 넘겨 선 차도 빨간불엔 그대로 기다린다
   const distance=o=>{const h=o.d%2===0,s=DV[o.d][0]+DV[o.d][1];if(!(h?o.y>y0&&o.y<y1:o.x>x0&&o.x<x1))return Infinity;const g=stopGap(o);return ((h?(s>0?x0-g:x1+g):(s>0?y0-g:y1+g))-(h?o.x:o.y))*s;};
   // 이 교차로로 들어오는 차 줄: 교차로 둘레 칸의 차만 보고, 한 프레임에 한 번만 정렬한다
   let jc=JC.m.get(key);if(!jc){const near=vehiclesIn(x0-STOP_GAP-260,y0-STOP_GAP-260,x1+STOP_GAP+260,y1+STOP_GAP+260);
-   const incoming=near.filter(o=>o.ai&&!o.dead&&!o.parked&&!onDeckLevel(o)&&distance(o)>=-6&&distance(o)<230);
+   const incoming=near.filter(o=>o.ai&&!o.dead&&!o.parked&&!onDeckLevel(o)&&distance(o)>=-6&&distance(o)<230&&!(STAGE.cityLife&&sig&&!o.chase&&!o.flee&&!signalLets(o.d%2===0?sig.ew:sig.ns,o,x0,y0,x1,y1)));  // 자유 모드: 빨간불에 선 차는 차례 줄에 넣지 않는다 (먼저 와 기다린다고 잡았다 놓기를 되풀이해, 화살표를 받은 좌회전 차가 끝내 못 가던 것)
    for(const o of incoming){const waits=o.junctionWait||(o.junctionWait={});waits[key]??=S.t;}
    incoming.sort((a,b)=>a.junctionWait[key]-b.junctionWait[key]||distance(a)-distance(b)||a.id-b.id);JC.m.set(key,jc={incoming,near});}
   const incoming=jc.incoming;
   let owner=VGr.byId.get(locks[key]);
-  if(owner&&(owner.dead||owner.crashed||(!inside(owner)&&dist(owner.x,owner.y,(x0+x1)/2,(y0+y1)/2)>300))){delete locks[key];owner=null;}  // 부서진 차는 교차로를 잡지 않는다
+  // 자유 모드: 차체가 교차로 상자에 걸치지 않고 제 신호에 막혀 선 차(정지선을 조금 넘어 빨간불을 기다리는 차)는 교차로를 잡지 않는다 — 건너편 화살표를 받은 차를 끝없이 막던 것
+  const holds=o=>!STAGE.cityLife||!sig||o.chase||o.flee||carPts(o).some(([px,py])=>px>x0&&px<x1&&py>y0&&py<y1)||signalLets(o.d%2===0?sig.ew:sig.ns,o,x0,y0,x1,y1);
+  if(owner&&(owner.dead||owner.crashed||(!inside(owner)&&dist(owner.x,owner.y,(x0+x1)/2,(y0+y1)/2)>300)||!holds(owner))){delete locks[key];owner=null;}  // 부서진 차는 교차로를 잡지 않는다
   // A car behind the queue cannot reserve the junction ahead of its own lead.
   if(owner&&!inside(owner)){const lead=incoming.find(o=>o.d===owner.d&&distance(o)<distance(owner)-3);if(lead)owner=lead;}
-  if(!owner)owner=jc.near.find(o=>o!==v&&!o.parked&&!o.dead&&!o.crashed&&!onDeckLevel(o)&&inside(o))||incoming[0]||v;
+  if(!owner)owner=jc.near.find(o=>o!==v&&!o.parked&&!o.dead&&!o.crashed&&!onDeckLevel(o)&&inside(o)&&holds(o))||incoming[0]||v;
   locks[key]=owner.id;
-  if(locks[key]===v.id||inside(v))return null;
+  const inBox=o=>carPts(o).some(([px,py])=>px>x0&&px<x1&&py>y0&&py<y1);
+  if(locks[key]===v.id||(inside(v)&&(!STAGE.cityLife||inBox(v)||!(owner!==v&&inBox(owner)))))return null;  // 자유 모드: 정지선만 조금 넘은 차는 다른 차가 상자 안에 있으면 기다린다 (긴 버스가 들어가다 횡단보도 위에 서던 것)
   return Math.max(0,left);
  }
  return null;
@@ -27464,7 +27630,8 @@ function draw() {
     }
     if (g.lookout && !g.icon) { ctx.strokeStyle = '#f2c46b'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(g.x - 7, g.y - 36); ctx.lineTo(g.x, g.y - 43); ctx.lineTo(g.x + 7, g.y - 36); ctx.moveTo(g.x - 7, g.y - 42); ctx.lineTo(g.x, g.y - 49); ctx.lineTo(g.x + 7, g.y - 42); ctx.stroke(); }
     if (g.elite) { ctx.fillStyle = '#c9c6b6'; ctx.beginPath(); ctx.moveTo(g.x, g.y - 34); ctx.lineTo(g.x - 6, g.y - 43); ctx.lineTo(g.x + 6, g.y - 43); ctx.closePath(); ctx.fill(); }
-    if (g.state === 'CAPTIVE') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 20, -Math.PI / 2, -Math.PI / 2 + TAU * (1 - g.captT / 9)); ctx.stroke(); }
+    if (g.state === 'CAPTIVE' && STAGE.cityLife) drawPixelTimer(g, clamp(1 - g.captT / 9, 0, 1), '#f2c46b');   // 자유 모드: 붙잡은 시간도 고리 대신 도트 막대
+    else if (g.state === 'CAPTIVE') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 20, -Math.PI / 2, -Math.PI / 2 + TAU * (1 - g.captT / 9)); ctx.stroke(); }
     if (g.target) drawTargetRing(g,'rgba(194,54,43,.85)');
   }
   PM('guards');
