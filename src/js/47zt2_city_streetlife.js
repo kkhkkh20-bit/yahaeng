@@ -22,6 +22,7 @@ function streetLifeInit() {
   // 같이 걷기: 블록 도는 사람 넷 중 하나는 짝을 데리고 (짝은 원래 다른 길을 돌던 사람이라 전체 인원은 같다)
   for (let i = 0; i + 1 < rings.length; i += 4) { const A = rings[i], C = rings[i + 1]; if (C.phone || A.body === 'old' || C.body === 'old') continue;
     C.grp = { L: A, side: ((i >> 2) & 1) ? 1 : -1 }; C.spdB = A.spdB || 1; C.umb = A.umb; C.wait = 999; C.still = true; groupSnap(C); L.grp.push(C); }
+  L.grpWant = L.grp.length;   // 짝이 흩어지면 화면 밖에서 다시 짝을 지어 이 수를 지킨다 (lifeRepair)
   // 길 건너는 행인: 짝 없는 블록 행인 몇은 모퉁이에서 옆 블록 모퉁이까지 횡단보도로 건넜다 돌아온다 (빨간불엔 연석에서 기다린다 — pedWaits)
   for (let i = 2; i < rings.length; i += 4) { const g = rings[i]; if (g.grp || g.phone || LIFE_K(g.id) % 2) continue;
     const T = g.route.map(p => [Math.floor(p.x / TILE), Math.floor(p.y / TILE)]); let ci = 0; T.forEach(([x, y], j) => { if (x - y > T[ci][0] - T[ci][1]) ci = j; });   // 오른쪽 위 모퉁이
@@ -130,12 +131,24 @@ function lifeTrash() {
   g.evt = '__trash'; g.outfit = 'staff'; g.x = c.x; g.y = c.y - 10; g.fl = 0; g.route = [{ x: g.x, y: g.y, pause: 0 }, { x: cx, y: cy, pause: 1.2 }, { x: c.x, y: c.y - 10, pause: 999 }]; g.ri = 1; g.wait = 0; g.carryTo = 1; placeGuard(g, gi);
   if (PR) prWarm([charOf(g)], true); L.trash.push({ g, ph: 0, cx, cy, dx: c.x, dy: c.y - 10, t0: S.t });
 }
+// 흩어진 짝 다시 맺기: 오래 놀면 사건·싸움·순간이동으로 짝이 줄어든다(28→19). 화면 밖 멀리 있는 혼자 걷는 블록 행인 둘을 한 번에 한 쌍씩 다시 묶는다
+function lifeRepair() {
+  const L = S.life, P = S.player; if (!L || L.grp.length >= (L.grpWant || 0)) return;
+  const solo = g => g.civ && !g.evt && !g.grp && !g.dog && !g.child && !g.staff && !g.police && !g.crew && !g.wander && !g.student && !g.outfit && !g.phone && g.body !== 'old' && !g.jogger && !g.cross
+    && g.route?.length === 4 && g.state === 'PATROL' && !g.off && !flOf(g) && !g.chat && npcAlive(g) && dist(g.x, g.y, P.x, P.y) > 1600 && !inView(g.x, g.y, 300);
+  const leaders = new Set(L.grp.map(C => C.grp.L)); let A = null, C = null;
+  for (const g of S.guards) { if (!solo(g)) continue; if (!A) { if (!leaders.has(g)) A = g; } else if (!leaders.has(g)) { C = g; break; } }
+  if (!A || !C) return;
+  C.route = A.route.map(p => ({ x: p.x, y: p.y, pause: p.pause })); C.ri = A.ri || 0; C.path = null;
+  C.grp = { L: A, side: (L.grp.length & 1) ? 1 : -1 }; C.spdB = A.spdB || 1; C.umb = A.umb; C.wait = 999; C.still = true; groupSnap(C); L.grp.push(C);
+}
 function streetLifeUpdate(dt) {
   const L = S.life; if (!STAGE.cityLife || !L) return;
   lifeGroups();
   if ((L.t -= dt) > 0) return; L.t = 0.5;
   const P = S.player, jump = L.lp && dist(L.lp.x, L.lp.y, P.x, P.y) > 600; L.lp = { x: P.x, y: P.y }; L.jump = jump;   // 순간이동(병원·엘리베이터·집): 그 둘레는 화면 안이라도 바로 채운다
   lifeFronts(); lifePace(); lifeVendors(); lifeTrash();
+  if ((L.repT = (L.repT || 0) - 0.5) <= 0) { L.repT = 10; lifeRepair(); }
   if ((L.roamT = (L.roamT || 0) - 0.5) <= 0 || jump) { L.roamT = 2; lifeRoam(); }
 }
 // ---- 그림: 우산(비 올 때) · 휴대폰 불빛 (사람 위에 작은 도트)
