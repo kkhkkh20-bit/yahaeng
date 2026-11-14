@@ -24,7 +24,7 @@ async def main():
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.guns.sniper=6;  /* 저격총은 팔지 않는다 — 강 형사가 빌려준 한 자루 */
           S.wpn='sniper';ROAD();CLEAR();tick(.6);const scope=S.scope;return {row:true,ammo:S.guns.sniper,scope}}''')
         print('buy', r); ok(r.get('row') and r['ammo'] == 6 and r['scope'], 'buy + scope: %s' % r)
-        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;const g=S.guards.find(g=>g.civ&&g.state!=='DEAD'&&!g.off);g.x=P.x+700;g.y=P.y;g.route=[{x:g.x,y:g.y,pause:999}];g.path=null;tick(.3);
+        r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;CLEAR();const g=S.guards.find(g=>g.civ&&g.state!=='DEAD'&&!g.off);g.x=P.x+700;  /* 거리 생활(47zt2)이 내 둘레로 사람을 데려오므로 쏘기 전에 다시 비운다 */g.y=P.y;g.route=[{x:g.x,y:g.y,pause:999}];g.path=null;tick(.3);
           const tgt=S.scopeTgt===g;S.gunT=0;G.actAttack();tick(.5);return {tgt,dead:g.state,ammo:S.guns.sniper,d:g.shotD|0}}''')
         print('shot', r); ok(r['tgt'] and r['dead'] == 'DEAD' and r['ammo'] == 5 and r['d'] > 600, 'long shot: %s' % r)
         r = await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.stillT=0;S.scope=false;P.moving=true;S.gunT=0;const a=S.guns.sniper;G.actAttack();return {fired:S.guns.sniper!==a}}''')
