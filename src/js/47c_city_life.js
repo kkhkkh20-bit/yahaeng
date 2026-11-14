@@ -238,6 +238,7 @@ const SIGN_SUB = ['24시', '맛집', '배달', '영업중', '본점', '할인', 
 const SIGN_SUB_BY = [[/약국/, ['처방조제', '휴일영업']], [/편의점|마트|슈퍼/, ['24시', '택배', '할인']], [/치킨|호프|포차|골뱅이|노가리|곱창|주점/, ['맛집', '포장', '단체석']],
   [/국밥|순댓국|백반|분식|식당|반점|중국집/, ['맛집', '배달', '원조']], [/인쇄|지물/, ['명함전단', '당일출고']], [/철물|공구|자재|타일|조명|전파/, ['도매', '납품']],
   [/꽃집/, ['배달', '화환']], [/세탁|수선/, ['수선', '당일']], [/미용|헤어/, ['커트·펌', '예약']], [/PC방|당구|노래/, ['24시', '흡연실']], [/부동산/, ['상가원룸', '매매']]];
+const FLOOR_USE_NAME = { office: '사무실', gym: '헬스장', pc: 'PC방', academy: '학원', billiards: '당구장', karaoke: '노래방', store: '상가', food: '식당' };
 const signSub = (name, hs) => { for (const [re, L] of SIGN_SUB_BY) if (re.test(name)) return L[hs % L.length]; return SIGN_SUB[hs % SIGN_SUB.length]; };
 function signStyle(txt) { for (const [re, bg, fg, ac] of SIGN_STYLE) if (re.test(txt)) return { bg, fg, ac }; return { bg: '#1d3c78', fg: '#ffffff', ac: '#ffd25a' }; }
 function signHash(b) { return ((b.x0 * 73856093) ^ (b.y0 * 19349663)) >>> 0; }
@@ -259,7 +260,7 @@ function drawStoreSigns(b, lit) {
   }
   // 자유 모드: 위층마다 창문 글씨 (2F 세무사 · 3F 학원 …), 업소가 없는 층은 '임대' — 을지로 상가 건물 창에 붙은 시트 글씨
   if (STAGE.cityLife && b.fh >= 2 && w >= 4 * TILE) for (let f = 1; f < b.fh; f++) {
-    if (b.collapsed) break; const t = (b.signs[f] || '').trim(), u = (b.floorsUse || [])[f], label = t ? (f + 1) + 'F ' + t : u && u !== 'vip' ? '임대 문의' : '';
+    if (b.collapsed) break; const t = (b.signs[f] || '').trim(), u = (b.floorsUse || [])[f], label = t ? (f + 1) + 'F ' + t : u && u !== 'vip' ? (f + 1) + 'F ' + (FLOOR_USE_NAME[u] || '사무실') : '';   // 간판 없는 층도 쓰임새가 있으면 그 이름 (가구·사람이 있는 층에 '임대 문의'가 붙던 것)
     { const ay = (b.y1 - f - 1) * TILE + 20, ax = Math.round((x0 + w - 70 - ((hs >> (f + 3)) & 3) * 30) / 3) * 3;   // 벽걸이 에어컨 실외기 (층마다 있을 수도 없을 수도): 3px 칸 도트
       if (((hs >> f) & 3) !== 0 && ax > x0 + 120) { ctx.fillStyle = '#1c1f25'; ctx.fillRect(ax - 3, ay - 3, 27, 21); ctx.fillStyle = '#c9cdd3'; ctx.fillRect(ax, ay, 21, 15); ctx.fillStyle = '#e8ebef'; ctx.fillRect(ax, ay, 21, 3);
         ctx.fillStyle = '#6e737c'; ctx.fillRect(ax + 3, ay + 3, 9, 9); ctx.fillStyle = '#9ba0a8'; ctx.fillRect(ax + 6, ay + 6, 3, 3); ctx.fillStyle = '#8a8f98'; ctx.fillRect(ax + 15, ay + 4, 3, 2); ctx.fillRect(ax + 15, ay + 8, 3, 2);

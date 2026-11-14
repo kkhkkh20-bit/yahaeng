@@ -27,8 +27,12 @@ function streetLifeInit() {
     const p = shopFront(b); if (p) L.cands.push({ bi, kind, x: p.x, y: p.y }); });
 }
 // 짝: 앞사람 옆(어깨 너비)에 붙인다. 앞사람이 멈추면(대화·신호) 같이 멈춘다
-function groupSnap(C) { const o = C.grp, A = o.L, a = A.a || 0, s = o.side * 22;
-  C.x = A.x + Math.cos(a + Math.PI / 2) * s - Math.cos(a) * 4; C.y = A.y + Math.sin(a + Math.PI / 2) * s - Math.sin(a) * 4; C.a = C.want = a; C.moving = A.moving; C.fl = A.fl; C.z = A.z || 0; }
+// 옆자리가 벽·건물이면 반대편으로, 그것도 막혔으면 한 걸음 뒤에 (짝이 벽 속에 그려지던 것)
+function groupSnap(C) { const o = C.grp, A = o.L, a = A.a || 0, free = (x, y) => !solidAt(Math.floor(x / TILE), Math.floor(y / TILE));
+  let x = A.x, y = A.y;
+  for (const s of [o.side * 22, -o.side * 22]) { const px = A.x + Math.cos(a + Math.PI / 2) * s - Math.cos(a) * 4, py = A.y + Math.sin(a + Math.PI / 2) * s - Math.sin(a) * 4; if (free(px, py)) { x = px; y = py; break; } x = null; }
+  if (x == null) { x = A.x - Math.cos(a) * 26; y = A.y - Math.sin(a) * 26; if (!free(x, y)) { x = A.x; y = A.y; } }
+  C.x = x; C.y = y; C.a = C.want = a; C.moving = A.moving; C.fl = A.fl; C.z = A.z || 0; }
 function groupRelease(C) { const A = C.grp?.L; C.grp = null; C.wait = 0; C.still = false; C.path = null;
   if (A && A.route?.length) { C.route = A.route.map(p => ({ x: p.x, y: p.y, pause: p.pause })); C.ri = A.ri || 0; } }
 function lifeGroups() {

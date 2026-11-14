@@ -131,10 +131,12 @@ function sdInit() {
     }
   });
   // 1-2) 보도 연석가: 블록 둘레 보도('=')가 차도와 맞닿는 칸에 띄엄띄엄 볼라드·분리수거함·표지판 (모퉁이·횡단보도 근처는 비운다)
+  // 공중전화 부스 칸과 그 둘레 한 칸은 비운다 (부스 위에 표지판·수거함이 겹쳐 그려지던 것)
+  const booths = (STAGE.phones || []).map(([x, y]) => [Math.floor(x), Math.floor(y)]), booth = (x, y) => booths.some(([a, b]) => Math.abs(a - x) <= 1 && Math.abs(b - y) <= 1);
   { const [BX0, BY0] = STAGE.blockCount || [0, 0], BS0 = STAGE.blockSize || 0;
     for (let by = 0; by < BY0; by++) for (let bx = 0; bx < BX0; bx++) { const [x0, y0] = STAGE.blockOrigin(bx, by), e = BS0 - 1;
-      const side = (pts, off) => pts.forEach(([x, y], i) => { if (i < 3 || i > pts.length - 4 || at(x, y) !== '=' || bldAt(x, y) >= 0) return; const h = sdHash(x, y, 13); if (h > 0.16 || !take(x, y)) return;
-        add(h < 0.06 ? 'bollard' : h < 0.12 ? 'bin' : 'sign', x, y, Object.assign({ v: (x + y) % 3 }, off)); });   // 연석 쪽(차도 쪽)으로 붙인다: 칸 가운데를 걷는 행인과 겹치지 않게
+      const side = (pts, off) => pts.forEach(([x, y], i) => { if (i < 3 || i > pts.length - 4 || at(x, y) !== '=' || bldAt(x, y) >= 0 || booth(x, y)) return; const h = sdHash(x, y, 13); if (h > 0.16 || !take(x, y)) return;
+        add(h < 0.06 ? 'bollard' : h < 0.12 ? 'bin' : 'sign', x, y, Object.assign({ v: (x + y) % 3 }, off)); });   // 연석 쪽(차도 쪽)으로 붙인다: 칸 가운데를 걷는 행인과 겹치지 않게 · 공중전화 부스 칸과 둘레는 비운다
       const N = [], S2 = [], Wl = [], E = []; for (let k = 0; k <= e; k++) { N.push([x0 + k, y0]); S2.push([x0 + k, y0 + e]); Wl.push([x0, y0 + k]); E.push([x0 + e, y0 + k]); }
       side(N, { sy: -36 }); side(S2, {}); side(Wl, { sx: -15 }); side(E, { sx: 15 }); } }
   // 2) 블록 안 마당: 주차된 차(A 두 칸) 옆 주차선 · 공장지대 맨땅엔 팔레트·드럼통·컨테이너 · 공원(풀밭이 많은 블록)엔 벤치·가로등·운동 기구·정자

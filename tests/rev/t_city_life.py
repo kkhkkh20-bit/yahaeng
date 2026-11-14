@@ -33,7 +33,7 @@ CHECK = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));w
   c2.x=P.x-220;c2.y=P.y;c2.state='ALERT';c2.lastSeen=ls();c2.seen=true;c2.path=null;let shot=-1;for(let t=0;t<8&&shot<0;t+=1/60){G.update(1/60);if(P.hp<P.hpMax)shot=t;}out.shot=shot;
   // gang chase car
   S.wanted=0;for(const g of S.guards)if(g.police&&!g.off)g.x=-9000;P.hp=P.hpMax;const gb=need(g=>g.fac==='B'&&!g.civ&&!g.police);gb.lastSeen=ls();gb.x=P.x+900;gb.y=P.y;
-  for(let t=0;t<5;t+=1/60){gb.state='ALERT';gb.x=P.x+900;gb.y=P.y;G.update(1/60);}  /* keep it too far to catch up on foot */out.gangCar=S.vehicles.filter(v=>v.gang==='B'&&v.chase).length;
+  for(let t=0;t<5;t+=1/60){gb.state='ALERT';gb.x=P.x+900;gb.y=P.y;G.update(1/60);}  /* keep it too far to catch up on foot */out.gangCar=S.vehicles.filter(v=>v.gang==='B'&&(v.chase||v.deployed)).length;  /* 차가 벌써 도착해 조직원을 내려놓았으면 chase 대신 deployed */
   // gangs meet and fight; police step in (counted last: fights leave people dead)
   gb.state='RETURN';gb.path=null;Object.assign(P,{x:RX(0),y:RY});S.wanted=0;
   for(const g of S.guards)if(g.police&&!g.off&&g.x<0&&g.route&&g.route[0]){g.x=g.route[0].x;g.y=g.route[0].y;g.path=null;g.state='RETURN';}  // put back the officers moved away for the car check
