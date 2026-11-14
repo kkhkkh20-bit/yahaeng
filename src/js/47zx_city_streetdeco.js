@@ -202,6 +202,7 @@ function drawStreetDeco() {
     if (o.k === 'pavilion') { ctx.drawImage(sdPavilion(), o.x, o.y + 4, 72 * k, 66 * k); return; }
     const s = SD_ART[o.k](o.v || 0), w = s.width * k, h = s.height * k;
     const bx = (o.k === 'container' ? o.x + 4 : o.x + (TILE - w) / 2) + (o.sx || 0), by = o.y + TILE - h + (o.k === 'lamp' ? 6 : 4) + (o.sy || 0);
+    if (o.down) { ctx.save(); ctx.translate(Math.round(bx + w / 2), Math.round(by + h)); ctx.rotate(o.rot || Math.PI / 2); ctx.drawImage(s, -Math.round(w / 2), -Math.round(h), w, h); ctx.restore(); return; }   // 차에 받혀 넘어진 것: 밑동을 축으로 옆으로 눕힌다
     ctx.drawImage(s, Math.round(bx), Math.round(by), w, h);
   });
   ctx.restore();
@@ -210,7 +211,7 @@ function drawStreetDeco() {
 function drawStreetDecoGlow() {
   if (!STAGE.cityLife || CUR_F || !SD) return; const night = (STAGE.nightShade ?? 0.6) > 0.3; if (!night) return;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  sdVisible(o => {
+  sdVisible(o => { if (o.down) return;   // 넘어진 것은 불이 꺼진다
     const k = SD_SCALE[o.k] || SD_PX, box = (sw, sh, dy) => [o.x + (TILE - sw * k) / 2 + (o.sx || 0), o.y + TILE - sh * k + dy + (o.sy || 0)];
     if (o.k === 'vending') { const [x, y] = box(12, 20, 4); ctx.fillStyle = 'rgba(200,225,255,.35)'; ctx.fillRect(x + 2 * k, y + 2 * k, 8 * k, 8 * k); ctx.fillStyle = 'rgba(160,200,255,.12)'; ctx.fillRect(x - 2 * k, y + 18 * k, 16 * k, 4 * k); }
     else if (o.k === 'aboard' && o.glow) { const [x, y] = box(9, 14, 4); ctx.fillStyle = 'rgba(255,220,150,.28)'; ctx.fillRect(x + k, y + k, 7 * k, 10 * k); }
@@ -219,3 +220,17 @@ function drawStreetDecoGlow() {
   });
   ctx.restore();
 }
+// 차가 들이받으면 쓰러진다: 빠르게 달리는 차(내 차·다른 차) 앞머리에 닿은 소품은 넘어져 조각이 튀고 차가 조금 느려진다.
+// 가로등·정자·컨테이너·벤치·운동기구처럼 무겁거나 박힌 것은 빼고, 넘어진 것은 다시 세우지 않는다 (판이 바뀌면 처음부터)
+const SD_SOLID = new Set(['lamp', 'pavilion', 'container', 'bench', 'exercise']);
+function sdSmashUpdate() {
+  if (!STAGE.cityLife || !SD || SD.stage !== STAGE.id) return;
+  for (const v of S.vehicles || []) { if (v.dead || v.z || Math.abs(v.v || 0) < 90 || (!v.ai && S.player.car !== v)) continue;
+    const L = (v.len || 92) * 0.5, hx = v.x + Math.cos(v.a) * L * 0.7, hy = v.y + Math.sin(v.a) * L * 0.7, a = SD.grid.get(Math.floor(hx / TILE / SD_CH) + ',' + Math.floor(hy / TILE / SD_CH)); if (!a) continue;
+    for (const o of a) { if (o.down || SD_SOLID.has(o.k)) continue; const ox = o.x + TILE / 2 + (o.sx || 0), oy = o.y + TILE - 10 + (o.sy || 0);
+      if (Math.abs(ox - hx) > 30 || Math.abs(oy - hy) > 30) continue;
+      o.down = S.t; o.rot = (Math.cos(v.a) >= 0 ? 1 : -1) * Math.PI / 2; v.v *= 0.85;
+      if (typeof fireEmit === 'function') fireEmit(v, 'debris', 6, { x: ox, y: oy });
+      if (S.player.car === v && typeof hitJuice === 'function') hitJuice({ x: ox, y: oy }, v.a, 0.6, false, false); } }
+}
+if (typeof cityUpdate === 'function') { const _cu = cityUpdate; cityUpdate = function (dt) { const r = _cu.apply(this, arguments); sdSmashUpdate(); return r; }; }

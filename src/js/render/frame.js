@@ -88,7 +88,8 @@ function draw() {
     }
     if (g.lookout && !g.icon) { ctx.strokeStyle = '#f2c46b'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(g.x - 7, g.y - 36); ctx.lineTo(g.x, g.y - 43); ctx.lineTo(g.x + 7, g.y - 36); ctx.moveTo(g.x - 7, g.y - 42); ctx.lineTo(g.x, g.y - 49); ctx.lineTo(g.x + 7, g.y - 42); ctx.stroke(); }
     if (g.elite) { ctx.fillStyle = '#c9c6b6'; ctx.beginPath(); ctx.moveTo(g.x, g.y - 34); ctx.lineTo(g.x - 6, g.y - 43); ctx.lineTo(g.x + 6, g.y - 43); ctx.closePath(); ctx.fill(); }
-    if (g.state === 'CAPTIVE') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 20, -Math.PI / 2, -Math.PI / 2 + TAU * (1 - g.captT / 9)); ctx.stroke(); }
+    if (g.state === 'CAPTIVE' && STAGE.cityLife) drawPixelTimer(g, clamp(1 - g.captT / 9, 0, 1), '#f2c46b');   // 자유 모드: 붙잡은 시간도 고리 대신 도트 막대
+    else if (g.state === 'CAPTIVE') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 20, -Math.PI / 2, -Math.PI / 2 + TAU * (1 - g.captT / 9)); ctx.stroke(); }
     if (g.target) drawTargetRing(g,'rgba(194,54,43,.85)');
   }
   PM('guards');

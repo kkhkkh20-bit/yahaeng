@@ -184,9 +184,16 @@ function drawSharpEye(g) {
   ctx.restore();
   if(on&&dist(P.x,P.y,g.x,g.y)<180&&sightLine(P,g.x,g.y,g.z||0,P.mode==='sneak',flOf(g))){if(guideFull())tag(g.x,g.y-77,f>0?'신원 확인 중 · 걸어서 벗어나기':'얼굴 확인 담당','#d7c6a3',1,null,2.3);else drawBadge(g.x,g.y-77,'eye',f>0?'#ff8a76':'#d7c6a3',f>0?.75+.25*Math.sin(S.t*8):.9);}
 }
+// 자유 모드의 남은 시간 표시: 고리 대신 머리 위 3px 칸 막대 (테두리 + 남은 만큼 채움)
+function drawPixelTimer(g, f, col) {
+  const w = 30, x = Math.round((g.x - w / 2) / 3) * 3, y = Math.round((g.y - 62) / 3) * 3;
+  ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(x - 3, y - 3, w + 6, 9);
+  ctx.fillStyle = col; ctx.fillRect(x, y, Math.max(3, Math.round(w * f / 3) * 3), 3);
+}
 // 출입 금지 경고 중: 경비 둘레에 남은 시간 고리 (다 닳기 전에 공개 구역으로 나가야 한다)
 function drawWarnRing(g) {
   if (g.state !== 'WARN' || !g.warnEnd) return; const f = clamp((g.warnEnd - S.t) / 4.5, 0, 1);
+  if (STAGE.cityLife) { drawPixelTimer(g, f, f > 0.35 ? '#f2aa46' : '#e8503c'); return; }   // 자유 모드: 둘레 고리 대신 머리 위 도트 막대
   ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(g.x, g.y, 26, 0, TAU); ctx.stroke();
   ctx.strokeStyle = f > 0.35 ? 'rgba(242,170,70,.95)' : 'rgba(232,80,60,.95)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(g.x, g.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke();
 }

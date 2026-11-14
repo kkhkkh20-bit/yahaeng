@@ -36,8 +36,13 @@ function drawAwareness(P) {
   for (const g of S.guards) {
     if (g.civ || g.dog || g.state === 'DEAD' || g.state === 'CAPTIVE' || flOf(g) !== flOf(P) || dist(g.x, g.y, P.x, P.y) > 1100) continue;  // 다른 층은 표시하지 않는다
     const aw=guardAwareness(g),al=aw.phase==='seen',m=aw.progress;if(!aw.direct||m<.03)continue;
-    if (!ring) { ring = true; ctx.strokeStyle = 'rgba(244,241,234,.14)'; ctx.lineWidth = 1.5 * k; ctx.beginPath(); ctx.arc(P.x, P.y, R, 0, TAU); ctx.stroke(); }  // 고리 바탕 (어쌔신 크리드 유니티식)
     const a = Math.atan2(g.y - P.y, g.x - P.x), span = 0.22 + 0.5 * m;
+    if (STAGE.cityLife) {  // 자유 모드: 내 둘레 고리·호 없이 그쪽을 가리키는 작은 도트 삼각형만 (동그라미는 쓰지 않는다)
+      const px = Math.round((P.x + Math.cos(a) * R) / 3) * 3, py = Math.round((P.y - 14 + Math.sin(a) * R) / 3) * 3, s3 = 3 * Math.round(k), dx = Math.round(Math.cos(a) * 2), dy = Math.round(Math.sin(a) * 2);
+      ctx.globalAlpha = 0.45 + 0.55 * m; ctx.fillStyle = awareCol(g);
+      for (let i = 0; i < 3; i++) for (let j = -(2 - i); j <= 2 - i; j++) ctx.fillRect(px + (dx * i - dy * j) * s3 / 2 - s3 / 2, py + (dy * i + dx * j) * s3 / 2 - s3 / 2, s3, s3);
+      ctx.globalAlpha = 1; continue; }
+    if (!ring) { ring = true; ctx.strokeStyle = 'rgba(244,241,234,.14)'; ctx.lineWidth = 1.5 * k; ctx.beginPath(); ctx.arc(P.x, P.y, R, 0, TAU); ctx.stroke(); }  // 고리 바탕 (어쌔신 크리드 유니티식)
     ctx.strokeStyle = awareCol(g); ctx.globalAlpha = 0.35 + 0.6 * m; ctx.lineWidth = (3 + 3 * m) * k; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.arc(P.x, P.y, R, a - span / 2, a + span / 2); ctx.stroke(); ctx.lineCap = 'butt';
     if (Math.abs(g.x - cam.x) > hw || Math.abs(g.y - cam.y) > hh) {  // 화면 밖 사람: 바깥쪽 삼각형으로 '그쪽에서 본다'
