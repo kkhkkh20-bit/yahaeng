@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------- 빛
 const TORCH_R = 210, TORCH_FOV = .32;
 const flickOff = l => !!l.flk && ((Math.sin(S.t * l.flk.f + l.flk.p) > 0.62) || ((S.t * 6.3 + l.flk.p) % 7 < 0.35));  // 깜빡이는 보안등·간판: 잠깐씩 꺼진다
-const lampOn = l => !l.broken && !l.off && !(l.outdoor && mainPowerOff(l)) && !flickOff(l);
+const lampOn = l => !l.broken && !l.off && !l.nightOff && !(l.outdoor && mainPowerOff(l)) && !flickOff(l);
 // Rendering mask only: stop exactly at the first occluder. Detection uses lightAt/los.
 function rebuildLampPolygon(l){
  const layer=CUR_F;try{setLayer(flOf(l));l.poly=[];

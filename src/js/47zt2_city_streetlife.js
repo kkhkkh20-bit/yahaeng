@@ -70,7 +70,7 @@ function lifeFronts() {
   for (const [bi, f] of L.fronts) if (dist(f.c.x, f.c.y, P.x, P.y) > FRONT_DROP) { for (const g of f.gs) if (!g.off && npcAlive(g)) evGone(g); L.fronts.delete(bi); }
   if (L.fronts.size >= FRONT_MAX || flOf(P) || S.wanted >= 3) return;
   let best = null, bd = FRONT_R;
-  for (const c of L.cands) { if (L.fronts.has(c.bi) || BLD[c.bi].collapsed) continue; const d = dist(c.x, c.y, P.x, P.y); if (d < bd && (L.jump || !inView(c.x, c.y, 80))) { bd = d; best = c; } }
+  for (const c of L.cands) { if (L.fronts.has(c.bi) || BLD[c.bi].collapsed || (typeof floorOpen === 'function' && !floorOpen(BLD[c.bi], 0))) continue; const d = dist(c.x, c.y, P.x, P.y); if (d < bd && (L.jump || !inView(c.x, c.y, 80))) { bd = d; best = c; } }
   if (best) L.fronts.set(best.bi, { c: best, gs: frontSpawn(best) });
   if (best && L.jump && L.fronts.size < FRONT_MAX) lifeFronts();   // 막 도착했으면 둘레 가게 앞을 한꺼번에
 }
@@ -87,7 +87,7 @@ function lifeRoam() {
   const ring = g => g.civ && !g.evt && !g.grp && !g.dog && !g.child && !g.staff && !g.police && !g.crew && !g.wander && !g.student && !g.outfit && g.route?.length === 4 && g.state === 'PATROL' && !g.off && !flOf(g);
   let near = 0; const far = [];
   for (const g of S.guards) { if (!ring(g)) continue; const d = dist(g.x, g.y, P.x, P.y); if (d < ROAM_R) near++; else if (d > 2600 && !inView(g.x, g.y, 200)) far.push(g); }
-  if (near >= ROAM_WANT || !far.length) return;
+  if (near >= Math.round(ROAM_WANT * (typeof nightCrowdK === 'function' ? nightCrowdK() : 1)) || !far.length) return;   // 새벽엔 덜 데려온다 (47zy 밤 시계)
   const mates = new Map(S.life.grp.map(C => [C.grp.L, C]));
   // 내 둘레 3×3 블록 중 하나 (번갈아)
   let pbx = 0, pby = 0, bd = 1e9; for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) { const [x0, y0] = B0(bx, by), cx = (x0 + BS / 2) * TILE, cy = (y0 + BS / 2) * TILE, d = dist(cx, cy, P.x, P.y); if (d < bd) { bd = d; pbx = bx; pby = by; } }
