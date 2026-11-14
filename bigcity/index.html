@@ -3073,7 +3073,7 @@ body.touch #hud #quickItems output{border-radius:2px;color:#f5dfb3;background:#1
       <button class="ghost" id="btnNewCampaign" type="button" hidden>처음부터 시작</button>
     </nav>
   </div>
-  <footer class="title-footer"><span>잠입 · 암살 · 추적</span><span>v267 · 2026-11-13</span></footer>
+  <footer class="title-footer"><span>잠입 · 암살 · 추적</span><span>v267 · 2026-11-14</span></footer>
 </div>
 
 <dialog id="caseBoard" aria-labelledby="caseBoardTitle"><header class="case-board-head"><div><small>작전 목표 · 금성회 해체</small><h2 id="caseBoardTitle">끊어진 보고선</h2><p id="casePressure"></p></div><button type="button" id="btnCaseClose" aria-label="조직도 닫기">닫기 ×</button></header><div class="case-board-body"><div id="caseHierarchy" aria-label="금성회 간부 조직도"></div><aside id="caseDetail" aria-live="polite"></aside></div><footer><span id="caseProgress"></span><small>간부 처치 → 새 단서 → 상급자 신원과 동선 확인</small></footer></dialog>
@@ -3191,7 +3191,7 @@ body.touch #hud #quickItems output{border-radius:2px;color:#f5dfb3;background:#1
       <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
       <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
       <button class="pz-big" id="btnSet2" type="button">설정</button>
-      <small class="fx-sub" id="pauseVersion">v267 · 2026-11-13</small>
+      <small class="fx-sub" id="pauseVersion">v267 · 2026-11-14</small>
     </div>
     <div class="pz-side">
       <div class="pz-todo"><small>추적할 의뢰 목표</small><div id="missionGoals"></div></div>
@@ -4061,8 +4061,8 @@ const STAGES = [
 // 블록 하나 = 16칸(바깥 한 칸 보도), 도로 4칸. 블록 종류는 기존 도시 12종을 다시 배치했다.
 ...(window.__CITY_XL__ = () => {
   // 강: 셋째 블록 줄 아래 가로 도로(y 60~63) 바로 밑을 가로지른다(y 64~74). 넷째 줄부터는 강 폭만큼 남쪽으로 밀린다
-  // 블록 24칸(바깥 한 칸 보도) + 도로 4칸 = 28칸 주기. 건물이 커지고 맵도 커졌다(232×199칸)
-  const BX = 8, BY = 6, BS = 24, P = BS + 4, RIVER_ROWS = 11, RS = RIVER_ROWS + 4, RIVER_Y = 3 * P + 4, W = BX * P + 8, H = BY * P + 8 + RS;
+  // 블록 30칸(바깥 한 칸 보도) + 도로 4칸 = 34칸 주기. 건물(폭 8~14칸, 깊이 9~13칸)이 커져 가게 안이 넉넉하다 (280×235칸)
+  const BX = 8, BY = 6, BS = 30, P = BS + 4, RIVER_ROWS = 11, RS = RIVER_ROWS + 4, RIVER_Y = 3 * P + 4, W = BX * P + 8, H = BY * P + 8 + RS;
   const B = (bx, by) => [4 + bx * P, 4 + by * P + (by >= 3 ? RS : 0)];
   const RIVER = window.__ASSETS__ && window.__ASSETS__.cityRiver;
   // 간판 이름: 을지로 골목 가게들 (블록 자리마다 다르게)
@@ -4070,7 +4070,7 @@ const STAGES = [
   const FOOD = ['국밥', '노가리', '호프', '골뱅이', '곱창', '순댓국', '백반', '분식', '포차'];
   const STORE = ['편의점', '철물', '공구', '타일', '조명', '인쇄', '전파사', '약국', '지물포'];
   const PLAY = ['PC방', '당구장', '노래방', '다방', '기원'];
-  // 필지: 사각형 안을 한두 줄로 나누고, 줄마다 폭이 다른 건물(6~11칸)과 1~2칸 틈 · 빈터를 놓는다.
+  // 필지: 사각형 안을 한두 줄로 나누고, 줄마다 폭이 다른 건물(8~14칸)과 1~2칸 틈 · 빈터를 놓는다.
   // 같은 블록은 언제나 같은 모양이다(블록 좌표로 정한 난수). kind: 'shop' 상가 골목 · 'res' 주택가 · 'dense' 다세대·사무실 밀집
   const rng = seed => () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };  // mulberry32
   const UPPER = ['office', 'office', 'gym', 'pc', 'academy'], UPPER_SIGN = { office: ['', '세무사', '법무사', '부동산'], gym: ['헬스장'], pc: ['PC방', '당구장', '노래방'], academy: ['학원'] };
@@ -4107,8 +4107,8 @@ const STAGES = [
     };
     const row = (y0, y1, front) => {
       let cx = X0; if (r() < 0.15) { const w = ri(1, 2); yard(cx, y0, cx + w - 1, y1); cx += w; }
-      while (X1 - cx + 1 >= 6) {
-        const left = X1 - cx + 1; let w = Math.min(left, ri(6, 11)); if (left - w > 0 && left - w < 7) w = left - w <= 2 ? left : Math.max(6, left - 7);  // 끝에 애매한 자투리가 남지 않게
+      while (X1 - cx + 1 >= 8) {
+        const left = X1 - cx + 1; let w = Math.min(left, ri(8, 14)); if (left - w > 0 && left - w < 9) w = left - w <= 2 ? left : Math.max(8, left - 9);  // 끝에 애매한 자투리가 남지 않게
         const sb = r() < 0.3 ? 1 : 0;
         if (r() < (kind === 'res' ? 0.12 : 0.05)) yard(cx, y0, cx + w - 1, y1); else building(cx, front ? y0 : y0 + sb, cx + w - 1, front ? y1 - sb : y1, front);
         if (sb) yard(cx, front ? y1 : y0, cx + w - 1, front ? y1 : y0);
@@ -4117,13 +4117,13 @@ const STAGES = [
       if (cx <= X1) yard(cx, y0, X1, y1);
     };
     const Hh = Y1 - Y0 + 1;
-    if (Hh >= 16) { const dN = ri(7, 10), dS = ri(7, Math.min(10, Hh - dN - 2)); row(Y0, Y0 + dN - 1, false); m.fill(X0, Y0 + dN, X1, Y1 - dS, ','); row(Y1 - dS + 1, Y1, true); }
-    else if (Hh >= 5 && X1 - X0 + 1 >= 6) row(Y0, Y1, true); else yard(X0, Y0, X1, Y1);
+    if (Hh >= 20) { const dN = ri(9, 13), dS = ri(9, Math.min(13, Hh - dN - 2)); row(Y0, Y0 + dN - 1, false); m.fill(X0, Y0 + dN, X1, Y1 - dS, ','); row(Y1 - dS + 1, Y1, true); }
+    else if (Hh >= 8 && X1 - X0 + 1 >= 8) row(Y0, Y1, true); else yard(X0, Y0, X1, Y1);   // 얕은 자투리 땅엔 작은 건물 대신 주차장·마당
   }
   function genBlock(m, x, y, kind) {
     const r = rng(x * 7919 + y * 104729 + kind.length * 13), ri = (a, b) => a + Math.floor(r() * (b - a + 1));
     if (r() < 0.2) {  // 한쪽은 깊은 큰 건물, 나머지는 필지
-      const w = ri(9, 12), left = r() < 0.5, bx0 = left ? x + 1 : x + BS - 1 - w;
+      const w = ri(11, 15), left = r() < 0.5, bx0 = left ? x + 1 : x + BS - 1 - w;
       m.villa(bx0, y + 3, bx0 + w - 1, y + BS - 2, ri(3, 6), kind === 'res' ? {} : { kind: 'shop', use: ['food', 'gym', 'office', 'office', 'office', 'office'], signs: [pick(FOOD, x, y), '헬스장', pick(UPPER_SIGN.office, x, y)] });
       genLots(m, left ? bx0 + w + 1 : x + 1, y + 1, left ? x + BS - 2 : bx0 - 2, y + BS - 2, kind, r); m.fill(bx0, y + 1, bx0 + w - 1, y + 2, ',');
       return;
@@ -4133,8 +4133,9 @@ const STAGES = [
   // 특수 블록(조직 구역 · 본부 · 클럽 · 병원 · 지구대 · 공원 · 시장 · 공사장)은 왼쪽 위 16칸에 그대로 두고, 남은 ㄱ자 땅을 필지로 채운다
   function fillAround(m, x, y, kind) {
     const r = rng(x * 3571 + y * 7349 + 7);
-    m.fill(x + 15, y + 1, x + 15, y + BS - 2, ','); m.fill(x + 1, y + 15, x + 14, y + 15, ',');
-    genLots(m, x + 16, y + 1, x + BS - 2, y + BS - 2, kind, r); genLots(m, x + 1, y + 16, x + 14, y + BS - 2, kind, r);
+    const ex = Math.round(15 * SKX), ey = Math.round(15 * SKY);   // 늘린 특수 설계의 끝 (16칸 × SKX, × SKY)
+    m.fill(x + ex, y + 1, x + ex, y + BS - 2, ','); m.fill(x + 1, y + ey, x + ex - 1, y + ey, ',');
+    genLots(m, x + ex + 1, y + 1, x + BS - 2, y + BS - 2, kind, r); genLots(m, x + 1, y + ey + 1, x + ex - 1, y + BS - 2, kind, r);
   }
   // 블록 배치 (기존 도시 종류): h 주택가 · s 상가 · w 조직 창고 · c 클럽 거리 · p 공원 · m 시장 · r 건달파 동네 · e 주택 · H 병원 · P 지구대 · k 공사장 · q 조직 본부
   // 조직 세력: A 조직(본부 q) · B 건달파(r 동네) · C 청계파(w 창고 상회) · D 종로파(c 클럽 거리 뒤 사무실)
@@ -4148,7 +4149,17 @@ const STAGES = [
     'hehkPefk'
   ];
   const zones = [], gangs = []; let collecting = true;
-  const Z = z => { if (collecting) zones.push(z); }, Gp = (...g) => { if (collecting) gangs.push(...g); };
+  // 특수 블록(16칸 설계)은 가로 SKX배 · 세로 SKY배로 늘려 짓는다: 건물·마당·차·구역·조직원 자리를 같은 비율로 옮긴다 (가게 안이 넉넉해진다).
+  // 세로는 1.25배라 블록 남쪽에 9줄 필지가 남는다: 남쪽 보도를 바라보는 건물 정면이 생겨 간판 사고 의뢰를 걸 수 있다
+  const SKX = 1.5, SKY = 1.25; let SC = null;
+  const scaler = (x0, y0) => ({ X: v => x0 + Math.round((v - x0) * SKX), Y: v => y0 + Math.round((v - y0) * SKY), X1: v => x0 + Math.round((v - x0 + 1) * SKX) - 1, Y1: v => y0 + Math.round((v - y0 + 1) * SKY) - 1 });
+  const scPt = p => SC ? [SC.X(p[0]), SC.Y(p[1]), ...p.slice(2)] : p;
+  const Z = z => { if (!collecting) return; if (SC) z = [SC.X(z[0]), SC.Y(z[1]), SC.X1(z[2]), SC.Y1(z[3]), ...z.slice(4)]; zones.push(z); };
+  const Gp = (...g) => { if (!collecting) return; gangs.push(...g.map(o => SC ? Object.assign({}, o, o.at ? { at: scPt(o.at) } : {}, o.route ? { route: o.route.map(scPt) } : {}) : o)); };
+  const scaledMap = (m, c) => Object.assign(Object.create(m), {
+    fill: (a, b, x1, y1, ch) => m.fill(c.X(a), c.Y(b), c.X1(x1), c.Y1(y1), ch), villa: (a, b, x1, y1, h, o) => m.villa(c.X(a), c.Y(b), c.X1(x1), c.Y1(y1), h, o),
+    set: (a, b, ch) => m.set(c.X(a), c.Y(b), ch), get: (a, b) => m.get(c.X(a), c.Y(b)), car: (a, b, d) => m.car(c.X(a), c.Y(b), d),
+    many: (ch, L) => m.many(ch, L.map(([a, b]) => [c.X(a), c.Y(b)])), tent: (a, b, k) => m.tent(c.X(a), c.Y(b), k) });
   const T = {
     h(m, x, y) { genBlock(m, x, y, 'res'); },
     s(m, x, y) { genBlock(m, x, y, 'shop'); Z([x + 1, y + 1, x + BS - 2, y + BS - 2, 'pub']); },
@@ -4219,7 +4230,11 @@ const STAGES = [
   const riverCol = x => { for (const r of st.roadsX) { if (x >= r && x < r + 4) return 'road'; if (x === r - 1 || x === r + 4) return 'rail'; } return Math.floor(x / 4) % 5 === 2 && x % 4 === 2 ? 'ladder' : 'quay'; };
   // 블록 하나: 일반 블록(h s e)은 통째로 필지, 특수 블록은 16칸 설계 + 남은 땅 필지
   const AROUND = { w: 'dense', c: 'shop', p: 'res', m: 'shop', r: 'dense', H: 'dense', P: 'dense', k: 'res', q: 'dense', f: 'dense', d: 'dense' };
-  function buildBlock(m, bx, by) { const [x0, y0] = B(bx, by), t = LAYOUT[by][bx]; curD = districtOf(bx, by); T[t](m, x0, y0); if (AROUND[t]) fillAround(m, x0, y0, AROUND[t]); }
+  function buildBlock(m, bx, by) { const [x0, y0] = B(bx, by), t = LAYOUT[by][bx]; curD = districtOf(bx, by);
+    if (!AROUND[t]) { T[t](m, x0, y0); return; }
+    SC = scaler(x0, y0); T[t](scaledMap(m, SC), x0, y0);
+    if (t === 'd' && collecting && st.dealer) { const R = r => [SC.X(r[0]), SC.Y(r[1]), SC.X1(r[2]), SC.Y1(r[3])]; st.dealer = { lot: R(st.dealer.lot), sell: R(st.dealer.sell), office: [SC.X(st.dealer.office[0]), SC.Y(st.dealer.office[1])] }; st.respray = { bay: R(st.respray.bay) }; }
+    SC = null; fillAround(m, x0, y0, AROUND[t]); }
   const find = ch => { for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) if (LAYOUT[by][bx] === ch) return B(bx, by); return B(0, 0); };
   const ring = (bx, by, d) => { const [x0, y0] = B(bx, by), e = BS - 1, c = [[x0, y0], [x0 + e, y0], [x0 + e, y0 + e], [x0, y0 + e]]; return (d ? c.slice().reverse() : c).map(([a, b]) => [a, b, 0.5]); };
   const st = {
@@ -4293,7 +4308,7 @@ const STAGES = [
   st.referenceRow = function (i, fl) { const s = this.referenceBuildings[i], n = s.windows.length; return fl === s.h - 1 ? 0 : fl < n - 1 ? n - 1 - fl : 1; };
   st.referenceWindow = function (i, tx, fl) { const s = this.referenceBuildings[i], row = s.windows[this.referenceRow(i, fl)]; return Array.isArray(row) ? !!row[(tx - s.box[0] - 1) % 3] : !!row; };
   const [hx, hy] = find('H'), [px, py] = find('P');
-  st.hospital = [hx + 6, hy + 8]; st.police = [px + 4, py];
+  { const h = scaler(hx, hy), q = scaler(px, py); st.hospital = [h.X(hx + 6), h.Y(hy + 8)]; st.police = [q.X(px + 4), py]; }
   // 순찰 경찰: 지구대 블록마다 둘레 보도 하나씩, 그리고 지도 중앙 블록 하나
   for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) if (LAYOUT[by][bx] === 'P') st.copBeats.push(ring(bx, by, 0));
   st.copBeats.push(ring(3, 2, 1), ring(5, 4, 0));
@@ -4302,8 +4317,9 @@ const STAGES = [
     st.guards.push({ kind: 'civ', route: ring(bx, by, (bx + by) % 2) });
     if ((bx * 3 + by) % 2 === 0) { const r = ring(bx, by, (bx + by + 1) % 2); st.guards.push({ kind: 'civ', body: 'fBob', route: r.slice(2).concat(r.slice(0, 2)) }); }
     const [x0, y0] = B(bx, by), t = LAYOUT[by][bx];
-    if (t === 'p') st.guards.push({ kind: 'civ', wander: [x0 + 1, y0 + 1, x0 + 14, y0 + 14], at: [x0 + 7, y0 + 4] });
-    if (t === 'm') st.guards.push({ kind: 'civ', body: 'fTail', wander: [x0 + 1, y0 + 8, x0 + 14, y0 + 10], at: [x0 + 8, y0 + 10] });
+    const c = scaler(x0, y0);
+    if (t === 'p') st.guards.push({ kind: 'civ', wander: [x0 + 1, y0 + 1, c.X1(x0 + 14), c.Y1(y0 + 14)], at: [c.X(x0 + 7), c.Y(y0 + 4)] });
+    if (t === 'm') st.guards.push({ kind: 'civ', body: 'fTail', wander: [x0 + 1, c.Y(y0 + 8), c.X1(x0 + 14), c.Y1(y0 + 10)], at: [c.X(x0 + 8), c.Y(y0 + 10)] });
   }
   // 일반인을 더: 블록마다 보도를 반대로 도는 사람 하나와, 다른 모퉁이에서 출발하는 사람 하나 (조직보다 훨씬 많게)
   const BODIES = ['fBob', 'fTail', 'fLong', undefined, undefined, 'jacket'];
@@ -6460,12 +6476,27 @@ function planInterior(g, b, bi, f) {
       furn(sx0, iy0, 1, 1, 'locker'); furn(sx0 + 1, iy0, 1, 1, 'locker');
       for (let x = sx0 + 3; x + 1 <= sx1; x += 3) furn(x, iy0, 2, 1, 'mirror', false);
       for (let x = sx0; x + 1 <= sx1; x += 3) furn(x, iy1 - 1, 2, 1, 'tread', true, 0);
-      for (let y = iy0 + 2; y + 1 < iy1 - 1; y += 3) for (let x = sx0 + 1; x <= sx1 - 1; x += 3) furn(x, y, 1, 1, 'rack', true, 0);
+      let racks = 0; for (let y = iy0 + 2; y + 1 < iy1 - 1; y += 3) for (let x = sx0 + 1; x <= sx1 - 1; x += 3) if (furn(x, y, 1, 1, 'rack', true, 0)) racks++;
+      if (open && !racks) for (let x = sx0 + 1; x <= sx1 - 1; x += 2) furn(x, iy0 + 1, 1, 1, 'rack', true, 0);   // 낮은 층: 앞줄 러닝머신 뒤 한 줄에 랙
+      if (open) furn(sx1, iy0 + 1, 1, 1, 'locker');
     }
     else if (use === 'karaoke') {  // 노래방: 방마다 소파·탁자·노래 화면 (넓으면 칸막이로 방 여럿), 앞줄은 복도
       const yb = iy1 - 2, W = sx1 - sx0 + 1, step = W >= 7 ? 4 : 99;
       if (W >= 7) for (let x = sx0 + 3; x < sx1; x += 4) for (let y = iy0; y <= yb; y++) g[y][x] = '#';
-      for (let x = sx0; x + 1 <= sx1; x += step) { furn(x, iy0, 2, 1, 'sofa', true, 0); furn(x, iy0 + 1, 1, 1, 'tableS', true, 0); furn(x + 1, Math.max(iy0 + 2, yb), 1, 1, 'kscreen', true, 0); }
+      for (let x = sx0; x + 1 <= sx1; x += step) {
+        if (open) {   // 자유 모드: 왼쪽 위는 엘리베이터 문 앞이라 소파를 한 칸 옆이나 한 줄 아래로
+          const at = [[x, iy0], [x + 1, iy0], [x, iy0 + 2], [x + 1, iy0 + 2]].find(([a, b]) => a + 1 <= Math.min(sx1, x + step - 2 >= x + 1 ? x + step - 2 : sx1) && furn(a, b, 2, 1, 'sofa', true, 0));
+          if (at) furn(at[0], at[1] + 1, 1, 1, 'tableS', true, 0) || furn(at[0] + 1, at[1] + 1, 1, 1, 'tableS', true, 0);
+        } else { furn(x, iy0, 2, 1, 'sofa', true, 0); furn(x, iy0 + 1, 1, 1, 'tableS', true, 0); }
+        furn(x + 1, Math.max(iy0 + 2, yb), 1, 1, 'kscreen', true, 0); }
+    }
+    else if (use === 'billiards' && open) {  // 자유 모드 당구장: 벽에 큐 걸이, 당구대 줄(사이 통로), 앞쪽 카운터, 옆벽 구경꾼 의자, 구석 화분
+      for (let x = sx0 + 2; x <= sx1 - 1; x += 3) furn(x, iy0, 1, 1, 'cues', false);
+      let n = 0; for (let y = iy0 + 2; y + 1 <= iy1 - 1; y += 3) for (let x = sx0 + 1; x + 1 <= sx1 - 1; x += 4) if (furn(x, y, 2, 1, 'pool', true, 0)) n++;
+      if (!n) for (let y = iy0 + 1; y <= iy1 - 1 && !n; y++) for (let x = sx0; x + 1 <= sx1 && !n; x++) if (furn(x, y, 2, 1, 'pool', true, 0)) n++;
+      furn(sx1 - 1, iy1 - 1, 2, 1, 'counter', true, 0) || furn(sx0 + 1, iy1 - 1, 2, 1, 'counter', true, 0) || furn(sx1 - 1, iy0 + 1, 2, 1, 'counter', true, 0);
+      for (let y = iy0 + 2; y <= iy1 - 2; y += 2) furn(sx1, y, 1, 1, 'chairD', true, 3);
+      furn(sx0, iy0 + 3, 1, 1, 'plant'); furn(sx1, iy0 + 1, 1, 1, 'fridge', true, 0);
     }
     else if (use === 'billiards') {  // 당구장: 초록 당구대 줄, 벽에 큐 걸이, 앞쪽 카운터
       for (let x = sx0; x <= sx1 - 1; x += 3) furn(x, iy0, 1, 1, 'cues', false);
@@ -6484,6 +6515,15 @@ function planInterior(g, b, bi, f) {
     else { furn(sx0, iy0, 1, 1, 'locker'); furn(sx0 + 1, iy0, 1, 1, 'cab'); furn(sx1 - 1, iy0, 2, 1, 'sofa', true, 0, [[sx1 - 1, iy0 + 1], [sx1, iy0 + 1]]);  // 사무실: 벽에 사물함·서류장·소파, 가운데 책상 줄(책상마다 의자, 줄 사이 통로)
       let n = 0; for (const y0 of open ? [iy0 + 2, iy0 + 1] : [iy0 + 2]) { if (n) break; for (let y = y0; open ? y + 1 <= iy1 - 1 : y + 1 < iy1; y += 3) for (let x = sx0 + 1; x + 1 <= sx1 - 1; x += 3) if (furn(x, y, 2, 1, 'desk2', true, 0)) { n++; furn(x, y + 1, 1, 1, 'chairD', true, 2); } }   // 좁은 층은 한 줄 위에서 다시
       furn(sx0, iy1 - 1, 1, 1, 'locker'); if (!n && open) tinySeat('desk', 'chairD'); }
+    // 자유 모드 넓은 층 채우기: 주된 배치 뒤에 남은 3×3 빈자리마다 식탁·책상 한 벌(의자 포함, 줄 사이 통로), 벽가엔 화분·서류장을 띄엄띄엄
+    if (open && ['food', 'office'].includes(use)) {
+      const free3 = (x, y) => { for (let yy = y - 1; yy <= y + 1; yy++) for (let xx = x - 1; xx <= x + 1; xx++) if (xx < sx0 || xx > sx1 || yy < iy0 + 1 || yy >= iy1 || !floorCh(g[yy][xx]) || keep.has(xx + ',' + yy)) return false; return true; };
+      for (let y = iy0 + 2; y <= iy1 - 2; y++) for (let x = sx0 + 1; x <= sx1 - 1; x++) { if (!free3(x, y)) continue; const c0 = g[y][x];
+        if (use === 'food') { if (!furn(x, y, 1, 1, 'tableS', true, 0)) continue; const a = furn(x - 1, y, 1, 1, 'chair', true, 1), b2 = furn(x + 1, y, 1, 1, 'chair', true, 3); if (!a && !b2) { FURN.pop(); g[y][x] = c0; } }
+        else { if (!furn(x, y - 1, 1, 1, 'desk', true, 0)) continue; if (!furn(x, y, 1, 1, 'chairD', true, 2)) { FURN.pop(); g[y - 1][x] = c0; } } }
+      const deco = use === 'food' ? ['plant', 'fridge'] : ['plant', 'cab', 'locker'];
+      let k = 0; for (let y = iy0 + 2; y <= iy1 - 2; y += 2) for (const x of [sx0, sx1]) { const t = deco[k++ % deco.length]; const sideOk = x === sx0 ? !floorCh(g[y][x - 1] || '#') : !floorCh(g[y][x + 1] || '#'); if (sideOk) furn(x, y, 1, 1, t, true, 0); }
+    }
     if (use !== 'club') lampAt(sx0, iy0, sx1, iy1, f === 0 ? 0.9 : 0.5);
   } else if (kind === 'villa' && (W >= 20 || b.piloti)) {  // 두 세대: 한 세대가 8칸은 되어야 방·거실이 제대로 들어간다
     const xs = ix0 + Math.floor((W - 2) / 2);
@@ -12705,7 +12745,7 @@ function drawSpeech() {
 function updateChats(dt) {
   updateTalks(dt);
   if(STAGE.noAmbientChats)return;
-  const gs = S.guards.filter(g => g.state === 'PATROL' && !g.doomed && !g.target && !g.dog && g.follow == null && !g.relight && !(g.civ && (g.sleep || g.seen)) && !(g.elite && !g.civ) && !(securityLevel()>=2&&securityCrew(g)));
+  const gs = S.guards.filter(g => g.state === 'PATROL' && !g.doomed && !g.target && !g.dog && g.follow == null && !g.relight && !(g.civ && (g.sleep || g.seen)) && !(g.elite && !g.civ) && !(securityLevel()>=2&&securityCrew(g)) && !(STAGE.cityLife && (g.staff || g.shopper)));  // 자유 모드 가게 직원·손님은 대사집(47zt) 대사만 한다 (약사가 손님과 잡담하며 인사를 덮지 않게)
   for (const g of gs) g.chatCd = (g.chatCd == null ? rnd(4, 14) : g.chatCd) - dt;
   gs.sort((a, b) => a.x - b.x);  // x 순: 대화 거리(최대 200) 밖은 더 보지 않는다
   for (let i = 0; i < gs.length; i++) for (let j = i + 1; j < gs.length; j++) {
@@ -15955,7 +15995,7 @@ function spawnCopCar() {
   const P = S.player, RX = STAGE.roadsX, RY = STAGE.roadsY, vw = W / SCALE / 2 + 120, vh = H / SCALE / 2 + 120;
   for (let k = 0; k < 200; k++) {
     const hor = Math.random() < 0.5, d = hor ? (Math.random() < 0.5 ? 0 : 2) : (Math.random() < 0.5 ? 1 : 3), road = hor ? RY[(Math.random() * RY.length) | 0] : RX[(Math.random() * RX.length) | 0];
-    const along = rnd(2, (hor ? MW : MH) - 2) * TILE, x = hor ? along : laneOf(road, d), y = hor ? laneOf(road, d) : along, dd = dist(x, y, P.x, P.y);
+    const along = clamp((hor ? P.x : P.y) + rnd(-1500, 1500), 2 * TILE, ((hor ? MW : MH) - 2) * TILE), x = hor ? along : laneOf(road, d) /* 맵이 커서 전체에서 고르면 거의 안 맞는다: 내 둘레 ±1500에서 */, y = hor ? laneOf(road, d) : along, dd = dist(x, y, P.x, P.y);
     if (dd < 700 || dd > 1500 || (Math.abs(x - cam.x) < vw && Math.abs(y - cam.y) < vh)) continue;
     if ((hor ? RX : RY).some(r => (hor ? x : y) > r * TILE - 60 && (hor ? x : y) < (r + 4) * TILE + 60)) continue;  // 교차로 한가운데는 피한다
     const dz = deckSpawnZ(x, y); if (dz < 0) continue;
@@ -16929,7 +16969,7 @@ const EVENTS = [
   // 청계천 상가 ① 다리 위 거래: 가방을 든 쪽을 쓰러뜨리면 큰돈. 양쪽 모두 덤빈다
   { key: 'deal', d: '청계천 상가', name: '다리 위 거래',
     start(ev) { const R = STAGE.river, P = S.player; if (!R) return false; const ys = (R.y + R.rows / 2) * TILE;
-      const cand = (STAGE.roadsX || []).map(rx => ({ x: (rx + 2) * TILE, y: ys })).filter(p => { const d = dist(p.x, p.y, P.x, P.y); return d > 550 && d < 2100; }); if (!cand.length) return false;
+      const cand = (STAGE.roadsX || []).map(rx => ({ x: (rx + 2) * TILE, y: ys })).filter(p => { const d = dist(p.x, p.y, P.x, P.y); return d > 550 && d < 2600; }); if (!cand.length) return false;   // 블록 34칸 주기: 구역 북쪽 끝에서도 강 다리가 닿게
       const p = cand[(Math.random() * cand.length) | 0]; ev.p = p; ev.side = [];
       for (const [s, o] of [[-1, null], [1, 'gangD']]) for (let k = 0; k < 2; k++) { const g = evPerson(ev, p.x + s * (40 + k * 26), p.y + (k ? 26 : -10), { kind: k ? 'g1' : 'g2', fac: 'C' }); if (o) g.outfit = o; g.a = s < 0 ? 0 : Math.PI; ev.side.push(g); }
       ev.holder = ev.side[0]; return true; },
@@ -17013,7 +17053,7 @@ const EVENTS = [
     goal: ev => ev.race ? '결승선까지 먼저' : '드래그 레이스 · 차를 몰고 와서 판돈 걸기' },
   // 성수 공장지대 ② 폐공장 도박장: 걸기 · 신고 · 털기
   { key: 'den', d: '성수 공장지대', name: '폐공장 도박장',
-    start(ev) { const f = districtFront(ev.d, b => b.kind !== 'shop'); if (!f) return false; ev.p = f.p; ev.bouncer = evPerson(ev, f.p.x, f.p.y + 16, { body: 'big' }); ev.players = [0, 1, 2].map(k => evPerson(ev, f.p.x + (k - 1) * 30, f.p.y - 14, {})); gsay(ev.bouncer, '판 벌어졌다. 낄 거면 들어와.', 3); return true; },
+    start(ev) { const f = districtFront(ev.d, b => b.kind !== 'shop' || /창고|공장/.test(b.plate || b.name || '')); if (!f) return false; ev.p = f.p; ev.bouncer = evPerson(ev, f.p.x, f.p.y + 16, { body: 'big' }); ev.players = [0, 1, 2].map(k => evPerson(ev, f.p.x + (k - 1) * 30, f.p.y - 14, {})); gsay(ev.bouncer, '판 벌어졌다. 낄 거면 들어와.', 3); return true; },
     focus: ev => ev.p,
     update() {},
     action(ev) { const P = S.player; if (P.car || dist(P.x, P.y, ev.p.x, ev.p.y) > 90) return null; return { label: '폐공장 도박장', at: { x: ev.p.x, y: ev.p.y - 56 }, fn: () => openDen(ev) }; },
@@ -17676,12 +17716,17 @@ function drawHeli() {
 // ---------- 도로 검문
 function roadblockUpdate() {
   const P = S.player, v = P.car; if (S.wanted < 3 || !v || S.t < S.blockT) return; S.blockT = S.t + 25;
-  const ax = v.x + Math.cos(v.a) * 700, ay = v.y + Math.sin(v.a) * 700, p = roadNear(ax, ay, 5); if (!p || inView(p.x, p.y, 60)) return;
-  if ((S.decks || []).some(d => inR(d.top, p.x, p.y, 120) || inR(d.rampA, p.x, p.y, 120) || inR(d.rampB, p.x, p.y, 120))) { S.blockT = S.t + 3; return; }  // 고가 밑·옆은 피한다
+  // 앞쪽 560~1300px를 차례로 훑어 처음 닿는 길목에 세운다 (블록이 넓어 한 거리만 보면 블록 한가운데일 수 있다). 고가 밑·옆은 피한다
+  const underDeck = q => (S.decks || []).some(d => inR(d.top, q.x, q.y, 120) || inR(d.rampA, q.x, q.y, 120) || inR(d.rampB, q.x, q.y, 120));
+  let p = null; for (let R = 560; R <= 1300 && !p; R += 80) { const q = roadNear(v.x + Math.cos(v.a) * R, v.y + Math.sin(v.a) * R, 4); if (q && !inView(q.x, q.y, 60) && !underDeck(q)) p = q; }
+  if (!p) { S.blockT = S.t + 3; return; }
   const tx = Math.floor(p.x / TILE), ty = Math.floor(p.y / TILE), isR = (x, y) => inMap(x, y) && G0[y][x] === '=';
   let hx = 0, vy = 0; for (let k = -4; k <= 4; k++) { if (isR(tx + k, ty)) hx++; if (isR(tx, ty + k)) vy++; }
   const along = hx >= vy ? 'x' : 'y';  // 도로가 뻗은 방향
-  let c0 = along === 'x' ? ty : tx, c1 = c0; while (along === 'x' ? isR(tx, c0 - 1) : isR(c0 - 1, ty)) c0--; while (along === 'x' ? isR(tx, c1 + 1) : isR(c1 + 1, ty)) c1++;
+  // 막을 폭: 보도 옆 차도('.')를 건너는 길이 (보도 한 칸 폭으로 재면 차가 벽에 붙어 모두 빠졌다)
+  const isA = (x, y) => inMap(x, y) && G0[y][x] === '.' && bldAt(x, y) < 0, at = c => along === 'x' ? isA(tx, c) : isA(c, ty), c00 = along === 'x' ? ty : tx;
+  const sd = at(c00 + 1) ? 1 : at(c00 - 1) ? -1 : 0; if (!sd) { S.blockT = S.t + 3; return; }
+  let c0 = c00 + sd, c1 = c0; while (at(c0 - 1)) c0--; while (at(c1 + 1)) c1++;
   const mid = (c0 + c1 + 1) / 2 * TILE, span = (c1 - c0 + 1) * TILE, n = Math.max(2, Math.min(3, Math.round(span / 100)));
   for (let i = 0; i < n; i++) { const off = (i - (n - 1) / 2) * (span / n), x = along === 'x' ? p.x : mid + off, y = along === 'x' ? mid + off : p.y;
     const car = makeVehicle({ type: 'police', x, y, a: (along === 'x' ? Math.PI / 2 : 0) + (i % 2 ? 0.28 : -0.28), parked: true, police: true }); car.roadblock = true; car.ai = false; car.driver = false; if (carOverlap(car) === true) continue; S.vehicles.push(car); }  // 비스듬히 엇갈린 바리케이드 (벽과 겹칠 때만 뺀다)
@@ -17764,7 +17809,9 @@ function slipUpdate() {  // 빗길: 가끔 내 앞쪽 차 하나가 미끄러져
 }
 // ---------- 폭약 · 교각
 function deckPillars(d) { const out = [], h = d.axis === 'x'; for (let u = d.a0 + d.r + 2 * TILE; u < d.a1 - d.r - TILE; u += 6 * TILE) for (const c of [d.c0 + TILE * 0.9, d.c1 - TILE * 0.9]) out.push({ d, u, x: h ? u : c, y: h ? c : u }); return out; }
-const smallBld = b => b && !b.vacant && !b.collapsed && (b.x1 - b.x0 + 1) * (b.y1 - b.y0 + 1) <= 30 && !Object.values(CONTACT_BLD).includes(b.name) && !/병원|지구대|중고차/.test(b.name || '') && !(S.garage && S.garage.b === b);
+// 폭약 한 번에 무너지는 '작은 건물': 자유 모드는 건물이 커져(폭 8~14 · 깊이 9~13칸) 1~2층 상가·주택 크기까지 (예전 30칸 기준이면 무너뜨릴 건물이 하나도 없다)
+const SMALL_BLD_AREA = 120;
+const smallBld = b => b && !b.vacant && !b.collapsed && (b.x1 - b.x0 + 1) * (b.y1 - b.y0 + 1) <= SMALL_BLD_AREA && !Object.values(CONTACT_BLD).includes(b.name) && !/병원|지구대|중고차/.test(b.name || '') && !(S.garage && S.garage.b === b);
 function havocAction() {
   const P = S.player; if (P.car || !(P.bombs > 0) || P.trav) return null;
   for (const d of S.decks || []) for (const p of deckPillars(d)) if (dist(P.x, P.y, p.x, p.y) < 60) return { k: 'evAct', label: `교각에 폭약 설치 (${P.bombs})`, fn: () => plantBomb(p.x, p.y, { deck: d, u: p.u }) };
@@ -17848,19 +17895,19 @@ function havocUpdate(dt) {
 // ---------- 그리기
 function drawRubble() {  // 땅 (차보다 먼저)
   const cols = ['#5a5e66', '#6e727a', '#4a4d55'];
-  for (const r of S.rubble || []) { if (!inView(r.x, r.y, 60)) continue; ctx.save(); ctx.translate(r.x, r.y); ctx.rotate(r.rot);
+  for (const r of S.rubble || []) { if (!inView(r.x, r.y, 60)) continue; pixPiece(r.x, r.y, Math.hypot(r.w, r.h) / 2 + 14, () => { ctx.save(); ctx.translate(r.x, r.y); ctx.rotate(r.rot);
     ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(-r.w / 2 + 4, -r.h / 2 + 5, r.w, r.h); ctx.fillStyle = cols[r.col]; ctx.fillRect(-r.w / 2, -r.h / 2, r.w, r.h);
-    ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.fillRect(-r.w / 2, -r.h / 2, r.w, 3); ctx.strokeStyle = '#8a4a2a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-r.w / 4, -r.h / 2); ctx.lineTo(-r.w / 4 - 6, -r.h / 2 - 9); ctx.moveTo(r.w / 5, r.h / 2); ctx.lineTo(r.w / 5 + 8, r.h / 2 + 6); ctx.stroke(); ctx.restore(); }
+    ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.fillRect(-r.w / 2, -r.h / 2, r.w, 3); ctx.strokeStyle = '#8a4a2a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-r.w / 4, -r.h / 2); ctx.lineTo(-r.w / 4 - 6, -r.h / 2 - 9); ctx.moveTo(r.w / 5, r.h / 2); ctx.lineTo(r.w / 5 + 8, r.h / 2 + 6); ctx.stroke(); ctx.restore(); }); }
   for (const b of S.bombs || []) { if (!inView(b.x, b.y, 30)) continue; ctx.fillStyle = '#2a2e34'; ctx.fillRect(b.x - 7, b.y - 5, 14, 10); ctx.fillStyle = '#c84a2a'; ctx.fillRect(b.x - 6, b.y - 4, 5, 8);
     ctx.fillStyle = ((S.t * (b.t - S.t < 2 ? 10 : 3)) | 0) % 2 ? '#ff2a2a' : '#5a1010'; ctx.fillRect(b.x + 2, b.y - 2, 3, 3); }
 }
 function drawHavocAbove() {  // 건물 외벽 손상(어둠 뒤, 건물 위) · 떨어지는 고가 조각 · 끊긴 고가 끝
   for (const b of BLD) for (const s of b.scars || []) { if (!inView(s.x, s.y, 80)) continue; const age = S.t - s.t;
-    ctx.save(); const g = ctx.createRadialGradient(s.x, s.y - 20, 0, s.x, s.y - 20, 46); g.addColorStop(0, 'rgba(10,8,8,.7)'); g.addColorStop(1, 'rgba(10,8,8,0)'); ctx.fillStyle = g; ctx.fillRect(s.x - 46, s.y - 66, 92, 92);
+    ctx.save(); if (STAGE.cityLife) pixBlob(s.x, s.y - 20, 46, 46, 0, .7); else { const g = ctx.createRadialGradient(s.x, s.y - 20, 0, s.x, s.y - 20, 46); g.addColorStop(0, 'rgba(10,8,8,.7)'); g.addColorStop(1, 'rgba(10,8,8,0)'); ctx.fillStyle = g; ctx.fillRect(s.x - 46, s.y - 66, 92, 92); }
     ctx.strokeStyle = 'rgba(20,18,18,.85)'; ctx.lineWidth = 1.5; for (let k = 0; k < 4; k++) { let x = s.x + Math.sin(s.seed + k) * 14, y = s.y - 6; ctx.beginPath(); ctx.moveTo(x, y); for (let j = 0; j < 4; j++) { x += Math.sin(s.seed * 3 + k * 7 + j) * 7; y -= 9; ctx.lineTo(x, y); } ctx.stroke(); }
     ctx.restore(); if (age < 20) fxFrame('carfire', S.t + s.seed, s.x, s.y - 4, 1.2 * clamp(1 - age / 20, 0.3, 1), 1); }
   for (const c of S.deckChunks || []) { if (c.delay > 0 || !inView(c.x, c.y, 120)) continue; const [px, py] = deckPt(c.x, c.y, Math.max(0, c.z)), s = deckS(Math.max(0, c.z));
-    ctx.save(); ctx.translate(px, py); ctx.rotate(c.rot); ctx.fillStyle = '#4a4f57'; ctx.fillRect(-c.w * s / 2, -c.hh * s / 2, c.w * s, c.hh * s); ctx.fillStyle = '#2c3037'; ctx.fillRect(-c.w * s / 2, -c.hh * s / 2, c.w * s, 4 * s); ctx.restore(); }
+    pixPiece(px, py, Math.hypot(c.w, c.hh) * s / 2 + 6, () => { ctx.save(); ctx.translate(px, py); ctx.rotate(c.rot); ctx.fillStyle = '#4a4f57'; ctx.fillRect(-c.w * s / 2, -c.hh * s / 2, c.w * s, c.hh * s); ctx.fillStyle = '#2c3037'; ctx.fillRect(-c.w * s / 2, -c.hh * s / 2, c.w * s, 4 * s); ctx.restore(); }); }
   for (const k of S.deckBreaks || []) for (const u of [k.u0, k.u1]) {  // 끊긴 끝: 들쭉날쭉한 콘크리트와 튀어나온 철근
     const h = k.axis === 'x', pts = []; for (let c = k.c0; c <= k.c1; c += 16) pts.push(deckPt(h ? u + rnd(-6, 6) * 0 + Math.sin(c * 0.3) * 8 : c, h ? c : u + Math.sin(c * 0.3) * 8, 1));
     ctx.strokeStyle = '#1a1c20'; ctx.lineWidth = 6; ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.stroke();
@@ -18706,7 +18753,8 @@ function signCands(route0) {
     const a = route[i], b = route[(i + 1) % route.length], ax = Math.floor(a.x / TILE), ay = Math.floor(a.y / TILE), bx = Math.floor(b.x / TILE), by = Math.floor(b.y / TILE);
     if (ay !== by) continue;  // 가로로 걷는 보도 구간만: 그 위(북쪽)가 건물 정면이다
     for (let x = Math.min(ax, bx) + 2; x <= Math.max(ax, bx) - 2; x++) {
-      const bi = bldAt(x, ay - 1); if (bi < 0) continue; const B = BLD[bi]; if (!B || B.y1 !== ay - 1) continue; const ey = B.y1 - (B.fh || 0); if (ey < B.y0 || !(rLv(x, ey) > 0)) continue;  /* 매다는 곳은 정면 벽 위, 옥상 끝 줄 */
+      // 보도 바로 위 건물, 또는 한 칸 물러선 건물(앞에 화단·마당 한 줄): 간판은 그 정면에 걸리고 보도(ay)로 떨어진다
+      const near = bldAt(x, ay - 1), bi = near >= 0 ? near : bldAt(x, ay - 2); if (bi < 0) continue; const B = BLD[bi]; if (!B || B.y1 !== (near >= 0 ? ay - 1 : ay - 2)) continue; const ey = B.y1 - (B.fh || 0); if (ey < B.y0 || !(rLv(x, ey) > 0)) continue;  /* 매다는 곳은 정면 벽 위, 옥상 끝 줄 */
       const pipe = pipes.find(l => l.bx >= B.x0 && l.bx <= B.x1 && l.by === B.y1 + 1 && Math.abs(l.bx - x) <= 8);
       if (pipe) cands.push({ x, y: ey, ay, pipe, d: Math.abs(pipe.bx - x) });
     }
@@ -19692,7 +19740,7 @@ function placesInit() {
   const area = b => (b.x1 - b.x0 + 1) * (b.y1 - b.y0 + 1);
   // 학교·병원: 가장 넓은 상가 둘 (특별한 곳은 빼고)
   const shopBld = new Set((S.shops || []).map(o => o.b));  /* 물건 파는 가게(철물·약국 …)는 이름을 바꾸지 않는다 — 문을 열면 그 가게 메뉴다 */
-  const big = shops.filter(o => !KEEP_SIGNS.test(signOf(o.b)) && !shopBld.has(o.i)).sort((p, q) => area(q.b) - area(p.b) || p.i - q.i);
+  const big = shops.filter(o => !KEEP_SIGNS.test(signOf(o.b)) && !shopBld.has(o.i) && !o.b.plateName && !o.b.name)   /* 조직 본부·사무실·지구대처럼 판에서 이름 붙인 건물은 빼고 (본부가 커져 병원이 되던 것) */.sort((p, q) => area(q.b) - area(p.b) || p.i - q.i);
   if (big[0]) { setSign(big[0].b, '을지초등학교'); big[0].b.school = true; big[0].b.plate = big[0].b.plateName = '교무실 · 행정실'; }
   if (big[1]) { setSign(big[1].b, '을지 중앙병원'); big[1].b.hospital = true; big[1].b.plate = big[1].b.plateName = '응급실 24시'; }
   // 빈 간판 채우기
@@ -20172,7 +20220,7 @@ function civTalkUpdate() {
     if (!civTalkOk(g) || flOf(g) !== pf) continue; const d = dist(g.x, g.y, P.x, P.y); if (d > 520) continue;
     if (shot && d < 480 && civSay(g, 'gunshot', 1.6, 10)) continue;
     if (P.car) { const v = P.car; const dd = dist(v.x, v.y, g.x, g.y), toward = ((g.x - v.x) * Math.cos(v.a) + (g.y - v.y) * Math.sin(v.a)) / Math.max(1, dd);
-      if (Math.abs(v.v || 0) > 100 && dd < 70 && toward > 0.3 && civSay(g, 'car', 1.8, 8)) continue; }   // 나를 향해 바짝 달려들 때만 (옆 차로로 지나가는 건 말하지 않는다)
+      if (Math.abs(v.v || 0) > 100 && dd < 70 + Math.abs(v.v) * 0.5 && toward > 0.55 && civSay(g, 'car', 1.8, 8)) continue; }   // 0.5초마다 보므로 속도만큼 앞을 내다본다   // 나를 향해 바짝 달려들 때만 (옆 차로로 지나가는 건 말하지 않는다)
     else if (d < 28 && walking && !P.hide && civSay(g, 'bump', 1.6, 8)) continue;
     if (armed && d < 170 && !g.sawArmed && g.state !== 'PANIC' && los(g.x, g.y - 10, P.x, P.y - 10) && civSay(g, 'weapon', 1.8, 8)) { g.sawArmed = true; continue; }
     if (!armed) g.sawArmed = false;
@@ -20361,6 +20409,16 @@ function drawPixelBlood(d) {
   for (let k = 0; k < n; k++) { const a = seed + k * 2.3, rr = r * (0.5 + 0.4 * Math.abs(Math.sin(a * 1.7))), ox = Math.round(Math.cos(a) * r * 0.8 / q) * q, oy = Math.round(Math.sin(a) * r * 0.5 / q) * q;
     ctx.fillRect(cx + ox - Math.round(rr / q) * q, cy + oy - Math.round(rr * 0.6 / q) * q, Math.round(rr * 2 / q) * q, Math.round(rr * 1.2 / q) * q); }
 }
+// 그을음·탄 자국 같은 반투명 얼룩: 부드러운 그라데이션 대신 3px 칸 세 단계 농도(디더)로 (도트 느낌을 유지한 채 가장자리가 옅어진다)
+function pixBlob(x, y, rx, ry, rot, a0, col = '10,8,8', cell = 3) {
+  const c = Math.cos(rot), s = Math.sin(rot), R = Math.ceil(Math.max(rx, ry) / cell) * cell, gx = Math.round(x / cell) * cell, gy = Math.round(y / cell) * cell, L = [[], [], []];
+  for (let yy = -R; yy <= R; yy += cell) for (let xx = -R; xx <= R; xx += cell) {
+    const u = (xx * c + yy * s) / rx, v = (-xx * s + yy * c) / ry, d = Math.sqrt(u * u + v * v); if (d >= 1) continue;
+    const bay = (((xx / cell) & 1) * 2 + ((yy / cell) & 1)) / 4, lv = (1 - d) * 3 + bay * 0.9; const k = lv > 2.2 ? 0 : lv > 1.3 ? 1 : lv > 0.6 ? 2 : -1; if (k >= 0) L[k].push(xx, yy); }
+  [1, 0.6, 0.3].forEach((m, k) => { const P = L[k]; if (!P.length) return; ctx.fillStyle = `rgba(${col},${a0 * m})`; for (let i = 0; i < P.length; i += 2) ctx.fillRect(gx + P[i], gy + P[i + 1], cell, cell); });
+}
+// 돌 부스러기·고가 조각처럼 돌려 그린 사각형은 조각마다 도트로 (화면 전체를 한 번에 감싸면 너무 크다)
+const pixPiece = (x, y, R, fn) => STAGE.cityLife ? pixelize(x - R, y - R, R * 2, R * 2, fn) : fn();
 
 // ---------------------------------------------------------------- 자유 모드 타격감: 주먹·칼·암살·총도 차 충돌만큼 시원하게
 // 한 번 맞힐 때마다: 아주 짧은 멈칫(히트스톱) · 맞은 쪽으로 화면이 툭 밀리는 반동 · 살짝 당겨지는 줌 · 충격 파편 · 겹친 소리.
@@ -20968,7 +21026,12 @@ function trafficStopDistance(v){
   // 신호: 빨강이면 정지선(교차로 앞 횡단보도 앞)에서 선다. 황색은 정지선에 바짝 붙었으면 그대로 지나간다
   const inside=o=>o.x>x0-STOP_GAP+3&&o.x<x1+STOP_GAP-3&&o.y>y0-STOP_GAP+3&&o.y<y1+STOP_GAP-3;
   const sig=signalState(rx,ry),light=sig&&(hor?sig.ew:sig.ns);
-  if(light&&!signalLets(light,v,x0,y0,x1,y1)&&left>-40&&!(light==='Y'&&left<45&&Math.abs(v.v)>60))return Math.max(0,left);  // 좌회전 차는 화살표를, 직진 차는 초록을 기다린다  // 정지선을 조금 넘겨 선 차도 빨간불엔 그대로 기다린다
+  if(light&&!signalLets(light,v,x0,y0,x1,y1)){
+   // 앞머리가 아직 교차로 상자에 들어가지 않았고 그 앞에서 설 수 있으면 선다 (긴 버스가 정지선을 넘어 횡단보도에 걸린 채 앞차를 따라가다 빨간불에 들어가던 것).
+   // 황색에 정지선 바로 앞을 달리던 차는 그대로 지나간다. 서게 되면 잡아 둔 교차로도 내려놓는다
+   const sp=Math.abs(v.v),noseIn=-left-(STOP_LINE-6),yellowGo=light==='Y'&&left<45&&sp>60;
+   if(!yellowGo&&(left>-40||noseIn+sp*sp/(2*CAR_BRAKE)<8)){if(locks[key]===v.id)delete locks[key];return Math.max(0,left);}
+  }  // 좌회전 차는 화살표를, 직진 차는 초록을 기다린다  // 정지선을 조금 넘겨 선 차도 빨간불엔 그대로 기다린다
   const distance=o=>{const h=o.d%2===0,s=DV[o.d][0]+DV[o.d][1];if(!(h?o.y>y0&&o.y<y1:o.x>x0&&o.x<x1))return Infinity;const g=stopGap(o);return ((h?(s>0?x0-g:x1+g):(s>0?y0-g:y1+g))-(h?o.x:o.y))*s;};
   // 이 교차로로 들어오는 차 줄: 교차로 둘레 칸의 차만 보고, 한 프레임에 한 번만 정렬한다
   let jc=JC.m.get(key);if(!jc){const near=vehiclesIn(x0-STOP_GAP-260,y0-STOP_GAP-260,x1+STOP_GAP+260,y1+STOP_GAP+260);
@@ -21344,6 +21407,7 @@ function carExplode(v) {
 function drawCarScorch() {
   drawCharred(); if (!S.scorch) return;
   for (const s of S.scorch) { if (!inView(s.x, s.y, s.r * 2)) continue;
+    if (STAGE.cityLife) { pixBlob(s.x, s.y, s.r, s.r * .78, s.rot, .75, '8,6,6'); continue; }   // 자유 모드: 도트 얼룩
     const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r); g.addColorStop(0, 'rgba(8,6,6,.75)'); g.addColorStop(.6, 'rgba(14,10,8,.45)'); g.addColorStop(1, 'rgba(14,10,8,0)');
     ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(s.x, s.y, s.r, s.r * .78, s.rot, 0, TAU); ctx.fill(); }
 }
@@ -21388,7 +21452,7 @@ function fxFrame(kind, t, x, y, sc, alpha, flip) {
 function drawCharred() {
   if (S.gibs) { if (S.gibs.length > 240) S.gibs.splice(0, S.gibs.length - 240); for (const b of S.gibs) { if (S.t - b.t > 120 || !inView(b.x, b.y, 10)) continue; ctx.fillStyle = '#4a0a0a'; ctx.fillRect(b.x - 1 | 0, b.y | 0, b.s + 3, b.s + 1); ctx.fillStyle = '#7a1212'; ctx.fillRect(b.x | 0, b.y | 0, b.s, b.s); } }
   for (const g of S.guards) { if (!g.charred || g.state !== 'DEAD' || !inView(g.x, g.y, 40)) continue;
-    ctx.fillStyle = 'rgba(10,8,8,.55)'; ctx.beginPath(); ctx.ellipse(g.x, g.y - 2, 22, 11, 0, 0, TAU); ctx.fill();
+    if (STAGE.cityLife) pixBlob(g.x, g.y - 2, 22, 11, 0, .55); else { ctx.fillStyle = 'rgba(10,8,8,.55)'; ctx.beginPath(); ctx.ellipse(g.x, g.y - 2, 22, 11, 0, 0, TAU); ctx.fill(); }
     ctx.fillStyle = 'rgba(30,26,24,.8)'; for (let k = 0; k < 7; k++) { const a = (g.id || 0) * 1.7 + k * 0.9; ctx.fillRect(g.x + Math.cos(a) * 16 | 0, g.y - 2 + Math.sin(a) * 8 | 0, 3, 2); } }
 }
 // 불 · 연기 · 폭발: 어둠 위에 그린다 (불은 스스로 빛난다). 불길·폭발은 PixelFX 픽셀 스프라이트, 연기는 4px 칸에 맞춘 덩어리
