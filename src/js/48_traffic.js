@@ -315,7 +315,7 @@ function pedWaits(g) {
   return false;
 }
 // 횡단보도는 교차로 앞 70px(둘이 나란히 걷는 폭), 정지선은 그 바깥 84px. 차는 앞머리가 정지선에 닿게 선다(차 중심 = 정지선 + 차 반 길이)
-const XWALK = 70, STOP_LINE = 84, STOP_GAP = STOP_LINE + CAR_LEN / 2 - 6, stopGap = v => STOP_LINE + (v.len || CAR_LEN) / 2 - 6;
+const XWALK = 70, STOP_LINE = 84, STOP_GAP = STOP_LINE + CAR_LEN / 2 - 6, stopGap = v => STOP_LINE + (STAGE.cityLife ? 14 : 0) + (v.len || CAR_LEN) / 2 - 6;  // 자유 모드: 제동 여유만큼 정지선을 14px 앞당겨 앞머리가 횡단보도(70px)에 걸리지 않게
 function trafficStopDistance(v){
  if(v.chase||v.flee||onDeckLevel(v))return null;  // 고가 위는 신호가 없다 · 달아나는 차는 신호를 무시한다
  const locks=S.trafficJunctions||(S.trafficJunctions={}),hor=v.d%2===0,sgn=DV[v.d][0]+DV[v.d][1],VGr=vehGrid();
