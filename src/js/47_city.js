@@ -308,7 +308,7 @@ function spawnCopCar() {
   const P = S.player, RX = STAGE.roadsX, RY = STAGE.roadsY, vw = W / SCALE / 2 + 120, vh = H / SCALE / 2 + 120;
   for (let k = 0; k < 200; k++) {
     const hor = Math.random() < 0.5, d = hor ? (Math.random() < 0.5 ? 0 : 2) : (Math.random() < 0.5 ? 1 : 3), road = hor ? RY[(Math.random() * RY.length) | 0] : RX[(Math.random() * RX.length) | 0];
-    const along = rnd(2, (hor ? MW : MH) - 2) * TILE, x = hor ? along : laneOf(road, d), y = hor ? laneOf(road, d) : along, dd = dist(x, y, P.x, P.y);
+    const along = clamp((hor ? P.x : P.y) + rnd(-1500, 1500), 2 * TILE, ((hor ? MW : MH) - 2) * TILE), x = hor ? along : laneOf(road, d) /* 맵이 커서 전체에서 고르면 거의 안 맞는다: 내 둘레 ±1500에서 */, y = hor ? laneOf(road, d) : along, dd = dist(x, y, P.x, P.y);
     if (dd < 700 || dd > 1500 || (Math.abs(x - cam.x) < vw && Math.abs(y - cam.y) < vh)) continue;
     if ((hor ? RX : RY).some(r => (hor ? x : y) > r * TILE - 60 && (hor ? x : y) < (r + 4) * TILE + 60)) continue;  // 교차로 한가운데는 피한다
     const dz = deckSpawnZ(x, y); if (dz < 0) continue;
