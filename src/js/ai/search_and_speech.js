@@ -114,7 +114,7 @@ function drawSpeech() {
 function updateChats(dt) {
   updateTalks(dt);
   if(STAGE.noAmbientChats)return;
-  const gs = S.guards.filter(g => g.state === 'PATROL' && !g.doomed && !g.target && !g.dog && g.follow == null && !g.relight && !(g.civ && (g.sleep || g.seen)) && !(g.elite && !g.civ) && !(securityLevel()>=2&&securityCrew(g)));
+  const gs = S.guards.filter(g => g.state === 'PATROL' && !g.doomed && !g.target && !g.dog && g.follow == null && !g.relight && !(g.civ && (g.sleep || g.seen)) && !(g.elite && !g.civ) && !(securityLevel()>=2&&securityCrew(g)) && !(STAGE.cityLife && (g.staff || g.shopper)));  // 자유 모드 가게 직원·손님은 대사집(47zt) 대사만 한다 (약사가 손님과 잡담하며 인사를 덮지 않게)
   for (const g of gs) g.chatCd = (g.chatCd == null ? rnd(4, 14) : g.chatCd) - dt;
   gs.sort((a, b) => a.x - b.x);  // x 순: 대화 거리(최대 200) 밖은 더 보지 않는다
   for (let i = 0; i < gs.length; i++) for (let j = i + 1; j < gs.length; j++) {

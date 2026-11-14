@@ -53,7 +53,9 @@ function slipUpdate() {  // 빗길: 가끔 내 앞쪽 차 하나가 미끄러져
 }
 // ---------- 폭약 · 교각
 function deckPillars(d) { const out = [], h = d.axis === 'x'; for (let u = d.a0 + d.r + 2 * TILE; u < d.a1 - d.r - TILE; u += 6 * TILE) for (const c of [d.c0 + TILE * 0.9, d.c1 - TILE * 0.9]) out.push({ d, u, x: h ? u : c, y: h ? c : u }); return out; }
-const smallBld = b => b && !b.vacant && !b.collapsed && (b.x1 - b.x0 + 1) * (b.y1 - b.y0 + 1) <= 30 && !Object.values(CONTACT_BLD).includes(b.name) && !/병원|지구대|중고차/.test(b.name || '') && !(S.garage && S.garage.b === b);
+// 폭약 한 번에 무너지는 '작은 건물': 자유 모드는 건물이 커져(폭 8~14 · 깊이 9~13칸) 1~2층 상가·주택 크기까지 (예전 30칸 기준이면 무너뜨릴 건물이 하나도 없다)
+const SMALL_BLD_AREA = 120;
+const smallBld = b => b && !b.vacant && !b.collapsed && (b.x1 - b.x0 + 1) * (b.y1 - b.y0 + 1) <= SMALL_BLD_AREA && !Object.values(CONTACT_BLD).includes(b.name) && !/병원|지구대|중고차/.test(b.name || '') && !(S.garage && S.garage.b === b);
 function havocAction() {
   const P = S.player; if (P.car || !(P.bombs > 0) || P.trav) return null;
   for (const d of S.decks || []) for (const p of deckPillars(d)) if (dist(P.x, P.y, p.x, p.y) < 60) return { k: 'evAct', label: `교각에 폭약 설치 (${P.bombs})`, fn: () => plantBomb(p.x, p.y, { deck: d, u: p.u }) };
@@ -137,19 +139,19 @@ function havocUpdate(dt) {
 // ---------- 그리기
 function drawRubble() {  // 땅 (차보다 먼저)
   const cols = ['#5a5e66', '#6e727a', '#4a4d55'];
-  for (const r of S.rubble || []) { if (!inView(r.x, r.y, 60)) continue; ctx.save(); ctx.translate(r.x, r.y); ctx.rotate(r.rot);
+  for (const r of S.rubble || []) { if (!inView(r.x, r.y, 60)) continue; pixPiece(r.x, r.y, Math.hypot(r.w, r.h) / 2 + 14, () => { ctx.save(); ctx.translate(r.x, r.y); ctx.rotate(r.rot);
     ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(-r.w / 2 + 4, -r.h / 2 + 5, r.w, r.h); ctx.fillStyle = cols[r.col]; ctx.fillRect(-r.w / 2, -r.h / 2, r.w, r.h);
-    ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.fillRect(-r.w / 2, -r.h / 2, r.w, 3); ctx.strokeStyle = '#8a4a2a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-r.w / 4, -r.h / 2); ctx.lineTo(-r.w / 4 - 6, -r.h / 2 - 9); ctx.moveTo(r.w / 5, r.h / 2); ctx.lineTo(r.w / 5 + 8, r.h / 2 + 6); ctx.stroke(); ctx.restore(); }
+    ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.fillRect(-r.w / 2, -r.h / 2, r.w, 3); ctx.strokeStyle = '#8a4a2a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-r.w / 4, -r.h / 2); ctx.lineTo(-r.w / 4 - 6, -r.h / 2 - 9); ctx.moveTo(r.w / 5, r.h / 2); ctx.lineTo(r.w / 5 + 8, r.h / 2 + 6); ctx.stroke(); ctx.restore(); }); }
   for (const b of S.bombs || []) { if (!inView(b.x, b.y, 30)) continue; ctx.fillStyle = '#2a2e34'; ctx.fillRect(b.x - 7, b.y - 5, 14, 10); ctx.fillStyle = '#c84a2a'; ctx.fillRect(b.x - 6, b.y - 4, 5, 8);
     ctx.fillStyle = ((S.t * (b.t - S.t < 2 ? 10 : 3)) | 0) % 2 ? '#ff2a2a' : '#5a1010'; ctx.fillRect(b.x + 2, b.y - 2, 3, 3); }
 }
 function drawHavocAbove() {  // 건물 외벽 손상(어둠 뒤, 건물 위) · 떨어지는 고가 조각 · 끊긴 고가 끝
   for (const b of BLD) for (const s of b.scars || []) { if (!inView(s.x, s.y, 80)) continue; const age = S.t - s.t;
-    ctx.save(); const g = ctx.createRadialGradient(s.x, s.y - 20, 0, s.x, s.y - 20, 46); g.addColorStop(0, 'rgba(10,8,8,.7)'); g.addColorStop(1, 'rgba(10,8,8,0)'); ctx.fillStyle = g; ctx.fillRect(s.x - 46, s.y - 66, 92, 92);
+    ctx.save(); if (STAGE.cityLife) pixBlob(s.x, s.y - 20, 46, 46, 0, .7); else { const g = ctx.createRadialGradient(s.x, s.y - 20, 0, s.x, s.y - 20, 46); g.addColorStop(0, 'rgba(10,8,8,.7)'); g.addColorStop(1, 'rgba(10,8,8,0)'); ctx.fillStyle = g; ctx.fillRect(s.x - 46, s.y - 66, 92, 92); }
     ctx.strokeStyle = 'rgba(20,18,18,.85)'; ctx.lineWidth = 1.5; for (let k = 0; k < 4; k++) { let x = s.x + Math.sin(s.seed + k) * 14, y = s.y - 6; ctx.beginPath(); ctx.moveTo(x, y); for (let j = 0; j < 4; j++) { x += Math.sin(s.seed * 3 + k * 7 + j) * 7; y -= 9; ctx.lineTo(x, y); } ctx.stroke(); }
     ctx.restore(); if (age < 20) fxFrame('carfire', S.t + s.seed, s.x, s.y - 4, 1.2 * clamp(1 - age / 20, 0.3, 1), 1); }
   for (const c of S.deckChunks || []) { if (c.delay > 0 || !inView(c.x, c.y, 120)) continue; const [px, py] = deckPt(c.x, c.y, Math.max(0, c.z)), s = deckS(Math.max(0, c.z));
-    ctx.save(); ctx.translate(px, py); ctx.rotate(c.rot); ctx.fillStyle = '#4a4f57'; ctx.fillRect(-c.w * s / 2, -c.hh * s / 2, c.w * s, c.hh * s); ctx.fillStyle = '#2c3037'; ctx.fillRect(-c.w * s / 2, -c.hh * s / 2, c.w * s, 4 * s); ctx.restore(); }
+    pixPiece(px, py, Math.hypot(c.w, c.hh) * s / 2 + 6, () => { ctx.save(); ctx.translate(px, py); ctx.rotate(c.rot); ctx.fillStyle = '#4a4f57'; ctx.fillRect(-c.w * s / 2, -c.hh * s / 2, c.w * s, c.hh * s); ctx.fillStyle = '#2c3037'; ctx.fillRect(-c.w * s / 2, -c.hh * s / 2, c.w * s, 4 * s); ctx.restore(); }); }
   for (const k of S.deckBreaks || []) for (const u of [k.u0, k.u1]) {  // 끊긴 끝: 들쭉날쭉한 콘크리트와 튀어나온 철근
     const h = k.axis === 'x', pts = []; for (let c = k.c0; c <= k.c1; c += 16) pts.push(deckPt(h ? u + rnd(-6, 6) * 0 + Math.sin(c * 0.3) * 8 : c, h ? c : u + Math.sin(c * 0.3) * 8, 1));
     ctx.strokeStyle = '#1a1c20'; ctx.lineWidth = 6; ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.stroke();

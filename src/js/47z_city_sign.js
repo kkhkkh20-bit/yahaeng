@@ -21,7 +21,8 @@ function signCands(route0) {
     const a = route[i], b = route[(i + 1) % route.length], ax = Math.floor(a.x / TILE), ay = Math.floor(a.y / TILE), bx = Math.floor(b.x / TILE), by = Math.floor(b.y / TILE);
     if (ay !== by) continue;  // 가로로 걷는 보도 구간만: 그 위(북쪽)가 건물 정면이다
     for (let x = Math.min(ax, bx) + 2; x <= Math.max(ax, bx) - 2; x++) {
-      const bi = bldAt(x, ay - 1); if (bi < 0) continue; const B = BLD[bi]; if (!B || B.y1 !== ay - 1) continue; const ey = B.y1 - (B.fh || 0); if (ey < B.y0 || !(rLv(x, ey) > 0)) continue;  /* 매다는 곳은 정면 벽 위, 옥상 끝 줄 */
+      // 보도 바로 위 건물, 또는 한 칸 물러선 건물(앞에 화단·마당 한 줄): 간판은 그 정면에 걸리고 보도(ay)로 떨어진다
+      const near = bldAt(x, ay - 1), bi = near >= 0 ? near : bldAt(x, ay - 2); if (bi < 0) continue; const B = BLD[bi]; if (!B || B.y1 !== (near >= 0 ? ay - 1 : ay - 2)) continue; const ey = B.y1 - (B.fh || 0); if (ey < B.y0 || !(rLv(x, ey) > 0)) continue;  /* 매다는 곳은 정면 벽 위, 옥상 끝 줄 */
       const pipe = pipes.find(l => l.bx >= B.x0 && l.bx <= B.x1 && l.by === B.y1 + 1 && Math.abs(l.bx - x) <= 8);
       if (pipe) cands.push({ x, y: ey, ay, pipe, d: Math.abs(pipe.bx - x) });
     }

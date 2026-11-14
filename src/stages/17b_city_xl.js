@@ -4,8 +4,8 @@
 // 블록 하나 = 16칸(바깥 한 칸 보도), 도로 4칸. 블록 종류는 기존 도시 12종을 다시 배치했다.
 ...(window.__CITY_XL__ = () => {
   // 강: 셋째 블록 줄 아래 가로 도로(y 60~63) 바로 밑을 가로지른다(y 64~74). 넷째 줄부터는 강 폭만큼 남쪽으로 밀린다
-  // 블록 24칸(바깥 한 칸 보도) + 도로 4칸 = 28칸 주기. 건물이 커지고 맵도 커졌다(232×199칸)
-  const BX = 8, BY = 6, BS = 24, P = BS + 4, RIVER_ROWS = 11, RS = RIVER_ROWS + 4, RIVER_Y = 3 * P + 4, W = BX * P + 8, H = BY * P + 8 + RS;
+  // 블록 30칸(바깥 한 칸 보도) + 도로 4칸 = 34칸 주기. 건물(폭 8~14칸, 깊이 9~13칸)이 커져 가게 안이 넉넉하다 (280×235칸)
+  const BX = 8, BY = 6, BS = 30, P = BS + 4, RIVER_ROWS = 11, RS = RIVER_ROWS + 4, RIVER_Y = 3 * P + 4, W = BX * P + 8, H = BY * P + 8 + RS;
   const B = (bx, by) => [4 + bx * P, 4 + by * P + (by >= 3 ? RS : 0)];
   const RIVER = window.__ASSETS__ && window.__ASSETS__.cityRiver;
   // 간판 이름: 을지로 골목 가게들 (블록 자리마다 다르게)
@@ -13,7 +13,7 @@
   const FOOD = ['국밥', '노가리', '호프', '골뱅이', '곱창', '순댓국', '백반', '분식', '포차'];
   const STORE = ['편의점', '철물', '공구', '타일', '조명', '인쇄', '전파사', '약국', '지물포'];
   const PLAY = ['PC방', '당구장', '노래방', '다방', '기원'];
-  // 필지: 사각형 안을 한두 줄로 나누고, 줄마다 폭이 다른 건물(6~11칸)과 1~2칸 틈 · 빈터를 놓는다.
+  // 필지: 사각형 안을 한두 줄로 나누고, 줄마다 폭이 다른 건물(8~14칸)과 1~2칸 틈 · 빈터를 놓는다.
   // 같은 블록은 언제나 같은 모양이다(블록 좌표로 정한 난수). kind: 'shop' 상가 골목 · 'res' 주택가 · 'dense' 다세대·사무실 밀집
   const rng = seed => () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };  // mulberry32
   const UPPER = ['office', 'office', 'gym', 'pc', 'academy'], UPPER_SIGN = { office: ['', '세무사', '법무사', '부동산'], gym: ['헬스장'], pc: ['PC방', '당구장', '노래방'], academy: ['학원'] };
@@ -50,8 +50,8 @@
     };
     const row = (y0, y1, front) => {
       let cx = X0; if (r() < 0.15) { const w = ri(1, 2); yard(cx, y0, cx + w - 1, y1); cx += w; }
-      while (X1 - cx + 1 >= 6) {
-        const left = X1 - cx + 1; let w = Math.min(left, ri(6, 11)); if (left - w > 0 && left - w < 7) w = left - w <= 2 ? left : Math.max(6, left - 7);  // 끝에 애매한 자투리가 남지 않게
+      while (X1 - cx + 1 >= 8) {
+        const left = X1 - cx + 1; let w = Math.min(left, ri(8, 14)); if (left - w > 0 && left - w < 9) w = left - w <= 2 ? left : Math.max(8, left - 9);  // 끝에 애매한 자투리가 남지 않게
         const sb = r() < 0.3 ? 1 : 0;
         if (r() < (kind === 'res' ? 0.12 : 0.05)) yard(cx, y0, cx + w - 1, y1); else building(cx, front ? y0 : y0 + sb, cx + w - 1, front ? y1 - sb : y1, front);
         if (sb) yard(cx, front ? y1 : y0, cx + w - 1, front ? y1 : y0);
@@ -60,13 +60,13 @@
       if (cx <= X1) yard(cx, y0, X1, y1);
     };
     const Hh = Y1 - Y0 + 1;
-    if (Hh >= 16) { const dN = ri(7, 10), dS = ri(7, Math.min(10, Hh - dN - 2)); row(Y0, Y0 + dN - 1, false); m.fill(X0, Y0 + dN, X1, Y1 - dS, ','); row(Y1 - dS + 1, Y1, true); }
-    else if (Hh >= 5 && X1 - X0 + 1 >= 6) row(Y0, Y1, true); else yard(X0, Y0, X1, Y1);
+    if (Hh >= 20) { const dN = ri(9, 13), dS = ri(9, Math.min(13, Hh - dN - 2)); row(Y0, Y0 + dN - 1, false); m.fill(X0, Y0 + dN, X1, Y1 - dS, ','); row(Y1 - dS + 1, Y1, true); }
+    else if (Hh >= 8 && X1 - X0 + 1 >= 8) row(Y0, Y1, true); else yard(X0, Y0, X1, Y1);   // 얕은 자투리 땅엔 작은 건물 대신 주차장·마당
   }
   function genBlock(m, x, y, kind) {
     const r = rng(x * 7919 + y * 104729 + kind.length * 13), ri = (a, b) => a + Math.floor(r() * (b - a + 1));
     if (r() < 0.2) {  // 한쪽은 깊은 큰 건물, 나머지는 필지
-      const w = ri(9, 12), left = r() < 0.5, bx0 = left ? x + 1 : x + BS - 1 - w;
+      const w = ri(11, 15), left = r() < 0.5, bx0 = left ? x + 1 : x + BS - 1 - w;
       m.villa(bx0, y + 3, bx0 + w - 1, y + BS - 2, ri(3, 6), kind === 'res' ? {} : { kind: 'shop', use: ['food', 'gym', 'office', 'office', 'office', 'office'], signs: [pick(FOOD, x, y), '헬스장', pick(UPPER_SIGN.office, x, y)] });
       genLots(m, left ? bx0 + w + 1 : x + 1, y + 1, left ? x + BS - 2 : bx0 - 2, y + BS - 2, kind, r); m.fill(bx0, y + 1, bx0 + w - 1, y + 2, ',');
       return;
@@ -76,8 +76,9 @@
   // 특수 블록(조직 구역 · 본부 · 클럽 · 병원 · 지구대 · 공원 · 시장 · 공사장)은 왼쪽 위 16칸에 그대로 두고, 남은 ㄱ자 땅을 필지로 채운다
   function fillAround(m, x, y, kind) {
     const r = rng(x * 3571 + y * 7349 + 7);
-    m.fill(x + 15, y + 1, x + 15, y + BS - 2, ','); m.fill(x + 1, y + 15, x + 14, y + 15, ',');
-    genLots(m, x + 16, y + 1, x + BS - 2, y + BS - 2, kind, r); genLots(m, x + 1, y + 16, x + 14, y + BS - 2, kind, r);
+    const ex = Math.round(15 * SKX), ey = Math.round(15 * SKY);   // 늘린 특수 설계의 끝 (16칸 × SKX, × SKY)
+    m.fill(x + ex, y + 1, x + ex, y + BS - 2, ','); m.fill(x + 1, y + ey, x + ex - 1, y + ey, ',');
+    genLots(m, x + ex + 1, y + 1, x + BS - 2, y + BS - 2, kind, r); genLots(m, x + 1, y + ey + 1, x + ex - 1, y + BS - 2, kind, r);
   }
   // 블록 배치 (기존 도시 종류): h 주택가 · s 상가 · w 조직 창고 · c 클럽 거리 · p 공원 · m 시장 · r 건달파 동네 · e 주택 · H 병원 · P 지구대 · k 공사장 · q 조직 본부
   // 조직 세력: A 조직(본부 q) · B 건달파(r 동네) · C 청계파(w 창고 상회) · D 종로파(c 클럽 거리 뒤 사무실)
@@ -91,7 +92,17 @@
     'hehkPefk'
   ];
   const zones = [], gangs = []; let collecting = true;
-  const Z = z => { if (collecting) zones.push(z); }, Gp = (...g) => { if (collecting) gangs.push(...g); };
+  // 특수 블록(16칸 설계)은 가로 SKX배 · 세로 SKY배로 늘려 짓는다: 건물·마당·차·구역·조직원 자리를 같은 비율로 옮긴다 (가게 안이 넉넉해진다).
+  // 세로는 1.25배라 블록 남쪽에 9줄 필지가 남는다: 남쪽 보도를 바라보는 건물 정면이 생겨 간판 사고 의뢰를 걸 수 있다
+  const SKX = 1.5, SKY = 1.25; let SC = null;
+  const scaler = (x0, y0) => ({ X: v => x0 + Math.round((v - x0) * SKX), Y: v => y0 + Math.round((v - y0) * SKY), X1: v => x0 + Math.round((v - x0 + 1) * SKX) - 1, Y1: v => y0 + Math.round((v - y0 + 1) * SKY) - 1 });
+  const scPt = p => SC ? [SC.X(p[0]), SC.Y(p[1]), ...p.slice(2)] : p;
+  const Z = z => { if (!collecting) return; if (SC) z = [SC.X(z[0]), SC.Y(z[1]), SC.X1(z[2]), SC.Y1(z[3]), ...z.slice(4)]; zones.push(z); };
+  const Gp = (...g) => { if (!collecting) return; gangs.push(...g.map(o => SC ? Object.assign({}, o, o.at ? { at: scPt(o.at) } : {}, o.route ? { route: o.route.map(scPt) } : {}) : o)); };
+  const scaledMap = (m, c) => Object.assign(Object.create(m), {
+    fill: (a, b, x1, y1, ch) => m.fill(c.X(a), c.Y(b), c.X1(x1), c.Y1(y1), ch), villa: (a, b, x1, y1, h, o) => m.villa(c.X(a), c.Y(b), c.X1(x1), c.Y1(y1), h, o),
+    set: (a, b, ch) => m.set(c.X(a), c.Y(b), ch), get: (a, b) => m.get(c.X(a), c.Y(b)), car: (a, b, d) => m.car(c.X(a), c.Y(b), d),
+    many: (ch, L) => m.many(ch, L.map(([a, b]) => [c.X(a), c.Y(b)])), tent: (a, b, k) => m.tent(c.X(a), c.Y(b), k) });
   const T = {
     h(m, x, y) { genBlock(m, x, y, 'res'); },
     s(m, x, y) { genBlock(m, x, y, 'shop'); Z([x + 1, y + 1, x + BS - 2, y + BS - 2, 'pub']); },
@@ -162,7 +173,11 @@
   const riverCol = x => { for (const r of st.roadsX) { if (x >= r && x < r + 4) return 'road'; if (x === r - 1 || x === r + 4) return 'rail'; } return Math.floor(x / 4) % 5 === 2 && x % 4 === 2 ? 'ladder' : 'quay'; };
   // 블록 하나: 일반 블록(h s e)은 통째로 필지, 특수 블록은 16칸 설계 + 남은 땅 필지
   const AROUND = { w: 'dense', c: 'shop', p: 'res', m: 'shop', r: 'dense', H: 'dense', P: 'dense', k: 'res', q: 'dense', f: 'dense', d: 'dense' };
-  function buildBlock(m, bx, by) { const [x0, y0] = B(bx, by), t = LAYOUT[by][bx]; curD = districtOf(bx, by); T[t](m, x0, y0); if (AROUND[t]) fillAround(m, x0, y0, AROUND[t]); }
+  function buildBlock(m, bx, by) { const [x0, y0] = B(bx, by), t = LAYOUT[by][bx]; curD = districtOf(bx, by);
+    if (!AROUND[t]) { T[t](m, x0, y0); return; }
+    SC = scaler(x0, y0); T[t](scaledMap(m, SC), x0, y0);
+    if (t === 'd' && collecting && st.dealer) { const R = r => [SC.X(r[0]), SC.Y(r[1]), SC.X1(r[2]), SC.Y1(r[3])]; st.dealer = { lot: R(st.dealer.lot), sell: R(st.dealer.sell), office: [SC.X(st.dealer.office[0]), SC.Y(st.dealer.office[1])] }; st.respray = { bay: R(st.respray.bay) }; }
+    SC = null; fillAround(m, x0, y0, AROUND[t]); }
   const find = ch => { for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) if (LAYOUT[by][bx] === ch) return B(bx, by); return B(0, 0); };
   const ring = (bx, by, d) => { const [x0, y0] = B(bx, by), e = BS - 1, c = [[x0, y0], [x0 + e, y0], [x0 + e, y0 + e], [x0, y0 + e]]; return (d ? c.slice().reverse() : c).map(([a, b]) => [a, b, 0.5]); };
   const st = {
@@ -236,7 +251,7 @@
   st.referenceRow = function (i, fl) { const s = this.referenceBuildings[i], n = s.windows.length; return fl === s.h - 1 ? 0 : fl < n - 1 ? n - 1 - fl : 1; };
   st.referenceWindow = function (i, tx, fl) { const s = this.referenceBuildings[i], row = s.windows[this.referenceRow(i, fl)]; return Array.isArray(row) ? !!row[(tx - s.box[0] - 1) % 3] : !!row; };
   const [hx, hy] = find('H'), [px, py] = find('P');
-  st.hospital = [hx + 6, hy + 8]; st.police = [px + 4, py];
+  { const h = scaler(hx, hy), q = scaler(px, py); st.hospital = [h.X(hx + 6), h.Y(hy + 8)]; st.police = [q.X(px + 4), py]; }
   // 순찰 경찰: 지구대 블록마다 둘레 보도 하나씩, 그리고 지도 중앙 블록 하나
   for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) if (LAYOUT[by][bx] === 'P') st.copBeats.push(ring(bx, by, 0));
   st.copBeats.push(ring(3, 2, 1), ring(5, 4, 0));
@@ -245,8 +260,9 @@
     st.guards.push({ kind: 'civ', route: ring(bx, by, (bx + by) % 2) });
     if ((bx * 3 + by) % 2 === 0) { const r = ring(bx, by, (bx + by + 1) % 2); st.guards.push({ kind: 'civ', body: 'fBob', route: r.slice(2).concat(r.slice(0, 2)) }); }
     const [x0, y0] = B(bx, by), t = LAYOUT[by][bx];
-    if (t === 'p') st.guards.push({ kind: 'civ', wander: [x0 + 1, y0 + 1, x0 + 14, y0 + 14], at: [x0 + 7, y0 + 4] });
-    if (t === 'm') st.guards.push({ kind: 'civ', body: 'fTail', wander: [x0 + 1, y0 + 8, x0 + 14, y0 + 10], at: [x0 + 8, y0 + 10] });
+    const c = scaler(x0, y0);
+    if (t === 'p') st.guards.push({ kind: 'civ', wander: [x0 + 1, y0 + 1, c.X1(x0 + 14), c.Y1(y0 + 14)], at: [c.X(x0 + 7), c.Y(y0 + 4)] });
+    if (t === 'm') st.guards.push({ kind: 'civ', body: 'fTail', wander: [x0 + 1, c.Y(y0 + 8), c.X1(x0 + 14), c.Y1(y0 + 10)], at: [c.X(x0 + 8), c.Y(y0 + 10)] });
   }
   // 일반인을 더: 블록마다 보도를 반대로 도는 사람 하나와, 다른 모퉁이에서 출발하는 사람 하나 (조직보다 훨씬 많게)
   const BODIES = ['fBob', 'fTail', 'fLong', undefined, undefined, 'jacket'];

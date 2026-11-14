@@ -62,12 +62,17 @@ function drawHeli() {
 // ---------- 도로 검문
 function roadblockUpdate() {
   const P = S.player, v = P.car; if (S.wanted < 3 || !v || S.t < S.blockT) return; S.blockT = S.t + 25;
-  const ax = v.x + Math.cos(v.a) * 700, ay = v.y + Math.sin(v.a) * 700, p = roadNear(ax, ay, 5); if (!p || inView(p.x, p.y, 60)) return;
-  if ((S.decks || []).some(d => inR(d.top, p.x, p.y, 120) || inR(d.rampA, p.x, p.y, 120) || inR(d.rampB, p.x, p.y, 120))) { S.blockT = S.t + 3; return; }  // 고가 밑·옆은 피한다
+  // 앞쪽 560~1300px를 차례로 훑어 처음 닿는 길목에 세운다 (블록이 넓어 한 거리만 보면 블록 한가운데일 수 있다). 고가 밑·옆은 피한다
+  const underDeck = q => (S.decks || []).some(d => inR(d.top, q.x, q.y, 120) || inR(d.rampA, q.x, q.y, 120) || inR(d.rampB, q.x, q.y, 120));
+  let p = null; for (let R = 560; R <= 1300 && !p; R += 80) { const q = roadNear(v.x + Math.cos(v.a) * R, v.y + Math.sin(v.a) * R, 4); if (q && !inView(q.x, q.y, 60) && !underDeck(q)) p = q; }
+  if (!p) { S.blockT = S.t + 3; return; }
   const tx = Math.floor(p.x / TILE), ty = Math.floor(p.y / TILE), isR = (x, y) => inMap(x, y) && G0[y][x] === '=';
   let hx = 0, vy = 0; for (let k = -4; k <= 4; k++) { if (isR(tx + k, ty)) hx++; if (isR(tx, ty + k)) vy++; }
   const along = hx >= vy ? 'x' : 'y';  // 도로가 뻗은 방향
-  let c0 = along === 'x' ? ty : tx, c1 = c0; while (along === 'x' ? isR(tx, c0 - 1) : isR(c0 - 1, ty)) c0--; while (along === 'x' ? isR(tx, c1 + 1) : isR(c1 + 1, ty)) c1++;
+  // 막을 폭: 보도 옆 차도('.')를 건너는 길이 (보도 한 칸 폭으로 재면 차가 벽에 붙어 모두 빠졌다)
+  const isA = (x, y) => inMap(x, y) && G0[y][x] === '.' && bldAt(x, y) < 0, at = c => along === 'x' ? isA(tx, c) : isA(c, ty), c00 = along === 'x' ? ty : tx;
+  const sd = at(c00 + 1) ? 1 : at(c00 - 1) ? -1 : 0; if (!sd) { S.blockT = S.t + 3; return; }
+  let c0 = c00 + sd, c1 = c0; while (at(c0 - 1)) c0--; while (at(c1 + 1)) c1++;
   const mid = (c0 + c1 + 1) / 2 * TILE, span = (c1 - c0 + 1) * TILE, n = Math.max(2, Math.min(3, Math.round(span / 100)));
   for (let i = 0; i < n; i++) { const off = (i - (n - 1) / 2) * (span / n), x = along === 'x' ? p.x : mid + off, y = along === 'x' ? mid + off : p.y;
     const car = makeVehicle({ type: 'police', x, y, a: (along === 'x' ? Math.PI / 2 : 0) + (i % 2 ? 0.28 : -0.28), parked: true, police: true }); car.roadblock = true; car.ai = false; car.driver = false; if (carOverlap(car) === true) continue; S.vehicles.push(car); }  // 비스듬히 엇갈린 바리케이드 (벽과 겹칠 때만 뺀다)

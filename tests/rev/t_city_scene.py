@@ -8,7 +8,7 @@ from playwright.async_api import async_playwright
 R = Path(__file__).resolve().parents[2]
 SCENE = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));while(G.DLG.modal)G.advanceDialog();
   const tick=s=>{for(let t=0;t<s;t+=1/60)G.update(1/60)};tick(.3);const S=G.S,P=S.player;S.copT=1e9;S.evNext={};for(const e of G.events.list)S.evNext[e.d]=1e9;
-  const g=S.guards.find(o=>o.civ&&!o.evt&&!o.crew&&!o.child&&o.state==='PATROL'&&!o.off&&Math.hypot(o.x-P.x,o.y-P.y)>400&&Math.hypot(o.x-P.x,o.y-P.y)<900);
+  const g=S.guards.find(o=>o.civ&&!o.evt&&!o.crew&&!o.child&&o.state==='PATROL'&&!o.off&&!(o.fl||0)&&G.bldAt(Math.floor(o.x/48),Math.floor(o.y/48))<0&&Math.hypot(o.x-P.x,o.y-P.y)>400&&Math.hypot(o.x-P.x,o.y-P.y)<1300);
   g.route=[{x:g.x,y:g.y,pause:999}];G.npcDown(g,null,true);const c=S.corpses.find(k=>k.g===g);c.seenAt=S.t-60;S.sceneNext=0;S.sceneScan=0;
   const seen={},t0=S.t;let tape=null,said='';for(let k=0;k<60*90;k++){G.update(1/60);const sc=S.scene;if(sc){seen[sc.st]=seen[sc.st]||Math.round(S.t-t0);if(sc.tape&&!tape)tape=sc.tape;
       if(sc.st==='keep'&&!said&&tape){P.x=(tape.x0+tape.x1)/2+40;P.y=(tape.y0+tape.y1)/2;} if(sc.cop&&sc.cop.say)said=sc.cop.say;}

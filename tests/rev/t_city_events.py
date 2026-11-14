@@ -13,7 +13,7 @@ SETUP = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));w
   window.SPOTS=spots;return Object.keys(SPOTS)}'''
 # spawn event `key` in its district (force the cooldown and the pick), walk up until it is engaged
 SPAWN = '''(key)=>{const G=__game,S=G.S,P=S.player,E=G.events;
-  const def=E.list.find(e=>e.key===key),defs=E.list.filter(e=>e.d===def.d);S.wanted=0;P.car=null;P.trav=null;P.hp=P.hpMax;
+  const def=E.list.find(e=>e.key===key),defs=E.list.filter(e=>e.d===def.d);S.wanted=0;S.downing=null;P.car=null;P.trav=null;P.hp=P.hpMax;for(const g of S.guards)if(g.police&&g.state!=='DEAD'){g.state='PATROL';g.path=null;}
   const block=()=>{S.evNext={};for(const e of E.list)S.evNext[e.d]=S.t+999;};block();
   if(S.ev){S.ev.done=true;S.ev.doneT=-9;tick(.1);}S.ev=null;const sp=SPOTS[def.d];let ev=null,tries=0;
   for(;tries<14&&!(ev&&ev.def.key===key);tries++){if(S.ev){S.ev.done=true;S.ev.doneT=-9;tick(.05);S.ev=null;}
