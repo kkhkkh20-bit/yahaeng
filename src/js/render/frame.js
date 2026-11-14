@@ -54,7 +54,7 @@ function draw() {
     ctx.strokeStyle = 'rgba(232,71,60,.7)'; ctx.lineWidth = 3; ctx.setLineDash([6, 6]); ctx.beginPath(); ctx.arc(fx, fy, 40, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
   }
   if (showRoutes || tactical) drawRoutes(P);
-  drawCityEntryThresholds();drawTrapsGround(); drawProps(); if (STAGE.cityLife && typeof drawElevDoors === 'function') drawElevDoors();   // 엘리베이터 문은 벽 그림 — 사람보다 먼저(아래) 그린다
+  drawCityEntryThresholds();drawTrapsGround(); if (STAGE.cityLife && typeof drawStreetDeco === 'function') drawStreetDeco(); drawProps(); if (STAGE.cityLife && typeof drawElevDoors === 'function') drawElevDoors();   // 엘리베이터 문은 벽 그림 — 사람보다 먼저(아래) 그린다
   for (const d of S.decals) { if (!onGround(d)) continue; if (STAGE.cityLife) { drawPixelBlood(d); continue; } ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.arc(d.r * 0.8, d.r * 0.4, d.r * 0.3, 0, TAU); ctx.fill(); ctx.restore(); }
   if (STAGE.cityLife) drawBloodParts();
   for (const it of S.items) if (!it.got && onGround(it)) drawLootItem(it);
@@ -276,7 +276,7 @@ function draw() {
   drawOutdoorLampFixtures();
   drawTrafficSignals();
   if (S.decks?.length && !flOf(P)) drawDecks();  // 고가도로·높은 다리: 지붕·신호등보다 위 (고가 밑 신호등은 가려진다)
-  if (STAGE.cityLife) { drawCuffs(); if (!flOf(P)) { drawGarage(); drawHavocAbove(); } }  // 내 차고 셔터: 집 앞벽보다 위
+  if (STAGE.cityLife) { drawCuffs(); if (!flOf(P)) { drawGarage(); drawHavocAbove(); if (typeof drawStreetDecoGlow === 'function') drawStreetDecoGlow(); } }  // 내 차고 셔터: 집 앞벽보다 위
   const aboveBridge=p=>!!(P.wire||(P.jump&&!lowJ)||travUp||P.z>p.z);
   if(!tactical)drawPlanks('front',aboveBridge);
   if (exteriorClip) ctx.restore();
