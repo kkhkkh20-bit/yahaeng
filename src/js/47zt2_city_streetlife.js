@@ -22,9 +22,17 @@ function streetLifeInit() {
   // 같이 걷기: 블록 도는 사람 넷 중 하나는 짝을 데리고 (짝은 원래 다른 길을 돌던 사람이라 전체 인원은 같다)
   for (let i = 0; i + 1 < rings.length; i += 4) { const A = rings[i], C = rings[i + 1]; if (C.phone || A.body === 'old' || C.body === 'old') continue;
     C.grp = { L: A, side: ((i >> 2) & 1) ? 1 : -1 }; C.spdB = A.spdB || 1; C.umb = A.umb; C.wait = 999; C.still = true; groupSnap(C); L.grp.push(C); }
+  // 길 건너는 행인: 짝 없는 블록 행인 몇은 모퉁이에서 옆 블록 모퉁이까지 횡단보도로 건넜다 돌아온다 (빨간불엔 연석에서 기다린다 — pedWaits)
+  for (let i = 2; i < rings.length; i += 4) { const g = rings[i]; if (g.grp || g.phone || LIFE_K(g.id) % 2) continue;
+    const T = g.route.map(p => [Math.floor(p.x / TILE), Math.floor(p.y / TILE)]); let ci = 0; T.forEach(([x, y], j) => { if (x - y > T[ci][0] - T[ci][1]) ci = j; });   // 오른쪽 위 모퉁이
+    const [cx, cy] = T[ci]; let nb = null; for (const dx of [5, -5]) { const nx = (dx > 0 ? cx : T.reduce((a, t) => t[0] < a[0] ? t : a, T[0])[0]) + dx, ny = cy; if (inMap(nx, ny) && G0[ny][nx] === '=' && bldAt(nx, ny) < 0) { nb = { x: tc(nx), y: tc(ny), at: dx > 0 ? ci : T.findIndex(t => t[0] === nx - dx && t[1] === ny) }; break; } }
+    if (!nb || nb.at < 0) continue; const R = g.route, c = R[nb.at];
+    g.route = R.slice(0, nb.at + 1).concat([{ x: nb.x, y: nb.y, pause: 1.5 }, { x: c.x, y: c.y, pause: 0.3 }], R.slice(nb.at + 1)); g.crosser = true; }
+  L.vend = new Map(); L.trash = []; L.bags = []; L.trashT = 8;
   // 가게 앞 자리: 1층이 술집·식당이거나 편의점인 건물
   BLD.forEach((b, bi) => { if (b.kind !== 'shop' || b.vacant) return; const s = (b.signs?.[0] || '').trim(); const kind = FOOD_RE.test(s) ? 'food' : CS_RE.test(s) ? 'cs' : null; if (!kind) return;
     const p = shopFront(b); if (p) L.cands.push({ bi, kind, x: p.x, y: p.y }); });
+  L.tcands = []; BLD.forEach((b, bi) => { if (b.kind !== 'shop' || b.vacant || !(b.signs?.[0] || '').trim()) return; const p = shopFront(b); if (p) L.tcands.push({ bi, x: p.x, y: p.y }); });   // 쓰레기 내놓는 가게: 간판 단 1층 가게 모두
 }
 // 짝: 앞사람 옆(어깨 너비)에 붙인다. 앞사람이 멈추면(대화·신호) 같이 멈춘다
 // 옆자리가 벽·건물이면 반대편으로, 그것도 막혔으면 한 걸음 뒤에 (짝이 벽 속에 그려지던 것)
@@ -91,12 +99,43 @@ function lifeRoam() {
     const g = far.pop(); g.route = route; g.ri = at.ri; g.x = at.x; g.y = at.y; g.path = null; g.wait = 0; if (g.chat) { const o = g.chat.with; g.chat = null; g.say = null; if (o?.chat?.with === g) { o.chat = null; o.say = null; } }   /* endChat 은 게임 난수를 쓴다: 직접 끊는다 */
     const C = mates.get(g); if (C) groupSnap(C); }
 }
+// 노점: 내 둘레 술집·식당 거리의 연석에 손수레(떡볶이·붕어빵·어묵) 하나와 장사하는 사람. 화면 밖일 때 세우고, 멀어지면 걷는다 (둘까지)
+const lifeOpen = (tx, ty) => inMap(tx, ty) && '=,g'.includes(G0[ty][tx]) && bldAt(tx, ty) < 0 && !solidAt(tx, ty);   // 가게 앞 빈 바닥 (보도·마당·풀밭)
+const VEND_MAX = 2, VEND_KIND = ['떡볶이', '붕어빵', '어묵'];
+function lifeVendors() {
+  const L = S.life, P = S.player;
+  for (const [bi, v] of L.vend) if (dist(v.x, v.y, P.x, P.y) > 1700 || !npcAlive(v.g) || v.g.off) { if (npcAlive(v.g) && !v.g.off) evGone(v.g); L.vend.delete(bi); }
+  if (L.vend.size >= VEND_MAX || flOf(P) || S.wanted >= 2) return;
+  for (const c of L.cands) { if (c.kind !== 'food' || LIFE_K(c.bi) % 3 || L.vend.has(c.bi)) continue;
+    const x = c.x + 110, y = c.y + 12; if (dist(x, y, P.x, P.y) > 1100 || (!L.jump && inView(x, y, 100))) continue;   // 가게 문 옆 연석 (문 앞 손님 자리와 겹치지 않게)
+    const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); if (!lifeOpen(tx, ty)) continue;
+    const gi = cityGuardSlot(), g = makeGuard({ kind: 'civ', at: [tx, ty], radio: false, body: LIFE_K(c.bi) % 2 ? 'old' : 'workApron' }, gi);
+    g.evt = '__vendor'; g.x = x; g.y = y - 6; g.fl = 0; g.a = g.want = Math.PI / 2; g.post = g.a; g.route = [{ x: g.x, y: g.y, pause: 999 }]; g.ri = 0; g.wait = 999; g.chatter = true;
+    g.vendor = VEND_KIND[LIFE_K(c.bi + 7) % VEND_KIND.length]; placeGuard(g, gi); if (PR) prWarm([charOf(g)], true);
+    L.vend.set(c.bi, { g, x, y }); if (L.vend.size >= VEND_MAX) break; }
+}
+// 쓰레기 내놓기: 가끔 내 둘레 식당·편의점 문에서 직원이 상자를 들고 나와 연석에 내려놓고 들어간다
+function lifeTrash() {
+  const L = S.life, P = S.player;
+  for (let i = L.trash.length - 1; i >= 0; i--) { const t = L.trash[i], g = t.g;
+    if (!npcAlive(g) || g.off || g.state !== 'PATROL' || S.t - t.t0 > 40) { if (npcAlive(g) && !g.off && g.state === 'PATROL') evGone(g); L.trash.splice(i, 1); continue; }   // 놀라 달아난 직원은 그대로 둔다(보통 행인처럼)
+    if (t.ph === 0 && dist(g.x, g.y, t.cx, t.cy) < 14) { t.ph = 1; g.carryTo = null; L.bags.push({ x: t.cx + (LIFE_K(g.id) % 3 - 1) * 8, y: t.cy + 4, t: S.t, k: LIFE_K(g.id) % 2 }); if (L.bags.length > 24) L.bags.shift(); }
+    else if (t.ph === 1 && dist(g.x, g.y, t.dx, t.dy) < 14) { evGone(g); L.trash.splice(i, 1); } }   // 다시 가게로 들어갔다
+  if ((L.trashT -= 0.5) > 0 || L.trash.length || flOf(P) || S.wanted || S.ev) return;   // 동네 사건 중엔 내놓지 않는다 (경찰·행인 반응에 끼어들지 않게) L.trashT = 3;   // 알맞은 가게가 없으면 곧 다시 본다
+  const spot = c => [-70, 70, -44, 44].map(dx => [c.x + dx, c.y + 16]).find(([x, y]) => lifeOpen(Math.floor(x / TILE), Math.floor(y / TILE)));
+  const c = (L.tcands || []).filter(c => !BLD[c.bi].collapsed && dist(c.x, c.y, P.x, P.y) < 900 && dist(c.x, c.y, P.x, P.y) > 260 && spot(c))
+    .sort((a, b) => LIFE_K(a.bi + (S.t | 0)) - LIFE_K(b.bi + (S.t | 0)))[0]; if (!c) return;
+  L.trashT = 18 + (S.t % 7); const [cx, cy] = spot(c);
+  const gi = cityGuardSlot(), g = makeGuard({ kind: 'civ', at: [Math.floor(c.x / TILE), Math.floor(c.y / TILE)], radio: false }, gi);
+  g.evt = '__trash'; g.outfit = 'staff'; g.x = c.x; g.y = c.y - 10; g.fl = 0; g.route = [{ x: g.x, y: g.y, pause: 0 }, { x: cx, y: cy, pause: 1.2 }, { x: c.x, y: c.y - 10, pause: 999 }]; g.ri = 1; g.wait = 0; g.carryTo = 1; placeGuard(g, gi);
+  if (PR) prWarm([charOf(g)], true); L.trash.push({ g, ph: 0, cx, cy, dx: c.x, dy: c.y - 10, t0: S.t });
+}
 function streetLifeUpdate(dt) {
   const L = S.life; if (!STAGE.cityLife || !L) return;
   lifeGroups();
   if ((L.t -= dt) > 0) return; L.t = 0.5;
   const P = S.player, jump = L.lp && dist(L.lp.x, L.lp.y, P.x, P.y) > 600; L.lp = { x: P.x, y: P.y }; L.jump = jump;   // 순간이동(병원·엘리베이터·집): 그 둘레는 화면 안이라도 바로 채운다
-  lifeFronts(); lifePace();
+  lifeFronts(); lifePace(); lifeVendors(); lifeTrash();
   if ((L.roamT = (L.roamT || 0) - 0.5) <= 0 || jump) { L.roamT = 2; lifeRoam(); }
 }
 // ---- 그림: 우산(비 올 때) · 휴대폰 불빛 (사람 위에 작은 도트)
@@ -105,7 +144,33 @@ const UMB_ART = (() => { const rows = ['....#######....', '..###########..', '.#
     rows.forEach((r, y) => { for (let i = 0; i < r.length; i++) if (r[i] === '#') x.fillRect(i, y, 1, 1); });
     x.fillStyle = 'rgba(255,255,255,.22)'; x.fillRect(4, 1, 5, 1);   // 윗면 반사
     x.fillStyle = '#3a3a40'; x.fillRect(7, 5, 1, 6); x.fillRect(6, 10, 1, 1); return c; }); })();
+// 노점 손수레 (장사하는 사람 앞, 2px 도트): 바퀴 · 나무 몸통 · 판 위 음식 · 줄무늬 차양 · 김
+function drawVendorCart(g) {
+  const x = Math.round(g.x), y = Math.round(g.y) + 6, R = (a, b, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x + a, y + b, w, h); };
+  R(-20, 12, 40, 3, 'rgba(0,0,0,.35)');                                                   // 그림자
+  R(-16, 10, 6, 6, '#1c1c20'); R(10, 10, 6, 6, '#1c1c20'); R(-14, 12, 2, 2, '#55565c'); R(12, 12, 2, 2, '#55565c');   // 바퀴
+  R(-19, -4, 38, 14, '#7a4a28'); R(-19, 6, 38, 4, '#5a3418'); R(-19, -4, 38, 2, '#9a6a3c');   // 나무 몸통
+  R(-20, -8, 40, 4, '#b9b3a8'); R(-20, -8, 40, 1, '#dcd6ca');                             // 스테인리스 판
+  const k = g.vendor;
+  if (k === '떡볶이') { R(-14, -11, 16, 4, '#2a2a2e'); for (let i = 0; i < 6; i++) R(-13 + i * 2.5 | 0, -10, 2, 2, i % 2 ? '#e0452a' : '#c8321e'); R(6, -10, 8, 2, '#d8c8a0'); }
+  else if (k === '붕어빵') { R(-15, -10, 30, 3, '#3a3a40'); for (let i = 0; i < 4; i++) { R(-13 + i * 7, -12, 5, 3, '#d89a3a'); R(-9 + i * 7, -11, 1, 1, '#a8682a'); } }
+  else { R(-14, -11, 18, 4, '#5a5048'); for (let i = 0; i < 5; i++) { R(-12 + i * 3, -16, 1, 6, '#c8a878'); R(-13 + i * 3, -13, 3, 2, '#e8c890'); } R(8, -11, 6, 3, '#e8e2d2'); }
+  R(-20, -40, 2, 32, '#3a3a40'); R(18, -40, 2, 32, '#3a3a40');                             // 차양 기둥
+  for (let i = 0; i < 10; i++) R(-22 + i * 4.4 | 0, -46, 5, 6, i % 2 ? '#f2efe6' : '#c8322e'); R(-22, -40, 44, 1, 'rgba(0,0,0,.35)');   // 줄무늬 차양 (머리 위)
+  const t = S.t + LIFE_K(g.id); for (let i = 0; i < 3; i++) { const ph = (t * 0.8 + i / 3) % 1, a = 0.35 * (1 - ph); ctx.fillStyle = `rgba(230,236,240,${a.toFixed(2)})`; ctx.fillRect(x - 8 + i * 6 + Math.round(Math.sin(t * 2 + i) * 2), y - 14 - Math.round(ph * 14), 3, 3); }   // 김
+  ctx.fillStyle = '#f6e9b8'; ctx.font = '700 8px ' + UI_FONT_FAMILY; ctx.textAlign = 'center'; ctx.fillText(k, x, y + 5);   // 몸통 글자
+}
+// 내놓은 쓰레기봉투·상자 (연석 위, 1분쯤 지나면 치워진다)
+function drawLifeBags() {
+  const L = S.life; if (!STAGE.cityLife || !L?.bags?.length || flOf(S.player)) return;
+  for (let i = L.bags.length - 1; i >= 0; i--) { const b = L.bags[i]; if (S.t - b.t > 70) { L.bags.splice(i, 1); continue; } if (!inView(b.x, b.y, 30)) continue;
+    const x = Math.round(b.x), y = Math.round(b.y), R = (a, c, w, h, col) => { ctx.fillStyle = col; ctx.fillRect(x + a, y + c, w, h); };
+    R(-6, 4, 13, 2, 'rgba(0,0,0,.3)');
+    if (b.k) { R(-5, -6, 10, 10, '#1e2026'); R(-4, -8, 8, 2, '#1e2026'); R(-1, -10, 2, 2, '#2e3038'); R(-3, -5, 2, 4, '#3a3d46'); }   // 검은 종량제 봉투
+    else { R(-6, -5, 12, 9, '#b48a52'); R(-6, -5, 12, 2, '#cfa66a'); R(-1, -5, 2, 9, '#e6dcc4'); } }   // 납작한 상자
+}
 function drawLifeExtras(g) {
+  if (g.vendor && !g.off && npcAlive(g) && !flOf(g)) drawVendorCart(g);
   if (!g.civ || g.off || g.state === 'DEAD' || g.state === 'SLEEP' || flOf(g)) return;
   if (g.umb && rainK() > 0.3 && !g.evt) { const art = UMB_ART[LIFE_K(g.id) % UMB_ART.length]; ctx.save(); ctx.imageSmoothingEnabled = false; if (art === UMB_ART[2]) ctx.globalAlpha = 0.8;
     ctx.drawImage(art, Math.round(g.x - 15), Math.round(g.y - 48), 30, 24); /* 머리 바로 위 (손잡이는 손 높이) */ ctx.restore(); }
@@ -114,5 +179,6 @@ function drawLifeExtras(g) {
     ctx.fillStyle = '#bfefff'; ctx.fillRect(hx - 1, hy - 2, 2, 3); }
 }
 if (typeof drawGuard === 'function') { const _dg = drawGuard; drawGuard = function (g) { const r = _dg(g); if (STAGE.cityLife) drawLifeExtras(g); return r; }; }
+if (typeof drawCarScorch === 'function') { const _dc = drawCarScorch; drawCarScorch = function () { _dc(); drawLifeBags(); }; }   // 바닥 그림 차례(차보다 먼저)
 if (typeof staffInit === 'function') { const _si = staffInit; staffInit = function () { _si(); streetLifeInit(); }; }
 if (typeof staffUpdate === 'function') { const _su = staffUpdate; staffUpdate = function (dt) { _su(dt); streetLifeUpdate(dt); }; }
