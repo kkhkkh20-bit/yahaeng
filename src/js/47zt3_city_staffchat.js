@@ -117,7 +117,9 @@ function staffChatOpen(g, line) {
   const say = t => { gsay(g, t, 3); g.want = Math.atan2(S.player.y - g.y, S.player.x - g.x); return t; };
   const armed = typeof wpnOn === 'function' && wpnOn();
   if (!line) {   // 처음 열 때: 겁먹었나 · 원한 · 인사
-    if (armed) { m.threat++; m.threatT = S.t; g.scared = true; m.n++; S.staffChat = { g, mode: 'scared' }; return shopPanel(who, [{ name: '겁먹고 뒤로 물러선다', price: null, tag: '', ok: false, buy: () => {} }], null, say(chatPick(CHAT_COMMON.scared, m.n))); }
+    if (armed) { m.threat++; m.threatT = S.t; g.scared = true; m.n++; S.staffChat = { g, mode: 'scared' };
+      const till = !g.police && !m.robbed ? [{ name: '계산대 돈 내놔', price: null, tag: '수배 · CCTV', ok: true, buy: () => { closeShopPanel(); staffRob(g, m); } }] : [];
+      return shopPanel(who, [{ name: '겁먹고 뒤로 물러선다', price: null, tag: '', ok: false, buy: () => {} }, ...till], null, say(chatPick(CHAT_COMMON.scared, m.n))); }
     if (m.hurt || S.t - m.threatT < 90) { m.n++; S.staffChat = { g, mode: 'grudge' }; return shopPanel(who, [{ name: '상대해 주지 않는다', price: null, tag: '', ok: false, buy: () => {} }], null, say(chatPick(CHAT_COMMON.grudge, m.n))); }
     m.talk++; m.n++;
     const ch = typeof closeHour === 'function' ? closeHour(BLD[g.shopB], g.shopF) : 99, h = typeof clockHour === 'function' && S.clock ? clockHour() : 21;
@@ -136,6 +138,13 @@ function staffChatOpen(g, line) {
       S.staffFavor = f; S.wp = { x: f.x, y: f.y }; S.wpT = 0; S.wpPath = null; evBanner(`배달 부탁 · ${f.to}까지 · ${f.pay}만`, '#f2e7c8'); staffChatOpen(g, chatPick(CHAT_COMMON.favorThanks, m.n++).replace('{to}', f.to)); } });
   }
   return shopPanel(who, rows, () => { S.staffChat = null; }, line);
+}
+// 계산대 털기: 무기를 들이대면 그날 매상을 내준다. 가게마다 한 번 (CCTV가 있어 수배 ★2), 그 일꾼은 다시는 상대해 주지 않는다
+function staffRob(g, m) {
+  if (!npcAlive(g) || m.robbed) return; m.robbed = true; m.hurt++; const b = BLD[g.shopB], big = PLANS[g.shopB]?.[g.shopF]?.store, area = big ? (big.x1 - big.x0 + 1) * (big.y1 - big.y0 + 1) : 20;
+  const n = 30 + Math.min(90, area * 2) + ((Math.random() * 5) | 0) * 5; S.cash = (S.cash || 0) + n; play('loot', 0.7); if (typeof hudCache !== 'undefined') hudCache.objH = null;
+  if (typeof fstat === 'function') { fstat('earned', n); fstat('tills'); } gsay(g, ['다, 다 가져가세요…', '여기요! 쏘지 마세요!', '사장님한테 죽었다…'][m.n % 3], 2.4);
+  evBanner(`계산대 털이 · ${(b.signs || [])[g.shopF] || '가게'} · +${n}만`, '#ffd76a'); addWanted(2, '가게 계산대를 털었다 (CCTV)'); addRep(evDist(g.x, g.y), -4);
 }
 // 일꾼이 다치면(죽거나 기절) 그 동네 평판이 떨어지고, 그 자리 일꾼은 다음에도 기억한다
 function staffChatWatch() {

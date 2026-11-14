@@ -142,9 +142,10 @@ function planInterior(g, b, bi, f) {
     if (!open) gap(cx0 - 1, iy1 - 1, 'h'); if (f === 0) { g[b.y1][cx0] = 'h'; K(cx0, iy1); if (b.backDoor) { g[b.y0][cx0] = 'h'; K(cx0, iy0); } }
     const use0 = (b.floorsUse || [])[f] || (f === 0 ? 'store' : 'office');
     // 자유 모드 빈 1층 간판: 실내를 짓기 전에 그 층 쓰임새에 맞는 업종 이름을 정한다 (그래야 꽃집엔 화분, 세탁소엔 옷걸이가 놓인다)
-    if (STAGE.cityLife && f === 0 && b.signs && !(b.signs[0] || '').trim() && typeof FILL_BY_USE !== 'undefined') { const L = FILL_BY_USE[use0] || FILL_BY_USE.store; b.signs[0] = L[BLD.indexOf(b) % L.length]; }
+    const station = STAGE.cityLife && (b.name === '지구대' || b.plateName === '지구대' || (b.signs || [])[0] === '지구대');   // 지구대: 간판을 따로 달지 않고 1층은 사무실 (증거물 금고·무기 보관함, 47zt4)
+    if (STAGE.cityLife && !station && f === 0 && b.signs && !(b.signs[0] || '').trim() && typeof FILL_BY_USE !== 'undefined') { const L = FILL_BY_USE[use0] || FILL_BY_USE.store; b.signs[0] = L[BLD.indexOf(b) % L.length]; }
     // 자유 모드: 간판 글자대로 실내를 고른다 (꽃집이 사무실 책상, 치킨집이 잡화 진열대로 나오던 것)
-    const use = STAGE.cityLife && ['store', 'food', 'office', 'pc', 'billiards', 'karaoke', 'gym', 'academy'].includes(use0) ? (signUseOf((b.signs || [])[f]) || use0) : use0;
+    const use = station && f === 0 ? 'office' : STAGE.cityLife && ['store', 'food', 'office', 'pc', 'billiards', 'karaoke', 'gym', 'academy'].includes(use0) ? (signUseOf((b.signs || [])[f]) || use0) : use0;
     const sx0 = ix0, sx1 = open ? ix1 - 1 : cx0 - 2; fill(sx0, iy0, sx1, iy1, use === 'store' || use === 'food' ? 't' : use === 'pc' ? 'h' : 'w');
     rec.store = { x0: sx0, y0: iy0, x1: sx1, y1: iy1, use };
     // 아주 좁은 가게(3칸 남짓): 길을 막지 않는 빈칸을 찾아 작은 식탁·책상 하나와 그 옆 의자 하나 (손님·직원이 앉을 자리)
@@ -300,6 +301,9 @@ function planInterior(g, b, bi, f) {
       const deco = use === 'food' ? ['plant', 'fridge'] : ['plant', 'cab', 'locker'];
       let k = 0; for (let y = iy0 + 2; y <= iy1 - 2; y += 2) for (const x of [sx0, sx1]) { const t = deco[k++ % deco.length]; const sideOk = x === sx0 ? !floorCh(g[y][x - 1] || '#') : !floorCh(g[y][x + 1] || '#'); if (sideOk) furn(x, y, 1, 1, t, true, 0); }
     }
+    if (station && f === 0) {   // 지구대 1층 안쪽: 증거물 금고 · 무기 보관함 (털 수 있다)
+      const spots = [[sx1, iy0 + 1], [sx1, iy0 + 2], [sx0, iy0 + 1], [sx0, iy0 + 2], [sx1, iy1 - 2], [sx0, iy1 - 2], [sx1 - 1, iy0], [sx0 + 3, iy0]];
+      for (const t of ['safe', 'locker']) for (const [x, y] of spots) if (furn(x, y, 1, 1, t)) { if (t === 'locker') FURN[FURN.length - 1].arms = true; break; } }
     if (use !== 'club') lampAt(sx0, iy0, sx1, iy1, f === 0 ? 0.9 : 0.5);
   } else if (kind === 'villa' && (W >= 20 || b.piloti)) {  // 두 세대: 한 세대가 8칸은 되어야 방·거실이 제대로 들어간다
     const xs = ix0 + Math.floor((W - 2) / 2);
