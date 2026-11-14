@@ -413,7 +413,7 @@ function start(i, noBrief) {
   newGame(i); document.body.classList.toggle('no-prompts', !!STAGE.noPrompts); document.body.classList.toggle('free-city', !!STAGE.cityLife); { const m = $('btnMenu2'); if (m) m.textContent = STAGE.freeMode ? '처음 화면' : '의뢰 선택'; } if(STAGE.firstSteps||introductoryContract(STAGE)){input.sneakToggle=false;input.walkLock=false;input.padWhistle=!!(STAGE.firstSteps||STAGE.openingContract)&&!availableTools().some(t=>toolCount(t)>0);syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','목표·무전 펼치기'); miniBase = null; renderToasts();
   if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)
   statsBegin('new');  // 플레이 기록: 판 시작
-  if (PR&&!STAGE.artSlice) { const ks = [playerKey(S.player), ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep(ks); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다
+  if (PR&&!STAGE.artSlice) { const ks = [playerKey(S.player), ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep(ks); prWarm(STAGE.cityLife ? [ks[0], ...new Set(S.guards.filter(g => !g.dog && Math.hypot(g.x - S.player.x, g.y - S.player.y) < 1400).map(charOf))] : ks, true); }  // 자유 모드: 옷이 사람마다 달라 다 칠하면 수백 MB — 시작 자리 둘레만 미리 칠한다  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다
   const keysEl = document.querySelector('.keys'); if (keysEl) keysEl.classList.add('mini');
   const hc = document.getElementById('hintCard'); if (hc) hc.classList.add('off');
   showMenu(null); $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;

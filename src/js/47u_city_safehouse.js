@@ -53,6 +53,7 @@ function safeLeave(s) {
   saveFreeProgress(true); fstat('safeUses');
   // 자고 나면 다음 날 밤 (이 도시는 밤에만 움직인다): 며칠째인지 세고, 그동안 일어난 일이 뉴스로 지나간다
   const n = S.night = (S.night || 1) + 1; if (S.dealer2) S.dealer2.sulkUntil = 0;
+  if (S.clock) { S.clock.h = 20.25; S.clock.said = {}; S.clock.bucket = -1; }   // 자고 일어나면 다음 날 초저녁 (47zy 밤 시계)
   const extra = homeRest(s); saveFreeProgress(true);
   evBanner(`${n}일째 밤 · ` + (had ? '수배 해제 · 체력 회복 · 저장됨' : '체력 회복 · 저장됨') + extra, '#9fe0b0');
   newsTicker(NIGHT_NEWS[n % NIGHT_NEWS.length]);

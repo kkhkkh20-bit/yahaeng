@@ -119,6 +119,7 @@ function drawRoof1(b, i, roof) {
     if (b.facade) { ctx.save(); if (shift) ctx.transform(1, 0, -shift / fH, 1, shift * fyb / fH, 0); drawFacade(b); drawFacadeExtras(b); if (STAGE.cityLife && typeof drawHomePlate === 'function') drawHomePlate(b); ctx.restore(); }
     ctx.save(); if (shift) ctx.translate(shift, 0);
     ctx.drawImage(b.roofC, x, y);
+    if (STAGE.cityLife && typeof drawRoofDeco === 'function') drawRoofDeco(b, i);   // 옥상 살림살이 (47zy3)
     drawCityRoofProps(b);
     if(studyStage())drawStudyRoof(b);
     if (b.h >= 2 && !b.roofC.flat) { ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(x, y, w, h); ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 4; ctx.strokeRect(x + 2, y + 2, w - 4, h - 4); }

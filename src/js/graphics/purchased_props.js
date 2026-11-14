@@ -35,7 +35,7 @@ function purchasedPropFurnKey(f){
   return ['bookcaseBlue','bookcaseWood','bookcaseRed'][v];
  }
  if(f.t==='plant'&&f.w===1&&f.h===1)return seed%2?'plantLean':'plantWide';
- if(f.t==='board'&&f.h===1)return f.w>1&&seed%2?'noticeBoard':'graphBoard';
+ if(f.t==='board'&&f.h===1)return f.w>1&&seed%2&&!STAGE.cityLife?'noticeBoard':'graphBoard';  // 자유 모드(을지로)는 그래프 칠판만: 게시판 그림에 일본 신사 문 무늬가 있다
  // A printer may be explicitly assigned to an existing service counter. Never
  // put one on a food bar, loose floor, or a surface holding mission loot.
  if(f.t==='counter'&&f.w>=2&&f.h===1&&STAGE.purchasedProps?.counterPrinters?.some(a=>a.x===f.x&&a.y===f.y&&(a.fl||0)===(f.fl||0))){
@@ -65,8 +65,18 @@ function drawPurchasedPropFurn(c,f,shadow=false){
  c.save();if(shadow){c.fillStyle='#09121a33';c.beginPath();c.ellipse((f.x+f.w/2)*TILE+2,(f.y+f.h)*TILE-5,f.w*TILE*.4,6,0,0,TAU);c.fill();}
  for(let i=0;i<b.count;i++)purchasedPropBlit(c,b.key,b.x+i*TILE,b.y);c.restore();return true;
 }
+// 벽 장식 배치는 층마다 맵 전체를 훑어 정한다(모든 건물 · 등 · 가구). 바닥 그림을 건물마다 칠할 때마다 다시 계산하면
+// 새 동네에 들어설 때 한 프레임이 수백 ms 걸렸다. 결과는 같으므로 층별로 기억해 두고, 가구·등·건물이 바뀌면 다시 계산한다.
+function wallLayoutMemo(tag,fl,fn){
+ const k=FURN.length+','+(S&&S.lamps||[]).length+','+BLD.length+','+BLD.reduce((n,b)=>n+(b.collapsed?1:0),0);
+ const M=S&&(S._wallLayout&&S._wallLayout.k===k?S._wallLayout:(S._wallLayout={k,m:new Map()}));if(!M)return fn();
+ const id=tag+fl;if(!M.m.has(id))M.m.set(id,fn());return M.m.get(id);
+}
 function purchasedPropWallLayout(fl){
  if(!purchasedPropsReady()||!officeReady())return[];
+ return wallLayoutMemo('p',fl,()=>purchasedPropWallLayoutNow(fl));
+}
+function purchasedPropWallLayoutNow(fl){
  const old=officeDecorLayout(fl),out=[];
  for(let bi=0;bi<BLD.length;bi++){
   const b=BLD[bi];if(b.vacant)continue;

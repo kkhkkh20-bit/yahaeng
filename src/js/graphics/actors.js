@@ -38,6 +38,7 @@ function guardAnim(g) {
   if (g.crew && g.moving) return g.crew.kind === 'kick' ? 'idleC' : g.crew.kind === 'bike' ? (PR && PR.anims.crouch ? 'crouch' : 'walk') : 'run';  // 무리 (47zc)
   if (g.seat && !g.moving && g.state === 'PATROL') return PR && PR.bodies?.[prSplit(charOf(g))[1]]?.anims?.sit ? 'sit' : PR && PR.anims.crouch ? 'crouch' : 'idleC';   // 자유 모드 가게: 의자에 앉은 사람 (47zt) — 앉은 자세가 구워진 체형만, 없으면 웅크림
   if (g.jog && !g.moving && g.state === 'PATROL') return 'run';   // 러닝머신 위
+  if (g.jogger && g.moving && g.state === 'PATROL') return 'run';   // 청계천 산책로를 뛰는 사람 (47zt2)
   if ((g.act === 'workHigh' || g.act === 'workLow') && g.shopper && !g.moving && g.state === 'PATROL') return g.act;
   if (g.chatter && !g.moving && g.state === 'PATROL' && PR && PR.anims.talk) return 'talk';
   if(g.act==='pickup')return 'workLow';

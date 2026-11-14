@@ -142,9 +142,10 @@ function planInterior(g, b, bi, f) {
     if (!open) gap(cx0 - 1, iy1 - 1, 'h'); if (f === 0) { g[b.y1][cx0] = 'h'; K(cx0, iy1); if (b.backDoor) { g[b.y0][cx0] = 'h'; K(cx0, iy0); } }
     const use0 = (b.floorsUse || [])[f] || (f === 0 ? 'store' : 'office');
     // 자유 모드 빈 1층 간판: 실내를 짓기 전에 그 층 쓰임새에 맞는 업종 이름을 정한다 (그래야 꽃집엔 화분, 세탁소엔 옷걸이가 놓인다)
-    if (STAGE.cityLife && f === 0 && b.signs && !(b.signs[0] || '').trim() && typeof FILL_BY_USE !== 'undefined') { const L = FILL_BY_USE[use0] || FILL_BY_USE.store; b.signs[0] = L[BLD.indexOf(b) % L.length]; }
+    const station = STAGE.cityLife && (b.name === '지구대' || b.plateName === '지구대' || (b.signs || [])[0] === '지구대');   // 지구대: 간판을 따로 달지 않고 1층은 사무실 (증거물 금고·무기 보관함, 47zt4)
+    if (STAGE.cityLife && !station && f === 0 && b.signs && !(b.signs[0] || '').trim() && typeof FILL_BY_USE !== 'undefined') { const L = FILL_BY_USE[use0] || FILL_BY_USE.store; b.signs[0] = L[BLD.indexOf(b) % L.length]; }
     // 자유 모드: 간판 글자대로 실내를 고른다 (꽃집이 사무실 책상, 치킨집이 잡화 진열대로 나오던 것)
-    const use = STAGE.cityLife && ['store', 'food', 'office', 'pc', 'billiards', 'karaoke', 'gym', 'academy'].includes(use0) ? (signUseOf((b.signs || [])[f]) || use0) : use0;
+    const use = station && f === 0 ? 'office' : STAGE.cityLife && ['store', 'food', 'office', 'pc', 'billiards', 'karaoke', 'gym', 'academy'].includes(use0) ? (signUseOf((b.signs || [])[f]) || use0) : use0;
     const sx0 = ix0, sx1 = open ? ix1 - 1 : cx0 - 2; fill(sx0, iy0, sx1, iy1, use === 'store' || use === 'food' ? 't' : use === 'pc' ? 'h' : 'w');
     rec.store = { x0: sx0, y0: iy0, x1: sx1, y1: iy1, use };
     // 아주 좁은 가게(3칸 남짓): 길을 막지 않는 빈칸을 찾아 작은 식탁·책상 하나와 그 옆 의자 하나 (손님·직원이 앉을 자리)
@@ -240,7 +241,9 @@ function planInterior(g, b, bi, f) {
       for (let x = sx0; x + 1 <= sx1; x += 3) furn(x, iy1 - 1, 2, 1, 'tread', true, 0);
       let racks = 0; for (let y = iy0 + 2; y + 1 < iy1 - 1; y += 3) for (let x = sx0 + 1; x <= sx1 - 1; x += 3) if (furn(x, y, 1, 1, 'rack', true, 0)) racks++;
       if (open && !racks) for (let x = sx0 + 1; x <= sx1 - 1; x += 2) furn(x, iy0 + 1, 1, 1, 'rack', true, 0);   // 낮은 층: 앞줄 러닝머신 뒤 한 줄에 랙
-      if (open) furn(sx1, iy0 + 1, 1, 1, 'locker');
+      if (open) { furn(sx1, iy0 + 1, 1, 1, 'locker');
+        for (let y = iy0 + 2; y + 1 < iy1 - 1; y += 3) for (let x = sx0 + 2; x + 1 <= sx1; x += 3) furn(x, y, 1, 1, 'rug', false);   // 랙 사이 운동 매트
+        furn(sx1, iy1 - 2, 1, 1, 'fridge', true, 0); furn(sx0, iy1 - 2, 1, 1, 'plant'); }   // 음료 냉장고 · 화분
     }
     else if (use === 'karaoke') {  // 노래방: 방마다 소파·탁자·노래 화면 (넓으면 칸막이로 방 여럿), 앞줄은 복도
       const yb = iy1 - 2, W = sx1 - sx0 + 1, step = W >= 7 ? 4 : 99;
@@ -271,6 +274,9 @@ function planInterior(g, b, bi, f) {
     else if (use === 'food') {  // 자유 모드 식당·포차: 안쪽 벽 주방(싱크대·냉장고), 식탁 줄(양 끝 의자, 줄 사이 한 칸 통로). 좁은 1층 가게는 작은 식탁+의자 둘
       const kx = open ? sx0 + 2 : sx0; furn(kx, iy0, 2, 1, 'sink', true, 0, [[kx, iy0 + 1], [kx + 1, iy0 + 1]]) || furn(sx0, iy0, 2, 1, 'sink', true, 0, [[sx0, iy0 + 1], [sx0 + 1, iy0 + 1]]);
       furn(kx + 2, iy0, 1, 1, 'fridge', true, 0, [[kx + 2, iy0 + 1]]);
+      // 주방 줄: 화구 · 그릇장 (치킨·분식·국밥집은 화구를 둘)
+      { const hot = /치킨|분식|국밥|순댓국|곱창|족발|반점|중국집/.test((b.signs || [])[f] || ''); let x = kx + 3;
+        for (const t of hot ? ['stove', 'stove', 'kcab'] : ['stove', 'kcab']) { if (x > sx1 - 1) break; if (furn(x, iy0, 1, 1, t, true, 0, [[x, iy0 + 1]])) x++; else break; } }
       let n = 0; const y0 = iy0 + 2, step = iy1 - y0 >= 5 ? 3 : 2;
       for (let y = y0; y <= iy1 - 1; y += step) for (let x = sx0 + 1; x + 2 <= sx1; x += 4) if (furn(x, y, 2, 1, 'table', true, 0)) { n++; furn(x - 1, y, 1, 1, 'chair', true, 1); furn(x + 2, y, 1, 1, 'chair', true, 3); }
       if (!n) for (let y = y0; y <= iy1 - 1; y += 2) for (let x = sx0 + 1; x + 1 <= sx1; x += 3) { const c0 = g[y][x]; if (furn(x, y, 1, 1, 'tableS', true, 0)) { const a = furn(x - 1, y, 1, 1, 'chair', true, 1), b2 = furn(x + 1, y, 1, 1, 'chair', true, 3); if (a || b2) n++; else { FURN.pop(); g[y][x] = c0; } } }
@@ -278,7 +284,14 @@ function planInterior(g, b, bi, f) {
     }
     else { furn(sx0, iy0, 1, 1, 'locker'); furn(sx0 + 1, iy0, 1, 1, 'cab'); furn(sx1 - 1, iy0, 2, 1, 'sofa', true, 0, [[sx1 - 1, iy0 + 1], [sx1, iy0 + 1]]);  // 사무실: 벽에 사물함·서류장·소파, 가운데 책상 줄(책상마다 의자, 줄 사이 통로)
       let n = 0; for (const y0 of open ? [iy0 + 2, iy0 + 1] : [iy0 + 2]) { if (n) break; for (let y = y0; open ? y + 1 <= iy1 - 1 : y + 1 < iy1; y += 3) for (let x = sx0 + 1; x + 1 <= sx1 - 1; x += 3) if (furn(x, y, 2, 1, 'desk2', true, 0)) { n++; furn(x, y + 1, 1, 1, 'chairD', true, 2); } }   // 좁은 층은 한 줄 위에서 다시
-      furn(sx0, iy1 - 1, 1, 1, 'locker'); if (!n && open) tinySeat('desk', 'chairD'); }
+      furn(sx0, iy1 - 1, 1, 1, 'locker'); if (!n && open) tinySeat('desk', 'chairD');
+      if (open) { // 자유 모드 사무실: 안쪽 벽 화이트보드 · 서가 · 냉장고(정수기 자리), 넓으면 회의 탁자
+        const mx = sx0 + Math.floor((sx1 - sx0) / 2) - 1; furn(mx, iy0, 2, 1, 'board', true, 0) || furn(sx0 + 2, iy0, 2, 1, 'board', true, 0);
+        furn(sx0 + 2, iy0, 1, 1, 'shelfS', true, 0); furn(sx1 - 2, iy0, 1, 1, 'fridge', true, 0, [[sx1 - 2, iy0 + 1]]);
+        if (sx1 - sx0 >= 7 && iy1 - iy0 >= 6) for (let y = iy1 - 3; y >= iy0 + 2; y--) { const x = sx1 - 4; if (furn(x, y, 2, 1, 'table', true, 0)) { furn(x - 1, y, 1, 1, 'chairD', true, 1); furn(x + 2, y, 1, 1, 'chairD', true, 3); break; } } } }
+    // 업종별 덧붙임 (위 else-if 사슬 밖에서: 사슬 중간에 끼우면 스토리 가게 층이 사무실 배치까지 받는다)
+    if (open && use === 'pc') { furn(sx1 - 1, iy1 - 1, 2, 1, 'counter', true, 0) || furn(sx0 + 1, iy1 - 1, 2, 1, 'counter', true, 0); furn(sx1, iy1 - 2, 1, 1, 'fridge', true, 0); }  // PC방: 앞쪽 카운터와 음료 냉장고
+    if (open && use === 'academy') { furn(sx1, iy0 + 2, 1, 1, 'shelf', true, 0) || furn(sx1, iy0 + 3, 1, 1, 'shelf', true, 0); furn(sx0, iy1 - 1, 1, 1, 'locker') || furn(sx1, iy1 - 1, 1, 1, 'locker'); furn(sx1, iy1 - 2, 1, 1, 'plant'); }  // 학원: 옆벽 책장 · 사물함 · 화분
     // 자유 모드 넓은 층 채우기: 주된 배치 뒤에 남은 3×3 빈자리마다 식탁·책상 한 벌(의자 포함, 줄 사이 통로), 벽가엔 화분·서류장을 띄엄띄엄
     if (open && ['food', 'office'].includes(use)) {
       const free3 = (x, y) => { for (let yy = y - 1; yy <= y + 1; yy++) for (let xx = x - 1; xx <= x + 1; xx++) if (xx < sx0 || xx > sx1 || yy < iy0 + 1 || yy >= iy1 || !floorCh(g[yy][xx]) || keep.has(xx + ',' + yy)) return false; return true; };
@@ -288,6 +301,9 @@ function planInterior(g, b, bi, f) {
       const deco = use === 'food' ? ['plant', 'fridge'] : ['plant', 'cab', 'locker'];
       let k = 0; for (let y = iy0 + 2; y <= iy1 - 2; y += 2) for (const x of [sx0, sx1]) { const t = deco[k++ % deco.length]; const sideOk = x === sx0 ? !floorCh(g[y][x - 1] || '#') : !floorCh(g[y][x + 1] || '#'); if (sideOk) furn(x, y, 1, 1, t, true, 0); }
     }
+    if (station && f === 0) {   // 지구대 1층 안쪽: 증거물 금고 · 무기 보관함 (털 수 있다)
+      const spots = [[sx1, iy0 + 1], [sx1, iy0 + 2], [sx0, iy0 + 1], [sx0, iy0 + 2], [sx1, iy1 - 2], [sx0, iy1 - 2], [sx1 - 1, iy0], [sx0 + 3, iy0]];
+      for (const t of ['safe', 'locker']) for (const [x, y] of spots) if (furn(x, y, 1, 1, t)) { if (t === 'locker') FURN[FURN.length - 1].arms = true; break; } }
     if (use !== 'club') lampAt(sx0, iy0, sx1, iy1, f === 0 ? 0.9 : 0.5);
   } else if (kind === 'villa' && (W >= 20 || b.piloti)) {  // 두 세대: 한 세대가 8칸은 되어야 방·거실이 제대로 들어간다
     const xs = ix0 + Math.floor((W - 2) / 2);

@@ -16,6 +16,8 @@ function evBanner(text, col = '#f2e7c8') {
   if (!el) { el = document.createElement('div'); el.id = 'evBanner'; el.setAttribute('aria-live', 'polite');
     el.style.cssText = 'position:fixed;left:50%;top:16%;transform:translateX(-50%);z-index:41;pointer-events:none;font:600 20px/1.35 "Yahaeng UI",sans-serif;letter-spacing:-.01em;text-align:center;text-shadow:0 2px 0 #000,0 0 10px rgba(0,0,0,.85);opacity:0;transition:opacity .35s;max-width:90vw';
     document.body.appendChild(el); }
+  // 밝은 네온 위에서도 읽히게: 반투명 어두운 띠 + 알림 색 밑줄 (글자 그림자만으로는 간판 앞에서 묻혔다)
+  if (!el._bg) { el._bg = true; Object.assign(el.style, { background: 'rgba(7,10,18,.78)', padding: '6px 16px', borderBottom: '2px solid currentColor', maxWidth: 'min(92vw,720px)' }); }
   el.textContent = text; el.style.color = col; el.style.opacity = '1'; clearTimeout(el._t); el._t = setTimeout(() => { el.style.opacity = '0'; }, 3200);
 }
 // ---- 등장인물 · 차 · 줍는 것

@@ -138,7 +138,7 @@ function drawStudyFacade(b){
  }
  ctx.save();ctx.imageSmoothingEnabled=false;
  ctx.drawImage(F.c,x,y-TILE);
- if(STAGE.cityLife)drawStoreSigns(b,!DBG.neon);  // 간판은 여기서 한 번만: 정면은 어둠·네온 단계 뒤(지붕 단계)에 그려지므로 빛 번짐도 여기서 같이 그린다
+ if(STAGE.cityLife){const shut=typeof floorOpen==='function'&&b.kind==='shop'&&!floorOpen(b,0);if(shut){drawClosedShutters(b);ctx.save();ctx.globalAlpha*=0.55;drawStoreSigns(b,false);ctx.restore();/* 어두운 벽 위에 반투명으로: ctx.filter(밝기)는 간판마다 화면 전체를 다시 칠해 새벽엔 프레임이 10배 느려졌다(16→185ms) */}else drawStoreSigns(b,!DBG.neon);}  // 밤 시계(47zy): 문 닫은 가게는 셔터를 내리고 간판 불을 끈다  // 간판은 여기서 한 번만: 정면은 어둠·네온 단계 뒤(지붕 단계)에 그려지므로 빛 번짐도 여기서 같이 그린다
  b.signRects=[];ctx.restore();
 }
 function studyFacadeParts(q,b,x,y,w,h,bi,spec,W){

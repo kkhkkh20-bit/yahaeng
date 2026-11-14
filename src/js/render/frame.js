@@ -54,7 +54,7 @@ function draw() {
     ctx.strokeStyle = 'rgba(232,71,60,.7)'; ctx.lineWidth = 3; ctx.setLineDash([6, 6]); ctx.beginPath(); ctx.arc(fx, fy, 40, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
   }
   if (showRoutes || tactical) drawRoutes(P);
-  drawCityEntryThresholds();drawTrapsGround(); drawProps(); if (STAGE.cityLife && typeof drawElevDoors === 'function') drawElevDoors();   // 엘리베이터 문은 벽 그림 — 사람보다 먼저(아래) 그린다
+  drawCityEntryThresholds();drawTrapsGround(); if (STAGE.cityLife && typeof drawStreetDeco === 'function') drawStreetDeco(); drawProps(); if (STAGE.cityLife && typeof drawElevDoors === 'function') drawElevDoors();   // 엘리베이터 문은 벽 그림 — 사람보다 먼저(아래) 그린다
   for (const d of S.decals) { if (!onGround(d)) continue; if (STAGE.cityLife) { drawPixelBlood(d); continue; } ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.arc(d.r * 0.8, d.r * 0.4, d.r * 0.3, 0, TAU); ctx.fill(); ctx.restore(); }
   if (STAGE.cityLife) drawBloodParts();
   for (const it of S.items) if (!it.got && onGround(it)) drawLootItem(it);
@@ -88,7 +88,8 @@ function draw() {
     }
     if (g.lookout && !g.icon) { ctx.strokeStyle = '#f2c46b'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(g.x - 7, g.y - 36); ctx.lineTo(g.x, g.y - 43); ctx.lineTo(g.x + 7, g.y - 36); ctx.moveTo(g.x - 7, g.y - 42); ctx.lineTo(g.x, g.y - 49); ctx.lineTo(g.x + 7, g.y - 42); ctx.stroke(); }
     if (g.elite) { ctx.fillStyle = '#c9c6b6'; ctx.beginPath(); ctx.moveTo(g.x, g.y - 34); ctx.lineTo(g.x - 6, g.y - 43); ctx.lineTo(g.x + 6, g.y - 43); ctx.closePath(); ctx.fill(); }
-    if (g.state === 'CAPTIVE') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 20, -Math.PI / 2, -Math.PI / 2 + TAU * (1 - g.captT / 9)); ctx.stroke(); }
+    if (g.state === 'CAPTIVE' && STAGE.cityLife) drawPixelTimer(g, clamp(1 - g.captT / 9, 0, 1), '#f2c46b');   // 자유 모드: 붙잡은 시간도 고리 대신 도트 막대
+    else if (g.state === 'CAPTIVE') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 20, -Math.PI / 2, -Math.PI / 2 + TAU * (1 - g.captT / 9)); ctx.stroke(); }
     if (g.target) drawTargetRing(g,'rgba(194,54,43,.85)');
   }
   PM('guards');
@@ -276,7 +277,7 @@ function draw() {
   drawOutdoorLampFixtures();
   drawTrafficSignals();
   if (S.decks?.length && !flOf(P)) drawDecks();  // 고가도로·높은 다리: 지붕·신호등보다 위 (고가 밑 신호등은 가려진다)
-  if (STAGE.cityLife) { drawCuffs(); if (!flOf(P)) { drawGarage(); drawHavocAbove(); } }  // 내 차고 셔터: 집 앞벽보다 위
+  if (STAGE.cityLife) { drawCuffs(); if (!flOf(P)) { drawGarage(); drawHavocAbove(); if (typeof drawStreetDecoGlow === 'function') drawStreetDecoGlow(); } }  // 내 차고 셔터: 집 앞벽보다 위
   const aboveBridge=p=>!!(P.wire||(P.jump&&!lowJ)||travUp||P.z>p.z);
   if(!tactical)drawPlanks('front',aboveBridge);
   if (exteriorClip) ctx.restore();
@@ -338,7 +339,7 @@ function draw() {
     if (ka.list) ka.list.forEach(g => ring(g, '#c4d3cd'));
     if (ka.k !== 'none' && ka.k !== 'counter' && !subduedAction(ka) && (ka.g || ka.kill)) ring(ka.g || ka.kill, ka.holdOnly?'#e8473c':'#c4d3cd',ka.c);
     if (ka.k === 'counter') { ring(ka.g, '#f2c46b'); if (guideFull()) tag(ka.g.x, ka.g.y - 46, '지금 [공격] — 반격', '#f2c46b', 1); else tag(ka.g.x, ka.g.y - 46, '반격', '#f2c46b', 1, KK('atk'), 3.5); }
-    if (pa.k === 'lamp') { const at=lampControl(pa.l);ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(at.x, at.y, 16, 0, TAU); ctx.stroke(); }
+    if (pa.k === 'lamp' && !STAGE.cityLife) { const at=lampControl(pa.l);ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(at.x, at.y, 16, 0, TAU); ctx.stroke(); }
     if (pa.k === 'down' && pa.l.roofDoor) {
       const d = pa.l.roofDoor; ctx.save(); ctx.strokeStyle = '#f2c46b'; ctx.fillStyle = 'rgba(242,196,107,.12)'; ctx.lineWidth = 2;
       if (!d.dx) { ctx.fillRect(d.x - 12, d.y - 32, 24, 32); ctx.strokeRect(d.x - 12, d.y - 32, 24, 32); }
