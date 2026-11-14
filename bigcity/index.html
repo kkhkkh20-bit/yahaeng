@@ -6936,10 +6936,10 @@ const charOf = g => {
   // workwear silhouette (for example the courier's helmet).
   const female = g.body && ['fBob', 'fLong', 'fTail','jacket','femaleCoat','femaleBlazer'].includes(g.body);
   const job = PR && PR.style === 'modular' && g.outfit && PR.looks[g.outfit];
-  const body = job ? female ? (g.outfit === 'waiter' ? 'femaleSuit' : 'femaleWorker') : job : g.body;
+  const body = job ? female ? (g.outfit === 'waiter' ? 'femaleSuit' : 'femaleWorker') : job : g.body || (STAGE.cityLife && g.civ && !g.outfit && !g.doc && !g.dog && typeof civSilhouette === 'function' ? civSilhouette(g) : null);   // 자유 모드 옷차림 열쇠(cv…)는 실루엣을 담지 않으므로 몸 없는 행인은 예전 실루엣을 붙인다
   return base + (body && PR && PR.bodies && PR.bodies[body] ? '@' + body : '');
 };
-const charBase = g => g.outfit && OUTFIT_PAL[g.outfit] ? g.outfit : g.doc ? 'doc' : g.dog ? 'dog' : g.civ ? 'civ' + (window.__PR ? ((g.look || 0) + g.id * 3) % (STAGE.cityLife ? 20 : 10) : (g.look || 0)) : g.dog ? 'dog' : g.lookout ? 'hunter' : g.target ? (g.id % 2 ? 'old' : 'noble') : g.kind === 'g3' ? 'samR' : g.kind === 'g2' ? 'samB' : 'sam';
+const charBase = g => g.outfit && OUTFIT_PAL[g.outfit] ? g.outfit : g.doc ? 'doc' : g.dog ? 'dog' : g.civ ? (STAGE.cityLife && window.__PR && typeof civOutfitKey === 'function' ? civOutfitKey(g) : 'civ' + (window.__PR ? ((g.look || 0) + g.id * 3) % (STAGE.cityLife ? 20 : 10) : (g.look || 0))) : g.dog ? 'dog' : g.lookout ? 'hunter' : g.target ? (g.id % 2 ? 'old' : 'noble') : g.kind === 'g3' ? 'samR' : g.kind === 'g2' ? 'samB' : 'sam';
 // ---- 프리렌더 배경 (Kenney Retro Urban Kit, CC0): 건물 외관 · 바닥 · 나무를 같은 3/4 투영으로 미리 찍은 그림
 const KIT_PROP = {};  // 키트 거리 소품 (쓰레기통 등)
 if (window.__KIT && window.__KIT.props) for (const k in window.__KIT.props) { const e = window.__KIT.props[k]; KIT_PROP[k] = { img: Object.assign(new Image(), { src: e.src }), ox: e.ox, oy: e.oy }; }
@@ -7478,7 +7478,7 @@ function drawStudyFacade(b){
  }
  ctx.save();ctx.imageSmoothingEnabled=false;
  ctx.drawImage(F.c,x,y-TILE);
- if(STAGE.cityLife){const shut=typeof floorOpen==='function'&&b.kind==='shop'&&!floorOpen(b,0);if(shut){drawClosedShutters(b);ctx.save();ctx.filter='brightness(0.5)';drawStoreSigns(b,false);ctx.restore();}else drawStoreSigns(b,!DBG.neon);}  // 밤 시계(47zy): 문 닫은 가게는 셔터를 내리고 간판 불을 끈다  // 간판은 여기서 한 번만: 정면은 어둠·네온 단계 뒤(지붕 단계)에 그려지므로 빛 번짐도 여기서 같이 그린다
+ if(STAGE.cityLife){const shut=typeof floorOpen==='function'&&b.kind==='shop'&&!floorOpen(b,0);if(shut){drawClosedShutters(b);ctx.save();ctx.globalAlpha*=0.55;drawStoreSigns(b,false);ctx.restore();/* 어두운 벽 위에 반투명으로: ctx.filter(밝기)는 간판마다 화면 전체를 다시 칠해 새벽엔 프레임이 10배 느려졌다(16→185ms) */}else drawStoreSigns(b,!DBG.neon);}  // 밤 시계(47zy): 문 닫은 가게는 셔터를 내리고 간판 불을 끈다  // 간판은 여기서 한 번만: 정면은 어둠·네온 단계 뒤(지붕 단계)에 그려지므로 빛 번짐도 여기서 같이 그린다
  b.signRects=[];ctx.restore();
 }
 function studyFacadeParts(q,b,x,y,w,h,bi,spec,W){
@@ -8273,9 +8273,9 @@ function prPalette(pk, body) {
 
 // 시트 = 조각 묶음(칠하지 않은 채 만들어 둔다). 실제 칠하기는 prPart 가 조각 단위로
 function prSheet(key) {
-  if (prVar[key]) return prVar[key]; const [pk, bn] = prSplit(key), base = bn ? prBodies[bn] : prBase;
+  const hit = prVar[key]; if (hit) { if (STAGE.cityLife) hit.lu = performance.now(); return hit; } const [pk, bn] = prSplit(key), base = bn ? prBodies[bn] : prBase;
   if (!base) { if (bn) prLoadBody(bn); return null; } const pal = prPalette(pk, bn); if (!pal) return null;
-  const sh = prVar[key] = { key, base, P4: pal.map(h => hexRgb(h).split(',').map(Number)), parts: [] };
+  const sh = prVar[key] = { key, lu: performance.now(), base, P4: pal.map(h => hexRgb(h).split(',').map(Number)), parts: [] };
   if (key === 'ninja' || (PR.style === 'modular' && bn && bn.startsWith('hero'))) prVar[key + '_ol'] = { key: key + '_ol', of: sh, parts: [] };  // 숨었을 때 쓰는 밝은 외곽선 실루엣 (주인공만)
   return sh;
 }
@@ -16638,7 +16638,7 @@ function shopAction() {
   return null;
 }
 // 가게 · 중고차 목록 창 (게임은 멈춘다)
-function shopPanel(title, rows, onClose) {
+function shopPanel(title, rows, onClose, note) {
   let el = document.getElementById('shopPanel');
   if (!el) { el = document.createElement('div'); el.id = 'shopPanel'; el.setAttribute('role', 'dialog');
     el.style.cssText = 'position:fixed;left:50%;bottom:9%;transform:translateX(-50%);z-index:70;min-width:min(420px,92vw);max-width:94vw;background:rgba(12,14,20,.94);border:2px solid #c9a24a;border-radius:6px;padding:14px 16px;color:#efe6cf;font-family:var(--f-body);box-shadow:0 8px 30px rgba(0,0,0,.6)';
@@ -16647,6 +16647,7 @@ function shopPanel(title, rows, onClose) {
   const h = document.createElement('div'); h.style.cssText = 'display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;gap:16px';
   const t = document.createElement('b'); t.textContent = title; t.style.cssText = 'font-size:20px';
   const m = document.createElement('span'); m.textContent = `가진 돈 ${S.cash || 0}만`; m.style.cssText = 'color:#c9a24a;font-size:14px'; h.append(t, m); el.append(h);
+  if (note) { const q = document.createElement('div'); q.className = 'shopNote'; q.textContent = '“' + note + '”'; q.style.cssText = 'margin:0 0 10px;padding:8px 10px;background:#161a22;border-left:3px solid #c9a24a;font-size:16px;line-height:1.45;color:#f2e7c8'; el.append(q); }   // 대화 창으로 쓸 때: 상대가 한 말
   for (const r of rows) {
     const b = document.createElement('button'); b.type = 'button'; b.disabled = !r.ok;
     b.style.cssText = 'display:flex;justify-content:space-between;gap:20px;width:100%;margin:4px 0;padding:10px 12px;background:#1d222c;color:inherit;border:1px solid #3b4250;border-radius:4px;font:inherit;font-size:15px;cursor:pointer;opacity:' + (r.ok ? 1 : .45);
@@ -16663,7 +16664,8 @@ function shopPanel(title, rows, onClose) {
 function pay(price) { if ((S.cash || 0) < price) { play('click', 0.3); return false; } S.cash -= price; play('loot', 0.6); hudCache.objH = null; return true; }
 function openShop(s) {
   const P = S.player, items = SHOP_ITEMS[s.name] || [];
-  const show = () => shopPanel(s.name + repTag(evDist(P.x, P.y)), items.map(it => ({ name: it.name, price: repPrice(it.price), ok: (S.cash || 0) >= repPrice(it.price) && (!it.can || it.can(P)), buy: () => { if ((!it.can || it.can(P)) && pay(repPrice(it.price))) { it.buy(P); if (typeof syncTools === 'function') syncTools(); show(); } } })));
+  const dk = typeof staffDiscount === 'function' ? staffDiscount(s) : 1, pr = it => Math.max(1, Math.round(repPrice(it.price) * dk));   // 단골 할인 (47zt3 알바생과 말하기)
+  const show = () => shopPanel(s.name + repTag(evDist(P.x, P.y)) + (dk < 1 ? ` · 단골 ${Math.round((1 - dk) * 100)}%` : ''), items.map(it => ({ name: it.name, price: pr(it), ok: (S.cash || 0) >= pr(it) && (!it.can || it.can(P)), buy: () => { if ((!it.can || it.can(P)) && pay(pr(it))) { it.buy(P); if (typeof staffBought === 'function') staffBought(s); if (typeof syncTools === 'function') syncTools(); show(); } } })));
   show();
 }
 function openDealer() {
@@ -18177,7 +18179,7 @@ function pickupsUpdate(dt) {
   if (!STAGE.cityLife || !S.pickups) return; const P = S.player;
   if ((S.dropScan -= dt) <= 0) { S.dropScan = 0.3;
     for (let i = Math.max(0, S.corpses.length - 40); i < S.corpses.length; i++) { const c = S.corpses[i]; if (c.dropped || c.fl || c.civ) continue; c.dropped = true;
-      const g = c.g; if (!g || g.evt && g.evt !== 'war' || dist(c.x, c.y, P.x, P.y) > 1000) continue;  // 구역 이벤트 사람은 이벤트가 따로 떨군다
+      const g = c.g; if (!g || g.evt && g.evt !== 'war' || c.ko || g === S.hit?.g || g.target || dist(c.x, c.y, P.x, P.y) > 1000) continue;  // 기절한 사람·의뢰 표적은 떨구지 않는다 (표적 보수는 의뢰가 따로 준다)  // 구역 이벤트 사람은 이벤트가 따로 떨군다
       if (g.police) { if (S.guns?.pistol != null && (S.wanted >= 2 || Math.random() < 0.3)) dropPickup(c.x + rnd(-14, 14), c.y + rnd(8, 16), 'ammo', 'pistol', 6 + (Math.random() * 7 | 0)); }
       else if (c.fac && c.fac !== 'P') { const r = Math.random();
         if (r < 0.1) dropPickup(c.x + rnd(-14, 14), c.y + rnd(8, 16), 'ammo', 'pistol', 3 + (Math.random() * 4 | 0));  /* 조직원도 총은 드물다 */
@@ -19383,14 +19385,15 @@ const REVENGE = [
           for (const c of ev.cops) if (npcAlive(c)) after(1.2, () => gsay(c, '...방금 그 사람 누구야? 잡아!', 2.4)); } return; }
       if (g.state !== 'PATROL') { g.state = 'PATROL'; g.fear = null; g.icon = null; }   // 겁먹지 않는다
       // 경찰 출동: 첫 피해 뒤 몇 초 만에 둘이 달려온다 — 그리고 당한다
-      if (ev.victims >= 1 && !ev.cops.length && (ev.copT || (ev.copT = S.t + 4)) < S.t) { for (let k = 0; k < 2; k++) { const a = rnd(0, TAU), c = evPerson(ev, g.x + Math.cos(a) * 320, g.y + Math.sin(a) * 320, { police: true }); c.civ = true; c.beat = true; ev.cops.push(c); }
+      if (ev.victims >= 1 && !ev.cops.length && (ev.copT || (ev.copT = S.t + 4)) < S.t) { for (let k = 0; k < 2; k++) { const a = rnd(0, TAU), sp = (typeof roadNear === 'function' && roadNear(g.x + Math.cos(a) * 320, g.y + Math.sin(a) * 320, 6)) || { x: g.x + Math.cos(a) * 320, y: g.y + Math.sin(a) * 320 }, c = evPerson(ev, sp.x, sp.y, { police: true }); /* 보도 위에서 출발한다 (건물 안·벽 뒤에 생기면 길을 못 찾아 그 자리에 서 있었다) */ c.civ = true; c.beat = true; ev.cops.push(c); }
         gsay(ev.cops[0], '흉기 내려놔! 내려놓으라고!', 2.6); }
       if ((ev.stepT = (ev.stepT || 0) - dt) <= 0) { ev.stepT = 0.6; let tgt = null, bd = 280;
         for (const o of [...ev.cops, ...actorsNear(g.x, g.y)]) { if (o === g || !npcAlive(o) || o.off || o.crew || (o.evt && !ev.cops.includes(o)) || !(o.civ || o.police)) continue; const d = dist(o.x, o.y, g.x, g.y); if (d < bd) { bd = d; tgt = o; } }
+        { let cd = 160; for (const c of ev.cops) if (npcAlive(c) && !c.off) { const d = dist(c.x, c.y, g.x, g.y); if (d < cd) { cd = d; tgt = c; } } }   // 다가온 경찰이 먼저다 (거리에 사람이 많아져도 경찰과 맞붙는다)
         if (!P.car && (dist(P.x, P.y, g.x, g.y) < 160 || (!tgt && dist(P.x, P.y, g.x, g.y) < 900))) tgt = P; ev.tgt = tgt; }
       if (ev.tgt) evRun(g, ev.tgt.x, ev.tgt.y, 150, dt); for (const c of ev.cops) if (npcAlive(c) && dist(c.x, c.y, g.x, g.y) > 30) evRun(c, g.x, g.y, 170, dt);
       const t = ev.tgt;
-      if (t && (ev.hitT || 0) < S.t && dist(t.x, t.y, g.x, g.y) < 34) { ev.hitT = S.t + 1.1; g.swingT = 0.35; play('knife', 0.6 * proxVol(g));
+      if (t && (ev.hitT || 0) < S.t && dist(t.x, t.y, g.x, g.y) < 40) { ev.hitT = S.t + 1.1; g.swingT = 0.35; play('knife', 0.6 * proxVol(g));
         if (t === P) hurtPlayer(g, '흉기 난동범 칼에 찔렸다.');
         else if (npcAlive(t)) { bloodBurst(t.x, t.y - 12, Math.atan2(t.y - g.y, t.x - g.x), 4); npcDown(t, g, false); if (t.police) { ev.copsDown++; gsay(g, '짭새도 별거 없네!', 2); } else { ev.victims++; gsay(g, ['비켜!', '너도야!', '하하하!'][ev.victims % 3], 1.4); }
           for (const o of actorsNear(g.x, g.y)) if (o.civ && npcAlive(o) && o !== g && !o.evt && dist(o.x, o.y, g.x, g.y) < 300) { civPanic(o, g.x, g.y, 10); if (Math.random() < 0.3) gsay(o, ['칼이야!!', '살려 주세요!', '119! 119!'][o.id % 3], 1.6); } } }
@@ -20507,7 +20510,8 @@ function lifeVendors() {
   const L = S.life, P = S.player;
   for (const [bi, v] of L.vend) if (dist(v.x, v.y, P.x, P.y) > 1700 || !npcAlive(v.g) || v.g.off) { if (npcAlive(v.g) && !v.g.off) evGone(v.g); L.vend.delete(bi); }
   if (L.vend.size >= VEND_MAX || flOf(P) || S.wanted >= 2) return;
-  for (const c of L.cands) { if (c.kind !== 'food' || LIFE_K(c.bi) % 3 || L.vend.has(c.bi)) continue;
+  const busyAt = (x, y) => (S.lm?.active || []).some(s => dist(s.c.x, s.c.y, x, y) < 260);   // 명소 장면(배달 기사 등)이 선 자리는 피한다
+  for (const c of L.cands) { if (c.kind !== 'food' || LIFE_K(c.bi) % 3 || L.vend.has(c.bi) || busyAt(c.x, c.y)) continue;
     const x = c.x + 110, y = c.y + 12; if (dist(x, y, P.x, P.y) > 1100 || (!L.jump && inView(x, y, 100))) continue;   // 가게 문 옆 연석 (문 앞 손님 자리와 겹치지 않게)
     const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); if (!lifeOpen(tx, ty)) continue;
     const gi = cityGuardSlot(), g = makeGuard({ kind: 'civ', at: [tx, ty], radio: false, body: LIFE_K(c.bi) % 2 ? 'old' : 'workApron' }, gi);
@@ -20595,6 +20599,229 @@ if (typeof drawGuard === 'function') { const _dg = drawGuard; drawGuard = functi
 if (typeof drawCarScorch === 'function') { const _dc = drawCarScorch; drawCarScorch = function () { _dc(); drawLifeBags(); }; }   // 바닥 그림 차례(차보다 먼저)
 if (typeof staffInit === 'function') { const _si = staffInit; staffInit = function () { _si(); streetLifeInit(); }; }
 if (typeof staffUpdate === 'function') { const _su = staffUpdate; staffUpdate = function (dt) { _su(dt); streetLifeUpdate(dt); }; }
+
+// ---------------------------------------------------------------- 자유 모드 알바생과 말하기 (47zt 가게 일꾼)
+// 가게 안 일꾼 곁에서 [말 걸기]: 인사 → 잡담 · 동네 소문 · 물건 사기 · 부탁 중에서 고른다 (가게 창 shopPanel 을 대화 창으로 쓴다 — 터치도 된다).
+// 일꾼은 건물에 들어갈 때마다 새로 서므로, 기억은 '그 건물 그 층의 일꾼' 자리(건물·층)로 한다: 말 건 횟수 · 산 횟수 · 겁준 일 · 다친 일.
+// 단골(말 세 번 이상, 또는 두 번 넘게 산 손님)은 그 가게에서 5~10% 깎아 준다. 무기를 들고 말을 걸면 겁먹고 대꾸하지 않는다.
+const CHAT_ROLE = { staff: '점원', pharm: '약사', hardware: '철물점 사장', chef: '주방장', cater: '홀 직원', gamer: '카운터 알바', karaoke: '노래방 알바', trainer: '트레이너', teacher: '학원 선생님', clerk: '사무실 직원' };
+// 역할마다: 처음 · 다시 · 단골 인사 / 잡담 / 늦은 밤 / 마감 직전
+const CHAT = {
+  staff: { hi: ['어서 오세요. 찾는 거 있으면 말씀하세요.', '네, 계산은 여기서 해요.', '봉투 필요하시면 말씀하시고요.'],
+    again: ['또 오셨네요. 아까 그거 괜찮았어요?', '아, 아까 그분. 뭐 빠뜨리셨어요?', '자주 보네요. 이 동네 사세요?'],
+    reg: ['단골이시잖아요. 컵라면은 제가 물 부어 드릴게요.', '오셨어요? 오늘 삼각김밥 새로 들어왔어요.', '형님 오셨네. 늘 사시던 걸로요?'],
+    chat: ['폐기 도시락 먹는 게 제 저녁이에요. 오늘은 제육.', '사장님이 CCTV로 저 보고 있어요. 진짜로요.', '택배 맡기는 사람이 왜 다 밤에 와요?', '여기 얼음컵이 제일 잘 나가요. 겨울에도요.'],
+    late: ['이 시간엔 손님 없어요. 취한 분들 빼고.', '새벽엔 라면 물 끓는 소리밖에 없어요.', '세 시 넘으면 진열 다시 해요. 혼자서.'] },
+  pharm: { hi: ['어디가 불편하세요?', '처방전 있으세요?', '네, 증상 말씀해 주세요.'],
+    again: ['아까 드린 약은 드셨어요?', '또 오셨네요. 좀 나아지셨어요?', '밥 먹고 드시라고 했죠?'],
+    reg: ['단골 손님이니까 파스 하나 더 넣어 드릴게요.', '요즘 자주 다치시네요. 조심하세요.', '요즘 자주 오시네요. 잠은 좀 주무세요.'],
+    chat: ['이 동네는 숙취해소제가 제일 잘 나가요.', '밤에 손 베여서 오는 사람이 많아요. 인쇄소 칼이요.', '진통제만 사 가는 사람은 다 사연이 있어요.', '박카스 한 병 드릴까요? 서비스예요.'],
+    late: ['열두 시면 문 닫아요. 급하면 지금 사세요.', '이 시간에 오는 분들은 다 급하더라고요.'] },
+  hardware: { hi: ['뭐 찾아요? 말만 해요.', '규격 알고 왔어요? 몇 미리?', '어, 들어와요. 발밑 조심.'],
+    again: ['아까 그 나사 안 맞았죠? 바꿔 줄게.', '또 왔네. 뭐 또 망가졌어?', '지난번 그 공구 잘 쓰고 있어?'],
+    reg: ['단골이니까 이건 그냥 가져가.', '자네는 볼 때마다 뭘 고치고 있네.', '오늘은 뭘 부수러 가나.'],
+    chat: ['이 골목에서 삼십 년 했어. 인쇄소 기계 다 내가 고쳤지.', '요즘 애들은 드라이버도 인터넷으로 사더라.', '을지로 셔터 소리만 들어도 어느 가게인지 알아.', '연장은 비싼 거 사. 그래야 안 다쳐.'],
+    late: ['열 시에 내려. 셔터 무거워.', '이 시간엔 문 열어 놔도 술 취한 사람만 와.'] },
+  chef: { hi: ['주문은 홀에 하세요. 아, 저한테 해도 되고.', '불 앞이라 말 잘 안 들려요!', '뭐 드실래요? 오늘 국물 진해요.'],
+    again: ['또 오셨네! 아까 맛있었죠?', '아까 남기셨던데. 짰어요?', '입맛에 맞았나 보네요.'],
+    reg: ['단골이니까 곱빼기로 해 줄게요.', '오늘은 반찬 하나 더 놨어요.', '늘 드시던 걸로 할까요?'],
+    chat: ['육수는 새벽 다섯 시부터 끓여요.', '이 동네 사람들은 소주를 국처럼 마셔요.', '불 쓰는 일은 여름이 지옥이에요.', '칼은 남한테 안 빌려줘요. 그게 규칙이에요.'],
+    late: ['막차 손님 받고 불 끌 거예요.', '이 시간엔 해장하러 오는 사람뿐이에요.'] },
+  cater: { hi: ['몇 분이세요? 편한 데 앉으세요.', '어서 오세요! 메뉴판 드릴게요.', '여기 앉으세요. 물 갖다 드릴게요.'],
+    again: ['아, 또 오셨네요! 아까 그 자리 비었어요.', '이번엔 혼자 오셨어요?', '아까 계산 잘 하셨죠?'],
+    reg: ['단골이시니까 계란말이 서비스예요.', '사장님이 서비스 주래요. 쉿.', '오늘도 소주 하나죠?'],
+    chat: ['저쪽 테이블 아저씨들 세 시간째예요.', '주말엔 줄 서요. 오늘은 한가한 편.', '팁 주는 손님은 처음 봤어요. 농담이에요.', '알바 끝나면 저도 여기서 먹고 가요.'],
+    late: ['라스트 오더 끝났어요. 술만 돼요.', '이 시간엔 다들 취해서 같은 얘기만 해요.'] },
+  gamer: { hi: ['자리 아무 데나 앉으시면 돼요. 회원이세요?', '선불이에요. 몇 시간 하실 거예요?', '어서 오세요. 라면은 저기서 시키시면 돼요.'],
+    again: ['아까 그 자리 아직 비어 있어요.', '또 오셨네요. 시간 남으셨어요?', '아, 아까 그 손님. 충전하실래요?'],
+    reg: ['단골이시니까 한 시간 더 넣어 드릴게요.', '형 오셨어요? 그 자리 맡아 놨어요.', '늘 하시던 걸로요?'],
+    chat: ['저 구석 자리는 사흘째 안 일어나요.', '밤엔 다들 조용히 욕해요. 헤드셋 끼고.', '라면 물 조절은 제가 동네에서 제일 잘해요.', '키보드 부수면 물어내셔야 돼요. 진짜로.'],
+    late: ['새벽 요금 따로예요. 야간 정액 있어요.', '이 시간에 오는 사람은 다 집에 가기 싫은 사람이에요.'] },
+  karaoke: { hi: ['몇 분이세요? 방 금방 나요.', '한 시간에 이만이에요. 서비스 줄게요.', '어서 오세요. 마이크는 방에 있어요.'],
+    again: ['또 오셨네요! 아까 노래 잘 하시던데.', '이번엔 몇 분이에요?', '아까 그 방 또 드릴까요?'],
+    reg: ['단골이니까 서비스 삼십 분 넣어 드릴게요.', '오늘도 그 노래 부르실 거죠?', '형 오셨네. 제일 큰 방 비었어요.'],
+    chat: ['3번 방은 마이크가 좀 울려요. 그게 매력이래요.', '밤에 혼자 오는 사람이 은근 많아요.', '탬버린 깨 먹는 손님이 한 달에 하나는 있어요.', '옆방 노래 들으면 그 사람 인생이 보여요.'],
+    late: ['네 시면 문 닫아요. 마지막 방이에요.', '이 시간엔 다들 발라드만 불러요.'] },
+  trainer: { hi: ['운동하러 오셨어요? 등록은 카운터에서.', '오늘 무슨 날이에요? 하체?', '어서 오세요. 물은 저기 있어요.'],
+    again: ['또 오셨네! 근육통 괜찮아요?', '아까 자세 좋던데요.', '오늘 두 번째네요. 무리하지 마요.'],
+    reg: ['단골이니까 PT 한 번 공짜로 봐 드릴게요.', '형님 몸 좋아졌네요. 진짜로.', '오늘도 데드 하시죠?'],
+    chat: ['밤 운동이 제일 잘 돼요. 사람이 없어서.', '단백질은 닭가슴살로 드세요. 맛없어도.', '무게보다 자세예요. 이건 꼭 기억하세요.', '저 러닝머신은 끝까지 올리면 소리 나요.'],
+    late: ['열두 시에 문 닫아요. 마지막 세트예요.', '이 시간에 운동하는 사람이 진짜예요.'] },
+  teacher: { hi: ['학부모세요? 상담은 낮에 해요.', '수업 중이라 조용히 부탁드려요.', '네, 무슨 일로 오셨어요?'],
+    again: ['또 오셨네요. 아까 말씀드린 그 시간표요?', '아, 아까 그분. 자리 났어요.', '애가 이 반으로 온대요?'],
+    reg: ['자주 오시니까 교재는 그냥 드릴게요.', '이번 달 등록하시면 할인돼요.', '애가 요즘 많이 늘었어요.'],
+    chat: ['밤 열 시까지 수업이에요. 애들이 더 힘들죠.', '칠판 지우개는 제가 제일 많이 털어요.', '숙제 안 해 오는 핑계는 다 들어 봤어요.', '여기서 십 년 가르쳤어요. 졸업생이 선생 됐어요.'],
+    late: ['열 시면 끝나요. 애들 데리러 오셨어요?'] },
+  clerk: { hi: ['무슨 일로 오셨어요? 약속하셨어요?', '담당자 지금 자리에 없어요.', '네, 말씀하세요.'],
+    again: ['또 오셨네요. 아까 그 서류요?', '담당자 아직이에요. 기다리시겠어요?', '아까 그분이시죠?'],
+    reg: ['자주 오시니까 커피 한 잔 드릴게요.', '오늘은 담당자 있어요. 불러 드릴까요?', '서류는 제가 먼저 봐 드릴게요.'],
+    chat: ['야근은 커피로 버텨요. 오늘 네 잔째.', '이 건물 엘리베이터는 3층에서 꼭 덜컹해요.', '창밖 보면 을지로 불이 하나씩 꺼져요.', '팩스 쓰는 회사가 아직 여기 있어요. 저희요.'],
+    late: ['저도 곧 퇴근해요. 막차 전에요.', '이 시간까지 남은 건 저랑 경비 아저씨뿐이에요.'] },
+};
+const CHAT_COMMON = {
+  closing: ['마감 삼십 분 전이에요. 서두르세요.', '곧 문 닫아요. 필요한 거 있으면 지금요.'],
+  scared: ['...가져가세요. 다 가져가도 돼요.', '그거 내려놔요. 제발요.', '저 그냥 알바예요. 아무것도 몰라요.'],
+  grudge: ['아까 그 사람이죠? ...말 안 해요.', '저번 일 신고했어요. 가세요.', '얼굴 기억해요. 나가 주세요.'],
+  rumorNone: ['요즘은 조용해요. 너무 조용해서 이상할 정도로.', '별일 없어요. 그게 제일 좋은 거예요.'],
+  favorAsk: ['저기, 부탁 하나만 해도 돼요? 이거 {to}에 좀 갖다주실래요? 사례할게요.', '배달 기사가 안 와서요. {to}까지만 들어 주실래요? 수고비 드릴게요.'],
+  favorThanks: ['진짜요? 고마워요. {to} 사장님한테 제 이름 대면 알아요.', '살았다. {to}에서 기다리고 있을 거예요.'],
+  favorBusy: ['아까 그 배달부터 부탁드려요. {to}요.'],
+};
+const chatPick = (L, n) => L[((n || 0) % L.length + L.length) % L.length];
+const chatKey = g => g.shopB + ':' + g.shopF;
+function chatMem(k) { S.staffMem = S.staffMem || new Map(); let m = S.staffMem.get(k); if (!m) { m = { talk: 0, buy: 0, threat: 0, threatT: -1e9, hurt: 0, n: 0, rumorN: 0 }; S.staffMem.set(k, m); } return m; }
+const chatRegular = m => m.buy >= 2 || m.talk >= 3;
+const chatShopOf = g => g.shopF === 0 ? (S.shops || []).find(s => s.b === g.shopB) : null;
+// 이 가게 단골 할인 (openShop 가격에 곱한다): 단골 10%, 한 번 산 손님 5%
+function staffDiscount(s) { const m = S.staffMem && S.staffMem.get(s.b + ':0'); return !m || m.hurt || m.threat ? 1 : chatRegular(m) ? 0.9 : m.buy >= 1 ? 0.95 : 1; }
+function staffBought(s) { if (!STAGE.cityLife || !s) return; chatMem(s.b + ':0').buy++; }
+// 말 걸기: 매장 안, 같은 층, 일꾼 곁 70px
+function staffChatTarget() {
+  const P = S.player; if (!STAGE.cityLife || !S.staffB || P.car || P.z || P.hide || S.shopOpen) return null;
+  const inB = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)), list = S.staffB.get(inB); if (!list) return null;
+  let best = null, bd = 70; for (const g of list) { if (!g.staff || g.off || !npcAlive(g) || g.state !== 'PATROL' || g.shopF !== flOf(P)) continue; const d = dist(g.x, g.y, P.x, P.y); if (d < bd) { bd = d; best = g; } }
+  return best;
+}
+function staffChatAction() { const g = staffChatTarget(); if (!g) return null; return { k: 'evAct', label: `말 걸기 · ${CHAT_ROLE[g.staff] || '직원'}`, at: { x: g.x, y: g.y - 50 }, fn: () => staffChatOpen(g) }; }
+// 방향 말로: 북쪽 · 남동쪽 …, 거리: 바로 근처 · 좀 걸어가면 · 멀리
+function chatWhere(x, y) { const P = S.player, dx = x - P.x, dy = y - P.y, d = Math.hypot(dx, dy), a = Math.atan2(dy, dx);
+  const dirs = ['동쪽', '남동쪽', '남쪽', '남서쪽', '서쪽', '북서쪽', '북쪽', '북동쪽'], dir = dirs[((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8];
+  return (d < 500 ? '바로 근처 ' : d < 1500 ? '' : '좀 멀리 ') + dir; }
+// 동네 소문: 지금 이 도시에 실제로 있는 것 하나를 가리키고, 지도에 표시한다 (사건 · 총 파는 박씨 · 우는 공중전화 · 조직 구역 · 동네 명소)
+function staffRumor(g, m) {
+  const P = S.player, out = [], near = (x, y, r = 2600) => dist(x, y, P.x, P.y) < r;
+  const E = S.ev; if (E && !E.done && E.def) { const f = E.def.focus?.(E), p = f && f.x != null ? f : E.p || (E.x != null ? E : null); if (p && near(p.x, p.y)) out.push({ k: 'event', x: p.x, y: p.y, t: `${chatWhere(p.x, p.y)}에서 ${E.def.name} 났대요. 괜히 끼지 마요.` }); }
+  const D = S.dealer2; if (D && near(D.x, D.y, 4000)) out.push({ k: 'dealer', x: D.x, y: D.y, t: `${chatWhere(D.x, D.y)} 뒷골목에 박씨라는 사람이 '물건'을 판대요. 저는 못 들은 거예요.` });
+  const ph = (S.phones || []).filter(p => near(p.x, p.y, 2200)).sort((a, b) => dist(a.x, a.y, P.x, P.y) - dist(b.x, b.y, P.x, P.y))[0];
+  if (ph) out.push({ k: 'phone', x: ph.x, y: ph.y, t: `${chatWhere(ph.x, ph.y)} 공중전화 있잖아요. 밤마다 울린대요. 받으면 일거리 준다던데.` });
+  const Z = (STAGE.zones || []).filter(z => z[6] && /파|조직/.test(z[6])).map(z => ({ z, x: (z[0] + z[2] + 1) / 2 * TILE, y: (z[1] + z[3] + 1) / 2 * TILE })).sort((a, b) => dist(a.x, a.y, P.x, P.y) - dist(b.x, b.y, P.x, P.y))[0];
+  if (Z) out.push({ k: 'turf', x: Z.x, y: Z.y, t: `${chatWhere(Z.x, Z.y)}, ${Z.z[6].split('·')[0].trim()} 쪽은 밤에 가지 마요. 애들이 진 치고 있어요.` });
+  const LMS = typeof window.__cityLandmarks === 'function' ? window.__cityLandmarks()?.LM?.sets || [] : [], LMD = { pocha: '포장마차 줄', print: '오래된 인쇄소 마당', loading: '새벽 하역장', falls: '청계천 작은 폭포', tteok: '떡볶이 골목', plaza: '동상 있는 광장', cafe: '창고 카페' };
+  const L = LMS.filter(s => LMD[s.k]).sort((a, b) => dist(a.x, a.y, P.x, P.y) - dist(b.x, b.y, P.x, P.y))[0];
+  if (L) out.push({ k: 'landmark', x: L.x + (L.w || 1) * TILE / 2, y: L.y + (L.h || 1) * TILE / 2, t: `${chatWhere(L.x, L.y)}에 ${LMD[L.k]} 가 봤어요? 밤에 가면 좋아요.` });
+  if (!out.length) return null;
+  const r = out[(m.rumorN++) % out.length]; S.wp = { x: r.x, y: r.y }; S.wpT = 0; S.wpPath = null; S.lastRumor = r; return r;
+}
+// 부탁: 가까운 다른 가게까지 봉투 하나 배달 (도착하면 사례)
+function staffFavorMake(g) { const P = S.player, s0 = chatShopOf(g);
+  const to = (S.shops || []).filter(s => s !== s0 && s.b !== g.shopB && dist(s.x, s.y, P.x, P.y) > 450 && dist(s.x, s.y, P.x, P.y) < 1500).sort((a, b) => dist(a.x, a.y, P.x, P.y) - dist(b.x, b.y, P.x, P.y))[0];
+  return to ? { key: chatKey(g), to: to.name, x: to.x, y: to.y, pay: 15 + Math.round(dist(to.x, to.y, P.x, P.y) / 100), t0: S.t } : null; }
+function staffFavorUpdate() {
+  const F = S.staffFavor; if (!F) return; const P = S.player;
+  if (S.t - F.t0 > 240) { S.staffFavor = null; evBanner('배달 부탁 · 너무 늦었다', '#c8b48a'); return; }
+  if (dist(P.x, P.y, F.x, F.y) < 70 && !flOf(P)) { S.staffFavor = null; S.cash = (S.cash || 0) + F.pay; play('loot', 0.6); if (typeof hudCache !== 'undefined') hudCache.objH = null;
+    const m = S.staffMem?.get(F.key); if (m) { m.favor = (m.favor || 0) + 1; m.talk++; } if (S.wp && Math.hypot(S.wp.x - F.x, S.wp.y - F.y) < 80) { S.wp = null; S.wpPath = null; }
+    evBanner(`배달 완료 · ${F.to} · 수고비 ${F.pay}만`, '#9fe0b0'); }
+}
+// 대화 창: 일꾼 말 한 줄 + 고를 것들 (가게 창을 그대로 쓴다)
+function staffChatOpen(g, line) {
+  const m = chatMem(chatKey(g)), role = g.staff, R = CHAT[role] || CHAT.staff, who = `${CHAT_ROLE[role] || '직원'} · ${(BLD[g.shopB].signs || [])[g.shopF] || '가게'}`;
+  const say = t => { gsay(g, t, 3); g.want = Math.atan2(S.player.y - g.y, S.player.x - g.x); return t; };
+  const armed = typeof wpnOn === 'function' && wpnOn();
+  if (!line) {   // 처음 열 때: 겁먹었나 · 원한 · 인사
+    if (armed) { m.threat++; m.threatT = S.t; g.scared = true; m.n++; S.staffChat = { g, mode: 'scared' }; return shopPanel(who, [{ name: '겁먹고 뒤로 물러선다', price: null, tag: '', ok: false, buy: () => {} }], null, say(chatPick(CHAT_COMMON.scared, m.n))); }
+    if (m.hurt || S.t - m.threatT < 90) { m.n++; S.staffChat = { g, mode: 'grudge' }; return shopPanel(who, [{ name: '상대해 주지 않는다', price: null, tag: '', ok: false, buy: () => {} }], null, say(chatPick(CHAT_COMMON.grudge, m.n))); }
+    m.talk++; m.n++;
+    const ch = typeof closeHour === 'function' ? closeHour(BLD[g.shopB], g.shopF) : 99, h = typeof clockHour === 'function' && S.clock ? clockHour() : 21;
+    line = ch < 90 && ch - h > 0 && ch - h <= 0.5 ? chatPick(CHAT_COMMON.closing, m.n) : chatPick(chatRegular(m) ? R.reg : m.talk > 1 ? R.again : R.hi, m.n);
+  }
+  say(line); S.staffChat = { g, mode: 'talk', line };
+  const h = typeof clockHour === 'function' && S.clock ? clockHour() : 21, shop = chatShopOf(g), rows = [];
+  rows.push({ name: '잡담', price: null, tag: '', ok: true, buy: () => { m.n++; staffChatOpen(g, chatPick(h >= 24 && R.late ? (m.n % 2 ? R.late : R.chat) : R.chat, m.n)); } });
+  rows.push({ name: '동네 소문', price: null, tag: '지도에 표시', ok: true, buy: () => { const r = staffRumor(g, m); staffChatOpen(g, r ? r.t : chatPick(CHAT_COMMON.rumorNone, m.n++)); } });
+  if (shop && SHOP_ITEMS[shop.name]?.length) rows.push({ name: '물건 사기', price: null, tag: staffDiscount(shop) < 1 ? `단골 ${Math.round((1 - staffDiscount(shop)) * 100)}% 할인` : '', ok: true, buy: () => { closeShopPanel(); openShop(shop); } });
+  if (m.talk >= 2 && ['staff', 'pharm', 'hardware', 'chef', 'cater'].includes(role)) {
+    const F = S.staffFavor;
+    rows.push({ name: F ? '부탁 · 배달 중' : '부탁 들어주기', price: null, tag: F ? F.to : '', ok: true, buy: () => {
+      if (S.staffFavor) { staffChatOpen(g, chatPick(CHAT_COMMON.favorBusy, m.n).replace('{to}', S.staffFavor.to)); return; }
+      const f = staffFavorMake(g); if (!f) { staffChatOpen(g, chatPick(CHAT_COMMON.rumorNone, m.n++)); return; }
+      S.staffFavor = f; S.wp = { x: f.x, y: f.y }; S.wpT = 0; S.wpPath = null; evBanner(`배달 부탁 · ${f.to}까지 · ${f.pay}만`, '#f2e7c8'); staffChatOpen(g, chatPick(CHAT_COMMON.favorThanks, m.n++).replace('{to}', f.to)); } });
+  }
+  return shopPanel(who, rows, () => { S.staffChat = null; }, line);
+}
+// 일꾼이 다치면(죽거나 기절) 그 동네 평판이 떨어지고, 그 자리 일꾼은 다음에도 기억한다
+function staffChatWatch() {
+  if (!STAGE.cityLife || !S.staffB) return; const P = S.player;
+  for (const list of S.staffB.values()) for (const g of list) { if (!g.staff || g.chatHurt || npcAlive(g) || g.off) continue; if (g.state === 'CAPTIVE') continue;
+    g.chatHurt = true; const m = chatMem(chatKey(g)); m.hurt++; if (dist(g.x, g.y, P.x, P.y) < 500 && typeof addRep === 'function') addRep(evDist(g.x, g.y), -6); }
+  staffFavorUpdate();
+}
+if (typeof cityActionList === 'function') { const _cal = cityActionList; cityActionList = function () { const out = _cal.apply(this, arguments); if (STAGE.cityLife && !S.player.car) { const a = staffChatAction(); if (a) out.push(a); } return out; }; }
+if (typeof staffInit === 'function') { const _si = staffInit; staffInit = function () { _si.apply(this, arguments); S.staffMem = new Map(); S.staffFavor = null; S.staffChat = null; }; }
+if (typeof staffUpdate === 'function') { const _su = staffUpdate; staffUpdate = function (dt) { const r = _su.apply(this, arguments); if (STAGE.cityLife) staffChatWatch(); return r; }; }
+
+// ---------------------------------------------------------------- 자유 모드 옷차림: 사람마다 다른 옷 (밤 을지로 거리)
+// 고정 팔레트 20벌 대신, 사람마다(번호로 정해진 대로) '차림새'를 고르고 그 차림새에 어울리는 색 묶음에서 웃옷·아래옷·신발·머리·피부를 고른다.
+// 차림새는 체형에 맞춘다 (정장 체형 → 회사원, 후드 → 캐주얼·스트릿, 노인 → 어르신, 헬멧 → 배달). 비 오면 어두운 겉옷이, 유흥가 늦은 밤엔 약속 차림이 늘어난다.
+// 팔레트 열쇠('cv' + 색 번호들)는 처음 그릴 때 PR_PAL 에 등록해 기존 칠하기(prPalette·prSheet·prWarm)를 그대로 쓴다.
+// 칠한 시트(prVar)는 열쇠마다 2~3MB라 오래 안 쓴 것은 비운다 (outfitEvict) — 종류는 늘려도 메모리는 일정하다.
+const OUTFIT_SKIN = ['#f2cba8', '#eec4a0', '#e8ba92', '#e4b48c', '#efc49e', '#dcae86', '#d8a882', '#e6b68e', '#c99068', '#b07a52'];
+const OUTFIT_SKIN_W = [12, 14, 14, 12, 10, 10, 8, 10, 4, 1];
+const OUTFIT_HAIR = ['#141214', '#1c1a1a', '#221e1c', '#2a2220', '#3a2a22', '#4a3426', '#6a4430', '#7a5232', '#8a8478', '#c8a86a', '#7a2e28', '#2e2a3a'];
+const OUTFIT_HAIR_W = [18, 18, 14, 10, 10, 8, 6, 4, 2, 1, 1, 1];
+const OUTFIT_GREY = ['#a8a8a4', '#c4c4c4', '#8a8884', '#d6d4ce'];
+// 차림새: 웃옷(top) · 아래옷(bot) · 신발/소지품(shoe) — 같은 줄 안에서 고르면 어색한 조합이 나오지 않는다
+const OUTFIT_STYLES = {
+  office: { top: ['#2a2d33', '#22304a', '#18191c', '#4a4e56', '#e8e6e0', '#a8c0d8', '#c8ad84', '#1c1d22', '#3a3428'], bot: ['#1c1d21', '#2c2e34', '#262c3c', '#4a4c52', '#8a7a62', '#141416'], shoe: ['#141416', '#4a3022', '#1e1e20', '#2c2018'] },
+  casual: { top: ['#ecebe6', '#7a7d82', '#2a3a5a', '#5a6040', '#c8962e', '#8ab0d0', '#d898a8', '#3a7a5a', '#6a2430', '#1c1c20', '#e2d6be', '#141416', '#9a6a4a', '#b8c8a0'], bot: ['#3c5a86', '#2c3e5e', '#5a78a0', '#1c1d21', '#a8946c', '#6a6c70', '#7a7050', '#2a2a2e'], shoe: ['#f0f0ec', '#f0f0ec', '#e8e6e0', '#9a9a9a', '#1a1a1a', '#b03a30', '#3a5a8a'] },
+  street: { top: ['#141416', '#f2f2ee', '#9ad040', '#e07030', '#6a4a9a', '#4a5034', '#b8302c', '#2a2a30', '#d8d040'], bot: ['#121214', '#4a4a3a', '#4a6a96', '#5a5c60', '#1e1e24'], shoe: ['#f2f2f2', '#1c1c1c', '#d0f040', '#c03030', '#f2f2f2'] },
+  student: { top: ['#22304a', '#f0efe8', '#8a8c90', '#18181c', '#3a4a6a', '#e8e0d0'], bot: ['#1e2a44', '#5a5c62', '#18181c', '#3a3a52', '#2a3a5a'], shoe: ['#f2f2ee', '#1c1c1e', '#e8e6e0'] },
+  outdoor: { top: ['#c03a32', '#2a8a8a', '#6a3a8a', '#e86a2a', '#2a5ab0', '#8ab030', '#d8a020', '#3a6a4a'], bot: ['#1a1a1e', '#4a4c52', '#22283a', '#3a3a34'], shoe: ['#7a7a7a', '#1c1c1e', '#5a3a22', '#4a4a50'] },
+  elder: { top: ['#6a4a32', '#6a2a2a', '#b8a07a', '#6a6a6a', '#2a3040', '#7a4a7a', '#4a5a3a', '#8a3a4a'], bot: ['#4a4a50', '#4a3a2a', '#1c1c20', '#5a5248', '#2a2a30'], shoe: ['#1c1c1e', '#4a3022', '#6a5a4a'] },
+  date: { top: ['#121214', '#a82030', '#f4f2ec', '#b8905a', '#2a6a50', '#a890c8', '#5a3420', '#e8b8c0', '#1e2a4a'], bot: ['#141416', '#22304a', '#e8e6e0', '#4a1a24', '#2a2a2e'], shoe: ['#141416', '#f2f2ee', '#a82828', '#c8b088', '#1c1c1e'] },
+  delivery: { top: ['#b8d030', '#3ab8a0', '#e07a20', '#2a6ac0', '#d83a3a', '#1c1c20'], bot: ['#1a1a1e', '#3a3c42', '#2a2a30'], shoe: ['#e8d040', '#f2f2f2', '#d83a3a', '#2a6ac0', '#1c1c1e'] },
+};
+const OUTFIT_RAIN = ['#141416', '#2a2a30', '#1c2438', '#32382a', '#8a7a4a', '#d8b030', '#1a1a1e'];
+// 체형 → 차림새 비율
+const OUTFIT_BY_BODY = {
+  suit: { office: 70, date: 30 }, femaleSuit: { office: 65, date: 35 }, femaleBlazer: { office: 55, date: 35, casual: 10 }, bossBig: { office: 75, date: 25 },
+  worker: { outdoor: 35, casual: 35, delivery: 15, office: 15 }, femaleWorker: { outdoor: 30, casual: 40, delivery: 15, office: 15 }, workApron: { casual: 45, outdoor: 35, delivery: 20 }, vest: { outdoor: 40, casual: 40, street: 20 },
+  hoodieCasual: { casual: 45, street: 35, student: 20 }, jacket: { casual: 40, date: 30, street: 20, office: 10 },
+  coat: { office: 40, casual: 30, date: 30 }, femaleCoat: { office: 35, casual: 30, date: 35 },
+  old: { elder: 80, outdoor: 20 }, kid: { student: 70, casual: 30 }, helmet: { delivery: 75, outdoor: 25 }, pack: { casual: 40, student: 30, street: 15, delivery: 15 },
+  big: { casual: 45, outdoor: 25, street: 15, office: 15 },
+  _: { casual: 45, street: 15, student: 10, date: 15, outdoor: 10, office: 5 },
+};
+const OUTFIT_FEMALE_SKIRT = new Set(['fLong', 'fTail']);
+function outfitHash(n, salt) { let h = (n * 2654435761 + salt * 40503) >>> 0; h ^= h >>> 15; h = Math.imul(h, 2246822519) >>> 0; h ^= h >>> 13; return h >>> 0; }
+const outfitPick = (list, h) => list[h % list.length];
+const outfitWeighted = (list, w, h) => { let s = 0; for (const x of w) s += x; let r = h % s; for (let i = 0; i < list.length; i++) { r -= w[i]; if (r < 0) return list[i]; } return list[0]; };
+// 그 사람의 실루엣(체형): 몸이 따로 없는 행인은 예전처럼 번호에 따른 실루엣을 쓴다
+const civSilhouette = g => g.body || (PR && PR.looks && PR.looks['civ' + (((g.look || 0) + g.id * 3) % 10)]) || null;
+function outfitStyleOf(g, body) {
+  const W = Object.assign({}, OUTFIT_BY_BODY[body] || OUTFIT_BY_BODY._);
+  // 유흥가의 늦은 밤: 약속·스트릿 차림이 늘어난다 (시계 47zy_city_clock: S.clock.h, 24 이상은 자정 넘김)
+  const h = S && S.clock ? S.clock.h : 21, late = h >= 23, d = STAGE.districtAt?.(Math.floor(g.x / TILE), Math.floor(g.y / TILE));
+  if (late && d === '종로 유흥가') { if (W.date) W.date = Math.round(W.date * 2.5); if (W.street) W.street = Math.round(W.street * 1.5); }
+  if (d === '중구 관청가' && W.office) W.office = Math.round(W.office * 1.6);
+  if (d === '성수 공장지대' && W.outdoor) W.outdoor = Math.round(W.outdoor * 1.5);
+  const keys = Object.keys(W); return outfitWeighted(keys, keys.map(k => W[k]), outfitHash(g.id, 1));
+}
+// 한 사람의 팔레트 열쇠: 처음 그릴 때 한 번 정하고 그 사람에게 붙여 둔다 (비·시간·동네는 그때 기준)
+function civOutfitKey(g) {
+  if (g.cvk) return g.cvk;
+  const body = civSilhouette(g), style = outfitStyleOf(g, body), St = OUTFIT_STYLES[style], id = g.id;
+  const skin = outfitWeighted(OUTFIT_SKIN, OUTFIT_SKIN_W, outfitHash(id, 2));
+  const hair = body === 'old' || style === 'elder' ? outfitPick(OUTFIT_GREY, outfitHash(id, 3)) : outfitWeighted(OUTFIT_HAIR, OUTFIT_HAIR_W, outfitHash(id, 3));
+  let top = outfitPick(St.top, outfitHash(id, 4));
+  if (typeof rainK === 'function' && rainK() > 0.3 && outfitHash(id, 9) % 10 < 4) top = outfitPick(OUTFIT_RAIN, outfitHash(id, 10));   // 비: 어두운 겉옷·우비
+  let bot = outfitPick(St.bot, outfitHash(id, 5)); if (bot === top) bot = St.bot[(St.bot.indexOf(bot) + 1) % St.bot.length];   // 위아래 같은 색은 피한다 (정장 한 벌은 예외 없이 다른 톤)
+  if (OUTFIT_FEMALE_SKIRT.has(body) && outfitHash(id, 8) % 3 === 0) bot = outfitPick(['#2a2a30', '#6a2430', '#c8b8a0', '#3a4a6a', '#1c1c20', '#8a6a8a'], outfitHash(id, 11));   // 치마 색
+  const shoe = outfitPick(St.shoe, outfitHash(id, 6)), acc = outfitPick([shoe, '#9c8c78', '#5a4a3a', '#2a2a2e', '#c8b8a0'], outfitHash(id, 7));
+  const pal = [skin, hair, top, bot, shoe, acc], key = 'cv' + pal.map(c => c.slice(1)).join('');
+  if (!PR_PAL[key]) PR_PAL[key] = pal;
+  return (g.cvk = key);
+}
+// ---- 칠한 시트 비우기: 자유 모드에서 오래(20초) 안 그린 행인 옷은 지운다 (다시 보이면 다시 칠한다). 주인공·최근 것은 남긴다
+let outfitEvictT = 0;
+function outfitEvict() {
+  if (!STAGE.cityLife || typeof prVar === 'undefined') return; const now = performance.now(); if (now < outfitEvictT) return; outfitEvictT = now + 4000;
+  const keep = typeof playerKey === 'function' && S && S.player ? playerKey(S.player) : null, keys = Object.keys(prVar).filter(k => !k.endsWith('_ol'));
+  if (keys.length <= 36) return;
+  const old = keys.filter(k => k !== keep && k.split('@')[0] !== 'ninja' && now - (prVar[k].lu || 0) > 20000).sort((a, b) => (prVar[a].lu || 0) - (prVar[b].lu || 0));
+  for (const k of old.slice(0, Math.max(0, keys.length - 36))) { delete prVar[k]; delete prVar[k + '_ol']; }
+}
+if (typeof staffUpdate === 'function') { const _ou = staffUpdate; staffUpdate = function (dt) { const r = _ou.apply(this, arguments); outfitEvict(); return r; }; }
 
 // ---------------------------------------------------------------- 자유 모드 편의점 실내 그림 (구매한 GuttyKreum Corner Store 팩에서 글자 없는 조각만)
 // 편의점·마트 층의 진열대·음료 냉장고·화분을 팩 그림으로 그린다 (32px 원본 · 1.5배 = 한 칸 48px). 그림이 없으면 원래 그림 그대로.
@@ -20978,13 +21205,19 @@ function amInit() {
   const add = o => { list.push(o); used.add(o.tx + ',' + o.ty); };
   // 고양이: 건물 앞벽 밑 보도 칸(위가 건물, 칸은 보도) · 블록 안 맨땅의 주차된 차 옆 — 50마리 남짓
   let cats = 0;
+  // 앉을 자리는 비어 있어야 한다: 거리 소품(포차 탁자·자판기)·명소·가게 문 앞 칸과 그 옆에는 앉히지 않는다 (탁자 위에 고양이가 겹쳐 보이던 것)
+  if (typeof sdInit === 'function' && (!SD || SD.stage !== STAGE.id)) sdInit();
+  const busy = new Set(), mark = (tx, ty, r = 1) => { for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) busy.add((tx + dx) + ',' + (ty + dy)); };
+  for (const o of SD?.list || []) mark(Math.floor(o.x / TILE), Math.floor(o.y / TILE) + (o.sy ? 0 : 0), 1);
+  for (const o of (typeof LM !== 'undefined' && LM && LM.stage === STAGE.id ? LM.sets : null) || []) for (let dy = -1; dy <= (o.h || 1); dy++) for (let dx = -1; dx <= (o.w || 1); dx++) busy.add((Math.floor(o.x / TILE) + dx) + ',' + (Math.floor(o.y / TILE) + dy));
+  if (typeof shopFront === 'function') for (const b of BLD) { const f = b.kind === 'shop' && !b.vacant ? shopFront(b) : null; if (f) mark(Math.floor(f.x / TILE), Math.floor(f.y / TILE), 1); }
   for (let y = 2; y < MH - 2 && cats < 70; y++) for (let x = 2; x < MW - 2 && cats < 70; x++) {
-    if (at(x, y) !== '=' || bldAt(x, y) >= 0 || bldAt(x, y - 1) < 0 || amHash(x, y, 1) > 0.04 || !free(x, y)) continue;
+    if (at(x, y) !== '=' || bldAt(x, y) >= 0 || bldAt(x, y - 1) < 0 || amHash(x, y, 1) > 0.075 || !free(x, y) || busy.has(x + ',' + y)) continue;
     add({ k: 'cat', tx: x, ty: y, x: (x + 0.5) * TILE, y: (y + 0.55) * TILE, coat: (x * 3 + y) % 4, hx: (x + 0.5) * TILE, hy: (y + 0.55) * TILE, st: 'sit', t0: amHash(x, y, 2) * 9 }); cats++; }
   // 블록 안 주차된 차 옆에 웅크린 고양이 (차 밑 그늘에서 나와 앉은 것처럼, 넷 중 하나)
   const onRoad = (tx, ty) => (STAGE.roadsX || []).some(r => tx >= r && tx < r + 4) || (STAGE.roadsY || []).some(r => ty >= r && ty < r + 4);
   for (const v of S.vehicles || []) { if (cats >= 70 || !v.parked) continue; const tx = Math.floor(v.x / TILE), ty = Math.floor(v.y / TILE); if (onRoad(tx, ty) || bldAt(tx, ty) >= 0 || amHash(tx, ty, 17) > 0.25) continue;
-    const x = v.x + (amHash(tx, ty, 18) < 0.5 ? -44 : 44), y = v.y + 30, gx = Math.floor(x / TILE), gy = Math.floor(y / TILE); if (bldAt(gx, gy) >= 0 || !free(gx, gy)) continue;
+    const x = v.x + (amHash(tx, ty, 18) < 0.5 ? -44 : 44), y = v.y + 30, gx = Math.floor(x / TILE), gy = Math.floor(y / TILE); if (bldAt(gx, gy) >= 0 || !free(gx, gy) || busy.has(gx + ',' + gy)) continue;
     add({ k: 'cat', tx: gx, ty: gy, x, y, coat: (tx + ty) % 4, hx: x, hy: y, st: 'sit', t0: amHash(tx, ty, 19) * 9 }); cats++; }
   // 비둘기 떼: 공원 풀밭 가장자리 · 청계천 산책로 · 식당 앞 보도 (떼마다 3~5마리)
   const flock = (x, y) => { const n = 3 + Math.floor(amHash(x, y, 4) * 3), birds = [];
@@ -21031,8 +21264,10 @@ function amUpdate() {
   }, 260);
 }
 // ---- 땅 단계: 웅덩이(비) · 고양이 · 비둘기 (사람·차보다 먼저 = 발밑)
+let AM_OFF = false;   // 시험용 끄개 (그리기 비용 비교)
+window.__cityAmbient = { off: v => { AM_OFF = !!v; } };
 function drawAmbientGround() {
-  if (!STAGE.cityLife || CUR_F || !G0) return; if (!AM || AM.stage !== STAGE.id) amInit();
+  if (AM_OFF || !STAGE.cityLife || CUR_F || !G0) return; if (!AM || AM.stage !== STAGE.id) amInit();
   const t = S.t, rk = typeof rainK === 'function' ? rainK() : 0;
   ctx.save(); ctx.imageSmoothingEnabled = false;
   amVisible(o => {
@@ -21065,7 +21300,7 @@ function drawAmbientGround() {
 }
 // ---- 위 단계(어둠 뒤): 김(도트 덩어리가 피어오르며 흩어진다) · 가로등 날벌레 · 자판기 숨 쉬는 불빛
 function drawAmbientAbove() {
-  if (!STAGE.cityLife || CUR_F || !AM || AM.stage !== STAGE.id) return;
+  if (AM_OFF || !STAGE.cityLife || CUR_F || !AM || AM.stage !== STAGE.id) return;
   const t = S.t, px = AM_PX; ctx.save();
   amVisible(o => { if (o.k !== 'steam') return;
     for (let i = 0; i < 4; i++) { const p = ((t * 0.45 + o.ph + i / 4) % 1), x = o.x + Math.sin((p + i) * 5 + o.ph) * 10 * p, y = o.y - p * 70 * o.sz, s = Math.round((3 + p * 5) * o.sz), a = (o.kitchen ? 0.5 : 0.42) * (1 - p) * Math.min(1, p * 5);
@@ -21149,8 +21384,8 @@ function lmHand(t, v) {   // 손글씨 간판: 나무판에 붓 글씨
   return lmCanvas('hd' + t + v, 42, 18, (R, T) => { R(0, 0, 42, 18, '#1a1410'); R(1, 1, 40, 16, bg); R(1, 15, 40, 2, 'rgba(0,0,0,.35)'); T(t, 21, 9, t.length > 2 ? 10 : 12, fg); R(3, 3, 1, 1, '#5a4a3a'); R(38, 3, 1, 1, '#5a4a3a'); }); }
 function lmStickers(v) { return lmCanvas('st' + v, 24, 18, R => { const C = ['#ff4a4a', '#ffd84a', '#5ae0ff', '#ffffff', '#7af05a', '#ff9ad8'];
   for (let k = 0; k < 5; k++) { const a = (v * 7 + k * 5) % 16, b = (v * 3 + k * 7) % 11; R(a, b, 7, 6, '#101014'); R(a + 1, b + 1, 5, 4, C[(v + k) % 6]); R(a + 2, b + 2, 3, 1, '#101014'); } }); }
-function lmAd(t, v) { return lmCanvas('ad' + t + v, 132, 26, (R, T) => {   // 빛바랜 칠 광고 (을지로)
-  R(0, 0, 132, 26, 'rgba(232,222,196,.55)'); R(0, 0, 132, 2, 'rgba(160,60,40,.55)'); T(t, 66, 14, 15, ['rgba(140,40,30,.8)', 'rgba(30,60,110,.8)', 'rgba(40,90,50,.8)'][v % 3]); }); }
+function lmAd(t, v) { return lmCanvas('ad' + t + v, 88, 26, (R, T) => {   // 빛바랜 칠 광고 (을지로): 맨벽 두 칸 폭
+  R(0, 0, 88, 26, 'rgba(232,222,196,.55)'); R(0, 0, 88, 2, 'rgba(160,60,40,.55)'); T(t, 44, 14, t.length > 5 ? 11 : 13, ['rgba(140,40,30,.8)', 'rgba(30,60,110,.8)', 'rgba(40,90,50,.8)'][v % 3]); }); }
 function lmMural(n, v) {   // 성수 벽화: 칸 n개 폭 (도트 띠로 그린 노을 도시 · 물결 · 꽃 · 기하 무늬)
   const w = n * TILE - 10, h = 40;
   return lmCanvas('mu' + n + v, w, h, R => {
@@ -21217,16 +21452,19 @@ function lmInit() {
   // 1) 1층 정면 맨벽 칸마다 (문·창 칸은 건너뛴다) 구역 꾸러미에서 하나씩, 건물마다 많아야 셋
   BLD.forEach((b, bi) => {
     if (b.vacant || !b.fh) return; const D = LM_WALL[dname(Math.floor((b.x0 + b.x1) / 2), b.y1 + 1)]; if (!D) return;
-    const cols = []; for (let x = b.x0 + 1; x <= b.x1 - 1; x++) if (wallCh(at(x, b.y1)) && !used.has(x + ',' + (b.y1 + 1))) cols.push(x);
-    if (!cols.length) return; let n = 0;
+    // 붙일 칸: 맨벽('#')과 유리창('N')만 (잠긴 문 'X'에는 붙이지 않는다). 칠·글씨(벽화·광고·태그·손글씨)는 맨벽에만, 유리엔 포스터·스티커만
+    const cols = [], glass = new Set(); for (let x = b.x0 + 1; x <= b.x1 - 1; x++) { const c = at(x, b.y1); if ((c === '#' || c === 'N') && !used.has(x + ',' + (b.y1 + 1))) { cols.push(x); if (c === 'N') glass.add(x); } }
+    if (!cols.length) return; let n = 0; const solidRun = (i, j) => { for (let k = i; k <= j; k++) if (glass.has(cols[k])) return false; return true; };
     if (D.mural && b.kind !== 'shop' || D.mural && lmHash(bi, 1) < 0.35) {   // 성수: 연달아 맨벽 셋 이상이면 벽화
-      for (let i = 0; i < cols.length; i++) { let j = i; while (j + 1 < cols.length && cols[j + 1] === cols[j] + 1) j++; if (j - i + 1 >= 3) { wall.push({ k: 'mural', b: bi, x: cols[i] * TILE + 5, y: b.y1 * TILE + 4, n: Math.min(5, j - i + 1), v: bi % 4 }); n = 9; break; } i = j; } }
-    if (D.ads && lmHash(bi, 2) < 0.35) { for (let i = 0; i + 2 < cols.length; i++) if (cols[i + 2] === cols[i] + 2) { wall.push({ k: 'ad', b: bi, x: cols[i] * TILE + 6, y: b.y1 * TILE + 4, t: D.ads[bi % D.ads.length], v: bi % 3 }); cols.splice(i, 3); n++; break; } }
+      const sc = cols.filter(x => !glass.has(x));   // 맨벽 칸끼리 이어진 곳만
+      for (let i = 0; i < sc.length; i++) { let j = i; while (j + 1 < sc.length && sc[j + 1] === sc[j] + 1) j++; if (j - i + 1 >= 2) { wall.push({ k: 'mural', b: bi, x: sc[i] * TILE + 5, y: b.y1 * TILE + 4, n: Math.min(5, j - i + 1), v: bi % 4 }); n = 9; break; } i = j; }
+      if (n < 9 && sc.length) { wall.push({ k: 'mural', b: bi, x: sc[0] * TILE + 5, y: b.y1 * TILE + 4, n: 1, v: bi % 4 }); n = 2; } }   // 정면은 창과 벽이 번갈아 이어진 벽이 드물다: 한 칸짜리 벽화 판
+    if (D.ads && lmHash(bi, 2) < 0.5) { for (let i = 0; i + 1 < cols.length; i++) if (cols[i + 1] === cols[i] + 1 && solidRun(i, i + 1)) { wall.push({ k: 'ad', b: bi, x: cols[i] * TILE + 4, y: b.y1 * TILE + 4, t: D.ads[bi % D.ads.length], v: bi % 3, w2: true }); cols.splice(i, 2); n++; break; } }   // 맨벽 두 칸에 걸친 빛바랜 광고
     for (const x of cols) { if (n >= 3) break; const h = lmHash(x, b.y1, 3); if (h > 0.62) continue; n++;
-      const r = lmHash(x, b.y1, 5);
+      const r = glass.has(x) ? (lmHash(x, b.y1, 5) < 0.75 ? 0 : 0.5 + D.tag + 0.001) : lmHash(x, b.y1, 5);   // 유리창: 포스터 아니면 스티커
       if (r < 0.5) wall.push({ k: 'poster', b: bi, x: x * TILE + 9, y: b.y1 * TILE + 5, p: D.posters[Math.floor(lmHash(x, bi, 6) * D.posters.length)], v: (x + bi) % 4 });
       else if (r < 0.5 + D.tag) wall.push({ k: 'tag', b: bi, x: x * TILE, y: b.y1 * TILE + 18, v: (x * 3 + b.y1) % 40 });
-      else if (r < 0.5 + D.tag + D.sticker) wall.push({ k: 'sticker', b: bi, x: x * TILE + 12, y: b.y1 * TILE + 20, v: (x + b.y1) % 12 });
+      else if (r < 0.5 + D.tag + D.sticker || glass.has(x)) wall.push({ k: 'sticker', b: bi, x: x * TILE + 12, y: b.y1 * TILE + 20, v: (x + b.y1) % 12 });
       else wall.push({ k: 'hand', b: bi, x: x * TILE + 3, y: b.y1 * TILE + 8, t: D.hand[(x + bi) % D.hand.length], v: (x + bi) % 3 }); }
     // 바닥 칠: 주택가 집 앞 맨땅에 '주차금지'
     if (D.paint && b.kind !== 'shop' && lmHash(bi, 7) < 0.5) for (const x of [b.x0 + 2, b.x1 - 3]) { const y = b.y1 + 1; if (at(x, y) === '.' || at(x, y) === ',') { if (!used.has(x + ',' + y) && !used.has((x + 1) + ',' + y)) { ground.push({ k: 'nopark', x: x * TILE + 6, y: y * TILE + 14 }); used.add(x + ',' + y); used.add((x + 1) + ',' + y); break; } } }
@@ -21257,7 +21495,9 @@ function lmInit() {
   if (Rv) for (let x = 12; x < MW - 12; x += 23) { if ((STAGE.roadsX || []).some(r => x >= r - 3 && x < r + 7)) continue; const y = (Rv.y + Rv.rows - 3) * TILE + 20;   // 남쪽 산책로 첫 줄(난간 앞): 구경꾼은 그 아래 두 줄에 선다
     scenes.push({ k: lmHash(x, 1, 4) < 0.55 ? 'busk' : 'photo', x: x * TILE + TILE / 2, y }); }
   BLD.forEach((b, bi) => { if (b.vacant || b.kind !== 'shop' || !/포차|호프|분식|국밥|치킨|백반|곱창|골뱅이/.test((b.signs?.[0] || ''))) return; if (lmHash(bi, 12) > 0.3) return;
-    const x = (b.x1 - 1) * TILE, y = (b.y1 + 1) * TILE + TILE * 0.55; scenes.push({ k: 'rider', x, y }); });
+    // 앉을 자리와 오토바이 자리(오른쪽 한 칸)가 맨 보도여야 한다: 화단(B)·거리 소품 칸이면 오토바이가 가려진다
+    const ty = b.y1 + 1, open = tx => at(tx, ty) === '=' && bldAt(tx, ty) < 0 && !(SD?.list || []).some(o => Math.floor(o.x / TILE) === tx && Math.floor(o.y / TILE) === ty);
+    for (const tx of [b.x1 - 1, b.x1 - 2, b.x0 + 2, b.x0 + 3]) if (open(tx - 1) && open(tx) && open(tx + 1)) { scenes.push({ k: 'rider', x: tx * TILE, y: ty * TILE + TILE * 0.55 }); break; } });
   const grid = new Map(), put = o => { const key = Math.floor(o.x / TILE / 16) + ',' + Math.floor(o.y / TILE / 16); if (!grid.has(key)) grid.set(key, []); grid.get(key).push(o); };
   ground.forEach(put); sets.forEach(put);
   const wallBy = new Map(); for (const o of wall) { if (!wallBy.has(o.b)) wallBy.set(o.b, []); wallBy.get(o.b).push(o); }
@@ -21280,9 +21520,10 @@ function drawLandmarksGround() {
     const oy = o.y + o.h * TILE - h;   // 밑동을 자리 아래 끝에 맞춘다 (천막·깃대는 위로 솟는다)
     ctx.drawImage(s, o.x + Math.round((o.w * TILE - w) / 2), oy, w, h);
   });
-  for (const sc of S.lm?.active || []) if (sc.prop && inView(sc.prop.x, sc.prop.y, 80)) drawSceneProp(sc.prop);
   ctx.restore();
 }
+// 장면 소품(바둑판·기타 가방·배달 오토바이)은 거리 소품(벤치) 뒤에 그린다: 벤치 밑에 바둑판이 묻히던 것
+function drawLandmarkSceneProps() { if (CUR_F || !S?.lm?.active?.length) return; ctx.save(); ctx.imageSmoothingEnabled = false; for (const sc of S.lm.active) if (sc.prop && inView(sc.prop.x, sc.prop.y, 80)) drawSceneProp(sc.prop); ctx.restore(); }
 function drawSceneProp(p) {
   if (p.k === 'board') { ctx.fillStyle = '#14141a'; ctx.fillRect(p.x - 18, p.y - 6, 36, 21); ctx.fillStyle = '#c8a060'; ctx.fillRect(p.x - 15, p.y - 9, 30, 21); ctx.fillStyle = '#7a5a30';   // 바둑판 · 돌
     for (let k = 1; k < 5; k++) { ctx.fillRect(p.x - 15 + k * 6, p.y - 9, 1, 21); ctx.fillRect(p.x - 15, p.y - 9 + k * 4, 30, 1); }
@@ -21290,7 +21531,7 @@ function drawSceneProp(p) {
   else if (p.k === 'case') { ctx.fillStyle = '#14141a'; ctx.fillRect(p.x - 21, p.y - 3, 42, 15); ctx.fillStyle = '#3a2a1a'; ctx.fillRect(p.x - 20, p.y - 4, 40, 12); ctx.fillStyle = '#7a1a2a'; ctx.fillRect(p.x - 17, p.y - 1, 34, 6);   // 기타 가방 · 동전
     ctx.fillStyle = '#e8c83a'; ctx.fillRect(p.x - 9, p.y, 3, 3); ctx.fillRect(p.x + 3, p.y + 1, 3, 3); ctx.fillStyle = '#c8ccd2'; ctx.fillRect(p.x + 9, p.y, 3, 3);
     ctx.fillStyle = '#1a1a20'; ctx.fillRect(p.x + 27, p.y - 15, 15, 21); ctx.fillStyle = '#3a3a44'; ctx.fillRect(p.x + 30, p.y - 12, 9, 9); }   // 작은 앰프
-  else if (p.k === 'scoot') { const s = SD_ART?.scooter?.(1); if (s) ctx.drawImage(s, p.x - 24, p.y - 24, 48, 30);
+  else if (p.k === 'scoot') { const s = SD_ART?.scooter?.(1); if (s) ctx.drawImage(s, p.x - 32, p.y - 32, 64, 40);   // 배달 오토바이: 거리 소품보다 크게 (장면의 주인공)
     ctx.fillStyle = '#e8e2d2'; ctx.fillRect(p.x + 27, p.y - 3, 9, 6); ctx.fillStyle = '#d8302a'; ctx.fillRect(p.x + 28, p.y - 2, 7, 3); }   // 길바닥 위 야식 그릇
 }
 function drawLandmarkWall(b) {
@@ -21319,12 +21560,12 @@ function sceneSpawn(c) {
   const out = [], put = (x, y, a, o = {}) => { const gi = cityGuardSlot(), g = makeGuard(Object.assign({ kind: 'civ', at: [Math.floor(x / TILE), Math.floor(y / TILE)], radio: false }, o.body ? { body: o.body } : {}), gi);
     g.evt = '__scene'; g.x = x; g.y = y; g.fl = 0; g.a = g.want = a; g.post = a; g.route = [{ x, y, pause: 999 }]; g.ri = 0; g.wait = 999; placeGuard(g, gi); out.push(g); return g; };
   let prop = null;
-  if (c.k === 'baduk') { prop = { k: 'board', x: c.x, y: c.y + 10 }; const a = put(c.x - 30, c.y, 0, { body: 'old' }), b = put(c.x + 30, c.y, Math.PI, { body: 'old' }); a.seat = b.seat = true; }   // 공원 바둑: 마주 앉은 노인 둘
+  if (c.k === 'baduk') { prop = { k: 'board', x: c.x, y: c.y + 4 }; const a = put(c.x - 42, c.y, 0, { body: 'old' }), b = put(c.x + 42, c.y, Math.PI, { body: 'old' }); a.seat = b.seat = true; }   // 판이 앉은 두 사람 다리에 가리지 않게 사이를 띄우고, 판은 사람 위 단계에서 그린다   // 공원 바둑: 마주 앉은 노인 둘
   else if (c.k === 'sleep') { const g = put(c.x, c.y, 0); g.state = 'SLEEP'; g.sleep = true; }   // 벤치에서 잠든 사람 (zz)
   else if (c.k === 'busk') { prop = { k: 'case', x: c.x, y: c.y + 24 }; const s = put(c.x, c.y, Math.PI / 2, { body: 'jacket' }); s.chatter = true;   // 버스킹: 노래하는 사람과 멈춰 선 구경꾼
     for (let k = 0; k < 2 + (Math.floor(c.x / TILE) % 2); k++) { const ax = c.x + (k - 1) * 46, ay = c.y + 66 + (k % 2) * 16; put(ax, ay, Math.atan2(c.y - ay, c.x - ax)); } }
   else if (c.k === 'photo') { const p = put(c.x - 36, c.y, 0); p.shopper = true; p.act = 'workHigh'; const q = put(c.x + 36, c.y, Math.PI); q.chatter = true; }   // 사진 찍는 둘: 휴대폰을 든 사람 · 포즈 잡는 사람
-  else if (c.k === 'rider') { prop = { k: 'scoot', x: c.x, y: c.y }; const r = put(c.x - 6, c.y - 6, Math.PI / 2, { body: 'helmet' }); r.outfit = 'courier'; r.seat = true; }   // 오토바이 옆에 앉아 야식 먹는 배달 기사
+  else if (c.k === 'rider') { prop = { k: 'scoot', x: c.x + 18, y: c.y }; const r = put(c.x - 30, c.y - 4, 0, { body: 'helmet' }); r.outfit = 'courier'; r.seat = true; }   // 오토바이 옆 연석에 걸터앉아 (오토바이를 가리지 않게)   // 오토바이 옆에 앉아 야식 먹는 배달 기사
   if (PR && out.length) prWarm(out.map(charOf), true);
   return { c, gs: out, prop };
 }
@@ -21334,11 +21575,12 @@ function lmSceneUpdate() {
       for (const g of s.gs) if (!g.off && npcAlive(g) && g.state !== 'PANIC' && g.state !== 'FLEE') evGone(g); s.prop = null; L.active.splice(i, 1); } }   // 놀란 사람은 그대로 둔다 (임시 인물이라 멀어지면 정리된다)
   if (L.active.length >= SCENE_MAX || flOf(P) || P.car && Math.abs(P.car.v || 0) > 300 || S.wanted >= 2) return;
   let best = null, bd = SCENE_R;
-  for (const c of LM.scenes) { if (L.active.some(s => s.c === c || dist(s.c.x, s.c.y, c.x, c.y) < 900)) continue; const d = dist(c.x, c.y, P.x, P.y); if (d > 420 && d < bd && !inView(c.x, c.y, 120)) { bd = d; best = c; } }
+  const carts = [...(S.life?.vend?.values() || [])];   // 노점 손수레가 선 가게 앞엔 배달 기사 장면을 세우지 않는다 (서로 겹쳐 보이던 것)
+  for (const c of LM.scenes) { if (L.active.some(s => s.c === c || dist(s.c.x, s.c.y, c.x, c.y) < 900) || carts.some(v => dist(v.x, v.y, c.x, c.y) < 260)) continue; const d = dist(c.x, c.y, P.x, P.y); if (d > 420 && d < bd && !inView(c.x, c.y, 120)) { bd = d; best = c; } }
   if (best) L.active.push(sceneSpawn(best));
 }
 // ---- 이어 붙이기: 땅 소품 앞, 정면 간판 뒤, 어둠 뒤 불빛, 직원 갱신(0.5초마다 장면)
-if (typeof drawStreetDeco === 'function') { const _d = drawStreetDeco; drawStreetDeco = function () { drawLandmarksGround(); return _d.apply(this, arguments); }; }
+if (typeof drawStreetDeco === 'function') { const _d = drawStreetDeco; drawStreetDeco = function () { drawLandmarksGround(); const r = _d.apply(this, arguments); drawLandmarkSceneProps(); return r; }; }
 if (typeof drawStreetDecoGlow === 'function') { const _g = drawStreetDecoGlow; drawStreetDecoGlow = function () { const r = _g.apply(this, arguments); drawLandmarksGlow(); return r; }; }
 if (typeof drawStoreSigns === 'function') { const _s = drawStoreSigns; drawStoreSigns = function (b) { drawLandmarkWall(b); return _s.apply(this, arguments); }; }
 if (typeof staffUpdate === 'function') { const _u = staffUpdate; staffUpdate = function (dt) { const r = _u.apply(this, arguments); if (STAGE.cityLife && S && ((S.lmT = (S.lmT || 0) - (dt || 0)) <= 0)) { S.lmT = 1; lmSceneUpdate(); } return r; }; }
@@ -21452,9 +21694,9 @@ function drawClosedShutters(b) {
   ctx.restore();
 }
 function clockDrawMini(x) {
-  if (!S.clock) return; const c = x.canvas, t = clockText(), w = 46, h = 17, px = c.width - w - 4, py = c.height - h - 4;
+  if (!S.clock) return; const c = x.canvas, t = clockText(), w = Math.max(46, Math.round(c.width * 0.4)), h = Math.round(w * 0.37), px = c.width - w - 3, py = c.height - h - 3;   // 미니맵 캔버스 크기에 맞춰 (휴대폰에선 작게 줄어 보이므로 비율로)
   x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.fillStyle = 'rgba(8,10,18,.82)'; x.fillRect(px, py, w, h); x.fillStyle = clockHour() >= 28.5 ? '#ffc890' : '#e8e2cc';
-  x.font = '700 12px ' + UI_FONT_FAMILY; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(t, px + w / 2, py + h / 2 + 1); x.restore();
+  x.font = '700 ' + Math.round(h * 0.72) + 'px ' + UI_FONT_FAMILY; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(t, px + w / 2, py + h / 2 + 1); x.restore();
 }
 // ---- 이어 붙이기 (가게 일꾼·거리 생활과 같은 갈고리)
 if (typeof staffInit === 'function') { const _ci = staffInit; staffInit = function () { _ci(); clockInit(); }; }
@@ -21467,7 +21709,8 @@ if (typeof drawGuard === 'function') { const _dg = drawGuard; drawGuard = functi
   ctx.fillStyle = '#8a6a3a'; for (let k = 0; k < 9; k++) ctx.fillRect(x + Math.round(k * 0.6), y + k * 3, 2, 3);
   ctx.fillStyle = '#c8b070'; ctx.fillRect(x + 2, y + 26, 9, 4); ctx.fillStyle = '#9a8450'; ctx.fillRect(x + 3, y + 30, 7, 2); return r; }; }
 if (typeof shopAction === 'function') { const _sa = shopAction; shopAction = function () { const r = _sa(); const C = r && r.k === 'shop' && STAGE.cityLife && BLD[r.s.b];
-  if (C && !floorOpen(C, 0)) return { k: 'evAct', at: r.at, label: `${r.s.name} · 영업 끝`, fn: () => toast(`${r.s.name}은 문을 닫았다. 저녁 8시에 다시 연다`, 2.4) };
+  const P = S.player, inside = C && bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) === r.s.b && (S.staffB?.get(r.s.b) || []).some(g => npcAlive(g) && !g.off);   // 문 닫기 전에 들어와 있던 손님은 직원이 마저 받는다
+  if (C && !floorOpen(C, 0) && !inside) return { k: 'evAct', at: r.at, label: `${r.s.name} · 영업 끝`, fn: () => toast(`${r.s.name}은 문을 닫았다. 저녁 8시에 다시 연다`, 2.4) };
   return r; }; }
 
 // ---------------------------------------------------------------- 자유 모드 이야기: 은퇴한 전직 요원 '올빼미'
@@ -30625,7 +30868,7 @@ function installGameApi() {
     touchPlayFrame,initActionFlow,actionFlowGoal,updateActionFlow,bodyRecoveryGoal,ambientEntryGrace,guideCivilianOut,facScan,zoneAt,concealedAttackCandidate,skillRewardRows,missionSkillPoints,skillPath,skillTreeLayout,meleeReach,MELEE_CONTACT,challengeStatus:id=>!!CH[id]?.[1](),canKill,dropTarget,wireDropTarget,deviceReady,SKILL_TREE,SKILL_BRANCHES,SKILL_BY_ID,loadSkillTree,storeSkillTree,skillBudget,skillSpent,learnTreeSkill,resetTreeSkills,skillOn,syncRuntimeSkills,skillNoise,skillMoveMul,skillViewMul,skillDetection,projectileRange,availableTools,selectTool,toolCount,toolDetail,actBlade,actSmoke,actRadio,actHack,updateTechWork,updateSkillDevices,smokeCells,smokeContains,smokeRayRange,hackTarget,radioAcquireTarget,drawSkillLinks,drawSkillDevices,
     feedbackEvent, feedbackState, feedbackReceipt, feedbackOnce, guardTaskCue, cancelWork, drawFinishFeedback, drawDefeatFeedback, hapticFeedback, continueResultTraining,
     cabinetMaxAngle, cabinetFrontStand, purchasedPropsReady, purchasedPropCargoBounds, purchasedPropFurnBounds, purchasedPropFurnKey, purchasedPropWallLayout, get purchasedPropsAtlas(){return purchasedPropsAtlas;}, purchasedPropFrame, purchasedBridgeBounds, purchasedCabinetLeaves, purchasedReady, purchasedFrame, drawPurchasedStairs, drawPurchasedBridge, drawPurchasedVent, drawPurchasedCargo, drawPurchasedLadder, drawPurchasedPipe, drawPurchasedSwitch, drawPurchasedDoor, drawPurchasedManhole, drawPurchasedPaper, drawPurchasedFreight, get purchasedAtlas(){return purchasedAtlas;},
-    ASSASSIN_SKILLS, ASSASSIN_BEATS, assassinAttackFrame, initAssassinSkills, assassinOpportunity, assassinPath, assassinVictim, beginAssassinSkill, updateAssassinSkill, cancelAssassinSkill, openAssassinMenu, closeAssassinMenu, chooseAssassinSkill, spawnEffect, drawEffects, updateEffects, get effectAtlas(){return{ready:!!fxAtlas?.complete&&!!fxAtlas?.naturalWidth,limit:FX_LIMIT,meta:FX_META};}, refreshBodyLighting, syncOccupiedLights, syncWorkLights, get PLANS(){return PLANS;}, publicSuspicion, updateSharpEye, identityTime, groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get streetDeco(){ return typeof SD !== "undefined" ? SD : null; },ambient:()=>{if(typeof amInit==="function"&&(!AM||AM.stage!==STAGE.id))amInit();return AM?AM.list:null;}, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, portraitFor, get castArtReady(){return !!castPortraitImage.naturalWidth&&!!strayDogImage.naturalWidth;}, drawDog, speakerOf, bossRadio, episodeRadioMessage, syncEpisodeRadio, episodeStoryMessage, acknowledgeEpisodeStory, playEpisodeCoda, episodeNumber, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,updateAlert,rememberSuspect,disguiseKnowledge,syncDisguiseKnowledge,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, chooseEscape,syncFlowRoutes,startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, coverTarget, coverPullRoute, updatePull, coverAt, enterCover, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, drawPR, fluidSource, fluidSprite, updateHeroVisual, heroMotionClock, heroTransitionPose, heroStrikeFrame, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, buildingShift:b=>buildingShift(b),traffic:{makeVehicle,carMove,carOverlap,carPts,updateVehicles,trafficStopDistance,signalState,walkState,signalTime,signalLets,carEnter,carExit,updateDriving,carExplode,get isTouch(){return isTouch;}},events:{eventAction,repOf,get list(){return EVENTS;},evDist,standOf,openContact,factionAction,applyStanding,contactMissions,cityGuardSlot,cityListsCleanup,evGone,sideStart,garageStore,garageTake,cityActionList,cityMapOpen,wpRoute,setWp:(x,y)=>{S.wp={x,y};S.wpT=0;S.wpPath=null;},get mapOpen(){return !!CMAP;},freeStatsPanel,havocBlast,cycleWeapon,fireWeapon,gunAttack,hitGrade,hitFinish,hitGoal,gunPose,fluidSprite,playerKey,fluidSource,poisonAction,carbombAction,carbombPlant,hunterSpawn,hunterEnd,safehouseAction,safeEnter,safeBuy,disguiseMul,cityDisguiseOn,cityDisguiseOff,intelLines,intelBuy,enterBooth,contractMul,deathCause,phoneLines,startHit,planHit,driveBy,warStart,warEnd,npcShoot,armorAbsorb,hurtPlayer,saveFreeProgress,safeLeave,dealerThreat,elevatorAction,elevatorGo,nearElevator,elevStack,elevDoorOf,staffUpdate,floorOpen,windowLit,closeHour,setClock:h=>{if(S.clock){S.clock.h=h;S.clock.bucket=-1;S.clock.said={};}},get clock(){return S.clock?S.clock.h:null;},liftAction,carHitReport,get LINES(){return LINES;},shopAction,sellCar,cityRespawn,sideUpdate,dropPickup,gunAim,weaponShop,get guns(){return S.guns;},pileupBehind,deckBreak,deckPillars,buildingCollapse,buildingHit,smallBld,plantBomb,havocAction,get heli(){return S.heli;},get fst(){return S.fst;},get fach(){return S.fach;},setRain:on=>{const W=S.rain;if(W){W.on=on;W.k=on?1:0;W.next=S.t+999;}},get rainK(){return rainK();},storyCall,storyMainDone,storySideItem,storySideDone,endJob,contractFail,signStart,get STORY_MAIN(){return STORY_MAIN;},get STORY_SIDE(){return STORY_SIDE;},nearTrap,beginSignRelease,canReleaseSign,signGeometry,signCands,stageUpdate,poisonAction,get crews(){return S.crews;},crewSpawn,phishCall,phishDone,captureAction,dealerAction,get dealer2(){return S.dealer2;},get REVENGE(){return REVENGE;},bldAll:()=>{const C={};for(const b of BLD){const k=b.kind+(b.vacant?'(vacant)':'')+(b.kind==='shop'?(signOf(b)?':named':':blank'):'');C[k]=(C[k]||0)+1;}return C;},killerStart,get sk(){return S.sk;},envKillAction,envKill,quarrelStart,brawlStrike,brawlTarget,hospitalAction,get school(){return S.school;},get villa(){return BLD.find(b=>b.kind==='villa'&&b.plate&&Math.hypot((b.x0+b.x1)*24-S.player.x,b.y1*48-S.player.y)<1500)||BLD.find(b=>b.kind==='villa');},get hospital(){return S.hospital;},dtrCall,dtrDone,get DTR(){return DTR;},envSpot,basementAction,basementOpen,basementPick,basementEnd,get cellar(){return S.cellar;},BASEMENT_ASK,killHowOf,get methods(){return S.methods;},skHunt,skClueNow:skClue,killerAction,trunkAction,rideAction,trunkLoad,trunkUnload,rideBoard,rideDrop,charOf,placeFront,signsOf:(r)=>BLD.filter(b=>!b.vacant&&(!r||(shopFront(b)&&dist(shopFront(b).x,shopFront(b).y,S.player.x,S.player.y)<r))).map(b=>signOf(b)+(r?':'+b.kind:'')),weaponShop,get PHISH(){return PHISH;},homeAction,openHome,get home(){return S.home;},safeEnter,get STORY_REC(){return S.story&&S.story.rec;}}, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget,   nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, quickStashChoice, beginQuickStash, updateQuickStash, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; },  setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
+    ASSASSIN_SKILLS, ASSASSIN_BEATS, assassinAttackFrame, initAssassinSkills, assassinOpportunity, assassinPath, assassinVictim, beginAssassinSkill, updateAssassinSkill, cancelAssassinSkill, openAssassinMenu, closeAssassinMenu, chooseAssassinSkill, spawnEffect, drawEffects, updateEffects, get effectAtlas(){return{ready:!!fxAtlas?.complete&&!!fxAtlas?.naturalWidth,limit:FX_LIMIT,meta:FX_META};}, refreshBodyLighting, syncOccupiedLights, syncWorkLights, get PLANS(){return PLANS;}, publicSuspicion, updateSharpEye, identityTime, groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get streetDeco(){ return typeof SD !== "undefined" ? SD : null; },ambient:()=>{if(typeof amInit==="function"&&(!AM||AM.stage!==STAGE.id))amInit();return AM?AM.list:null;}, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, portraitFor, get castArtReady(){return !!castPortraitImage.naturalWidth&&!!strayDogImage.naturalWidth;}, drawDog, speakerOf, bossRadio, episodeRadioMessage, syncEpisodeRadio, episodeStoryMessage, acknowledgeEpisodeStory, playEpisodeCoda, episodeNumber, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,updateAlert,rememberSuspect,disguiseKnowledge,syncDisguiseKnowledge,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, chooseEscape,syncFlowRoutes,startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, coverTarget, coverPullRoute, updatePull, coverAt, enterCover, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, drawPR, fluidSource, fluidSprite, updateHeroVisual, heroMotionClock, heroTransitionPose, heroStrikeFrame, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, buildingShift:b=>buildingShift(b),traffic:{makeVehicle,carMove,carOverlap,carPts,updateVehicles,trafficStopDistance,signalState,walkState,signalTime,signalLets,carEnter,carExit,updateDriving,carExplode,get isTouch(){return isTouch;}},events:{eventAction,repOf,get list(){return EVENTS;},evDist,standOf,openContact,factionAction,applyStanding,contactMissions,cityGuardSlot,cityListsCleanup,evGone,sideStart,garageStore,garageTake,cityActionList,cityMapOpen,wpRoute,setWp:(x,y)=>{S.wp={x,y};S.wpT=0;S.wpPath=null;},get mapOpen(){return !!CMAP;},freeStatsPanel,havocBlast,cycleWeapon,fireWeapon,gunAttack,hitGrade,hitFinish,hitGoal,gunPose,fluidSprite,playerKey,fluidSource,poisonAction,carbombAction,carbombPlant,hunterSpawn,hunterEnd,safehouseAction,safeEnter,safeBuy,disguiseMul,cityDisguiseOn,cityDisguiseOff,intelLines,intelBuy,enterBooth,contractMul,deathCause,phoneLines,startHit,planHit,driveBy,warStart,warEnd,npcShoot,armorAbsorb,hurtPlayer,saveFreeProgress,safeLeave,dealerThreat,elevatorAction,elevatorGo,nearElevator,elevStack,elevDoorOf,staffUpdate,staffChatAction,staffChatOpen,staffRumor,staffDiscount,get staffMem(){return S.staffMem;},get staffFavor(){return S.staffFavor;},floorOpen,windowLit,closeHour,setClock:h=>{if(S.clock){S.clock.h=h;S.clock.bucket=-1;S.clock.said={};}},get clock(){return S.clock?S.clock.h:null;},liftAction,carHitReport,get LINES(){return LINES;},shopAction,sellCar,cityRespawn,sideUpdate,dropPickup,gunAim,weaponShop,get guns(){return S.guns;},pileupBehind,deckBreak,deckPillars,buildingCollapse,buildingHit,smallBld,plantBomb,havocAction,get heli(){return S.heli;},get fst(){return S.fst;},get fach(){return S.fach;},setRain:on=>{const W=S.rain;if(W){W.on=on;W.k=on?1:0;W.next=S.t+999;}},get rainK(){return rainK();},storyCall,storyMainDone,storySideItem,storySideDone,endJob,contractFail,signStart,get STORY_MAIN(){return STORY_MAIN;},get STORY_SIDE(){return STORY_SIDE;},nearTrap,beginSignRelease,canReleaseSign,signGeometry,signCands,stageUpdate,poisonAction,get crews(){return S.crews;},crewSpawn,phishCall,phishDone,captureAction,dealerAction,get dealer2(){return S.dealer2;},get REVENGE(){return REVENGE;},bldAll:()=>{const C={};for(const b of BLD){const k=b.kind+(b.vacant?'(vacant)':'')+(b.kind==='shop'?(signOf(b)?':named':':blank'):'');C[k]=(C[k]||0)+1;}return C;},killerStart,get sk(){return S.sk;},envKillAction,envKill,quarrelStart,brawlStrike,brawlTarget,hospitalAction,get school(){return S.school;},get villa(){return BLD.find(b=>b.kind==='villa'&&b.plate&&Math.hypot((b.x0+b.x1)*24-S.player.x,b.y1*48-S.player.y)<1500)||BLD.find(b=>b.kind==='villa');},get hospital(){return S.hospital;},dtrCall,dtrDone,get DTR(){return DTR;},envSpot,basementAction,basementOpen,basementPick,basementEnd,get cellar(){return S.cellar;},BASEMENT_ASK,killHowOf,get methods(){return S.methods;},skHunt,skClueNow:skClue,killerAction,trunkAction,rideAction,trunkLoad,trunkUnload,rideBoard,rideDrop,charOf,placeFront,signsOf:(r)=>BLD.filter(b=>!b.vacant&&(!r||(shopFront(b)&&dist(shopFront(b).x,shopFront(b).y,S.player.x,S.player.y)<r))).map(b=>signOf(b)+(r?':'+b.kind:'')),weaponShop,get PHISH(){return PHISH;},homeAction,openHome,get home(){return S.home;},safeEnter,get STORY_REC(){return S.story&&S.story.rec;}}, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget,   nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, quickStashChoice, beginQuickStash, updateQuickStash, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; },  setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
     mapImage() { const c = document.createElement('canvas'); c.width = mapC.width; c.height = mapC.height; drawBig(c.getContext('2d'), mapC); return c.toDataURL(); },
     npcDown, startBrawl, declareWar, facWitness, zoneAt, Z_PUB, Z_RES, Z_HOS, stairDir, setLayer, wallUpSpot, landBelow, nearWinClimb, nearWinDrop, doAct: a => actPrimary(Object.assign({}, a, { viaZ: true })), get MW() { return MW; }, get FURN() { return FURN; }, hurt: (why, origin) => hurtPlayer(null, why, origin), tileCh: (x, y) => G[y] && G[y][x], get MH() { return MH; },
     validate() {
@@ -31082,7 +31325,7 @@ function start(i, noBrief) {
   newGame(i); document.body.classList.toggle('no-prompts', !!STAGE.noPrompts); document.body.classList.toggle('free-city', !!STAGE.cityLife); { const m = $('btnMenu2'); if (m) m.textContent = STAGE.freeMode ? '처음 화면' : '의뢰 선택'; } if(STAGE.firstSteps||introductoryContract(STAGE)){input.sneakToggle=false;input.walkLock=false;input.padWhistle=!!(STAGE.firstSteps||STAGE.openingContract)&&!availableTools().some(t=>toolCount(t)>0);syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','목표·무전 펼치기'); miniBase = null; renderToasts();
   if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)
   statsBegin('new');  // 플레이 기록: 판 시작
-  if (PR&&!STAGE.artSlice) { const ks = [playerKey(S.player), ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep(ks); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다
+  if (PR&&!STAGE.artSlice) { const ks = [playerKey(S.player), ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep(ks); prWarm(STAGE.cityLife ? [ks[0], ...new Set(S.guards.filter(g => !g.dog && Math.hypot(g.x - S.player.x, g.y - S.player.y) < 1400).map(charOf))] : ks, true); }  // 자유 모드: 옷이 사람마다 달라 다 칠하면 수백 MB — 시작 자리 둘레만 미리 칠한다  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다
   const keysEl = document.querySelector('.keys'); if (keysEl) keysEl.classList.add('mini');
   const hc = document.getElementById('hintCard'); if (hc) hc.classList.add('off');
   showMenu(null); $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
