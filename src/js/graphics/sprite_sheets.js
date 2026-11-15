@@ -40,12 +40,17 @@ const prLoadBody = bn => spriteSources.load(bn);
 if (PR) { const body=PR.looks?.ninja||'hero';prLoadBody(body);prLoadBody(body+'Motion'); }
 // 조각 하나의 색 분류 (피부·머리·윗옷·바지·신발): 처음 쓸 때 한 번만. 원본 색은 붙잡아 두지 않고 칠할 때마다 그림에서 다시 읽는다 (메모리)
 let prScr = null;
+// One decoded chunk only: classification and recolouring consume the same
+// immutable source pixels back-to-back. Avoid a second GPU readback without
+// retaining every body's full atlas in mobile memory.
+let prReadCache=null;
 function prRead(base, ci) {
+  if(prReadCache?.base===base&&prReadCache.ci===ci)return prReadCache.data;
   const fr = PR.fr, x0 = ci * PR_CH * fr, w = Math.min(PR_CH * fr, base.w - x0), h = base.h; if (w <= 0) return null;
   if (!prScr) { prScr = document.createElement('canvas'); prScr.width = PR_CH * fr; prScr.height = h; }
   if (prScr.height < h) prScr.height = h;
   const x = prScr.getContext('2d', { willReadFrequently: true }); x.clearRect(0, 0, prScr.width, prScr.height); x.drawImage(base.img, x0, 0, w, h, 0, 0, w, h);
-  return { w, h, d: x.getImageData(0, 0, w, h).data };
+  const data={w,h,d:x.getImageData(0,0,w,h).data};prReadCache={base,ci,data};return data;
 }
 function prPrepPart(base, ci) {
   if (base.parts[ci]) return base.parts[ci];

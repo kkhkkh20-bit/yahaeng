@@ -31,12 +31,26 @@ function lazyBig(Wp, Hp, bake) {
     get(k) { let t = this.tiles[k]; const L = this.live;
       if (t) { const i = L.indexOf(k); if (i >= 0 && i !== L.length - 1) { L.splice(i, 1); L.push(k); } return t; }
       const i = k % nx, j = (k / nx) | 0; t = this.tiles[k] = bake(i * T, j * T, Math.min(T, Wp - i * T), Math.min(T, Hp - j * T)); L.push(k);
-      while (L.length > LAZY_CAP) { const o = L.shift(), c = this.tiles[o]; if (c) c.width = c.height = 0; this.tiles[o] = null; }
+      const V=bigViewTiles(this),limit=Math.max(LAZY_CAP,V.size);
+      while (L.length > limit) { const at=L.findIndex(o=>o!==k&&!V.has(o)); const o=L.splice(at<0?0:at,1)[0], c=this.tiles[o]; if(c)c.width=c.height=0;this.tiles[o]=null; }
       return t; } };
+}
+// Keep the displayed tiles resident. A wide driving view may need more than the
+// walking budget; the allowance follows the visible working set, not the city.
+function bigViewTiles(B,margin=60){
+  const [vx,vy,vw,vh]=viewRect(margin),out=new Set();
+  for(let y=Math.max(0,Math.floor(vy/BIG_T));y<=Math.min(B.ny-1,Math.floor((vy+vh)/BIG_T));y++)
+    for(let x=Math.max(0,Math.floor(vx/BIG_T));x<=Math.min(B.nx-1,Math.floor((vx+vw)/BIG_T));x++)out.add(y*B.nx+x);
+  return out;
 }
 // 화면 둘레(반 조각 여유)에서 아직 안 구운 조각을 한 프레임에 하나만 미리 굽는다: 달리다 새 조각에서 멈칫하지 않게
 function prefetchBig(B) {
-  if (!B || !B.lazy) return; const [vx, vy, vw, vh] = viewRect(BIG_T / 2), T = BIG_T;
+  if (!B || !B.lazy) return;
+  const visible=bigViewTiles(B);
+  // Prefetch is optional: never trade a visible tile for one outside the view.
+  const near=bigViewTiles(B,BIG_T/2);
+  if(B.live.length>=Math.max(LAZY_CAP,visible.size)&&B.live.every(k=>near.has(k)))return;
+  const [vx, vy, vw, vh] = viewRect(BIG_T / 2), T = BIG_T;
   for (let j = Math.max(0, Math.floor(vy / T)); j <= Math.min(B.ny - 1, Math.floor((vy + vh) / T)); j++)
     for (let i = Math.max(0, Math.floor(vx / T)); i <= Math.min(B.nx - 1, Math.floor((vx + vw) / T)); i++) if (!B.tiles[j * B.nx + i]) { B.get(j * B.nx + i); return; }
 }
@@ -45,7 +59,7 @@ const ROOF_CAP = (window.matchMedia && matchMedia('(pointer:coarse)').matches) ?
 function lazyRoof(b, i) {
   let c = null;
   Object.defineProperty(b, 'roofC', { configurable: true, enumerable: true,
-    get() { if (!c) { c = buildRoofCanvas(b, i); roofLive.push(b); while (roofLive.length > ROOF_CAP) { const o = roofLive.shift(); if (o !== b) o.dropRoof(); } } return c; },
+    get() { const at=roofLive.indexOf(b);if(at>=0)roofLive.splice(at,1);if(!c)c=buildRoofCanvas(b,i);roofLive.push(b);while(roofLive.length>ROOF_CAP){const o=roofLive.shift();if(o!==b)o.dropRoof();}return c; },
     set(v) { c = v; } });
   b.dropRoof = () => { if (c && c.width) { c.width = c.height = 0; } c = null; };
 }

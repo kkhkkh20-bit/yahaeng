@@ -9,7 +9,7 @@ from pathlib import Path
 from playwright.async_api import async_playwright
 
 R = Path(__file__).resolve().parents[2]
-CHECK = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));while(G.DLG.modal)G.advanceDialog();
+CHECK = '''()=>{const G=__game;while(G.DLG.modal)G.advanceDialog();
   const tick=s=>{for(let t=0;t<s;t+=1/60)G.update(1/60)};tick(.3);const S=G.S,P=S.player,T=G.traffic,out={};
   // wedge a car into the nearest building's wall
   const b=G.BLD.find(b=>Math.hypot((b.x0+b.x1)*24-P.x,(b.y1+1)*48-P.y)<2000&&b.x1-b.x0>=4);const wx=(b.x0+b.x1+1)*24,wy=(b.y1+1)*48-10;
@@ -26,7 +26,9 @@ async def main():
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required']); q = await b.new_page(); errs = []
         q.on('pageerror', lambda e: errs.append(str(e)[:300]))
         await q.add_init_script('window.requestAnimationFrame=()=>0;try{localStorage.clear()}catch(e){}')
-        await q.goto((R / 'build/preview_city.html').as_uri() + '?nostats&study=city-xl'); await q.wait_for_function('!!window.__game')
+        await q.goto((R / 'build/preview_city.html').as_uri() + '?nostats&study=city-xl'); await q.wait_for_function('!!window.__game',polling=100)
+        # The large city is registered lazily by the real Free Mode button.
+        await q.click('#btnFree');await q.wait_for_function('__game.STAGE.cityLife',polling=100)
         r = await q.evaluate(CHECK); print(r)
         snd = await q.evaluate('''()=>{const G=__game;const n=G.neonTest('n_drive');return {n}}''')
         print('drive track', snd)

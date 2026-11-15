@@ -115,14 +115,18 @@ function updateAlert(dt) {
 }
 let touchFrameCache=null;
 function touchPlayFrame(){
+  const now=performance.now(), viewport=W+'|'+H+'|'+STAGE_I;
+  // Camera framing can follow a contextual HUD change within 100ms; avoid layout
+  // reads on every AI substep, especially during a slow mobile frame.
+  if(touchFrameCache?.viewport===viewport&&now-touchFrameCache.at<100)return touchFrameCache;
   const controls=[...document.querySelectorAll('#hud .pad > button,#hud .sysbtns button,#btnSkill')].filter(e=>!e.hidden);
   // Context controls can appear while approaching a guard. Reframe their contact area too.
   const key=W+'|'+H+'|'+STAGE_I+'|'+controls.map(e=>e.id).join(',')+'|'+($('stealth')?.offsetHeight||0);
-  if(touchFrameCache?.key===key)return touchFrameCache;
+  if(touchFrameCache?.key===key){touchFrameCache.at=now;touchFrameCache.viewport=viewport;return touchFrameCache;}
   const tops=controls.map(e=>e.getBoundingClientRect()).filter(r=>r.width&&r.height&&r.top>H*.25&&r.left<W/2+26&&r.right>W/2-26).map(r=>r.top);
   const lower=Math.min(H-24,...tops)-64,preferred=H*(STAGE.agentStudy&&H>W*1.3?.46:H>W*1.3?.60:.56);
   const upper=Math.min(H*.44,Math.max(110,($('stealth')?.getBoundingClientRect().bottom||120)+44));
-  return touchFrameCache={key,y:clamp(preferred,Math.min(upper,lower-8),Math.max(80,lower-8)),bottom:Math.min(...tops,H-24)};
+  return touchFrameCache={key,at:now,viewport,y:clamp(preferred,Math.min(upper,lower-8),Math.max(80,lower-8)),bottom:Math.min(...tops,H-24)};
 }
 function moveCamera(dt) {
   { const P = S.player, low = !!(P.cover || (P.mode === 'sneak' && !P.trav) || (input.sneakToggle && !P.moving)); S.coneK = (S.coneK || 0) + ((low ? 1 : 0) - (S.coneK || 0)) * Math.min(1, dt * 12); }  // 시야 원뿔: 내 자세(서 있음 ↔ 웅크림)
