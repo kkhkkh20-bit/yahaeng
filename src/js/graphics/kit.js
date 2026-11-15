@@ -14,10 +14,10 @@ const charOf = g => {
   // workwear silhouette (for example the courier's helmet).
   const female = g.body && ['fBob', 'fLong', 'fTail','jacket','femaleCoat','femaleBlazer'].includes(g.body);
   const job = PR && PR.style === 'modular' && g.outfit && PR.looks[g.outfit];
-  const body = job ? female ? (g.outfit === 'waiter' ? 'femaleSuit' : 'femaleWorker') : job : g.body;
+  const body = job ? female ? (g.outfit === 'waiter' ? 'femaleSuit' : 'femaleWorker') : job : g.body || (STAGE.cityLife && g.civ && !g.outfit && !g.doc && !g.dog && typeof civSilhouette === 'function' ? civSilhouette(g) : null);   // 자유 모드 옷차림 열쇠(cv…)는 실루엣을 담지 않으므로 몸 없는 행인은 예전 실루엣을 붙인다
   return base + (body && PR && PR.bodies && PR.bodies[body] ? '@' + body : '');
 };
-const charBase = g => g.outfit && OUTFIT_PAL[g.outfit] ? g.outfit : g.doc ? 'doc' : g.dog ? 'dog' : g.civ ? 'civ' + (window.__PR ? ((g.look || 0) + g.id * 3) % (STAGE.cityLife ? 20 : 10) : (g.look || 0)) : g.dog ? 'dog' : g.lookout ? 'hunter' : g.target ? (g.id % 2 ? 'old' : 'noble') : g.kind === 'g3' ? 'samR' : g.kind === 'g2' ? 'samB' : 'sam';
+const charBase = g => g.outfit && OUTFIT_PAL[g.outfit] ? g.outfit : g.doc ? 'doc' : g.dog ? 'dog' : g.civ ? (STAGE.cityLife && window.__PR && typeof civOutfitKey === 'function' ? civOutfitKey(g) : 'civ' + (window.__PR ? ((g.look || 0) + g.id * 3) % (STAGE.cityLife ? 20 : 10) : (g.look || 0))) : g.dog ? 'dog' : g.lookout ? 'hunter' : g.target ? (g.id % 2 ? 'old' : 'noble') : g.kind === 'g3' ? 'samR' : g.kind === 'g2' ? 'samB' : 'sam';
 // ---- 프리렌더 배경 (Kenney Retro Urban Kit, CC0): 건물 외관 · 바닥 · 나무를 같은 3/4 투영으로 미리 찍은 그림
 const KIT_PROP = {};  // 키트 거리 소품 (쓰레기통 등)
 if (window.__KIT && window.__KIT.props) for (const k in window.__KIT.props) { const e = window.__KIT.props[k]; KIT_PROP[k] = { img: Object.assign(new Image(), { src: e.src }), ox: e.ox, oy: e.oy }; }

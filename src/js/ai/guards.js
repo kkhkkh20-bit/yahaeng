@@ -16,7 +16,7 @@ function updateGuard(g, dt) {
   const P = S.player;
   g.moving = false;
   if (g.iconT > 0) { g.iconT -= dt; if (g.iconT <= 0 && g.state !== 'ALERT') g.icon = null; }
-  const spd = (g.target ? SPD.target*(rendezvousHurry(g)?1.75:vipDrinkHurry(g)?1.5:1) : SPD.gPatrol * (S.alevel ? 1 : 0.85) * (g.dog ? 1.25 : 1) * (diningHurry(g) ? 1.5 : 1)) * spdMul();
+  const spd = (g.target ? SPD.target*(rendezvousHurry(g)?1.75:vipDrinkHurry(g)?1.5:1) : SPD.gPatrol * (S.alevel ? 1 : 0.85) * (g.dog ? 1.25 : 1) * (diningHurry(g) ? 1.5 : 1) * (g.spdK || 1)) * spdMul();  // spdK: 자유 모드 행인마다 걸음 (47zt2)
   if (S.alevel && (g.chat || g.act)) { endChat(g); g.act = null; }
   // 공포: 겁에 질려 달아난다. 주변을 못 보고, 가까운 동료를 잘못 벨 수 있다
   if (g.state === 'TERROR') {

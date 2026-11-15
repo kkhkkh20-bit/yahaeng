@@ -95,7 +95,7 @@ function cityGuardRefs() {
 function cityGuardSlot() {
   if (!STAGE.cityLife) return S.guards.length;
   let used = null;
-  for (let i = 0; i < S.guards.length; i++) { const o = S.guards[i]; if (!o.off || !TEMP_ACTOR(o) || o.contact || o.beat || o.rideIn || o.rideTo) continue;  /* 차에 탄 사람 자리는 비어 있지 않다 */
+  for (let i = 0; i < S.guards.length; i++) { const o = S.guards[i]; if (!o.off || !(TEMP_ACTOR(o) || o.freed) || o.contact || o.beat || o.rideIn || o.rideTo) continue;  /* 차에 탄 사람 자리는 비어 있지 않다 */
     used = used || cityGuardRefs(); if (!used.has(i) && !used.has(o)) return i; }
   return S.guards.length;
 }
@@ -140,7 +140,7 @@ function cityListsCleanup() {
     if (g.civ && g.route && g.route.length) { const idx = S.guards.indexOf(g), pts = g.route.filter(w => far(w)); const at = pts[0]; if (!at) continue;
       const ng = makeGuard({ kind: 'civ', body: g.body, route: g.route.map(w => [Math.floor(w.x / TILE), Math.floor(w.y / TILE), w.pause]) }, idx); ng.x = at.x; ng.y = at.y; ng.ri = (g.route.indexOf(at) + 1) % g.route.length;
       placeGuard(ng, idx); setLayer(0); if (PR) prWarm([charOf(ng)], true); }
-    else g.off = true; }  // 조직원·경찰: 치운 자리는 spawnCop 등이 다시 쓴다
+    else { g.off = true; g.freed = true; } }  // 조직원·경찰: 치운 자리는 spawnCop · cityGuardSlot 이 다시 쓴다 (freed: 원래 있던 조직원 자리도 새 인물이 물려받는다 — 오래 하면 자리가 계속 늘던 것)
   const before = S.vehicles.length;
   S.vehicles = S.vehicles.filter(v => { if (v._drop) { v.gone = true; return false; } if (S.vehBase.has(v) || busy.has(v) || v.chase || v.jacking || !far(v)) return true; v.gone = true; return false; });
   if (S.vehicles.length !== before) VEHG = null;

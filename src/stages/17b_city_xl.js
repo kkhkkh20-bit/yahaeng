@@ -235,8 +235,8 @@
       // 대형 광고판: 넓은 상가는 옥상에 큰 판 + 정면에 대게 간판, 좁은 상가는 둘에 하나꼴로 정면 오른쪽에 세로 판
       const shop = o.kind === 'shop', fh = Math.max(1, Math.min(h, y1 - y0 - 1)), boards = [];
       if (!shop) homeLocks.push({ b: i, door: 'front', key: 'gold' }, { b: i, door: 'back', key: 'gold' });  // 일반 주택은 앞뒤 문이 잠겨 있다: 창문으로 들어간다
-      if (shop && w >= 12) { boards.push({ image: ['can', 'chimaek', 'soju'][i % 3], mode: 'roof', x: 1 + (i % 2) * 4 }); if (fh >= 2) boards.push({ image: 'crab', mode: 'face', x: w - 6, fl: Math.min(fh - 1, 2) }); }
-      else if (shop && w >= 8 && fh >= 2 && i % 2 === 1) boards.push({ image: ['chimaek', 'soju', 'can'][(i >> 1) % 3], mode: 'roof', x: 1 });
+      if (shop && w >= 12) { boards.push({ image: ['chimaek', 'soju', 'chimaek', 'soju'][i % 4], mode: 'roof', x: 1 + (i % 2) * 4 }); if (fh >= 2) boards.push({ image: 'crab', mode: 'face', x: w - 6, fl: Math.min(fh - 1, 2) }); }
+      else if (shop && w >= 8 && fh >= 2 && i % 2 === 1) boards.push({ image: ['chimaek', 'soju'][(i >> 1) % 2], mode: 'roof', x: 1 });
       else if (shop && fh >= 3 && i % 2 === 0) boards.push({ image: ['octopus', 'face', 'karaoke', 'octopus'][(i >> 1) % 4], mode: 'face', x: w - 2, fl: 1 });
       specs.push({ box: [x0, y0, x1, y1], h, front: f[0], windows: f[1], style: f[2], roof: i % 2 ? 'roofStone' : 'roofMetal', boards: boards.length ? boards : null,
         ad: txt && SIGN_KEY[txt] && (!shop || o.plate || o.name) ? { image: SIGN_KEY[txt], x: 1, fl: h > 1 ? 1 : 0, w: Math.min(w - (boards.some(d => d.mode === 'face') ? 4 : 2), 4), h: 1 } : null }); },
@@ -284,8 +284,9 @@
   keys.forEach((f, i) => { const [hx0, hy0] = find(homes[f]), [ox0, oy0] = find(homes[keys[(i + 1) % 4]]), [px0, py0] = find(homes[keys[(i + 3) % 4]]);
     st.guards.push({ kind: 'g2', fac: f, route: [[hx0, hy0 + BS - 1, 3], [ox0 + BS - 1, oy0, 3]], radio: false }, { kind: 'g1', fac: f, route: [[hx0 + BS - 1, hy0, 3], [px0, py0 + BS - 1, 3]], radio: false }); });
   // 청계천 산책로: 북쪽 축대 길과 남쪽 둔치를 걷는 사람들
-  for (let i = 0; i < 8; i++) { const x0 = 6 + i * 28, y = i % 2 ? RIVER_Y + RIVER_ROWS - 2 : RIVER_Y;
-    st.guards.push({ kind: 'civ', body: i % 2 ? 'fBob' : undefined, route: [[x0, y, 2], [Math.min(W - 6, x0 + 34), y, 2]] }); }
+  // 다리(세로 도로) 사이 축대 길 위에서 출발해 다음 칸으로 건너간다. 블록 주기(P)에 맞춘다 — 예전 28칸 주기 그대로면 다리 난간(¦) 위에 서는 사람이 생겼다
+  for (let i = 0; i < 8; i++) { const x0 = 6 + i * P, y = i % 2 ? RIVER_Y + RIVER_ROWS - 2 : RIVER_Y;
+    st.guards.push({ kind: 'civ', body: i % 2 ? 'fBob' : undefined, route: [[x0, y, 2], [Math.min(W - 10, x0 + P), y, 2]] }); }
   st.guards.push(...gangs);
   return st;
 }, new URLSearchParams(location.search).get('study') === 'city-xl' ? [window.__CITY_XL__()] : []),

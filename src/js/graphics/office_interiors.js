@@ -123,6 +123,9 @@ function drawOfficeSurfaceDress(c,f){
 }
 function officeDecorLayout(fl){
  if(!officeReady())return [];
+ return wallLayoutMemo('o',fl,()=>officeDecorLayoutNow(fl));
+}
+function officeDecorLayoutNow(fl){
  const placed=[];
  for(const d of STAGE.officeArt?.decor||[]){
   if(d.fl!==fl)continue;

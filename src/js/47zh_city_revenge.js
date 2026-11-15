@@ -91,14 +91,15 @@ const REVENGE = [
           for (const c of ev.cops) if (npcAlive(c)) after(1.2, () => gsay(c, '...방금 그 사람 누구야? 잡아!', 2.4)); } return; }
       if (g.state !== 'PATROL') { g.state = 'PATROL'; g.fear = null; g.icon = null; }   // 겁먹지 않는다
       // 경찰 출동: 첫 피해 뒤 몇 초 만에 둘이 달려온다 — 그리고 당한다
-      if (ev.victims >= 1 && !ev.cops.length && (ev.copT || (ev.copT = S.t + 4)) < S.t) { for (let k = 0; k < 2; k++) { const a = rnd(0, TAU), c = evPerson(ev, g.x + Math.cos(a) * 320, g.y + Math.sin(a) * 320, { police: true }); c.civ = true; c.beat = true; ev.cops.push(c); }
+      if (ev.victims >= 1 && !ev.cops.length && (ev.copT || (ev.copT = S.t + 4)) < S.t) { for (let k = 0; k < 2; k++) { const a = rnd(0, TAU), sp = (typeof roadNear === 'function' && roadNear(g.x + Math.cos(a) * 320, g.y + Math.sin(a) * 320, 6)) || { x: g.x + Math.cos(a) * 320, y: g.y + Math.sin(a) * 320 }, c = evPerson(ev, sp.x, sp.y, { police: true }); /* 보도 위에서 출발한다 (건물 안·벽 뒤에 생기면 길을 못 찾아 그 자리에 서 있었다) */ c.civ = true; c.beat = true; ev.cops.push(c); }
         gsay(ev.cops[0], '흉기 내려놔! 내려놓으라고!', 2.6); }
       if ((ev.stepT = (ev.stepT || 0) - dt) <= 0) { ev.stepT = 0.6; let tgt = null, bd = 280;
         for (const o of [...ev.cops, ...actorsNear(g.x, g.y)]) { if (o === g || !npcAlive(o) || o.off || o.crew || (o.evt && !ev.cops.includes(o)) || !(o.civ || o.police)) continue; const d = dist(o.x, o.y, g.x, g.y); if (d < bd) { bd = d; tgt = o; } }
+        { let cd = 160; for (const c of ev.cops) if (npcAlive(c) && !c.off) { const d = dist(c.x, c.y, g.x, g.y); if (d < cd) { cd = d; tgt = c; } } }   // 다가온 경찰이 먼저다 (거리에 사람이 많아져도 경찰과 맞붙는다)
         if (!P.car && (dist(P.x, P.y, g.x, g.y) < 160 || (!tgt && dist(P.x, P.y, g.x, g.y) < 900))) tgt = P; ev.tgt = tgt; }
       if (ev.tgt) evRun(g, ev.tgt.x, ev.tgt.y, 150, dt); for (const c of ev.cops) if (npcAlive(c) && dist(c.x, c.y, g.x, g.y) > 30) evRun(c, g.x, g.y, 170, dt);
       const t = ev.tgt;
-      if (t && (ev.hitT || 0) < S.t && dist(t.x, t.y, g.x, g.y) < 34) { ev.hitT = S.t + 1.1; g.swingT = 0.35; play('knife', 0.6 * proxVol(g));
+      if (t && (ev.hitT || 0) < S.t && dist(t.x, t.y, g.x, g.y) < 40) { ev.hitT = S.t + 1.1; g.swingT = 0.35; play('knife', 0.6 * proxVol(g));
         if (t === P) hurtPlayer(g, '흉기 난동범 칼에 찔렸다.');
         else if (npcAlive(t)) { bloodBurst(t.x, t.y - 12, Math.atan2(t.y - g.y, t.x - g.x), 4); npcDown(t, g, false); if (t.police) { ev.copsDown++; gsay(g, '짭새도 별거 없네!', 2); } else { ev.victims++; gsay(g, ['비켜!', '너도야!', '하하하!'][ev.victims % 3], 1.4); }
           for (const o of actorsNear(g.x, g.y)) if (o.civ && npcAlive(o) && o !== g && !o.evt && dist(o.x, o.y, g.x, g.y) < 300) { civPanic(o, g.x, g.y, 10); if (Math.random() < 0.3) gsay(o, ['칼이야!!', '살려 주세요!', '119! 119!'][o.id % 3], 1.6); } } }

@@ -490,6 +490,26 @@
       "group": "city"
     },
     {
+      "path": "47zt2_city_streetlife.js",
+      "group": "city"
+    },
+    {
+      "path": "47zt3_city_staffchat.js",
+      "group": "city"
+    },
+    {
+      "path": "47zt3_city_outfits.js",
+      "group": "city"
+    },
+    {
+      "path": "47zt4_city_outlaw.js",
+      "group": "city"
+    },
+    {
+      "path": "47zt5_city_karma.js",
+      "group": "city"
+    },
+    {
       "path": "47zu_city_store_art.js",
       "group": "city"
     },
@@ -499,6 +519,26 @@
     },
     {
       "path": "47zw_city_juice.js",
+      "group": "city"
+    },
+    {
+      "path": "47zx_city_streetdeco.js",
+      "group": "city"
+    },
+    {
+      "path": "47zy_city_ambient2.js",
+      "group": "city"
+    },
+    {
+      "path": "47zy2_city_landmarks.js",
+      "group": "city"
+    },
+    {
+      "path": "47zy3_city_roofdeco.js",
+      "group": "city"
+    },
+    {
+      "path": "47zy_city_clock.js",
       "group": "city"
     },
     {

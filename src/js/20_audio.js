@@ -193,6 +193,7 @@ const clubBeat = () => club && AC ? ((AC.currentTime - club.t0) * CLUB_BPM / 60)
 // 클럽 안: 박자에 맞춰 퍼지는 음파 (내 발소리가 묻히는 곳)
 function drawLoud(fl) {
   if(INK_STUDY&&STAGE.id==='m2'&&!input.scan&&!tactical)return;
+  if (STAGE.cityLife) return;   // 자유 모드: 클럽 박자 음파 고리는 건물 밖 거리까지 화면을 가로질러 그려졌다 (동그라미는 쓰지 않는다)
   const b = clubBeat();
   for (const c of CROWD) { if (!c.club || c.fl !== fl) continue;
     const cx = (c.x0 + c.x1 + 1) / 2 * TILE, cy = (c.y0 + c.y1 + 1) / 2 * TILE, rr = Math.max(c.x1 - c.x0, c.y1 - c.y0) * TILE * 0.6;

@@ -13,7 +13,7 @@ function pickupsUpdate(dt) {
   if (!STAGE.cityLife || !S.pickups) return; const P = S.player;
   if ((S.dropScan -= dt) <= 0) { S.dropScan = 0.3;
     for (let i = Math.max(0, S.corpses.length - 40); i < S.corpses.length; i++) { const c = S.corpses[i]; if (c.dropped || c.fl || c.civ) continue; c.dropped = true;
-      const g = c.g; if (!g || g.evt && g.evt !== 'war' || dist(c.x, c.y, P.x, P.y) > 1000) continue;  // 구역 이벤트 사람은 이벤트가 따로 떨군다
+      const g = c.g; if (!g || g.evt && g.evt !== 'war' || c.ko || g === S.hit?.g || g.target || dist(c.x, c.y, P.x, P.y) > 1000) continue;  // 기절한 사람·의뢰 표적은 떨구지 않는다 (표적 보수는 의뢰가 따로 준다)  // 구역 이벤트 사람은 이벤트가 따로 떨군다
       if (g.police) { if (S.guns?.pistol != null && (S.wanted >= 2 || Math.random() < 0.3)) dropPickup(c.x + rnd(-14, 14), c.y + rnd(8, 16), 'ammo', 'pistol', 6 + (Math.random() * 7 | 0)); }
       else if (c.fac && c.fac !== 'P') { const r = Math.random();
         if (r < 0.1) dropPickup(c.x + rnd(-14, 14), c.y + rnd(8, 16), 'ammo', 'pistol', 3 + (Math.random() * 4 | 0));  /* 조직원도 총은 드물다 */

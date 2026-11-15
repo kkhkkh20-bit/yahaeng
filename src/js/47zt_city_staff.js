@@ -16,11 +16,11 @@ function staffSpot(f, A, C) {   // 계산대가 있으면 그 뒤(안쪽), 없�
 }
 function staffSpawn(bi) {
   const b = BLD[bi], plans = PLANS[bi] || [], out = [];
-  plans.forEach((p, f) => { const A = p && p.store; if (!A) return; const o = staffOutfit(b, f, A.use); if (!o) return; const t = staffSpot(f, A, p.counter); if (!t) return;
+  plans.forEach((p, f) => { const A = p && p.store; if (!A || (typeof floorOpen === 'function' && !floorOpen(b, f))) return; const o = staffOutfit(b, f, A.use);   /* 문 닫은 층(47zy 밤 시계)엔 아무도 없다 */ if (!o) return; const t = staffSpot(f, A, p.counter); if (!t) return;
     const gi = cityGuardSlot(), g = makeGuard({ kind: 'civ', at: t, fl: f, radio: false }, gi);
     g.evt = '__staff'; g.staff = o; g.shopA = A; g.shopB = bi; g.shopF = f; g.outfit = o; g.fl = f; g.homeFl = f; g.x = tc(t[0]); g.y = tc(t[1]); g.route = t[2] ? [{ x: g.x, y: g.y, pause: 999 }] : [{ x: g.x, y: g.y, pause: 6 }, { x: g.x + (t[0] > A.x0 ? -TILE : TILE), y: g.y, pause: 4 }]; g.ri = 0; g.a = Math.PI / 2;
     placeGuard(g, gi); out.push(g); });
-  plans.forEach((p, f) => { const A = p && p.store; if (A) for (const g of castSpawn(b, bi, f, A, p)) out.push(g); });
+  plans.forEach((p, f) => { const A = p && p.store; if (A && (typeof floorOpen !== 'function' || floorOpen(b, f))) for (const g of castSpawn(b, bi, f, A, p)) out.push(g); });
   if (PR && out.length) prWarm(out.map(charOf), true);
   return out;
 }

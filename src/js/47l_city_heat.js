@@ -5,7 +5,7 @@
 // 기록: 훔친 차·운행·환자·승객·검거·폭발·체포·쓰러짐·최고 수배·운전 거리·번 돈. 업적을 이루면 보너스. 진행 저장에 함께 남는다.
 const HELI_SPD = 330, HELI_SPOT = 72;
 function heatInit() { S.heli = null; S.blockT = S.t + 8; S.fst = Object.assign({}, S.fstSaved || {}); S.fach = Object.assign({}, S.fachSaved || {}); S.cashSeen = S.cash || 0; }
-const fstat = (k, n = 1) => { if (S.fst) S.fst[k] = (S.fst[k] || 0) + n; };
+const fstat = (k, n = 1) => { if (S.fst) S.fst[k] = (S.fst[k] || 0) + n; if (STAGE.cityLife && typeof karmaFromStat === 'function') karmaFromStat(k, n); };   // 성향 (47zt5)
 function heatUpdate(dt) {
   if (!STAGE.cityLife || !S.player) return;
   const P = S.player;
@@ -95,7 +95,7 @@ function freeStatsPanel() {
   const s = S.fst || {}, km = ((s.dist || 0) / 1000).toFixed(1), row = (n, v) => ({ name: n, price: null, tag: String(v), ok: false, buy: () => {} });
   const done = FREE_ACH.filter(a => S.fach[a[0]]).length;
   shopPanel(`자유 모드 기록 · 업적 ${done}/${FREE_ACH.length}`, [
-    row('번 돈', `${s.earned || 0}만`), row('훔친 차', s.carsStolen || 0), row('운전 거리', `${km}km`), row('택시 손님 · 환자 · 버스 승객', `${s.taxi || 0} · ${s.patients || 0} · ${s.busRiders || 0}`),
-    row('도주 차량 검거', s.perps || 0), row('폭발시킨 차', s.explosions || 0), row('총으로 쓰러뜨림', s.gunKills || 0), row('체포 · 쓰러짐', `${s.arrests || 0} · ${s.downs || 0}`), row('최고 수배', '★'.repeat(s.maxWanted || 0) || '없음'),
+    ...(typeof karmaName === 'function' ? [row('성향', `${karmaName()} (${Math.round(s.karma || 0)})`)] : []), row('번 돈', `${s.earned || 0}만`), row('훔친 차', s.carsStolen || 0), row('운전 거리', `${km}km`), row('택시 손님 · 환자 · 버스 승객', `${s.taxi || 0} · ${s.patients || 0} · ${s.busRiders || 0}`),
+    row('도주 차량 검거', s.perps || 0), row('폭발시킨 차', s.explosions || 0), row('총으로 쓰러뜨림', s.gunKills || 0), row('체포 · 쓰러짐', `${s.arrests || 0} · ${s.downs || 0}`), row('최고 수배', '★'.repeat(s.maxWanted || 0) || '없음'), row('턴 행인 · 뒤진 지갑 · 계산대', `${s.mugged || 0} · ${s.wallets || 0} · ${s.tills || 0}`), row('혼낸 시비꾼 · 지구대 털이 · 비운 동네', `${s.rudeTaught || 0} · ${(s.stationRob || 0) + (s.stationArms || 0)} · ${s.emptied || 0}`),
     ...FREE_ACH.map(([id, name, desc, , bonus]) => ({ name: `${S.fach[id] ? '✔' : '○'} ${name} — ${desc}`, price: null, tag: S.fach[id] ? '달성' : `+${bonus}만`, ok: false, buy: () => {} }))]);
 }

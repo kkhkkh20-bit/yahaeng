@@ -43,7 +43,7 @@ function shopAction() {
   return null;
 }
 // 가게 · 중고차 목록 창 (게임은 멈춘다)
-function shopPanel(title, rows, onClose) {
+function shopPanel(title, rows, onClose, note) {
   let el = document.getElementById('shopPanel');
   if (!el) { el = document.createElement('div'); el.id = 'shopPanel'; el.setAttribute('role', 'dialog');
     el.style.cssText = 'position:fixed;left:50%;bottom:9%;transform:translateX(-50%);z-index:70;min-width:min(420px,92vw);max-width:94vw;background:rgba(12,14,20,.94);border:2px solid #c9a24a;border-radius:6px;padding:14px 16px;color:#efe6cf;font-family:var(--f-body);box-shadow:0 8px 30px rgba(0,0,0,.6)';
@@ -52,6 +52,7 @@ function shopPanel(title, rows, onClose) {
   const h = document.createElement('div'); h.style.cssText = 'display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;gap:16px';
   const t = document.createElement('b'); t.textContent = title; t.style.cssText = 'font-size:20px';
   const m = document.createElement('span'); m.textContent = `가진 돈 ${S.cash || 0}만`; m.style.cssText = 'color:#c9a24a;font-size:14px'; h.append(t, m); el.append(h);
+  if (note) { const q = document.createElement('div'); q.className = 'shopNote'; q.textContent = '“' + note + '”'; q.style.cssText = 'margin:0 0 10px;padding:8px 10px;background:#161a22;border-left:3px solid #c9a24a;font-size:16px;line-height:1.45;color:#f2e7c8'; el.append(q); }   // 대화 창으로 쓸 때: 상대가 한 말
   for (const r of rows) {
     const b = document.createElement('button'); b.type = 'button'; b.disabled = !r.ok;
     b.style.cssText = 'display:flex;justify-content:space-between;gap:20px;width:100%;margin:4px 0;padding:10px 12px;background:#1d222c;color:inherit;border:1px solid #3b4250;border-radius:4px;font:inherit;font-size:15px;cursor:pointer;opacity:' + (r.ok ? 1 : .45);
@@ -68,7 +69,8 @@ function shopPanel(title, rows, onClose) {
 function pay(price) { if ((S.cash || 0) < price) { play('click', 0.3); return false; } S.cash -= price; play('loot', 0.6); hudCache.objH = null; return true; }
 function openShop(s) {
   const P = S.player, items = SHOP_ITEMS[s.name] || [];
-  const show = () => shopPanel(s.name + repTag(evDist(P.x, P.y)), items.map(it => ({ name: it.name, price: repPrice(it.price), ok: (S.cash || 0) >= repPrice(it.price) && (!it.can || it.can(P)), buy: () => { if ((!it.can || it.can(P)) && pay(repPrice(it.price))) { it.buy(P); if (typeof syncTools === 'function') syncTools(); show(); } } })));
+  const dk = typeof staffDiscount === 'function' ? staffDiscount(s) : 1, pr = it => Math.max(1, Math.round(repPrice(it.price) * dk));   // 단골 할인 (47zt3 알바생과 말하기)
+  const show = () => shopPanel(s.name + repTag(evDist(P.x, P.y)) + (dk < 1 ? ` · 단골 ${Math.round((1 - dk) * 100)}%` : ''), items.map(it => ({ name: it.name, price: pr(it), ok: (S.cash || 0) >= pr(it) && (!it.can || it.can(P)), buy: () => { if ((!it.can || it.can(P)) && pay(pr(it))) { it.buy(P); if (typeof staffBought === 'function') staffBought(s); if (typeof syncTools === 'function') syncTools(); show(); } } })));
   show();
 }
 function openDealer() {
