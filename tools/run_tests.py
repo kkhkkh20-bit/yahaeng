@@ -59,6 +59,7 @@ def main():
     if shutil.which('node'):
         subprocess.run(['node', os.path.join(ROOT, 'tests/integration/sprite_sources.cjs')], cwd=ROOT, check=True)
         subprocess.run(['node', os.path.join(ROOT, 'tests/integration/physical_interactions.cjs')], cwd=ROOT, check=True)
+        subprocess.run(['node', os.path.join(ROOT, 'tests/integration/runtime_stability.cjs')], cwd=ROOT, check=True)
     if '--no-build' not in sys.argv: subprocess.run([sys.executable, os.path.join(ROOT, 'build.py')], check=True)
     v, errs = asyncio.run(validate()); print('도달 검사:', '통과' if not v and not errs else ('문제 ' + str(v) + str(errs)))
     fails = [] if not v and not errs else ['validate']

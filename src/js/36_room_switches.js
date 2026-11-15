@@ -8,6 +8,7 @@ function setLampCircuit(l,off) {
   refreshBodyLighting();
 }
 function syncRoomSwitches() {
+  indoorFixtureCache.delete(S);
   const L0=CUR_F,regions=new Map(),doors=new Set();
   S.lightRooms={};
   for(const d of S.doors||[])for(const p of d.group||[d])doors.add((flOf(p)||0)+':'+p.tx+','+p.ty);

@@ -99,8 +99,24 @@ function furnitureOcclusionMask(f,b){
  for(let yy=0;yy<h;yy++){let start=-1;for(let xx=0;xx<=w;xx++){const opaque=xx<w&&data[(yy*w+xx)*4+3]>=160;if(opaque&&start<0)start=xx;if(!opaque&&start>=0){path.rect(x+start,y+yy,xx-start,1);start=-1;}}}
  furnitureMasks.set(f,{key,path});return path;
 }
+let furnitureOcclusionIndex=null;
+const OCCLUSION_CELL=384,occlusionKinds=new Set(['desk','desk2','pc','table','tableS','counter','chair','chairD']);
+function furnitureOccluders(actor){
+ let c=furnitureOcclusionIndex;
+ if(!c||c.list!==FURN||c.count!==FURN.length){
+  c={list:FURN,count:FURN.length,buckets:new Map()};
+  for(const f of FURN){if(!occlusionKinds.has(f.t))continue;
+   for(let y=Math.floor((f.y*TILE-52)/OCCLUSION_CELL);y<=Math.floor((f.y+f.h)*TILE/OCCLUSION_CELL);y++)
+    for(let x=Math.floor((f.x*TILE-25)/OCCLUSION_CELL);x<=Math.floor(((f.x+f.w)*TILE+25)/OCCLUSION_CELL);x++){
+     const k=flOf(f)+':'+x+':'+y;if(!c.buckets.has(k))c.buckets.set(k,[]);c.buckets.get(k).push(f);
+    }
+  }furnitureOcclusionIndex=c;
+ }
+ return c.buckets.get(flOf(actor)+':'+Math.floor(actor.x/OCCLUSION_CELL)+':'+Math.floor(actor.y/OCCLUSION_CELL))||[];
+}
 function withFurnitureOcclusion(actor,paint){
  if(!S||actor.z||actor.under||actor.vent||actor.wire||actor.climb||actor.trav||actor.jump)return paint();
- const seatF=actor.seat&&Math.sin(actor.a||0)>-0.5?FURN.find(f=>(f.t==='chair'||f.t==='chairD')&&flOf(f)===flOf(actor)&&actor.x>=f.x*TILE&&actor.x<(f.x+f.w)*TILE&&actor.y+8>=f.y*TILE&&actor.y-8<(f.y+f.h)*TILE):null;  // 앉은 사람: 등받이가 뒤·옆에 있으면 제 의자에 가리지 않는다
- ctx.save();try{for(const f of FURN){if(f===seatF||flOf(f)!==flOf(actor)||!['desk','desk2','pc','table','tableS','counter','chair','chairD'].includes(f.t)||actor.y>=(f.y+f.h)*TILE-5||actor.x+25<f.x*TILE||actor.x-25>(f.x+f.w)*TILE||actor.y+12<f.y*TILE-40)continue;const b=purchasedPropFurnBounds(f)||officeFurnBounds(f);if(!b||actor.x+25<b.x||actor.x-25>b.x+b.w||actor.y+12<b.y||actor.y-75>b.y+b.h)continue;ctx.clip(furnitureOcclusionMask(f,b),'evenodd');}return paint();}finally{ctx.restore();}
+ const nearby=furnitureOccluders(actor);
+ const seatF=actor.seat&&Math.sin(actor.a||0)>-0.5?nearby.find(f=>(f.t==='chair'||f.t==='chairD')&&flOf(f)===flOf(actor)&&actor.x>=f.x*TILE&&actor.x<(f.x+f.w)*TILE&&actor.y+8>=f.y*TILE&&actor.y-8<(f.y+f.h)*TILE):null;  // 앉은 사람: 등받이가 뒤·옆에 있으면 제 의자에 가리지 않는다
+ ctx.save();try{for(const f of nearby){if(f===seatF||flOf(f)!==flOf(actor)||!['desk','desk2','pc','table','tableS','counter','chair','chairD'].includes(f.t)||actor.y>=(f.y+f.h)*TILE-5||actor.x+25<f.x*TILE||actor.x-25>(f.x+f.w)*TILE||actor.y+12<f.y*TILE-40)continue;const b=purchasedPropFurnBounds(f)||officeFurnBounds(f);if(!b||actor.x+25<b.x||actor.x-25>b.x+b.w||actor.y+12<b.y||actor.y-75>b.y+b.h)continue;ctx.clip(furnitureOcclusionMask(f,b),'evenodd');}return paint();}finally{ctx.restore();}
 }

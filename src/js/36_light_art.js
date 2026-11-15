@@ -22,9 +22,20 @@ function drawOfficeSwitch(l){
  ctx.fillStyle=off?'#35444e':'#9eac9f';ctx.fillRect(side?-1:-2,side?-2:-1,side?2:4,side?4:2);
  ctx.restore();return true;
 }
+const indoorFixtureCache=new WeakMap();
+function indoorFixtures(fl){
+  let c=indoorFixtureCache.get(S);
+  if(!c||c.list!==S.lamps||c.count!==S.lamps.length){
+    c={list:S.lamps,count:S.lamps.length,floors:new Map()};
+    for(const l of S.lamps){if(l.outdoor||l.hearth||!l.fixture)continue;const f=flOf(l);if(!c.floors.has(f))c.floors.set(f,[]);c.floors.get(f).push(l);}
+    indoorFixtureCache.set(S,c);
+  }
+  return c.floors.get(fl)||[];
+}
 function drawIndoorLampFixtures(fl,building=-1) {
-  const controls=new Set(),fixtures=new Set();
-  for(const l of S.lamps){
+  const fixtures=new Set();
+  for(const l of indoorFixtures(fl)){
+    if(!inView(l.fixture.x,l.fixture.y,70))continue;
     if(l.outdoor||l.hearth||flOf(l)!==fl||building>=0&&bldAt(Math.floor(l.x/TILE),Math.floor(l.y/TILE))!==building)continue;
     if(l.roomFinish&&!officeReady())continue;
     const f=l.fixture,fk=f&&f.x+','+f.y;

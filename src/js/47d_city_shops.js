@@ -112,11 +112,13 @@ function showDistrict(name) {
 // 그림: 전시장 값표 · 도색 칸 표시 (땅 위)
 function drawShopMarks() {
   if (!S.dealer || flOf(S.player)) return;
-  ctx.save(); ctx.font = '700 13px ' + UI_FONT_FAMILY; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  let saved=false;const begin=()=>{if(!saved){ctx.save();saved=true;}};
   for (const v of S.vehicles) { if (!v.forSale || v.dead || !inView(v.x, v.y, 80)) continue;
+    begin();ctx.font='700 13px '+UI_FONT_FAMILY;ctx.textAlign='center';ctx.textBaseline='middle';
     const t = v.forSale + '만', w = ctx.measureText(t).width + 12; ctx.fillStyle = 'rgba(250,240,200,.92)'; ctx.fillRect(v.x - w / 2, v.y - 46, w, 18); ctx.fillStyle = '#7a1a10'; ctx.fillText(t, v.x, v.y - 37); }
   const R = S.respray; if (R && inView((R.x0 + R.x1) / 2, (R.y0 + R.y1) / 2, 200)) {
+    begin();
     ctx.strokeStyle = 'rgba(255,190,60,.8)'; ctx.lineWidth = 4; ctx.setLineDash([14, 10]); ctx.strokeRect(R.x0 + 4, R.y0 + 4, R.x1 - R.x0 - 8, R.y1 - R.y0 - 8); ctx.setLineDash([]);
     ctx.fillStyle = 'rgba(255,190,60,.12)'; ctx.fillRect(R.x0 + 4, R.y0 + 4, R.x1 - R.x0 - 8, R.y1 - R.y0 - 8); }
-  ctx.restore();
+  if(saved)ctx.restore();
 }
